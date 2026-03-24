@@ -29,6 +29,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     file-roller \
     foot \
     fuzzel \
+    nwg-drawer \
     google-chrome-stable \
     google-roboto-fonts \
     google-roboto-mono-fonts \

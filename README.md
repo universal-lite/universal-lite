@@ -61,7 +61,7 @@ On first boot, a setup wizard appears asking you to create a user account (full 
 | Base image | `ghcr.io/ublue-os/base-main:latest` | Lightest Universal Blue base — no bundled DE |
 | Compositor | `labwc` | wlroots-based, minimal memory footprint |
 | Panel | `waybar` | Chromebook-style shelf (bottom by default) |
-| Launcher | `fuzzel` | Fast, Wayland-native app launcher |
+| Launcher | `nwg-drawer` | Grid-based app drawer with search |
 | Browser | `google-chrome-stable` | Familiar to Chromebook users |
 | File manager | `Thunar` | Lightweight, thumbnail support |
 | Greeter | `greetd` + `gtkgreet` | Minimal login screen via `cage` kiosk |
