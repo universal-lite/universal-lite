@@ -1,99 +1,158 @@
 # Universal-Lite
 
-`Universal-Lite` is a custom [Universal Blue](https://universal-blue.org/) image for old x86_64 Chromebooks and similar low-end laptops. The goal is a machine that boots into a lightweight Wayland desktop, automatically updates itself, and stays simple enough for a non-technical family member to use.
+A lightweight, auto-updating Linux desktop for old x86_64 Chromebooks and low-end laptops.
+Built on [Universal Blue](https://universal-blue.org/) so it stays secure and up to date without any manual maintenance.
 
-## Design goals
+## Install
 
-- Keep the default graphical session lean enough for 2 GB RAM hardware.
-- Use a lightweight Wayland stack based on `labwc`.
-- Present a Chromebook-like shelf with `Waybar`.
-- Expose only the basic graphical settings a normal user actually needs:
-  - panel edge placement
-  - panel density
-  - light/dark accent preset
-  - wallpaper selection
-- Include Google Chrome and RPM Fusion multimedia support in the image build so codec and browser setup stay maintainable.
-- Follow Universal Blue conventions so updates and rollback behave like a normal bootc image.
+### What you need
 
-## Included stack
+- A Chromebook or laptop with UEFI firmware (Chromebooks need [MrChromebox](https://mrchromebox.tech) UEFI Full ROM)
+- An SD card, USB drive, or other target storage
+- A second Linux machine to flash the image
 
-- Base image: `ghcr.io/ublue-os/base-main:latest`
-- Compositor: `labwc`
-- Panel: `waybar`
-- Launcher: `fuzzel`
-- Greeter: `greetd` + `gtkgreet`
-- Notifications: `mako`
-- Wallpaper: `swaybg`
-- Settings app: `universal-lite-settings`
-- Browser: `google-chrome-stable`
+### Flash the image
 
-## Local development
-
-Build the OCI image:
-
-```bash
-just build
-```
-
-Build local artifacts:
+Build the raw disk image (or download it from [GitHub Actions artifacts](../../actions/workflows/build-disk.yml)):
 
 ```bash
 just build-raw
-just build-iso
 ```
 
-Run syntax checks:
+Find your target device (SD card, USB stick, etc.) — **double-check the device name with `lsblk` before flashing**:
 
 ```bash
-just check
-bash -n build_files/build.sh
-python3 -m py_compile files/usr/bin/universal-lite-settings files/usr/libexec/universal-lite-apply-settings
+lsblk
+sudo dd if=output/disk/disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
-## GitHub setup
+Insert the flashed media into the target machine and boot from it. The root partition automatically grows to fill all available space on first boot.
 
-The repo expects the final image to publish as:
+### Already running a bootc/Fedora Atomic system?
 
-```text
+Rebase directly without reflashing:
+
+```bash
+sudo bootc switch ghcr.io/noitatsidem/universal-lite:latest
+```
+
+### After install
+
+That's it. The system pulls image updates automatically from the daily builds. Rollback to the previous image is available through the boot menu if an update ever causes problems.
+
+## What's included
+
+| Component | Choice | Why |
+|-----------|--------|-----|
+| Base image | `ghcr.io/ublue-os/base-main:latest` | Lightest Universal Blue base — no bundled DE |
+| Compositor | `labwc` | wlroots-based, minimal memory footprint |
+| Panel | `waybar` | Chromebook-style shelf (bottom by default) |
+| Launcher | `fuzzel` | Fast, Wayland-native app launcher |
+| Browser | `google-chrome-stable` | Familiar to Chromebook users |
+| File manager | `Thunar` | Lightweight, thumbnail support |
+| Greeter | `greetd` + `gtkgreet` | Minimal login screen via `cage` kiosk |
+| Notifications | `mako` | Low-overhead notification daemon |
+| Screen lock | `swayidle` + `swaylock` | Locks after 5 min idle, screen off at 10 min |
+| Power | `power-profiles-daemon` | Battery management for laptops |
+| Audio | `pipewire` + `wireplumber` | Modern audio stack with PulseAudio compat |
+| Settings | `universal-lite-settings` | Custom GTK4 app for panel, theme, wallpaper |
+| Multimedia | RPM Fusion + GStreamer | Codec support out of the box |
+
+### Low-RAM optimizations
+
+- **zRAM swap**: compressed in-memory swap (zstd, 1.5x RAM, `vm.swappiness=180`)
+- **systemd-repart**: auto-grows root partition to fill storage on first boot
+- **Wayland-native throughout**: no Xwayland overhead
+- **Weak deps disabled**: packages installed without optional dependencies
+
+### Keyboard shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Alt+T` | Open terminal (`foot`) |
+
+### Settings app
+
+The built-in settings app (`universal-lite-settings`) exposes:
+
+- Panel edge placement (top / bottom / left / right)
+- Panel density (normal / compact)
+- Theme (light / dark)
+- Wallpaper selection (bundled or custom)
+
+Changes apply immediately.
+
+## Development
+
+### Build locally
+
+```bash
+just build          # OCI container image
+just build-raw      # Raw disk image (for dd)
+just build-iso      # Anaconda ISO (needs 4+ GB RAM to install)
+just build-qcow2    # QCOW2 for VM testing
+```
+
+### Test in a VM
+
+```bash
+just run-vm-qcow2
+just run-vm-raw
+```
+
+### Lint and check
+
+```bash
+just lint           # shellcheck on all .sh files
+just check          # Justfile syntax validation
+```
+
+### CI/CD
+
+Pushes to `main` and a daily schedule automatically build and publish the OCI image to:
+
+```
 ghcr.io/noitatsidem/universal-lite
 ```
 
-Before enabling signed builds, generate a cosign key pair and add the private key as `SIGNING_SECRET` in GitHub Actions:
+Images are signed with [cosign](https://github.com/sigstore/cosign). To set up signing on a fresh fork:
 
 ```bash
 COSIGN_PASSWORD='' cosign generate-key-pair
 gh secret set SIGNING_SECRET < cosign.key
 ```
 
-The main container build runs automatically on pushes to `main` and on a daily schedule. The disk-image workflow produces:
+Disk images (raw, ISO) are built on manual dispatch via the [disk image workflow](../../actions/workflows/build-disk.yml). Dependencies are kept current by Dependabot and Renovate.
 
-- OCI image updates through GHCR
-- RAW image artifacts for direct flashing
-- Anaconda ISO artifacts for first-time installs
+## Project layout
 
-The disk-image workflow keeps S3 upload support, but it is optional.
-
-## First install and rebase
-
-After the image is published, switch an existing bootc/atomic system with:
-
-```bash
-sudo bootc switch ghcr.io/noitatsidem/universal-lite:latest
+```
+Containerfile                         # Image build definition
+build_files/build.sh                  # Package installation and setup
+files/
+  etc/
+    greetd/                           # Login greeter config
+    systemd/repart.d/                 # Auto-grow root partition
+    systemd/zram-generator.conf       # Compressed swap config
+    sysctl.d/                         # Memory tuning
+    xdg/labwc/                        # Compositor config + autostart
+    xdg/swaylock/                     # Lock screen config
+    yum.repos.d/google-chrome.repo    # Chrome package source
+  usr/
+    bin/universal-lite-settings       # Settings GUI (Python/GTK4)
+    libexec/universal-lite-apply-settings  # Settings applier
+    libexec/universal-lite-session-init    # Session startup script
+    share/backgrounds/                # Bundled wallpapers
+    share/universal-lite/             # Default settings + themes
+    share/wayland-sessions/           # Session desktop entry
+.github/workflows/
+  build.yml                           # OCI image build + sign + push
+  build-disk.yml                      # Raw and ISO artifact builds
 ```
 
-For fresh installs, use the generated ISO or RAW image. The installer bootstraps into the same OCI image, so future updates come from the image pipeline instead of manual package management.
+## Notes
 
-## Customization layout
-
-- [`Containerfile`](./Containerfile): base image selection and build entrypoint
-- [`build_files/build.sh`](./build_files/build.sh): packages, repo setup, and image defaults
-- [`files/`](./files): system config overlays, session scripts, wallpapers, and the settings app
-- [`.github/workflows/build.yml`](./.github/workflows/build.yml): OCI build and signing
-- [`.github/workflows/build-disk.yml`](./.github/workflows/build-disk.yml): ISO and RAW artifact generation
-
-## Current assumptions
-
-- v1 targets x86_64 only.
-- Automatic updates come from the normal Universal Blue / bootc image flow.
-- Panel customization is intentionally limited to a stable, simple settings surface.
-- Hardware-specific Chromebook quirks may still need model-specific follow-up work.
+- Targets x86_64 only.
+- The Anaconda ISO requires 4+ GB RAM to run the installer — use the raw image + `dd` for 2 GB machines.
+- Chromebooks need [MrChromebox UEFI firmware](https://mrchromebox.tech) and the write-protect screw removed to boot standard Linux images.
+- Updates and rollback are handled by bootc automatically.
