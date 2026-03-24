@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <labwc_config>
+  <theme>
+    <name>Universal-Lite</name>
+    <cornerRadius>8</cornerRadius>
+  </theme>
   <core>
     <adaptiveSync>yes</adaptiveSync>
     <gap>6</gap>

@@ -27,6 +27,8 @@ dnf5 install -y --setopt=install_weak_deps=False \
     foot \
     fuzzel \
     google-chrome-stable \
+    google-roboto-fonts \
+    google-roboto-mono-fonts \
     greetd \
     grim \
     gtkgreet \

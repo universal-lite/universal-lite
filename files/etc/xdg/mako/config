@@ -1,0 +1,16 @@
+font=Roboto 11
+background-color=#fafafaff
+text-color=#1e1e1eff
+border-color=#3584e4ff
+border-size=2
+border-radius=12
+padding=12
+width=360
+height=120
+margin=12
+default-timeout=5000
+max-visible=3
+layer=overlay
+anchor=top-right
+icon-location=left
+max-icon-size=48

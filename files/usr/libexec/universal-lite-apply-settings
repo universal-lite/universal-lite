@@ -15,17 +15,128 @@ if not SHARE_ROOT.joinpath("universal-lite/defaults/settings.json").exists():
 
 DEFAULT_WALLPAPER = str(SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg")
 DEFAULTS_PATH = SHARE_ROOT / "universal-lite/defaults/settings.json"
-THEME_DIR = SHARE_ROOT / "universal-lite/themes"
 CONFIG_HOME = Path.home() / ".config"
 SETTINGS_DIR = CONFIG_HOME / "universal-lite"
 SETTINGS_PATH = SETTINGS_DIR / "settings.json"
 WAYBAR_DIR = CONFIG_HOME / "waybar"
 GTK3_DIR = CONFIG_HOME / "gtk-3.0"
 GTK4_DIR = CONFIG_HOME / "gtk-4.0"
+FUZZEL_DIR = CONFIG_HOME / "fuzzel"
+MAKO_DIR = CONFIG_HOME / "mako"
+FOOT_DIR = CONFIG_HOME / "foot"
+LABWC_DIR = CONFIG_HOME / "labwc"
+SWAYLOCK_DIR = CONFIG_HOME / "swaylock"
 
 VALID_EDGES = {"top", "bottom", "left", "right"}
 VALID_DENSITY = {"compact", "normal"}
 VALID_THEME = {"light", "dark"}
+VALID_ACCENT = {"blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"}
+
+ACCENTS = {
+    "blue": "#3584e4",
+    "teal": "#2190a4",
+    "green": "#3a944a",
+    "yellow": "#c88800",
+    "orange": "#ed5b00",
+    "red": "#e62d42",
+    "pink": "#d56199",
+    "purple": "#9141ac",
+    "slate": "#6f8396",
+}
+
+ADWAITA = {
+    "light": {
+        "window_bg": "#fafafa",
+        "view_bg": "#ffffff",
+        "headerbar_bg": "#f0f0f0",
+        "card_bg": "#ffffff",
+        "fg": "#1e1e1e",
+        "secondary_fg": "#5e5c64",
+        "border": "#d1d1d1",
+        "inactive_fg": "#c0bfbc",
+    },
+    "dark": {
+        "window_bg": "#242424",
+        "view_bg": "#1e1e1e",
+        "headerbar_bg": "#303030",
+        "card_bg": "#383838",
+        "fg": "#ffffff",
+        "secondary_fg": "#c0bfbc",
+        "border": "#4a4a4a",
+        "inactive_fg": "#5e5c64",
+    },
+}
+
+# Standard Adwaita / GNOME Terminal ANSI palette
+ADWAITA_TERMINAL = {
+    "light": {
+        "foreground": "1e1e1e",
+        "background": "fafafa",
+        "regular0": "1e1e1e",
+        "regular1": "c01c28",
+        "regular2": "26a269",
+        "regular3": "a2734c",
+        "regular4": "1c71d8",
+        "regular5": "a347ba",
+        "regular6": "2aa1b3",
+        "regular7": "c0bfbc",
+        "bright0": "5e5c64",
+        "bright1": "f66151",
+        "bright2": "33d17a",
+        "bright3": "e5a50a",
+        "bright4": "62a0ea",
+        "bright5": "c061cb",
+        "bright6": "33c7de",
+        "bright7": "ffffff",
+    },
+    "dark": {
+        "foreground": "ffffff",
+        "background": "1e1e1e",
+        "regular0": "1e1e1e",
+        "regular1": "c01c28",
+        "regular2": "26a269",
+        "regular3": "a2734c",
+        "regular4": "1c71d8",
+        "regular5": "a347ba",
+        "regular6": "2aa1b3",
+        "regular7": "c0bfbc",
+        "bright0": "5e5c64",
+        "bright1": "f66151",
+        "bright2": "33d17a",
+        "bright3": "e5a50a",
+        "bright4": "62a0ea",
+        "bright5": "c061cb",
+        "bright6": "33c7de",
+        "bright7": "ffffff",
+    },
+}
+
+
+def _strip_hash(color: str) -> str:
+    """Remove leading '#' from a hex color."""
+    return color.lstrip("#")
+
+
+def _hex_to_rgba(color: str, alpha: str = "ff") -> str:
+    """Convert '#RRGGBB' to 'RRGGBBAA' (no # prefix)."""
+    return _strip_hash(color) + alpha
+
+
+def _hex_to_mako(color: str, alpha: str = "FF") -> str:
+    """Convert '#RRGGBB' to '#RRGGBBAA' (mako format)."""
+    return color + alpha
+
+
+def _hex_to_rgb_tuple(color: str) -> tuple[int, int, int]:
+    """Convert '#RRGGBB' to (R, G, B) tuple."""
+    h = _strip_hash(color)
+    return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+
+
+def _rgba_css(color: str, opacity: float) -> str:
+    """Convert '#RRGGBB' + opacity float to 'rgba(r, g, b, opacity)' CSS string."""
+    r, g, b = _hex_to_rgb_tuple(color)
+    return f"rgba({r}, {g}, {b}, {opacity})"
 
 
 def ensure_settings() -> dict:
@@ -40,6 +151,7 @@ def ensure_settings() -> dict:
     density = data.get("density", "normal")
     theme = data.get("theme", "light")
     wallpaper = data.get("wallpaper", DEFAULT_WALLPAPER)
+    accent = data.get("accent", "blue")
 
     if edge not in VALID_EDGES:
         edge = "bottom"
@@ -49,12 +161,15 @@ def ensure_settings() -> dict:
         theme = "light"
     if not Path(wallpaper).exists():
         wallpaper = DEFAULT_WALLPAPER
+    if accent not in VALID_ACCENT:
+        accent = "blue"
 
     normalized = {
         "edge": edge,
         "density": density,
         "theme": theme,
         "wallpaper": wallpaper,
+        "accent": accent,
     }
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -128,12 +243,101 @@ def write_waybar_config(settings: dict) -> None:
         json.dump(config, handle, indent=2)
         handle.write("\n")
 
-    theme_file = THEME_DIR / f"chromeos-{settings['theme']}.css"
-    css = theme_file.read_text(encoding="utf-8")
-    css += "\n"
-    css += "#custom-launcher, #clock, #network, #battery, #backlight, #pulseaudio, #tray, #taskbar {"
-    css += f" min-height: {height}px;"
-    css += " }\n"
+    palette = ADWAITA[settings["theme"]]
+    accent = ACCENTS[settings["accent"]]
+
+    bar_bg = _rgba_css(palette["window_bg"], 0.95)
+    accent_active = _rgba_css(accent, 0.3)
+
+    css = f"""\
+* {{
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: {palette["fg"]};
+}}
+
+window#waybar {{
+    background: {bar_bg};
+    border: 1px solid {palette["border"]};
+    border-radius: 999px;
+    margin: 8px;
+}}
+
+#custom-launcher {{
+    background: {accent};
+    color: #ffffff;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-weight: bold;
+    min-height: {height}px;
+}}
+
+#custom-launcher:hover {{
+    opacity: 0.85;
+}}
+
+#taskbar {{
+    padding: 0;
+    min-height: {height}px;
+}}
+
+#taskbar button {{
+    padding: 0 10px;
+    border-radius: 999px;
+    min-height: {height}px;
+}}
+
+#taskbar button.active {{
+    background: {accent_active};
+}}
+
+#taskbar button:hover {{
+    background: {_rgba_css(palette["border"], 0.5)};
+}}
+
+#clock,
+#network,
+#battery,
+#backlight,
+#pulseaudio,
+#tray {{
+    padding: 0 10px;
+    border-radius: 999px;
+    min-height: {height}px;
+}}
+
+#clock {{
+    font-weight: bold;
+}}
+
+#battery.warning {{
+    color: {ACCENTS["yellow"]};
+}}
+
+#battery.critical {{
+    color: {ACCENTS["red"]};
+}}
+
+#network.disconnected {{
+    color: {palette["secondary_fg"]};
+}}
+
+#pulseaudio.muted {{
+    color: {palette["secondary_fg"]};
+}}
+
+#tray {{
+    padding: 0 6px;
+}}
+
+tooltip {{
+    background: {palette["card_bg"]};
+    border: 1px solid {palette["border"]};
+    border-radius: 8px;
+    color: {palette["fg"]};
+}}
+"""
+
     with (WAYBAR_DIR / "style.css").open("w", encoding="utf-8") as handle:
         handle.write(css)
 
@@ -150,7 +354,9 @@ def write_gtk_settings(settings: dict) -> None:
             handle.write(f"gtk-application-prefer-dark-theme={dark_pref}\n")
             handle.write(f"gtk-theme-name={theme_name}\n")
             handle.write(f"gtk-icon-theme-name={icon_theme}\n")
-            handle.write("gtk-font-name=Cantarell 11\n")
+            handle.write("gtk-font-name=Roboto 11\n")
+            handle.write("gtk-cursor-theme-name=Adwaita\n")
+            handle.write("gtk-cursor-theme-size=24\n")
 
     gsettings_commands = [
         ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
@@ -162,9 +368,213 @@ def write_gtk_settings(settings: dict) -> None:
             "color-scheme",
             "prefer-dark" if settings["theme"] == "dark" else "default",
         ],
+        ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", settings["accent"]],
+        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", "Roboto 11"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", "Adwaita"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", "24"],
     ]
     for command in gsettings_commands:
         subprocess.run(command, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def write_fuzzel_config(settings: dict) -> None:
+    FUZZEL_DIR.mkdir(parents=True, exist_ok=True)
+
+    palette = ADWAITA[settings["theme"]]
+    accent = ACCENTS[settings["accent"]]
+
+    bg = _hex_to_rgba(palette["window_bg"])
+    fg = _hex_to_rgba(palette["fg"])
+    border_color = _hex_to_rgba(accent)
+    match_color = _hex_to_rgba(accent)
+    selection_bg = _hex_to_rgba(accent)
+    selection_fg = _hex_to_rgba("#ffffff")
+    selection_match = _hex_to_rgba("#ffffff")
+
+    ini = f"""\
+[main]
+font=Roboto:size=12
+
+[border]
+radius=12
+width=2
+
+[colors]
+background={bg}
+text={fg}
+match={match_color}
+selection={selection_bg}
+selection-text={selection_fg}
+selection-match={selection_match}
+border={border_color}
+"""
+
+    with (FUZZEL_DIR / "fuzzel.ini").open("w", encoding="utf-8") as handle:
+        handle.write(ini)
+
+
+def write_mako_config(settings: dict) -> None:
+    MAKO_DIR.mkdir(parents=True, exist_ok=True)
+
+    palette = ADWAITA[settings["theme"]]
+    accent = ACCENTS[settings["accent"]]
+
+    bg = _hex_to_mako(palette["window_bg"])
+    fg = _hex_to_mako(palette["fg"])
+    border_color = _hex_to_mako(accent)
+
+    config = f"""\
+font=Roboto 11
+background-color={bg}
+text-color={fg}
+border-color={border_color}
+border-radius=12
+border-size=2
+width=360
+default-timeout=5000
+anchor=top-right
+"""
+
+    with (MAKO_DIR / "config").open("w", encoding="utf-8") as handle:
+        handle.write(config)
+
+
+def write_foot_config(settings: dict) -> None:
+    FOOT_DIR.mkdir(parents=True, exist_ok=True)
+
+    theme = settings["theme"]
+    accent = ACCENTS[settings["accent"]]
+    term = ADWAITA_TERMINAL[theme]
+    alpha = "0.97" if theme == "light" else "0.95"
+    selection_bg = _strip_hash(accent)
+
+    ini = f"""\
+[main]
+font=Roboto Mono:size=11
+
+[colors]
+alpha={alpha}
+foreground={term["foreground"]}
+background={term["background"]}
+selection-background={selection_bg}
+
+regular0={term["regular0"]}
+regular1={term["regular1"]}
+regular2={term["regular2"]}
+regular3={term["regular3"]}
+regular4={term["regular4"]}
+regular5={term["regular5"]}
+regular6={term["regular6"]}
+regular7={term["regular7"]}
+
+bright0={term["bright0"]}
+bright1={term["bright1"]}
+bright2={term["bright2"]}
+bright3={term["bright3"]}
+bright4={term["bright4"]}
+bright5={term["bright5"]}
+bright6={term["bright6"]}
+bright7={term["bright7"]}
+"""
+
+    with (FOOT_DIR / "foot.ini").open("w", encoding="utf-8") as handle:
+        handle.write(ini)
+
+
+def write_labwc_themerc(settings: dict) -> None:
+    LABWC_DIR.mkdir(parents=True, exist_ok=True)
+
+    palette = ADWAITA[settings["theme"]]
+    accent = ACCENTS[settings["accent"]]
+
+    themerc = f"""\
+# Window borders
+window.active.border.color: {palette["border"]}
+window.inactive.border.color: {palette["border"]}
+border.width: 1
+
+# Active title bar
+window.active.title.bg: flat solid
+window.active.title.bg.color: {palette["headerbar_bg"]}
+window.active.label.text.color: {palette["fg"]}
+window.active.label.text.justify: center
+
+# Inactive title bar
+window.inactive.title.bg: flat solid
+window.inactive.title.bg.color: {palette["window_bg"]}
+window.inactive.label.text.color: {palette["secondary_fg"]}
+window.inactive.label.text.justify: center
+
+# Active buttons
+window.active.button.unpressed.image.color: {palette["fg"]}
+window.active.button.hover.bg: flat solid
+window.active.button.hover.bg.color: {palette["border"]}
+window.active.button.hover.image.color: {palette["fg"]}
+
+# Inactive buttons
+window.inactive.button.unpressed.image.color: {palette["inactive_fg"]}
+window.inactive.button.hover.bg: flat solid
+window.inactive.button.hover.bg.color: {palette["border"]}
+window.inactive.button.hover.image.color: {palette["secondary_fg"]}
+
+# Menu
+menu.items.bg: flat solid
+menu.items.bg.color: {palette["window_bg"]}
+menu.items.text.color: {palette["fg"]}
+menu.items.active.bg: flat solid
+menu.items.active.bg.color: {accent}
+menu.items.active.text.color: #ffffff
+menu.separator.color: {palette["border"]}
+
+# OSD
+osd.bg: flat solid
+osd.bg.color: {palette["window_bg"]}
+osd.border.color: {palette["border"]}
+osd.label.text.color: {palette["fg"]}
+"""
+
+    with (LABWC_DIR / "themerc").open("w", encoding="utf-8") as handle:
+        handle.write(themerc)
+
+
+def write_swaylock_config(settings: dict) -> None:
+    SWAYLOCK_DIR.mkdir(parents=True, exist_ok=True)
+
+    palette = ADWAITA[settings["theme"]]
+    accent = ACCENTS[settings["accent"]]
+
+    bg = _strip_hash(palette["window_bg"])
+    fg = _strip_hash(palette["fg"])
+    inside = _strip_hash(palette["view_bg"])
+    ring = _strip_hash(accent)
+    wrong = "c01c28"
+    transparent = "00000000"
+
+    config = f"""\
+color={bg}
+inside-color={inside}
+inside-clear-color={inside}
+inside-ver-color={inside}
+inside-wrong-color={inside}
+ring-color={ring}
+ring-clear-color={ring}
+ring-ver-color={ring}
+ring-wrong-color={wrong}
+text-color={fg}
+text-clear-color={fg}
+text-ver-color={fg}
+text-wrong-color={wrong}
+line-color={transparent}
+line-clear-color={transparent}
+line-ver-color={transparent}
+line-wrong-color={transparent}
+key-hl-color={ring}
+bs-hl-color={wrong}
+separator-color={transparent}
+"""
+
+    with (SWAYLOCK_DIR / "config").open("w", encoding="utf-8") as handle:
+        handle.write(config)
 
 
 def restart_program(name: str, command: list[str]) -> None:
@@ -178,10 +588,17 @@ def main() -> int:
     settings = ensure_settings()
     write_waybar_config(settings)
     write_gtk_settings(settings)
+    write_fuzzel_config(settings)
+    write_mako_config(settings)
+    write_foot_config(settings)
+    write_labwc_themerc(settings)
+    write_swaylock_config(settings)
 
     if os.environ.get("WAYLAND_DISPLAY"):
         restart_program("swaybg", ["swaybg", "-i", settings["wallpaper"], "-m", "fill"])
         restart_program("waybar", ["waybar"])
+        subprocess.run(["makoctl", "reload"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["labwc", "--reconfigure"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     return 0
 

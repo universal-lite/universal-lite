@@ -1,0 +1,45 @@
+window {
+    background-color: rgba(36, 36, 36, 0.85);
+}
+
+box#body {
+    background-color: rgba(48, 48, 48, 0.95);
+    border-radius: 12px;
+    padding: 32px;
+    border: 1px solid rgba(74, 74, 74, 0.8);
+}
+
+entry {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    border: 1px solid #4a4a4a;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+}
+
+label {
+    color: #ffffff;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+}
+
+button {
+    background-color: #3584e4;
+    color: #ffffff;
+    border-radius: 999px;
+    padding: 8px 24px;
+    border: none;
+    font-family: "Roboto", sans-serif;
+    font-weight: 700;
+}
+
+button:hover {
+    background-color: #62a0ea;
+}
+
+combobox {
+    color: #ffffff;
+    font-family: "Roboto", sans-serif;
+}

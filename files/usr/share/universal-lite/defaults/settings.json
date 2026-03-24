@@ -2,5 +2,6 @@
   "edge": "bottom",
   "density": "normal",
   "theme": "light",
+  "accent": "blue",
   "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg"
 }

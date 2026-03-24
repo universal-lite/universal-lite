@@ -60,6 +60,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self.edge = Gtk.DropDown.new_from_strings(["bottom", "top", "left", "right"])
         self.density = Gtk.DropDown.new_from_strings(["normal", "compact"])
         self.theme = Gtk.DropDown.new_from_strings(["light", "dark"])
+        self.accent = Gtk.DropDown.new_from_strings(["blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"])
         wallpaper_choices = self._wallpaper_choices()
         self.wallpaper = Gtk.DropDown.new_from_strings(wallpaper_choices)
         self.custom_wallpaper = Gtk.Entry()
@@ -69,6 +70,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self._set_dropdown(self.edge, self.settings.get("edge", "bottom"))
         self._set_dropdown(self.density, self.settings.get("density", "normal"))
         self._set_dropdown(self.theme, self.settings.get("theme", "light"))
+        self._set_dropdown(self.accent, self.settings.get("accent", "blue"))
 
         wallpaper_name = Path(self.settings.get("wallpaper", "")).name
         if wallpaper_name in wallpaper_choices:
@@ -89,6 +91,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             ("Panel edge", self.edge),
             ("Panel density", self.density),
             ("Theme", self.theme),
+            ("Accent color", self.accent),
             ("Bundled wallpaper", self.wallpaper),
             ("Custom wallpaper", self.custom_wallpaper),
         ):
@@ -138,6 +141,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         edge = self.edge.get_selected_item().get_string()
         density = self.density.get_selected_item().get_string()
         theme = self.theme.get_selected_item().get_string()
+        accent = self.accent.get_selected_item().get_string()
         wallpaper = self.custom_wallpaper.get_text().strip()
         if not wallpaper:
             wallpaper = str(WALLPAPER_DIR / self.wallpaper.get_selected_item().get_string())
@@ -146,6 +150,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             "edge": edge,
             "density": density,
             "theme": theme,
+            "accent": accent,
             "wallpaper": wallpaper,
         }
         SETTINGS_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
