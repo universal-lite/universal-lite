@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # First-boot Flatpak setup: adds Flathub and installs default apps.
-# Runs as a systemd oneshot on every boot but skips work if already done.
+# Runs once, then leaves a stamp file so it never runs again.
 
 set -euo pipefail
+
+STAMP="/var/lib/universal-lite/flatpak-setup.done"
+if [[ -f "$STAMP" ]]; then
+    exit 0
+fi
 
 FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
 
@@ -19,3 +24,6 @@ for app in "${APPS[@]}"; do
         flatpak install --system --noninteractive flathub "$app"
     fi
 done
+
+mkdir -p "$(dirname "$STAMP")"
+touch "$STAMP"
