@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# First-boot Flatpak setup: adds Flathub and installs default apps.
+# Runs as a systemd oneshot on every boot but skips work if already done.
+
+set -euo pipefail
+
+FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
+
+# Add Flathub remote if missing
+flatpak remote-add --system --if-not-exists flathub "$FLATHUB_URL"
+
+# Default Flatpaks to install (system-wide)
+APPS=(
+    dev.bazaar.app
+)
+
+for app in "${APPS[@]}"; do
+    if ! flatpak info --system "$app" >/dev/null 2>&1; then
+        flatpak install --system --noninteractive flathub "$app"
+    fi
+done
