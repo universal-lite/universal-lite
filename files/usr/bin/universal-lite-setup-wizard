@@ -247,6 +247,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._set_status("Passwords do not match.")
             return None
 
+        is_admin = self.admin_check.get_active()
+        root_password = self.root_password_entry.get_text()
+        if not is_admin and not root_password:
+            self._set_status(
+                "Either enable administrator access or set a root password. "
+                "Without one of these you will be locked out of system management."
+            )
+            return None
+
         return fullname, username, password
 
     # ------------------------------------------------------------------
