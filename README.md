@@ -35,13 +35,13 @@ If the machine is already running any Fedora Atomic desktop (Silverblue, Kinoite
 For systems using `bootc` (Fedora 42+, Universal Blue):
 
 ```bash
-sudo bootc switch ghcr.io/noitatsidem/universal-lite:latest
+sudo bootc switch ghcr.io/universal-lite/universal-lite:latest
 ```
 
 For older systems still using `rpm-ostree` (Fedora 41 and earlier):
 
 ```bash
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/noitatsidem/universal-lite:latest
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/universal-lite/universal-lite:latest
 ```
 
 Reboot when prompted. The previous image stays available in the boot menu for rollback.
@@ -172,7 +172,7 @@ just check          # Justfile syntax validation
 Pushes to `main` and a daily schedule automatically build and publish the OCI image to:
 
 ```
-ghcr.io/noitatsidem/universal-lite
+ghcr.io/universal-lite/universal-lite
 ```
 
 Images are signed with [cosign](https://github.com/sigstore/cosign). To set up signing on a fresh fork:

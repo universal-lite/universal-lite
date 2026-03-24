@@ -4,5 +4,5 @@
 
 repositoryID: universal-lite # Replace with your Artifact Hub repository ID when claiming the image.
 owners: # (optional, used to claim repository ownership)
-  - name: Noitatsidem
-    email: noitatsidem@users.noreply.github.com
+  - name: Universal-Lite
+    email: universal-lite@users.noreply.github.com
