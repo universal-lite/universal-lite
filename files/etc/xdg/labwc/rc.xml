@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<labwc_config>
+  <core>
+    <adaptiveSync>yes</adaptiveSync>
+    <gap>6</gap>
+  </core>
+  <focus>
+    <followMouse>no</followMouse>
+    <raiseOnFocus>yes</raiseOnFocus>
+  </focus>
+  <keyboard>
+    <repeatDelay>300</repeatDelay>
+    <repeatRate>40</repeatRate>
+    <keybind key="C-A-T">
+      <action name="Execute" command="foot"/>
+    </keybind>
+  </keyboard>
+  <windowSwitcher show="yes" preview="no" outlines="yes"/>
+</labwc_config>

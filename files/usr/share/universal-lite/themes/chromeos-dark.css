@@ -1,0 +1,52 @@
+* {
+  border: none;
+  border-radius: 0;
+  font-family: "Cantarell", "Noto Sans", sans-serif;
+  font-size: 14px;
+  min-height: 0;
+}
+
+window#waybar {
+  background: transparent;
+  color: #e5e7eb;
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+  margin: 8px 10px;
+}
+
+#custom-launcher,
+#clock,
+#network,
+#battery,
+#backlight,
+#pulseaudio,
+#tray,
+#taskbar {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(71, 85, 105, 0.9);
+  border-radius: 999px;
+  box-shadow: 0 10px 22px rgba(2, 6, 23, 0.4);
+  color: #f8fafc;
+  margin: 0 4px;
+  padding: 0 12px;
+}
+
+#custom-launcher {
+  background: rgba(37, 99, 235, 0.95);
+  font-weight: 700;
+}
+
+#taskbar button {
+  background: transparent;
+  border-radius: 999px;
+  color: #f8fafc;
+  margin: 4px 2px;
+  padding: 0 12px;
+}
+
+#taskbar button.active {
+  background: rgba(59, 130, 246, 0.55);
+}

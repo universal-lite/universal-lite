@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+
+import json
+import subprocess
+from pathlib import Path
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gtk  # noqa: E402
+
+APP_ID = "org.universallite.Settings"
+SCRIPT_ROOT = Path(__file__).resolve()
+LOCAL_FILES_ROOT = SCRIPT_ROOT.parents[2]
+SHARE_ROOT = Path("/usr/share")
+LIBEXEC_ROOT = Path("/usr/libexec")
+if not SHARE_ROOT.joinpath("universal-lite/defaults/settings.json").exists():
+    SHARE_ROOT = LOCAL_FILES_ROOT / "usr/share"
+    LIBEXEC_ROOT = LOCAL_FILES_ROOT / "usr/libexec"
+
+SETTINGS_PATH = Path.home() / ".config" / "universal-lite" / "settings.json"
+DEFAULTS_PATH = SHARE_ROOT / "universal-lite/defaults/settings.json"
+WALLPAPER_DIR = SHARE_ROOT / "backgrounds/universal-lite"
+APPLY_SCRIPT = [str(LIBEXEC_ROOT / "universal-lite-apply-settings")]
+
+
+def ensure_settings() -> dict:
+    SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if not SETTINGS_PATH.exists():
+        SETTINGS_PATH.write_text(DEFAULTS_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+    return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+
+
+class SettingsWindow(Gtk.ApplicationWindow):
+    def __init__(self, app: Gtk.Application) -> None:
+        super().__init__(application=app)
+        self.set_title("Universal-Lite Settings")
+        self.set_default_size(520, 360)
+
+        self.settings = ensure_settings()
+
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        outer.set_margin_top(20)
+        outer.set_margin_bottom(20)
+        outer.set_margin_start(20)
+        outer.set_margin_end(20)
+        self.set_child(outer)
+
+        title = Gtk.Label(xalign=0)
+        title.set_markup("<span size='x-large' weight='bold'>Desktop basics</span>")
+        outer.append(title)
+
+        subtitle = Gtk.Label(xalign=0, wrap=True)
+        subtitle.set_text("Adjust the shelf placement, density, theme, and wallpaper. Changes apply immediately.")
+        outer.append(subtitle)
+
+        grid = Gtk.Grid(column_spacing=12, row_spacing=12)
+        outer.append(grid)
+
+        self.edge = Gtk.DropDown.new_from_strings(["bottom", "top", "left", "right"])
+        self.density = Gtk.DropDown.new_from_strings(["normal", "compact"])
+        self.theme = Gtk.DropDown.new_from_strings(["light", "dark"])
+        wallpaper_choices = self._wallpaper_choices()
+        self.wallpaper = Gtk.DropDown.new_from_strings(wallpaper_choices)
+        self.custom_wallpaper = Gtk.Entry()
+        self.custom_wallpaper.set_placeholder_text("Custom wallpaper path")
+        self.custom_wallpaper.set_text(self.settings.get("wallpaper", ""))
+
+        self._set_dropdown(self.edge, self.settings.get("edge", "bottom"))
+        self._set_dropdown(self.density, self.settings.get("density", "normal"))
+        self._set_dropdown(self.theme, self.settings.get("theme", "light"))
+
+        wallpaper_name = Path(self.settings.get("wallpaper", "")).name
+        if wallpaper_name in wallpaper_choices:
+            self._set_dropdown(self.wallpaper, wallpaper_name)
+        else:
+            self.wallpaper.set_selected(0)
+
+        choose_button = Gtk.Button(label="Choose image…")
+        choose_button.connect("clicked", self.on_choose_wallpaper)
+
+        save_button = Gtk.Button(label="Apply")
+        save_button.connect("clicked", self.on_apply)
+
+        self.status = Gtk.Label(xalign=0)
+
+        row = 0
+        for label_text, widget in (
+            ("Panel edge", self.edge),
+            ("Panel density", self.density),
+            ("Theme", self.theme),
+            ("Bundled wallpaper", self.wallpaper),
+            ("Custom wallpaper", self.custom_wallpaper),
+        ):
+            label = Gtk.Label(label=label_text, xalign=0)
+            grid.attach(label, 0, row, 1, 1)
+            grid.attach(widget, 1, row, 1, 1)
+            row += 1
+
+        grid.attach(choose_button, 1, row, 1, 1)
+        row += 1
+        grid.attach(save_button, 1, row, 1, 1)
+        row += 1
+        grid.attach(self.status, 0, row, 2, 1)
+
+    def _wallpaper_choices(self) -> list[str]:
+        choices = sorted(path.name for path in WALLPAPER_DIR.glob("*.svg"))
+        if not choices:
+            return ["chrome-dawn.svg"]
+        return choices
+
+    def _set_dropdown(self, widget: Gtk.DropDown, value: str) -> None:
+        model = widget.get_model()
+        for index in range(model.get_n_items()):
+            if model.get_string(index) == value:
+                widget.set_selected(index)
+                return
+        widget.set_selected(0)
+
+    def on_choose_wallpaper(self, _button: Gtk.Button) -> None:
+        dialog = Gtk.FileChooserNative.new(
+            "Choose wallpaper",
+            self,
+            Gtk.FileChooserAction.OPEN,
+            "_Open",
+            "_Cancel",
+        )
+        dialog.connect("response", self.on_wallpaper_response)
+        dialog.show()
+
+    def on_wallpaper_response(self, dialog: Gtk.FileChooserNative, response: int) -> None:
+        if response == Gtk.ResponseType.ACCEPT and dialog.get_file():
+            chosen = dialog.get_file().get_path()
+            if chosen:
+                self.custom_wallpaper.set_text(chosen)
+
+    def on_apply(self, _button: Gtk.Button) -> None:
+        edge = self.edge.get_selected_item().get_string()
+        density = self.density.get_selected_item().get_string()
+        theme = self.theme.get_selected_item().get_string()
+        wallpaper = self.custom_wallpaper.get_text().strip()
+        if not wallpaper:
+            wallpaper = str(WALLPAPER_DIR / self.wallpaper.get_selected_item().get_string())
+
+        payload = {
+            "edge": edge,
+            "density": density,
+            "theme": theme,
+            "wallpaper": wallpaper,
+        }
+        SETTINGS_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        subprocess.run(APPLY_SCRIPT, check=False)
+        self.status.set_text("Applied.")
+
+
+class SettingsApp(Gtk.Application):
+    def __init__(self) -> None:
+        super().__init__(application_id=APP_ID)
+
+    def do_activate(self) -> None:
+        window = self.props.active_window
+        if window is None:
+            window = SettingsWindow(self)
+        window.present()
+
+
+if __name__ == "__main__":
+    app = SettingsApp()
+    raise SystemExit(app.run(None))

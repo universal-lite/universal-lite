@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+export XDG_CURRENT_DESKTOP="labwc"
+export XDG_SESSION_DESKTOP="labwc"
+export XDG_SESSION_TYPE="wayland"
+export GTK_USE_PORTAL=1
+
+dbus-update-activation-environment --systemd \
+  WAYLAND_DISPLAY \
+  DISPLAY \
+  XDG_CURRENT_DESKTOP \
+  XDG_SESSION_DESKTOP \
+  XDG_SESSION_TYPE \
+  GTK_USE_PORTAL || true
+
+systemctl --user import-environment \
+  WAYLAND_DISPLAY \
+  DISPLAY \
+  XDG_CURRENT_DESKTOP \
+  XDG_SESSION_DESKTOP \
+  XDG_SESSION_TYPE \
+  GTK_USE_PORTAL || true
+
+xdg-user-dirs-update >/dev/null 2>&1 || true
+/usr/libexec/universal-lite-apply-settings
+
+if ! pgrep -x mako >/dev/null 2>&1; then
+  mako >/dev/null 2>&1 &
+fi
+
+if ! pgrep -x nm-applet >/dev/null 2>&1; then
+  nm-applet --indicator >/dev/null 2>&1 &
+fi
+
+if ! pgrep -x xfce-polkit >/dev/null 2>&1; then
+  xfce-polkit >/dev/null 2>&1 &
+fi
+
+if ! pgrep -x swayidle >/dev/null 2>&1; then
+  swayidle -w \
+    timeout 300 'swaylock -f' \
+    timeout 600 'wlopm --off "*"' resume 'wlopm --on "*"' \
+    before-sleep 'swaylock -f' \
+    >/dev/null 2>&1 &
+fi
+
+if ! pgrep -x Thunar >/dev/null 2>&1; then
+  Thunar --daemon >/dev/null 2>&1 &
+fi

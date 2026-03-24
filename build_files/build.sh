@@ -2,23 +2,73 @@
 
 set -ouex pipefail
 
-### Install packages
+FEDORA_MAJOR="$(rpm -E %fedora)"
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
+install -d /etc/yum.repos.d /usr/share/wayland-sessions
+install -Dm644 /ctx/files/etc/yum.repos.d/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
+install -Dm644 /ctx/files/usr/share/wayland-sessions/universal-lite.desktop /usr/share/wayland-sessions/universal-lite.desktop
 
-# this installs a package from fedora repos
-dnf5 install -y tmux 
+dnf5 install -y \
+    "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_MAJOR}.noarch.rpm" \
+    "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_MAJOR}.noarch.rpm"
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+dnf5 install -y --setopt=install_weak_deps=False \
+    adw-gtk3-theme \
+    alsa-utils \
+    brightnessctl \
+    cage \
+    ffmpegthumbnailer \
+    file-roller \
+    foot \
+    fuzzel \
+    google-chrome-stable \
+    greetd \
+    grim \
+    gtkgreet \
+    gvfs \
+    gvfs-gphoto2 \
+    gvfs-mtp \
+    labwc \
+    mako \
+    network-manager-applet \
+    pavucontrol \
+    pipewire \
+    power-profiles-daemon \
+    pipewire-alsa \
+    pipewire-pulseaudio \
+    playerctl \
+    python3-gobject \
+    ristretto \
+    slurp \
+    swaybg \
+    swayidle \
+    swaylock \
+    wlopm \
+    Thunar \
+    tumbler \
+    udisks2 \
+    unzip \
+    waybar \
+    wireplumber \
+    wl-clipboard \
+    xfce-polkit \
+    xdg-desktop-portal \
+    xdg-desktop-portal-gtk \
+    xdg-desktop-portal-wlr \
+    xdg-user-dirs \
+    xdg-user-dirs-gtk
 
-#### Example for enabling a System Unit File
+dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
-systemctl enable podman.socket
+cp -a /ctx/files/. /
+
+chmod 0755 \
+    /usr/bin/universal-lite-settings \
+    /usr/libexec/universal-lite-apply-settings \
+    /usr/libexec/universal-lite-session-init
+
+systemctl enable greetd.service
+systemctl enable power-profiles-daemon.service
+
+dnf5 clean all
+rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service

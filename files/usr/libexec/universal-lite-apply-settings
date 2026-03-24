@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+SCRIPT_ROOT = Path(__file__).resolve()
+LOCAL_FILES_ROOT = SCRIPT_ROOT.parents[2]
+SHARE_ROOT = Path("/usr/share")
+if not SHARE_ROOT.joinpath("universal-lite/defaults/settings.json").exists():
+    SHARE_ROOT = LOCAL_FILES_ROOT / "usr/share"
+
+DEFAULT_WALLPAPER = str(SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg")
+DEFAULTS_PATH = SHARE_ROOT / "universal-lite/defaults/settings.json"
+THEME_DIR = SHARE_ROOT / "universal-lite/themes"
+CONFIG_HOME = Path.home() / ".config"
+SETTINGS_DIR = CONFIG_HOME / "universal-lite"
+SETTINGS_PATH = SETTINGS_DIR / "settings.json"
+WAYBAR_DIR = CONFIG_HOME / "waybar"
+GTK3_DIR = CONFIG_HOME / "gtk-3.0"
+GTK4_DIR = CONFIG_HOME / "gtk-4.0"
+
+VALID_EDGES = {"top", "bottom", "left", "right"}
+VALID_DENSITY = {"compact", "normal"}
+VALID_THEME = {"light", "dark"}
+
+
+def ensure_settings() -> dict:
+    SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
+    if not SETTINGS_PATH.exists():
+        shutil.copy2(DEFAULTS_PATH, SETTINGS_PATH)
+
+    with SETTINGS_PATH.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+
+    edge = data.get("edge", "bottom")
+    density = data.get("density", "normal")
+    theme = data.get("theme", "light")
+    wallpaper = data.get("wallpaper", DEFAULT_WALLPAPER)
+
+    if edge not in VALID_EDGES:
+        edge = "bottom"
+    if density not in VALID_DENSITY:
+        density = "normal"
+    if theme not in VALID_THEME:
+        theme = "light"
+    if not Path(wallpaper).exists():
+        wallpaper = DEFAULT_WALLPAPER
+
+    normalized = {
+        "edge": edge,
+        "density": density,
+        "theme": theme,
+        "wallpaper": wallpaper,
+    }
+
+    with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
+        json.dump(normalized, handle, indent=2)
+        handle.write("\n")
+
+    return normalized
+
+
+def write_waybar_config(settings: dict) -> None:
+    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
+
+    height = 36 if settings["density"] == "compact" else 46
+    spacing = 6 if settings["density"] == "compact" else 10
+    icon_size = 14 if settings["density"] == "compact" else 18
+
+    config = {
+        "layer": "top",
+        "position": settings["edge"],
+        "height": height,
+        "spacing": spacing,
+        "modules-left": ["custom/launcher"],
+        "modules-center": ["wlr/taskbar"],
+        "modules-right": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"],
+        "custom/launcher": {
+            "format": " Apps ",
+            "tooltip": False,
+            "on-click": "fuzzel",
+        },
+        "wlr/taskbar": {
+            "format": "{title}",
+            "icon-size": icon_size,
+            "all-outputs": False,
+            "on-click": "activate",
+            "on-click-middle": "close",
+            "tooltip-format": "{title}",
+        },
+        "network": {
+            "format-wifi": "NET {essid}",
+            "format-ethernet": "NET wired",
+            "format-disconnected": "NET offline",
+            "tooltip-format": "{ifname} {ipaddr}",
+        },
+        "pulseaudio": {
+            "format": "VOL {volume}%",
+            "format-muted": "VOL muted",
+            "on-click": "pavucontrol",
+        },
+        "backlight": {
+            "format": "BRI {percent}%",
+        },
+        "battery": {
+            "format": "BAT {capacity}%",
+            "format-charging": "BAT +{capacity}%",
+            "format-plugged": "BAT AC",
+            "states": {
+                "warning": 25,
+                "critical": 12,
+            },
+        },
+        "clock": {
+            "format": "{:%a %b %-d  %I:%M %p}",
+        },
+        "tray": {
+            "icon-size": icon_size,
+            "spacing": 8,
+        },
+    }
+
+    with (WAYBAR_DIR / "config.jsonc").open("w", encoding="utf-8") as handle:
+        json.dump(config, handle, indent=2)
+        handle.write("\n")
+
+    theme_file = THEME_DIR / f"chromeos-{settings['theme']}.css"
+    css = theme_file.read_text(encoding="utf-8")
+    css += "\n"
+    css += "#custom-launcher, #clock, #network, #battery, #backlight, #pulseaudio, #tray, #taskbar {"
+    css += f" min-height: {height}px;"
+    css += " }\n"
+    with (WAYBAR_DIR / "style.css").open("w", encoding="utf-8") as handle:
+        handle.write(css)
+
+
+def write_gtk_settings(settings: dict) -> None:
+    theme_name = "adw-gtk3-dark" if settings["theme"] == "dark" else "adw-gtk3"
+    icon_theme = "Adwaita"
+    dark_pref = 1 if settings["theme"] == "dark" else 0
+
+    for directory in (GTK3_DIR, GTK4_DIR):
+        directory.mkdir(parents=True, exist_ok=True)
+        with (directory / "settings.ini").open("w", encoding="utf-8") as handle:
+            handle.write("[Settings]\n")
+            handle.write(f"gtk-application-prefer-dark-theme={dark_pref}\n")
+            handle.write(f"gtk-theme-name={theme_name}\n")
+            handle.write(f"gtk-icon-theme-name={icon_theme}\n")
+            handle.write("gtk-font-name=Cantarell 11\n")
+
+    gsettings_commands = [
+        ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
+        ["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", icon_theme],
+        [
+            "gsettings",
+            "set",
+            "org.gnome.desktop.interface",
+            "color-scheme",
+            "prefer-dark" if settings["theme"] == "dark" else "default",
+        ],
+    ]
+    for command in gsettings_commands:
+        subprocess.run(command, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def restart_program(name: str, command: list[str]) -> None:
+    if shutil.which(command[0]) is None:
+        return
+    subprocess.run(["pkill", "-x", name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def main() -> int:
+    settings = ensure_settings()
+    write_waybar_config(settings)
+    write_gtk_settings(settings)
+
+    if os.environ.get("WAYLAND_DISPLAY"):
+        restart_program("swaybg", ["swaybg", "-i", settings["wallpaper"], "-m", "fill"])
+        restart_program("waybar", ["waybar"])
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

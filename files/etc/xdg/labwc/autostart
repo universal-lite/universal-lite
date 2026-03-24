@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/usr/libexec/universal-lite-session-init
