@@ -100,6 +100,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-greeter-setup \
     /usr/libexec/universal-lite-session-init
 
+systemctl mask plymouth-quit-wait.service
 systemctl enable greetd.service
 systemctl enable power-profiles-daemon.service
 systemctl enable systemd-repart.service
