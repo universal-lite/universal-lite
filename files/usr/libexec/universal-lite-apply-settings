@@ -32,6 +32,14 @@ VALID_DENSITY = {"compact", "normal"}
 VALID_THEME = {"light", "dark"}
 VALID_ACCENT = {"blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"}
 
+DEFAULT_LAYOUT = {
+    "start": ["custom/launcher"],
+    "center": ["wlr/taskbar"],
+    "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"],
+}
+
+ALL_MODULES = {"custom/launcher", "wlr/taskbar", "network", "pulseaudio", "backlight", "battery", "clock", "tray"}
+
 ACCENTS = {
     "blue": "#3584e4",
     "teal": "#2190a4",
@@ -164,12 +172,34 @@ def ensure_settings() -> dict:
     if accent not in VALID_ACCENT:
         accent = "blue"
 
+    # Validate layout
+    raw_layout = data.get("layout")
+    if (
+        not isinstance(raw_layout, dict)
+        or not all(k in raw_layout for k in ("start", "center", "end"))
+        or not all(isinstance(raw_layout[k], list) for k in ("start", "center", "end"))
+    ):
+        layout = {k: list(v) for k, v in DEFAULT_LAYOUT.items()}
+    else:
+        # Filter to only valid modules and remove duplicates (keep first occurrence)
+        seen: set[str] = set()
+        layout = {"start": [], "center": [], "end": []}
+        for section in ("start", "center", "end"):
+            for mod in raw_layout[section]:
+                if mod in ALL_MODULES and mod not in seen:
+                    layout[section].append(mod)
+                    seen.add(mod)
+        # Add any missing modules to end
+        for mod in ALL_MODULES - seen:
+            layout["end"].append(mod)
+
     normalized = {
         "edge": edge,
         "density": density,
         "theme": theme,
         "wallpaper": wallpaper,
         "accent": accent,
+        "layout": layout,
     }
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -186,14 +216,16 @@ def write_waybar_config(settings: dict) -> None:
     spacing = 6 if settings["density"] == "compact" else 10
     icon_size = 14 if settings["density"] == "compact" else 18
 
+    layout = settings["layout"]
+
     config = {
         "layer": "top",
         "position": settings["edge"],
         "height": height,
         "spacing": spacing,
-        "modules-left": ["custom/launcher"],
-        "modules-center": ["wlr/taskbar"],
-        "modules-right": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"],
+        "modules-left": layout["start"],
+        "modules-center": layout["center"],
+        "modules-right": layout["end"],
         "custom/launcher": {
             "format": " Apps ",
             "tooltip": False,

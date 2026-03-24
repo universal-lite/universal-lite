@@ -3,5 +3,10 @@
   "density": "normal",
   "theme": "light",
   "accent": "blue",
+  "layout": {
+    "start": ["custom/launcher"],
+    "center": ["wlr/taskbar"],
+    "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"]
+  },
   "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg"
 }

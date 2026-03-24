@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import copy
 import json
 import subprocess
 from pathlib import Path
@@ -23,6 +24,28 @@ DEFAULTS_PATH = SHARE_ROOT / "universal-lite/defaults/settings.json"
 WALLPAPER_DIR = SHARE_ROOT / "backgrounds/universal-lite"
 APPLY_SCRIPT = [str(LIBEXEC_ROOT / "universal-lite-apply-settings")]
 
+MODULE_NAMES = {
+    "custom/launcher": "Apps",
+    "wlr/taskbar": "Window list",
+    "network": "Network",
+    "pulseaudio": "Volume",
+    "backlight": "Brightness",
+    "battery": "Battery",
+    "clock": "Clock",
+    "tray": "System tray",
+}
+
+DEFAULT_LAYOUT = {
+    "start": ["custom/launcher"],
+    "center": ["wlr/taskbar"],
+    "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"],
+}
+
+# Section labels depending on panel orientation.
+HORIZONTAL_LABELS = {"start": "Left", "center": "Center", "end": "Right"}
+VERTICAL_LABELS = {"start": "Top", "center": "Center", "end": "Bottom"}
+SECTION_ORDER = ["start", "center", "end"]
+
 
 def ensure_settings() -> dict:
     SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -35,23 +58,58 @@ class SettingsWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app)
         self.set_title("Universal-Lite Settings")
-        self.set_default_size(520, 360)
+        self.set_default_size(640, 520)
 
         self.settings = ensure_settings()
+        self.layout_data = self._load_layout()
 
+        notebook = Gtk.Notebook()
+        self.set_child(notebook)
+
+        # -- Appearance tab --
+        appearance_page = self._build_appearance_tab()
+        notebook.append_page(appearance_page, Gtk.Label(label="Appearance"))
+
+        # -- Layout tab --
+        layout_page = self._build_layout_tab()
+        notebook.append_page(layout_page, Gtk.Label(label="Layout"))
+
+    # ------------------------------------------------------------------ #
+    #  Layout data helpers                                                #
+    # ------------------------------------------------------------------ #
+
+    def _load_layout(self) -> dict:
+        saved = self.settings.get("layout")
+        if isinstance(saved, dict) and all(k in saved for k in SECTION_ORDER):
+            return {k: list(saved[k]) for k in SECTION_ORDER}
+        return copy.deepcopy(DEFAULT_LAYOUT)
+
+    def _section_labels(self) -> dict[str, str]:
+        edge = self.settings.get("edge", "bottom")
+        if edge in ("left", "right"):
+            return VERTICAL_LABELS
+        return HORIZONTAL_LABELS
+
+    # ------------------------------------------------------------------ #
+    #  Appearance tab                                                     #
+    # ------------------------------------------------------------------ #
+
+    def _build_appearance_tab(self) -> Gtk.Widget:
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
         outer.set_margin_top(20)
         outer.set_margin_bottom(20)
         outer.set_margin_start(20)
         outer.set_margin_end(20)
-        self.set_child(outer)
 
         title = Gtk.Label(xalign=0)
         title.set_markup("<span size='x-large' weight='bold'>Desktop basics</span>")
         outer.append(title)
 
         subtitle = Gtk.Label(xalign=0, wrap=True)
-        subtitle.set_text("Adjust the shelf placement, density, theme, and wallpaper. Changes apply immediately.")
+        subtitle.set_text(
+            "Adjust the shelf placement, density, theme, and wallpaper. "
+            "Changes apply immediately."
+        )
         outer.append(subtitle)
 
         grid = Gtk.Grid(column_spacing=12, row_spacing=12)
@@ -60,7 +118,9 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self.edge = Gtk.DropDown.new_from_strings(["bottom", "top", "left", "right"])
         self.density = Gtk.DropDown.new_from_strings(["normal", "compact"])
         self.theme = Gtk.DropDown.new_from_strings(["light", "dark"])
-        self.accent = Gtk.DropDown.new_from_strings(["blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"])
+        self.accent = Gtk.DropDown.new_from_strings(
+            ["blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"]
+        )
         wallpaper_choices = self._wallpaper_choices()
         self.wallpaper = Gtk.DropDown.new_from_strings(wallpaper_choices)
         self.custom_wallpaper = Gtk.Entry()
@@ -78,7 +138,10 @@ class SettingsWindow(Gtk.ApplicationWindow):
         else:
             self.wallpaper.set_selected(0)
 
-        choose_button = Gtk.Button(label="Choose image…")
+        # Connect edge dropdown to update layout section headers live.
+        self.edge.connect("notify::selected", self._on_edge_changed)
+
+        choose_button = Gtk.Button(label="Choose image\u2026")
         choose_button.connect("clicked", self.on_choose_wallpaper)
 
         save_button = Gtk.Button(label="Apply")
@@ -105,6 +168,200 @@ class SettingsWindow(Gtk.ApplicationWindow):
         grid.attach(save_button, 1, row, 1, 1)
         row += 1
         grid.attach(self.status, 0, row, 2, 1)
+
+        return outer
+
+    # ------------------------------------------------------------------ #
+    #  Layout tab                                                         #
+    # ------------------------------------------------------------------ #
+
+    def _build_layout_tab(self) -> Gtk.Widget:
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        outer.set_margin_top(20)
+        outer.set_margin_bottom(20)
+        outer.set_margin_start(20)
+        outer.set_margin_end(20)
+
+        title = Gtk.Label(xalign=0)
+        title.set_markup("<span size='x-large' weight='bold'>Panel layout</span>")
+        outer.append(title)
+
+        subtitle = Gtk.Label(xalign=0, wrap=True)
+        subtitle.set_text("Arrange modules across three panel sections and reorder them.")
+        outer.append(subtitle)
+
+        # Three columns side by side.
+        columns_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        columns_box.set_vexpand(True)
+        outer.append(columns_box)
+
+        labels = self._section_labels()
+        self.section_headers: dict[str, Gtk.Label] = {}
+        self.section_listboxes: dict[str, Gtk.ListBox] = {}
+
+        for section_key in SECTION_ORDER:
+            col = self._build_section_column(section_key, labels[section_key])
+            col.set_hexpand(True)
+            columns_box.append(col)
+
+        # Reset button at the bottom.
+        bottom_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        outer.append(bottom_bar)
+
+        reset_button = Gtk.Button(label="Reset layout")
+        reset_button.connect("clicked", self._on_reset_layout)
+        bottom_bar.append(reset_button)
+
+        return outer
+
+    def _build_section_column(self, section_key: str, header_text: str) -> Gtk.Box:
+        col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+
+        header = Gtk.Label(label=header_text)
+        header.add_css_class("heading")
+        col.append(header)
+        self.section_headers[section_key] = header
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_vexpand(True)
+        col.append(scrolled)
+
+        listbox = Gtk.ListBox()
+        listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        scrolled.set_child(listbox)
+        self.section_listboxes[section_key] = listbox
+
+        self._populate_listbox(section_key)
+
+        # Button rows: Up / Down then move-left / move-right.
+        reorder_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        reorder_box.set_halign(Gtk.Align.CENTER)
+        col.append(reorder_box)
+
+        up_btn = Gtk.Button(label="\u25b2")
+        up_btn.set_tooltip_text("Move up")
+        up_btn.connect("clicked", self._on_move_up, section_key)
+        reorder_box.append(up_btn)
+
+        down_btn = Gtk.Button(label="\u25bc")
+        down_btn.set_tooltip_text("Move down")
+        down_btn.connect("clicked", self._on_move_down, section_key)
+        reorder_box.append(down_btn)
+
+        move_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+        move_box.set_halign(Gtk.Align.CENTER)
+        col.append(move_box)
+
+        left_btn = Gtk.Button(label="\u25c0")
+        left_btn.set_tooltip_text("Move to previous section")
+        left_btn.connect("clicked", self._on_move_left, section_key)
+        move_box.append(left_btn)
+
+        right_btn = Gtk.Button(label="\u25b6")
+        right_btn.set_tooltip_text("Move to next section")
+        right_btn.connect("clicked", self._on_move_right, section_key)
+        move_box.append(right_btn)
+
+        return col
+
+    def _populate_listbox(self, section_key: str) -> None:
+        listbox = self.section_listboxes[section_key]
+        # Remove all existing rows.
+        while True:
+            row = listbox.get_row_at_index(0)
+            if row is None:
+                break
+            listbox.remove(row)
+        # Add rows for current layout data.
+        for module_id in self.layout_data[section_key]:
+            display = MODULE_NAMES.get(module_id, module_id)
+            label = Gtk.Label(label=display, xalign=0)
+            label.set_margin_start(6)
+            label.set_margin_end(6)
+            label.set_margin_top(4)
+            label.set_margin_bottom(4)
+            listbox.append(label)
+
+    def _refresh_all_listboxes(self) -> None:
+        for key in SECTION_ORDER:
+            self._populate_listbox(key)
+
+    def _selected_index(self, section_key: str) -> int | None:
+        listbox = self.section_listboxes[section_key]
+        row = listbox.get_selected_row()
+        if row is None:
+            return None
+        return row.get_index()
+
+    # -- Reorder within a section --
+
+    def _on_move_up(self, _button: Gtk.Button, section_key: str) -> None:
+        idx = self._selected_index(section_key)
+        if idx is None or idx == 0:
+            return
+        modules = self.layout_data[section_key]
+        modules[idx - 1], modules[idx] = modules[idx], modules[idx - 1]
+        self._populate_listbox(section_key)
+        self.section_listboxes[section_key].select_row(
+            self.section_listboxes[section_key].get_row_at_index(idx - 1)
+        )
+
+    def _on_move_down(self, _button: Gtk.Button, section_key: str) -> None:
+        idx = self._selected_index(section_key)
+        modules = self.layout_data[section_key]
+        if idx is None or idx >= len(modules) - 1:
+            return
+        modules[idx], modules[idx + 1] = modules[idx + 1], modules[idx]
+        self._populate_listbox(section_key)
+        self.section_listboxes[section_key].select_row(
+            self.section_listboxes[section_key].get_row_at_index(idx + 1)
+        )
+
+    # -- Move between sections --
+
+    def _on_move_left(self, _button: Gtk.Button, section_key: str) -> None:
+        pos = SECTION_ORDER.index(section_key)
+        if pos == 0:
+            return
+        self._move_to_section(section_key, SECTION_ORDER[pos - 1])
+
+    def _on_move_right(self, _button: Gtk.Button, section_key: str) -> None:
+        pos = SECTION_ORDER.index(section_key)
+        if pos >= len(SECTION_ORDER) - 1:
+            return
+        self._move_to_section(section_key, SECTION_ORDER[pos + 1])
+
+    def _move_to_section(self, from_key: str, to_key: str) -> None:
+        idx = self._selected_index(from_key)
+        if idx is None:
+            return
+        module_id = self.layout_data[from_key].pop(idx)
+        self.layout_data[to_key].append(module_id)
+        self._populate_listbox(from_key)
+        self._populate_listbox(to_key)
+        # Select the moved item in its new home.
+        new_idx = len(self.layout_data[to_key]) - 1
+        self.section_listboxes[to_key].select_row(
+            self.section_listboxes[to_key].get_row_at_index(new_idx)
+        )
+
+    def _on_reset_layout(self, _button: Gtk.Button) -> None:
+        self.layout_data = copy.deepcopy(DEFAULT_LAYOUT)
+        self._refresh_all_listboxes()
+
+    def _on_edge_changed(self, _dropdown: Gtk.DropDown, _pspec: object) -> None:
+        edge = self.edge.get_selected_item().get_string()
+        if edge in ("left", "right"):
+            labels = VERTICAL_LABELS
+        else:
+            labels = HORIZONTAL_LABELS
+        for key in SECTION_ORDER:
+            self.section_headers[key].set_label(labels[key])
+
+    # ------------------------------------------------------------------ #
+    #  Common helpers                                                     #
+    # ------------------------------------------------------------------ #
 
     def _wallpaper_choices(self) -> list[str]:
         choices = sorted(path.name for path in WALLPAPER_DIR.glob("*.svg"))
@@ -152,6 +409,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             "theme": theme,
             "accent": accent,
             "wallpaper": wallpaper,
+            "layout": {k: list(v) for k, v in self.layout_data.items()},
         }
         SETTINGS_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         subprocess.run(APPLY_SCRIPT, check=False)
