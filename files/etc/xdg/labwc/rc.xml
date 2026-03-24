@@ -100,11 +100,11 @@
   </keyboard>
   <windowSwitcher show="yes" preview="no" outlines="yes"/>
 
-  <!-- Right-click desktop opens app menu -->
+  <!-- Right-click desktop opens desktop menu -->
   <mouse>
     <context name="Root">
       <mousebind button="Right" action="Press">
-        <action name="ShowMenu" menu="root-menu"/>
+        <action name="ShowMenu" menu="desktop-menu"/>
       </mousebind>
     </context>
   </mouse>

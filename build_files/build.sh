@@ -81,6 +81,17 @@ cp -a /ctx/files/. /
 install -d /etc/xdg/labwc
 labwc-menu-generator > /etc/xdg/labwc/menu.xml
 
+# Append desktop right-click menu
+sed -i '/<\/openbox_menu>/i \
+  <menu id="desktop-menu" label="Desktop">\
+    <item label="Settings"><action name="Execute" command="universal-lite-settings"\/><\/item>\
+    <item label="File Manager"><action name="Execute" command="Thunar"\/><\/item>\
+    <item label="Terminal"><action name="Execute" command="foot"\/><\/item>\
+    <separator\/>\
+    <item label="Lock Screen"><action name="Execute" command="swaylock -f"\/><\/item>\
+    <item label="Log Out"><action name="Exit"\/><\/item>\
+  <\/menu>' /etc/xdg/labwc/menu.xml
+
 chmod 0755 \
     /usr/bin/universal-lite-settings \
     /usr/bin/universal-lite-setup-wizard \
