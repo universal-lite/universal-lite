@@ -8,6 +8,8 @@ install -d /etc/yum.repos.d /usr/share/wayland-sessions
 install -Dm644 /ctx/files/etc/yum.repos.d/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
 install -Dm644 /ctx/files/usr/share/wayland-sessions/universal-lite.desktop /usr/share/wayland-sessions/universal-lite.desktop
 
+rpm --import https://dl.google.com/linux/linux_signing_key.pub
+
 dnf5 install -y \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_MAJOR}.noarch.rpm" \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_MAJOR}.noarch.rpm"
@@ -72,3 +74,4 @@ systemctl enable power-profiles-daemon.service
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
+rm -rf /tmp/* /run/* /var/tmp/*
