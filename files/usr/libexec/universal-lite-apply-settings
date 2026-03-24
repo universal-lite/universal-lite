@@ -537,6 +537,9 @@ window.inactive.title.bg.color: {palette["window_bg"]}
 window.inactive.label.text.color: {palette["secondary_fg"]}
 window.inactive.label.text.justify: center
 
+# Buttons
+window.button.spacing: 4
+
 # Active buttons
 window.active.button.unpressed.image.color: {palette["fg"]}
 window.active.button.hover.bg: flat solid
