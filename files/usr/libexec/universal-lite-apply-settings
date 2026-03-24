@@ -525,6 +525,16 @@ window.active.border.color: {palette["border"]}
 window.inactive.border.color: {palette["border"]}
 border.width: 1
 
+# Title bar padding
+window.titlebar.padding.height: 4
+window.titlebar.padding.width: 8
+
+# Window shadows
+window.active.shadow.size: 20
+window.active.shadow.color: #0000004d
+window.inactive.shadow.size: 12
+window.inactive.shadow.color: #00000033
+
 # Active title bar
 window.active.title.bg: flat solid
 window.active.title.bg.color: {palette["headerbar_bg"]}
