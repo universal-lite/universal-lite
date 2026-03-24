@@ -38,11 +38,19 @@ For systems using `bootc` (Fedora 42+, Universal Blue):
 sudo bootc switch ghcr.io/universal-lite/universal-lite:latest
 ```
 
-For older systems still using `rpm-ostree` (Fedora 41 and earlier):
+For older systems still using `rpm-ostree`, rebase to the unsigned image first, reboot, then move to the signed image:
 
 ```bash
+# Step 1: rebase to unsigned image
 rpm-ostree rebase ostree-unverified-registry:ghcr.io/universal-lite/universal-lite:latest
+systemctl reboot
+
+# Step 2: after reboot, move to the signed image
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/universal-lite/universal-lite:latest
+systemctl reboot
 ```
+
+If you prefer to stay on the unsigned image, step 1 alone is sufficient. The signed image verifies the container signature on each update for additional security.
 
 Reboot when prompted. The previous image stays available in the boot menu for rollback.
 
