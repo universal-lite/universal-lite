@@ -17,8 +17,11 @@ dnf5 install -y \
 dnf5 install -y --setopt=install_weak_deps=False \
     adw-gtk3-theme \
     alsa-utils \
+    bash-completion \
     brightnessctl \
     cage \
+    evince \
+    fastfetch \
     ffmpegthumbnailer \
     file-roller \
     foot \
@@ -30,8 +33,11 @@ dnf5 install -y --setopt=install_weak_deps=False \
     gvfs \
     gvfs-gphoto2 \
     gvfs-mtp \
+    htop \
     labwc \
     mako \
+    mousepad \
+    mpv \
     network-manager-applet \
     pavucontrol \
     pipewire \
