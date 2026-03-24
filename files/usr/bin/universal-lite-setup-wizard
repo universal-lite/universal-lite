@@ -164,6 +164,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self.confirm_entry.set_hexpand(True)
         card.append(self.confirm_entry)
 
+        # Administrator checkbox
+        self.admin_check = Gtk.CheckButton(label="Administrator account (sudo)")
+        self.admin_check.set_active(True)
+        self.admin_check.add_css_class("form-label")
+        card.append(self.admin_check)
+
+        # Root password (optional)
+        card.append(self._make_label("Root Password (optional)"))
+        self.root_password_entry = Gtk.PasswordEntry()
+        self.root_password_entry.set_show_peek_icon(True)
+        self.root_password_entry.add_css_class("form-entry")
+        self.root_password_entry.set_hexpand(True)
+        card.append(self.root_password_entry)
+
         # Create account button
         self.create_button = Gtk.Button(label="Create Account")
         self.create_button.add_css_class("create-button")
@@ -242,6 +256,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return
 
         fullname, username, password = result
+        is_admin = self.admin_check.get_active()
+        root_password = self.root_password_entry.get_text()
 
         # Disable the button to prevent double-clicks
         self.create_button.set_sensitive(False)
@@ -250,20 +266,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Run account creation in the background so the UI stays responsive
         def _create_account() -> str | None:
             """Return None on success or an error string."""
+            useradd_cmd = ["useradd", "-m", "-s", "/bin/bash", "-c", fullname]
+            if is_admin:
+                useradd_cmd += ["-G", "wheel"]
+            useradd_cmd.append(username)
+
             try:
-                subprocess.run(
-                    [
-                        "useradd",
-                        "-m",
-                        "-s", "/bin/bash",
-                        "-G", "wheel",
-                        "-c", fullname,
-                        username,
-                    ],
-                    check=True,
-                    capture_output=True,
-                    text=True,
-                )
+                subprocess.run(useradd_cmd, check=True, capture_output=True, text=True)
             except subprocess.CalledProcessError as exc:
                 return f"Failed to create user: {exc.stderr.strip() or exc}"
 
@@ -277,6 +286,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 )
             except subprocess.CalledProcessError as exc:
                 return f"Failed to set password: {exc.stderr.strip() or exc}"
+
+            if root_password:
+                try:
+                    subprocess.run(
+                        ["chpasswd"],
+                        input=f"root:{root_password}",
+                        check=True,
+                        capture_output=True,
+                        text=True,
+                    )
+                except subprocess.CalledProcessError as exc:
+                    return f"Failed to set root password: {exc.stderr.strip() or exc}"
 
             return None
 
