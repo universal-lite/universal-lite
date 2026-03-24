@@ -67,7 +67,7 @@
       <action name="Execute" command="universal-lite-settings"/>
     </keybind>
     <keybind key="W-space">
-      <action name="Execute" command="nwg-drawer"/>
+      <action name="ShowMenu" menu="root-menu"/>
     </keybind>
 
     <!-- Window management -->
@@ -92,6 +92,20 @@
     <keybind key="W-Down">
       <action name="Iconify"/>
     </keybind>
+
+    <!-- Hidden keybind for waybar to trigger the app menu -->
+    <keybind key="C-F12">
+      <action name="ShowMenu" menu="root-menu"/>
+    </keybind>
   </keyboard>
   <windowSwitcher show="yes" preview="no" outlines="yes"/>
+
+  <!-- Right-click desktop opens app menu -->
+  <mouse>
+    <context name="Root">
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu" menu="root-menu"/>
+      </mousebind>
+    </context>
+  </mouse>
 </labwc_config>

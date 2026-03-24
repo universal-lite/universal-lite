@@ -29,6 +29,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     file-roller \
     foot \
     fuzzel \
+    labwc-menu-generator \
     nwg-drawer \
     google-chrome-stable \
     google-roboto-fonts \
@@ -65,6 +66,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     waybar \
     wireplumber \
     wl-clipboard \
+    wtype \
     xfce-polkit \
     xdg-desktop-portal \
     xdg-desktop-portal-gtk \
@@ -75,6 +77,9 @@ dnf5 install -y --setopt=install_weak_deps=False \
 dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
 cp -a /ctx/files/. /
+
+install -d /etc/xdg/labwc
+labwc-menu-generator > /etc/xdg/labwc/menu.xml
 
 chmod 0755 \
     /usr/bin/universal-lite-settings \

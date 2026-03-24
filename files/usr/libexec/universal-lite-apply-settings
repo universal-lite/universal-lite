@@ -229,7 +229,7 @@ def write_waybar_config(settings: dict) -> None:
         "custom/launcher": {
             "format": " Apps ",
             "tooltip": False,
-            "on-click": "nwg-drawer",
+            "on-click": "wtype -M ctrl -k F12",
         },
         "wlr/taskbar": {
             "format": "{title}",
