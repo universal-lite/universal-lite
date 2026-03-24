@@ -85,4 +85,5 @@ systemctl enable universal-lite-flatpak-setup.service
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
-rm -rf /tmp/* /run/* /var/tmp/*
+find /tmp /var/tmp -mindepth 1 -delete 2>/dev/null || true
+find /run -mindepth 1 -not -path '/run/systemd*' -delete 2>/dev/null || true
