@@ -378,21 +378,19 @@ class SettingsWindow(Gtk.ApplicationWindow):
         widget.set_selected(0)
 
     def on_choose_wallpaper(self, _button: Gtk.Button) -> None:
-        dialog = Gtk.FileChooserNative.new(
-            "Choose wallpaper",
-            self,
-            Gtk.FileChooserAction.OPEN,
-            "_Open",
-            "_Cancel",
-        )
-        dialog.connect("response", self.on_wallpaper_response)
-        dialog.show()
+        dialog = Gtk.FileDialog.new()
+        dialog.set_title("Choose wallpaper")
+        dialog.open(self, None, self._on_wallpaper_picked)
 
-    def on_wallpaper_response(self, dialog: Gtk.FileChooserNative, response: int) -> None:
-        if response == Gtk.ResponseType.ACCEPT and dialog.get_file():
-            chosen = dialog.get_file().get_path()
-            if chosen:
-                self.custom_wallpaper.set_text(chosen)
+    def _on_wallpaper_picked(self, dialog: Gtk.FileDialog, result) -> None:
+        try:
+            gfile = dialog.open_finish(result)
+            if gfile:
+                path = gfile.get_path()
+                if path:
+                    self.custom_wallpaper.set_text(path)
+        except Exception:
+            pass  # user cancelled or error
 
     def on_apply(self, _button: Gtk.Button) -> None:
         edge = self.edge.get_selected_item().get_string()
