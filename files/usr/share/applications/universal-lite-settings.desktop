@@ -4,4 +4,5 @@ Comment=Adjust panel placement, theme, and wallpaper
 Exec=universal-lite-settings
 Terminal=false
 Type=Application
+Icon=preferences-desktop
 Categories=GTK;Settings;DesktopSettings;

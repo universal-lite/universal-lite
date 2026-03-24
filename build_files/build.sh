@@ -35,6 +35,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     google-roboto-fonts \
     google-roboto-mono-fonts \
     greetd \
+    grubby \
     grim \
     gtkgreet \
     gvfs \
