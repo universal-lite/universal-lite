@@ -275,9 +275,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Run account creation in the background so the UI stays responsive
         def _create_account() -> str | None:
             """Return None on success or an error string."""
-            useradd_cmd = ["useradd", "-m", "-s", "/bin/bash", "-c", fullname]
+            groups = ["video"]
             if is_admin:
-                useradd_cmd += ["-G", "wheel"]
+                groups.append("wheel")
+            useradd_cmd = ["useradd", "-m", "-s", "/bin/bash", "-G", ",".join(groups), "-c", fullname]
             useradd_cmd.append(username)
 
             try:
