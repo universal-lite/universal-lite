@@ -1,0 +1,25 @@
+#!/bin/bash
+# Runs before greetd to configure the correct greeter command.
+# If no real users exist: point greetd at the setup wizard.
+# If users exist: point greetd at gtkgreet.
+
+set -euo pipefail
+
+CONFIG="/etc/greetd/config.toml"
+
+if getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {found=1} END {exit !found}'; then
+    # Users exist — normal login
+    COMMAND='cage -s -- gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments'
+else
+    # No users — first boot setup
+    COMMAND='cage -s -- /usr/bin/universal-lite-setup-wizard'
+fi
+
+cat > "$CONFIG" <<EOF
+[terminal]
+vt = 1
+
+[default_session]
+command = "$COMMAND"
+user = "greeter"
+EOF

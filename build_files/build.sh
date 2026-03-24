@@ -97,13 +97,14 @@ chmod 0755 \
     /usr/bin/universal-lite-setup-wizard \
     /usr/libexec/universal-lite-apply-settings \
     /usr/libexec/universal-lite-flatpak-setup \
-    /usr/libexec/universal-lite-greeter \
+    /usr/libexec/universal-lite-greeter-setup \
     /usr/libexec/universal-lite-session-init
 
 systemctl enable greetd.service
 systemctl enable power-profiles-daemon.service
 systemctl enable systemd-repart.service
 systemctl enable universal-lite-flatpak-setup.service
+systemctl enable universal-lite-greeter-setup.service
 systemctl enable cups.service
 systemctl enable bluetooth.service
 

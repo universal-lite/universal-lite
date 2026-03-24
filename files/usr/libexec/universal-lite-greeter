@@ -1,9 +1,0 @@
-#!/bin/bash
-# Greeter wrapper: show setup wizard on first boot, gtkgreet otherwise.
-# cage must wrap a Wayland client directly, so we invoke it here.
-
-if ! getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {found=1} END {exit !found}'; then
-    exec cage -s -- /usr/bin/universal-lite-setup-wizard
-else
-    exec cage -s -- gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments
-fi
