@@ -18,7 +18,7 @@ from gi.repository import Gtk, Gdk, GLib, Pango  # noqa: E402
 
 APP_ID = "org.universallite.SetupWizard"
 
-CSS = b"""\
+CSS = """\
 window {
     background-color: #242424;
 }
@@ -528,21 +528,24 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         text=True,
                     )
 
-                    # Enable zswap at runtime
+                    # Enable zswap at runtime (may fail if module not loaded yet)
                     for param, value in [
                         ("enabled", "1"),
                         ("max_pool_percent", "25"),
                         ("compressor", "zstd"),
                     ]:
-                        Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
+                        try:
+                            Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
+                        except (OSError, FileNotFoundError):
+                            pass  # will take effect on next boot via grubby
 
                     # Create swap file (use dd, NOT fallocate)
                     size_mb = swap_gb * 1024
                     subprocess.run(
                         ["dd", "if=/dev/zero", "of=/var/swap", "bs=1M", f"count={size_mb}"],
                         check=True,
-                        capture_output=True,
-                        text=True,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
                     )
                     subprocess.run(
                         ["chmod", "600", "/var/swap"],
@@ -618,7 +621,7 @@ class SetupWizardApp(Gtk.Application):
 
     def do_activate(self) -> None:  # noqa: D401
         provider = Gtk.CssProvider()
-        provider.load_from_data(CSS)
+        provider.load_from_string(CSS)
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(),
             provider,
