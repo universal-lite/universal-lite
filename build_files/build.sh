@@ -71,6 +71,7 @@ chmod 0755 \
 
 systemctl enable greetd.service
 systemctl enable power-profiles-daemon.service
+systemctl enable systemd-repart.service
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
