@@ -50,6 +50,10 @@ Reboot when prompted. The previous image stays available in the boot menu for ro
 
 That's it. The system pulls image updates automatically from the daily builds. Rollback to the previous image is available through the boot menu if an update ever causes problems.
 
+## First-boot setup
+
+On first boot, a setup wizard appears asking you to create a user account (full name, username, and password). After account creation the system reboots into the normal login screen. No manual account creation is needed.
+
 ## What's included
 
 | Component | Choice | Why |
@@ -65,6 +69,9 @@ That's it. The system pulls image updates automatically from the daily builds. R
 | Screen lock | `swayidle` + `swaylock` | Locks after 5 min idle, screen off at 10 min |
 | Power | `power-profiles-daemon` | Battery management for laptops |
 | Audio | `pipewire` + `wireplumber` | Modern audio stack with PulseAudio compat |
+| Bluetooth | `bluez` | Pair devices via system tray |
+| Printing | `CUPS` | Print to local and network printers |
+| App store | `Bazaar` (via Flatpak, first-boot) | Install apps from Flathub (Zoom, Discord, etc.) |
 | Settings | `universal-lite-settings` | Custom GTK4 app for panel, theme, wallpaper |
 | Multimedia | RPM Fusion + GStreamer | Codec support out of the box |
 
@@ -77,9 +84,52 @@ That's it. The system pulls image updates automatically from the daily builds. R
 
 ### Keyboard shortcuts
 
+#### Media keys (Chromebook top row)
+
+| Key | Action |
+|-----|--------|
+| Volume Up / Down / Mute | Adjust or mute audio |
+| Brightness Up / Down | Adjust screen brightness |
+| Fullscreen (F4) | Toggle fullscreen |
+
+#### Search key (Super) shortcuts
+
 | Shortcut | Action |
 |----------|--------|
+| `Super+Space` | App launcher |
+| `Super+L` | Lock screen |
+| `Super+E` | File manager (Thunar) |
+| `Super+Escape` | Task manager (htop) |
+| `Super+,` | Settings |
+| `Super+Up` | Maximize window |
+| `Super+Down` | Minimize window |
+
+#### Window management
+
+| Shortcut | Action |
+|----------|--------|
+| `Alt+Tab` / `Alt+Shift+Tab` | Switch windows |
+| `Alt+[` | Snap window left |
+| `Alt+]` | Snap window right |
+| `Alt+F4` | Close window |
 | `Ctrl+Alt+T` | Open terminal (`foot`) |
+
+#### Screenshots
+
+| Shortcut | Action |
+|----------|--------|
+| `Print Screen` | Full screenshot to clipboard |
+| `Shift+Print Screen` | Area selection to clipboard |
+
+### File associations
+
+| File type | Opens with |
+|-----------|------------|
+| PDFs | Evince |
+| Text files | Mousepad |
+| Images | Ristretto |
+| Videos | mpv |
+| Web links | Chrome |
 
 ### Settings app
 
@@ -162,6 +212,7 @@ files/
 
 ## Notes
 
+- On first boot, a setup wizard prompts you to create a user account.
 - Targets x86_64 only.
 - The Anaconda ISO requires 4+ GB RAM to run the installer — use the raw image + `dd` for 2 GB machines.
 - Chromebooks need [MrChromebox UEFI firmware](https://mrchromebox.tech) and the write-protect screw removed to boot standard Linux images.

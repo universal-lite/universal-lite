@@ -1,0 +1,330 @@
+#!/usr/bin/env python3
+"""Universal-Lite first-boot user creation wizard.
+
+Runs inside cage (kiosk Wayland compositor) on the login screen when no user
+accounts exist.  Creates a local user with sudo (wheel) access, then reboots
+into the normal login screen.
+"""
+
+import re
+import subprocess
+import sys
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gtk, Gdk, GLib, Pango  # noqa: E402
+
+APP_ID = "org.universallite.SetupWizard"
+
+CSS = b"""\
+window {
+    background-color: #242424;
+}
+
+.welcome-title {
+    font-family: "Roboto", sans-serif;
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.welcome-subtitle {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    color: #aaaaaa;
+    margin-bottom: 24px;
+}
+
+.form-label {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    color: #dddddd;
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.form-entry {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background-color: #363636;
+    color: #ffffff;
+    border: 1px solid #555555;
+    min-height: 20px;
+}
+
+.form-entry:focus {
+    border: 1px solid #62a0ea;
+}
+
+.create-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 32px;
+    border-radius: 8px;
+    background-color: #3584e4;
+    color: #ffffff;
+    margin-top: 24px;
+}
+
+.create-button:hover {
+    background-color: #62a0ea;
+}
+
+.create-button:disabled {
+    background-color: #555555;
+    color: #999999;
+}
+
+.status-label {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+.status-error {
+    color: #ff6b6b;
+}
+
+.status-success {
+    color: #57e389;
+}
+
+.card {
+    background-color: #2e2e2e;
+    border-radius: 16px;
+    padding: 48px;
+    border: 1px solid #444444;
+}
+"""
+
+USERNAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+
+
+class SetupWizardWindow(Gtk.ApplicationWindow):
+    def __init__(self, app: Gtk.Application) -> None:
+        super().__init__(application=app, title="Universal-Lite Setup Wizard")
+        self.set_default_size(800, 600)
+
+        # --- outer centering container ---
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        outer.set_halign(Gtk.Align.CENTER)
+        outer.set_valign(Gtk.Align.CENTER)
+
+        # --- card ---
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+
+        # Title
+        title = Gtk.Label(label="Welcome to Universal-Lite")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+
+        # Subtitle
+        subtitle = Gtk.Label(label="Create your account to get started.")
+        subtitle.add_css_class("welcome-subtitle")
+        subtitle.set_halign(Gtk.Align.CENTER)
+        card.append(subtitle)
+
+        # Full name
+        card.append(self._make_label("Full Name"))
+        self.fullname_entry = Gtk.Entry()
+        self.fullname_entry.set_placeholder_text("Jane Doe")
+        self.fullname_entry.add_css_class("form-entry")
+        self.fullname_entry.set_hexpand(True)
+        card.append(self.fullname_entry)
+
+        # Username
+        card.append(self._make_label("Username"))
+        self.username_entry = Gtk.Entry()
+        self.username_entry.set_placeholder_text("janedoe")
+        self.username_entry.add_css_class("form-entry")
+        self.username_entry.set_hexpand(True)
+        card.append(self.username_entry)
+
+        # Password
+        card.append(self._make_label("Password"))
+        self.password_entry = Gtk.PasswordEntry()
+        self.password_entry.set_show_peek_icon(True)
+        self.password_entry.add_css_class("form-entry")
+        self.password_entry.set_hexpand(True)
+        card.append(self.password_entry)
+
+        # Confirm password
+        card.append(self._make_label("Confirm Password"))
+        self.confirm_entry = Gtk.PasswordEntry()
+        self.confirm_entry.set_show_peek_icon(True)
+        self.confirm_entry.add_css_class("form-entry")
+        self.confirm_entry.set_hexpand(True)
+        card.append(self.confirm_entry)
+
+        # Create account button
+        self.create_button = Gtk.Button(label="Create Account")
+        self.create_button.add_css_class("create-button")
+        self.create_button.set_halign(Gtk.Align.CENTER)
+        self.create_button.connect("clicked", self._on_create_clicked)
+        card.append(self.create_button)
+
+        # Status label
+        self.status_label = Gtk.Label(label="")
+        self.status_label.add_css_class("status-label")
+        self.status_label.set_halign(Gtk.Align.CENTER)
+        self.status_label.set_wrap(True)
+        self.status_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self.status_label.set_max_width_chars(50)
+        card.append(self.status_label)
+
+        outer.append(card)
+        self.set_child(outer)
+
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _make_label(text: str) -> Gtk.Label:
+        lbl = Gtk.Label(label=text)
+        lbl.add_css_class("form-label")
+        lbl.set_halign(Gtk.Align.START)
+        return lbl
+
+    # ------------------------------------------------------------------
+    def _set_status(self, message: str, error: bool = True) -> None:
+        self.status_label.set_text(message)
+        self.status_label.remove_css_class("status-error")
+        self.status_label.remove_css_class("status-success")
+        self.status_label.add_css_class("status-error" if error else "status-success")
+
+    # ------------------------------------------------------------------
+    def _validate(self) -> tuple[str, str, str] | None:
+        """Return (fullname, username, password) or None on validation failure."""
+        fullname = self.fullname_entry.get_text().strip()
+        username = self.username_entry.get_text().strip()
+        password = self.password_entry.get_text()
+        confirm = self.confirm_entry.get_text()
+
+        if not fullname:
+            self._set_status("Full name is required.")
+            return None
+
+        if not username:
+            self._set_status("Username is required.")
+            return None
+
+        if len(username) > 32:
+            self._set_status("Username must be 32 characters or fewer.")
+            return None
+
+        if not USERNAME_RE.match(username):
+            self._set_status(
+                "Username must start with a lowercase letter and contain "
+                "only lowercase letters, numbers, and hyphens."
+            )
+            return None
+
+        if not password:
+            self._set_status("Password is required.")
+            return None
+
+        if password != confirm:
+            self._set_status("Passwords do not match.")
+            return None
+
+        return fullname, username, password
+
+    # ------------------------------------------------------------------
+    def _on_create_clicked(self, _button: Gtk.Button) -> None:
+        result = self._validate()
+        if result is None:
+            return
+
+        fullname, username, password = result
+
+        # Disable the button to prevent double-clicks
+        self.create_button.set_sensitive(False)
+        self._set_status("Creating account...", error=False)
+
+        # Run account creation in the background so the UI stays responsive
+        def _create_account() -> str | None:
+            """Return None on success or an error string."""
+            try:
+                subprocess.run(
+                    [
+                        "useradd",
+                        "-m",
+                        "-s", "/bin/bash",
+                        "-G", "wheel",
+                        "-c", fullname,
+                        username,
+                    ],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to create user: {exc.stderr.strip() or exc}"
+
+            try:
+                subprocess.run(
+                    ["chpasswd"],
+                    input=f"{username}:{password}",
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to set password: {exc.stderr.strip() or exc}"
+
+            return None
+
+        def _on_done(error: str | None) -> None:
+            if error is not None:
+                self._set_status(error)
+                self.create_button.set_sensitive(True)
+                return
+
+            self._set_status("Account created! Restarting...", error=False)
+            # Give the user a moment to read the message, then reboot
+            GLib.timeout_add_seconds(2, _reboot)
+
+        def _reboot() -> bool:
+            subprocess.run(["systemctl", "reboot"])
+            return GLib.SOURCE_REMOVE
+
+        # Run blocking work off the main thread
+        import threading
+
+        def _thread_target() -> None:
+            err = _create_account()
+            GLib.idle_add(_on_done, err)
+
+        threading.Thread(target=_thread_target, daemon=True).start()
+
+
+class SetupWizardApp(Gtk.Application):
+    def __init__(self) -> None:
+        super().__init__(application_id=APP_ID)
+
+    def do_activate(self) -> None:  # noqa: D401
+        provider = Gtk.CssProvider()
+        provider.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_display(
+            Gdk.Display.get_default(),
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+        )
+
+        win = SetupWizardWindow(self)
+        win.present()
+
+
+def main() -> None:
+    app = SetupWizardApp()
+    app.run(sys.argv)
+
+
+if __name__ == "__main__":
+    main()

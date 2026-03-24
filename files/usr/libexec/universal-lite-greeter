@@ -1,0 +1,8 @@
+#!/bin/bash
+# Greeter wrapper: show setup wizard on first boot, gtkgreet otherwise.
+
+if ! getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {found=1} END {exit !found}'; then
+    exec universal-lite-setup-wizard
+else
+    exec gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments
+fi
