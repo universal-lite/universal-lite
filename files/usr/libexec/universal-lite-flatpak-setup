@@ -2,7 +2,7 @@
 # First-boot Flatpak setup: adds Flathub and installs default apps.
 # Runs once, then leaves a stamp file so it never runs again.
 
-set -euo pipefail
+set -uo pipefail
 
 STAMP="/var/lib/universal-lite/flatpak-setup.done"
 if [[ -f "$STAMP" ]]; then
@@ -12,18 +12,25 @@ fi
 FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
 
 # Add Flathub remote if missing
-flatpak remote-add --system --if-not-exists flathub "$FLATHUB_URL"
+flatpak remote-add --system --if-not-exists flathub "$FLATHUB_URL" || {
+    echo "No network — will retry on next boot." >&2
+    exit 0
+}
 
 # Default Flatpaks to install (system-wide)
 APPS=(
     dev.bazaar.app
 )
 
+ALL_OK=true
 for app in "${APPS[@]}"; do
     if ! flatpak info --system "$app" >/dev/null 2>&1; then
-        flatpak install --system --noninteractive flathub "$app"
+        flatpak install --system --noninteractive flathub "$app" || ALL_OK=false
     fi
 done
 
-mkdir -p "$(dirname "$STAMP")"
-touch "$STAMP"
+# Only write stamp if everything succeeded
+if $ALL_OK; then
+    mkdir -p "$(dirname "$STAMP")"
+    touch "$STAMP"
+fi

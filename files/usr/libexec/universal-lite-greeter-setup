@@ -17,7 +17,7 @@ fi
 
 cat > "$CONFIG" <<EOF
 [terminal]
-vt = 1
+vt = 7
 
 [default_session]
 command = "$COMMAND"
