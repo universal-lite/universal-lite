@@ -28,13 +28,23 @@ sudo dd if=output/disk/disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
 
 Insert the flashed media into the target machine and boot from it. The root partition automatically grows to fill all available space on first boot.
 
-### Already running a bootc/Fedora Atomic system?
+### Rebase from an existing Fedora Atomic system
 
-Rebase directly without reflashing:
+If the machine is already running any Fedora Atomic desktop (Silverblue, Kinoite, Bazzite, Bluefin, Aurora, or another Universal Blue image), you can switch to Universal-Lite in place — no reflashing needed.
+
+For systems using `bootc` (Fedora 42+, Universal Blue):
 
 ```bash
 sudo bootc switch ghcr.io/noitatsidem/universal-lite:latest
 ```
+
+For older systems still using `rpm-ostree` (Fedora 41 and earlier):
+
+```bash
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/noitatsidem/universal-lite:latest
+```
+
+Reboot when prompted. The previous image stays available in the boot menu for rollback.
 
 ### After install
 
