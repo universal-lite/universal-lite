@@ -11,6 +11,7 @@ Three-page flow:
   Page 3 — Summary and confirmation
 """
 
+import os
 import re
 import subprocess
 import sys
@@ -20,7 +21,7 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Gdk, GLib, Pango  # noqa: E402
+from gi.repository import Gtk, Gdk, GLib, Gio, Pango  # noqa: E402
 
 APP_ID = "org.universallite.SetupWizard"
 
@@ -67,7 +68,7 @@ window {
     border: 1px solid #62a0ea;
 }
 
-.create-button {
+button.create-button {
     font-family: "Roboto", sans-serif;
     font-size: 18px;
     font-weight: bold;
@@ -77,26 +78,39 @@ window {
     color: #ffffff;
 }
 
-.create-button:hover {
+button.create-button label {
+    color: #ffffff;
+}
+
+button.create-button:hover {
     background-color: #62a0ea;
 }
 
-.create-button:disabled {
+button.create-button:disabled {
     background-color: #555555;
     color: #999999;
 }
 
-.back-button {
+button.create-button:disabled label {
+    color: #999999;
+}
+
+button.back-button {
     font-family: "Roboto", sans-serif;
     font-size: 18px;
     padding: 12px 32px;
     border-radius: 8px;
-    background-color: transparent;
-    color: #aaaaaa;
+    background: none;
     border: none;
+    box-shadow: none;
+    color: #aaaaaa;
 }
 
-.back-button:hover {
+button.back-button label {
+    color: #aaaaaa;
+}
+
+button.back-button:hover label {
     color: #dddddd;
 }
 
@@ -163,6 +177,18 @@ SWAP_SIZES = ["2 GB", "4 GB", "Custom"]
 PAGE_ACCOUNT = 0
 PAGE_SYSTEM = 1
 PAGE_CONFIRM = 2
+
+
+def _hash_password(plaintext: str) -> str:
+    """Return a SHA-512 crypt(3) hash suitable for AccountsService.SetPassword."""
+    result = subprocess.run(
+        ["openssl", "passwd", "-6", "-stdin"],
+        input=plaintext,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
 
 
 def _load_timezones() -> list[str]:
@@ -639,27 +665,69 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         def _create_account() -> str | None:
             """Return None on success or an error string."""
-            groups = ["video"]
-            if is_admin:
-                groups.append("wheel")
-            useradd_cmd = [
-                "useradd", "-m", "-s", "/bin/bash",
-                "-G", ",".join(groups), "-c", fullname, username,
-            ]
+            # Hash password up front
+            try:
+                user_pw_hash = _hash_password(password)
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to hash password: {exc.stderr.strip() or exc}"
+
+            # Create user via AccountsService D-Bus API
+            try:
+                accounts = Gio.DBusProxy.new_for_bus_sync(
+                    Gio.BusType.SYSTEM,
+                    Gio.DBusProxyFlags.NONE,
+                    None,
+                    "org.freedesktop.Accounts",
+                    "/org/freedesktop/Accounts",
+                    "org.freedesktop.Accounts",
+                    None,
+                )
+            except Exception as exc:
+                return f"Failed to connect to AccountsService: {exc}"
+
+            account_type = 1 if is_admin else 0  # 1 = admin (wheel), 0 = standard
 
             try:
-                subprocess.run(useradd_cmd, check=True, capture_output=True, text=True)
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to create user: {exc.stderr.strip() or exc}"
+                result = accounts.call_sync(
+                    "CreateUser",
+                    GLib.Variant("(ssi)", (username, fullname, account_type)),
+                    Gio.DBusCallFlags.NONE,
+                    -1,
+                    None,
+                )
+                user_object_path = result.get_child_value(0).get_string()
+            except Exception as exc:
+                return f"Failed to create user: {exc}"
 
+            # Set password (also unlocks the account)
+            try:
+                user_proxy = Gio.DBusProxy.new_for_bus_sync(
+                    Gio.BusType.SYSTEM,
+                    Gio.DBusProxyFlags.NONE,
+                    None,
+                    "org.freedesktop.Accounts",
+                    user_object_path,
+                    "org.freedesktop.Accounts.User",
+                    None,
+                )
+                user_proxy.call_sync(
+                    "SetPassword",
+                    GLib.Variant("(ss)", (user_pw_hash, "")),
+                    Gio.DBusCallFlags.NONE,
+                    -1,
+                    None,
+                )
+            except Exception as exc:
+                return f"Failed to set user password: {exc}"
+
+            # Add to video group (brightnessctl needs it for backlight sysfs access)
             try:
                 subprocess.run(
-                    ["chpasswd"],
-                    input=f"{username}:{password}",
+                    ["usermod", "-aG", "video", username],
                     check=True, capture_output=True, text=True,
                 )
             except subprocess.CalledProcessError as exc:
-                return f"Failed to set password: {exc.stderr.strip() or exc}"
+                return f"Failed to add user to video group: {exc.stderr.strip() or exc}"
 
             if root_password:
                 try:
@@ -761,6 +829,11 @@ class SetupWizardApp(Gtk.Application):
 
 
 def main() -> None:
+    if os.getuid() != 0:
+        sys.exit(
+            "universal-lite-setup-wizard: must run as root "
+            "(launched via greetd firstboot path). Refusing to start."
+        )
     app = SetupWizardApp()
     app.run(sys.argv)
 
