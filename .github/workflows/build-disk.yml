@@ -86,7 +86,7 @@ jobs:
           path: ${{ steps.build.outputs.output-directory }}
           if-no-files-found: error
           retention-days: 0
-          compression-level: 0
+          compression-level: 6
           overwrite: true
       
       - name: Upload to S3
