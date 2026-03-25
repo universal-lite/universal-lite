@@ -1,0 +1,14 @@
+[Unit]
+Description=Encrypted swap
+After=local-fs.target
+Before=swap.target
+ConditionPathExists=/var/swap
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/universal-lite-encrypted-swap start
+ExecStop=/usr/libexec/universal-lite-encrypted-swap stop
+
+[Install]
+WantedBy=swap.target
