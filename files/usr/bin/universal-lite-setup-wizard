@@ -713,20 +713,61 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return scrolled
 
     def _build_progress_page(self) -> Gtk.ScrolledWindow:
-        """Stub — replaced in Task 7."""
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled.set_propagate_natural_height(True)
+
         wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         wrapper.set_halign(Gtk.Align.CENTER)
         wrapper.set_valign(Gtk.Align.CENTER)
+
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         card.add_css_class("card")
         card.set_size_request(480, -1)
+
         title = Gtk.Label(label="Setting Up...")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
+        self._progress_title = title
+
+        # Step labels container
+        self._progress_steps_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        self._progress_steps_box.set_margin_top(24)
+        card.append(self._progress_steps_box)
+
+        # Action buttons (reboot, retry, skip, back) — hidden by default
+        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        btn_box.set_halign(Gtk.Align.CENTER)
+        btn_box.set_margin_top(24)
+
+        self._progress_back_btn = Gtk.Button(label="Back")
+        self._progress_back_btn.add_css_class("back-button")
+        self._progress_back_btn.set_visible(False)
+        self._progress_back_btn.connect("clicked", lambda _: self._progress_go_back())
+        btn_box.append(self._progress_back_btn)
+
+        self._progress_skip_btn = Gtk.Button(label="Skip")
+        self._progress_skip_btn.add_css_class("back-button")
+        self._progress_skip_btn.set_visible(False)
+        self._progress_skip_btn.connect("clicked", lambda _: self._progress_skip())
+        btn_box.append(self._progress_skip_btn)
+
+        self._progress_retry_btn = Gtk.Button(label="Retry")
+        self._progress_retry_btn.add_css_class("create-button")
+        self._progress_retry_btn.set_visible(False)
+        self._progress_retry_btn.connect("clicked", lambda _: self._progress_retry())
+        btn_box.append(self._progress_retry_btn)
+
+        self._progress_reboot_btn = Gtk.Button(label="Reboot")
+        self._progress_reboot_btn.add_css_class("create-button")
+        self._progress_reboot_btn.set_visible(False)
+        self._progress_reboot_btn.connect("clicked",
+            lambda _: subprocess.run(["systemctl", "reboot"]))
+        btn_box.append(self._progress_reboot_btn)
+
+        card.append(btn_box)
+
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
@@ -1220,185 +1261,304 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return use_zswap, swap_gb
 
     # ------------------------------------------------------------------
-    # Account creation (business logic — unchanged)
+    # Step functions (business logic — one per concern)
+    # ------------------------------------------------------------------
+
+    def _step_create_user(self) -> str | None:
+        """Create user account via AccountsService, set password, add to video group."""
+        fullname = self._setup_fullname
+        username = self._setup_username
+        password = self._setup_password
+        is_admin = self._setup_is_admin
+
+        try:
+            user_pw_hash = _hash_password(password)
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to hash password: {exc.stderr.strip() or exc}"
+
+        try:
+            accounts = Gio.DBusProxy.new_for_bus_sync(
+                Gio.BusType.SYSTEM, Gio.DBusProxyFlags.NONE, None,
+                "org.freedesktop.Accounts", "/org/freedesktop/Accounts",
+                "org.freedesktop.Accounts", None,
+            )
+        except Exception as exc:
+            return f"Failed to connect to AccountsService: {exc}"
+
+        account_type = 1 if is_admin else 0
+
+        try:
+            result = accounts.call_sync(
+                "CreateUser",
+                GLib.Variant("(ssi)", (username, fullname, account_type)),
+                Gio.DBusCallFlags.NONE, -1, None,
+            )
+            user_object_path = result.get_child_value(0).get_string()
+        except Exception as exc:
+            return f"Failed to create user: {exc}"
+
+        try:
+            user_proxy = Gio.DBusProxy.new_for_bus_sync(
+                Gio.BusType.SYSTEM, Gio.DBusProxyFlags.NONE, None,
+                "org.freedesktop.Accounts", user_object_path,
+                "org.freedesktop.Accounts.User", None,
+            )
+            user_proxy.call_sync(
+                "SetPassword",
+                GLib.Variant("(ss)", (user_pw_hash, "")),
+                Gio.DBusCallFlags.NONE, -1, None,
+            )
+        except Exception as exc:
+            return f"Failed to set user password: {exc}"
+
+        try:
+            group_path = Path("/etc/group")
+            lines = group_path.read_text().splitlines()
+            new_lines = []
+            for line in lines:
+                if line.startswith("video:"):
+                    parts = line.split(":")
+                    members = parts[3].split(",") if parts[3] else []
+                    if username not in members:
+                        members.append(username)
+                    parts[3] = ",".join(members)
+                    line = ":".join(parts)
+                new_lines.append(line)
+            group_path.write_text("\n".join(new_lines) + "\n")
+        except (OSError, IndexError) as exc:
+            return f"Failed to add user to video group: {exc}"
+
+        return None
+
+    def _step_configure_system(self) -> str | None:
+        """Set timezone, root password, and swap configuration."""
+        root_password = self._setup_root_password
+        timezone = self._setup_timezone
+        use_zswap = self._setup_use_zswap
+        swap_gb = self._setup_swap_gb
+
+        if root_password:
+            try:
+                root_hash = _hash_password(root_password)
+                shadow_path = Path("/etc/shadow")
+                lines = shadow_path.read_text().splitlines()
+                new_lines = []
+                for line in lines:
+                    if line.startswith("root:"):
+                        parts = line.split(":")
+                        parts[1] = root_hash
+                        line = ":".join(parts)
+                    new_lines.append(line)
+                shadow_path.write_text("\n".join(new_lines) + "\n")
+            except (OSError, IndexError, subprocess.CalledProcessError) as exc:
+                return f"Failed to set root password: {exc}"
+
+        try:
+            subprocess.run(
+                ["timedatectl", "set-timezone", timezone],
+                check=True, capture_output=True, text=True,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to set timezone: {exc.stderr.strip() or exc}"
+
+        if use_zswap:
+            try:
+                subprocess.run(
+                    ["bash", "-c", 'echo "" > /etc/systemd/zram-generator.conf'],
+                    check=True, capture_output=True, text=True,
+                )
+                subprocess.run(
+                    [
+                        "grubby", "--update-kernel=ALL",
+                        "--args=zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=zstd",
+                    ],
+                    check=True, capture_output=True, text=True,
+                )
+                for param, value in [
+                    ("enabled", "1"), ("max_pool_percent", "25"), ("compressor", "zstd"),
+                ]:
+                    try:
+                        Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
+                    except (OSError, FileNotFoundError):
+                        pass
+
+                size_mb = swap_gb * 1024
+                subprocess.run(
+                    ["dd", "if=/dev/zero", "of=/var/swap", "bs=1M", f"count={size_mb}"],
+                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                )
+                subprocess.run(["chmod", "600", "/var/swap"],
+                               check=True, capture_output=True, text=True)
+                subprocess.run(["systemctl", "enable", "universal-lite-encrypted-swap.service"],
+                               check=True, capture_output=True, text=True)
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to configure swap: {exc.stderr.strip() or exc}"
+            except OSError as exc:
+                return f"Failed to configure swap: {exc}"
+
+        return None
+
+    def _step_add_flathub(self) -> str | None:
+        """Add Flathub remote."""
+        try:
+            subprocess.run(
+                ["flatpak", "remote-add", "--system", "--if-not-exists",
+                 "flathub", FLATHUB_URL],
+                check=True, capture_output=True, text=True,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to add Flathub: {exc.stderr.strip() or exc}"
+        return None
+
+    def _step_install_flatpak(self, app_id: str) -> str | None:
+        """Install a single Flatpak app."""
+        try:
+            subprocess.run(
+                ["flatpak", "install", "--system", "--noninteractive",
+                 "flathub", app_id],
+                check=True, capture_output=True, text=True,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to install: {exc.stderr.strip() or exc}"
+        return None
+
+    # ------------------------------------------------------------------
+    # Step runner
     # ------------------------------------------------------------------
 
     def _on_setup_clicked(self) -> None:
-        fullname = self._fullname_entry.get_text().strip()
-        username = self._username_entry.get_text().strip()
-        password = self._password_entry.get_text()
-        is_admin = self._admin_check.get_active()
-        root_password = self._root_password_entry.get_text()
-        timezone = self._get_selected_timezone()
-        use_zswap, swap_gb = self._get_swap_config()
+        # Capture all form values for thread-safe access
+        self._setup_fullname = self._fullname_entry.get_text().strip()
+        self._setup_username = self._username_entry.get_text().strip()
+        self._setup_password = self._password_entry.get_text()
+        self._setup_is_admin = self._admin_check.get_active()
+        self._setup_root_password = self._root_password_entry.get_text()
+        self._setup_timezone = self._get_selected_timezone()
+        self._setup_use_zswap, self._setup_swap_gb = self._get_swap_config()
 
-        self._next_button.set_sensitive(False)
-        self._back_button.set_sensitive(False)
-        self._set_status("Setting up your system...", error=False)
+        # Build step list: (label, callable, is_flatpak_step)
+        self._steps: list[tuple[str, callable, bool]] = [
+            ("Creating user account", self._step_create_user, False),
+            ("Configuring system", self._step_configure_system, False),
+        ]
+        selected_apps = self._get_selected_apps()
+        if selected_apps:
+            self._steps.append(("Adding Flathub repository", self._step_add_flathub, True))
+            for app_id, app_name in selected_apps:
+                self._steps.append((
+                    f"Installing {app_name}",
+                    lambda aid=app_id: self._step_install_flatpak(aid),
+                    True,
+                ))
 
-        def _create_account() -> str | None:
-            """Return None on success or an error string."""
-            # Hash password up front
-            try:
-                user_pw_hash = _hash_password(password)
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to hash password: {exc.stderr.strip() or exc}"
+        # Build progress UI
+        while child := self._progress_steps_box.get_first_child():
+            self._progress_steps_box.remove(child)
 
-            # Create user via AccountsService D-Bus API
-            try:
-                accounts = Gio.DBusProxy.new_for_bus_sync(
-                    Gio.BusType.SYSTEM,
-                    Gio.DBusProxyFlags.NONE,
-                    None,
-                    "org.freedesktop.Accounts",
-                    "/org/freedesktop/Accounts",
-                    "org.freedesktop.Accounts",
-                    None,
-                )
-            except Exception as exc:
-                return f"Failed to connect to AccountsService: {exc}"
+        self._step_labels: list[Gtk.Label] = []
+        for label_text, _, _ in self._steps:
+            lbl = Gtk.Label(label=f"  {label_text}")
+            lbl.add_css_class("progress-step")
+            lbl.add_css_class("progress-pending")
+            lbl.set_halign(Gtk.Align.START)
+            self._step_labels.append(lbl)
+            self._progress_steps_box.append(lbl)
 
-            account_type = 1 if is_admin else 0  # 1 = admin (wheel), 0 = standard
+        # Navigate to progress page
+        self._current_page = PAGE_PROGRESS
+        self._update_navigation()
 
-            try:
-                result = accounts.call_sync(
-                    "CreateUser",
-                    GLib.Variant("(ssi)", (username, fullname, account_type)),
-                    Gio.DBusCallFlags.NONE,
-                    -1,
-                    None,
-                )
-                user_object_path = result.get_child_value(0).get_string()
-            except Exception as exc:
-                return f"Failed to create user: {exc}"
+        # Launch step runner
+        self._run_from_step = 0
+        self._start_step_runner()
 
-            # Set password (also unlocks the account)
-            try:
-                user_proxy = Gio.DBusProxy.new_for_bus_sync(
-                    Gio.BusType.SYSTEM,
-                    Gio.DBusProxyFlags.NONE,
-                    None,
-                    "org.freedesktop.Accounts",
-                    user_object_path,
-                    "org.freedesktop.Accounts.User",
-                    None,
-                )
-                user_proxy.call_sync(
-                    "SetPassword",
-                    GLib.Variant("(ss)", (user_pw_hash, "")),
-                    Gio.DBusCallFlags.NONE,
-                    -1,
-                    None,
-                )
-            except Exception as exc:
-                return f"Failed to set user password: {exc}"
+    def _start_step_runner(self) -> None:
+        """Launch the step-runner thread starting from self._run_from_step."""
+        self._progress_back_btn.set_visible(False)
+        self._progress_skip_btn.set_visible(False)
+        self._progress_retry_btn.set_visible(False)
+        self._progress_reboot_btn.set_visible(False)
 
-            # Add to video group (brightnessctl needs it for backlight sysfs access)
-            # Direct file edit — usermod/chpasswd use file locking that fails
-            # on bootc overlayfs, but AccountsService and direct I/O work fine.
-            try:
-                group_path = Path("/etc/group")
-                lines = group_path.read_text().splitlines()
-                new_lines = []
-                for line in lines:
-                    if line.startswith("video:"):
-                        parts = line.split(":")
-                        members = parts[3].split(",") if parts[3] else []
-                        if username not in members:
-                            members.append(username)
-                        parts[3] = ",".join(members)
-                        line = ":".join(parts)
-                    new_lines.append(line)
-                group_path.write_text("\n".join(new_lines) + "\n")
-            except (OSError, IndexError) as exc:
-                return f"Failed to add user to video group: {exc}"
+        start = self._run_from_step
 
-            if root_password:
-                try:
-                    root_hash = _hash_password(root_password)
-                    shadow_path = Path("/etc/shadow")
-                    lines = shadow_path.read_text().splitlines()
-                    new_lines = []
-                    for line in lines:
-                        if line.startswith("root:"):
-                            parts = line.split(":")
-                            parts[1] = root_hash
-                            line = ":".join(parts)
-                        new_lines.append(line)
-                    shadow_path.write_text("\n".join(new_lines) + "\n")
-                except (OSError, IndexError, subprocess.CalledProcessError) as exc:
-                    return f"Failed to set root password: {exc}"
+        def _thread() -> None:
+            for i in range(start, len(self._steps)):
+                label_text, func, is_flatpak = self._steps[i]
+                GLib.idle_add(self._update_step_status, i, "active")
+                err = func()
+                if err:
+                    GLib.idle_add(self._on_step_failed, i, err, is_flatpak)
+                    return
+                GLib.idle_add(self._update_step_status, i, "done")
 
-            try:
-                subprocess.run(
-                    ["timedatectl", "set-timezone", timezone],
-                    check=True, capture_output=True, text=True,
-                )
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to set timezone: {exc.stderr.strip() or exc}"
+            # All done — write stamp file and show reboot
+            stamp = Path("/var/lib/universal-lite/flatpak-setup.done")
+            stamp.parent.mkdir(parents=True, exist_ok=True)
+            stamp.touch()
+            GLib.idle_add(self._on_all_steps_done)
 
-            if use_zswap:
-                try:
-                    subprocess.run(
-                        ["bash", "-c", 'echo "" > /etc/systemd/zram-generator.conf'],
-                        check=True, capture_output=True, text=True,
-                    )
-                    subprocess.run(
-                        [
-                            "grubby", "--update-kernel=ALL",
-                            "--args=zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=zstd",
-                        ],
-                        check=True, capture_output=True, text=True,
-                    )
-                    for param, value in [
-                        ("enabled", "1"),
-                        ("max_pool_percent", "25"),
-                        ("compressor", "zstd"),
-                    ]:
-                        try:
-                            Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
-                        except (OSError, FileNotFoundError):
-                            pass
+        threading.Thread(target=_thread, daemon=True).start()
 
-                    size_mb = swap_gb * 1024
-                    subprocess.run(
-                        ["dd", "if=/dev/zero", "of=/var/swap", "bs=1M", f"count={size_mb}"],
-                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                    )
-                    subprocess.run(
-                        ["chmod", "600", "/var/swap"],
-                        check=True, capture_output=True, text=True,
-                    )
-                    subprocess.run(
-                        ["systemctl", "enable", "universal-lite-encrypted-swap.service"],
-                        check=True, capture_output=True, text=True,
-                    )
-                except subprocess.CalledProcessError as exc:
-                    return f"Failed to configure swap: {exc.stderr.strip() or exc}"
-                except OSError as exc:
-                    return f"Failed to configure swap: {exc}"
+    def _update_step_status(self, index: int, status: str) -> None:
+        lbl = self._step_labels[index]
+        label_text = self._steps[index][0]
 
-            return None
+        for cls in ("progress-pending", "progress-active", "progress-done",
+                    "progress-failed", "progress-skipped"):
+            lbl.remove_css_class(cls)
 
-        def _on_done(error: str | None) -> None:
-            if error is not None:
-                self._set_status(error)
-                self._next_button.set_sensitive(True)
-                self._back_button.set_sensitive(True)
-                return
+        if status == "active":
+            lbl.set_text(f"  {label_text}...")
+            lbl.add_css_class("progress-active")
+        elif status == "done":
+            lbl.set_text(f"  {label_text}")
+            lbl.add_css_class("progress-done")
+        elif status == "failed":
+            lbl.add_css_class("progress-failed")
+        elif status == "skipped":
+            lbl.set_text(f"  {label_text} (skipped)")
+            lbl.add_css_class("progress-skipped")
 
-            self._set_status("Setup complete! Restarting...", error=False)
-            GLib.timeout_add_seconds(2, _reboot)
+    def _on_step_failed(self, index: int, error: str, is_flatpak: bool) -> None:
+        lbl = self._step_labels[index]
+        label_text = self._steps[index][0]
+        lbl.set_text(f"  {label_text} — {error}")
 
-        def _reboot() -> bool:
-            subprocess.run(["systemctl", "reboot"])
-            return GLib.SOURCE_REMOVE
+        for cls in ("progress-pending", "progress-active", "progress-done"):
+            lbl.remove_css_class(cls)
+        lbl.add_css_class("progress-failed")
 
-        def _thread_target() -> None:
-            err = _create_account()
-            GLib.idle_add(_on_done, err)
+        if is_flatpak:
+            self._progress_retry_btn.set_visible(True)
+            self._progress_skip_btn.set_visible(True)
+            self._run_from_step = index
+        else:
+            self._progress_back_btn.set_visible(True)
 
-        threading.Thread(target=_thread_target, daemon=True).start()
+    def _on_all_steps_done(self) -> None:
+        self._progress_title.set_text("Setup Complete!")
+        self._progress_reboot_btn.set_visible(True)
+
+    def _progress_retry(self) -> None:
+        self._start_step_runner()
+
+    def _progress_skip(self) -> None:
+        # Mark remaining Flatpak steps as skipped
+        for i in range(self._run_from_step, len(self._steps)):
+            _, _, is_flatpak = self._steps[i]
+            if is_flatpak:
+                self._update_step_status(i, "skipped")
+
+        # Write stamp and show reboot
+        stamp = Path("/var/lib/universal-lite/flatpak-setup.done")
+        stamp.parent.mkdir(parents=True, exist_ok=True)
+        stamp.touch()
+        self._on_all_steps_done()
+
+    def _progress_go_back(self) -> None:
+        """Return to confirm page on fatal error for correction."""
+        self._current_page = PAGE_CONFIRM
+        self._update_navigation()
 
 
 class SetupWizardApp(Gtk.Application):
