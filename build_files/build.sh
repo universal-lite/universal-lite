@@ -15,6 +15,7 @@ dnf5 install -y \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_MAJOR}.noarch.rpm"
 
 dnf5 install -y --setopt=install_weak_deps=False \
+    accountsservice \
     adw-gtk3-theme \
     alsa-utils \
     bash-completion \
@@ -109,6 +110,7 @@ systemctl enable power-profiles-daemon.service
 systemctl enable systemd-repart.service
 systemctl enable universal-lite-flatpak-setup.service
 systemctl enable universal-lite-greeter-setup.service
+systemctl enable accounts-daemon.service
 systemctl enable cups.service
 systemctl enable bluetooth.service
 

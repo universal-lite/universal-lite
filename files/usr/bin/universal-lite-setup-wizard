@@ -74,7 +74,7 @@ button.create-button {
     font-weight: bold;
     padding: 12px 32px;
     border-radius: 8px;
-    background-color: #3584e4;
+    background: #3584e4;
     color: #ffffff;
 }
 
@@ -83,11 +83,11 @@ button.create-button label {
 }
 
 button.create-button:hover {
-    background-color: #62a0ea;
+    background: #62a0ea;
 }
 
 button.create-button:disabled {
-    background-color: #555555;
+    background: #555555;
     color: #999999;
 }
 
