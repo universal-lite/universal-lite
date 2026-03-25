@@ -50,11 +50,3 @@ if ! pgrep -x Thunar >/dev/null 2>&1; then
   Thunar --daemon >/dev/null 2>&1 &
 fi
 
-# Notify if Flatpak setup hasn't completed (e.g., no network on first boot)
-(
-  sleep 3
-  if [[ ! -f /var/lib/universal-lite/flatpak-setup.done ]]; then
-    notify-send -a "Universal-Lite" "App Store Setup Incomplete" \
-      "Connect to Wi-Fi and restart to finish setting up the app store."
-  fi
-) &
