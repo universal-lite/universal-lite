@@ -67,7 +67,7 @@
       <action name="Execute" command="universal-lite-settings"/>
     </keybind>
     <keybind key="W-space">
-      <action name="ShowMenu" menu="root-menu"/>
+      <action name="Execute" command="fuzzel"/>
     </keybind>
 
     <!-- Window management -->
