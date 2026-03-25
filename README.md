@@ -23,7 +23,7 @@ Find your target device (SD card, USB stick, etc.) — **double-check the device
 
 ```bash
 lsblk
-sudo dd if=output/disk/disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
+sudo dd if=output/raw/disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
 Insert the flashed media into the target machine and boot from it. The root partition automatically grows to fill all available space on first boot.
@@ -60,7 +60,13 @@ That's it. The system pulls image updates automatically from the daily builds. R
 
 ## First-boot setup
 
-On first boot, a setup wizard appears asking you to create a user account (full name, username, and password). After account creation the system reboots into the normal login screen. No manual account creation is needed.
+On first boot, a 3-page setup wizard walks you through:
+
+1. **Account** — full name, username, and password
+2. **System setup** — timezone, memory management (zram or zswap), administrator access, optional root password
+3. **Confirmation** — review your choices before applying
+
+After setup the system reboots into the normal login screen.
 
 ## What's included
 
@@ -69,7 +75,8 @@ On first boot, a setup wizard appears asking you to create a user account (full 
 | Base image | `ghcr.io/ublue-os/base-main:latest` | Lightest Universal Blue base — no bundled DE |
 | Compositor | `labwc` | wlroots-based, minimal memory footprint |
 | Panel | `waybar` | Chromebook-style shelf (bottom by default) |
-| App menu | `labwc` built-in | Categorized menu from shelf, Super+Space, or right-click desktop |
+| App launcher | `fuzzel` | Searchable launcher via Super+Space |
+| App menu | `labwc` built-in | Categorized menu from waybar "Apps" button |
 | Browser | `google-chrome-stable` | Familiar to Chromebook users |
 | File manager | `Thunar` | Lightweight, thumbnail support |
 | Greeter | `greetd` + `gtkgreet` | Minimal login screen via `cage` kiosk |
@@ -104,7 +111,7 @@ On first boot, a setup wizard appears asking you to create a user account (full 
 
 | Shortcut | Action |
 |----------|--------|
-| `Super+Space` | App launcher |
+| `Super+Space` | Search for apps (fuzzel) |
 | `Super+L` | Lock screen |
 | `Super+E` | File manager (Thunar) |
 | `Super+Escape` | Task manager (htop) |
@@ -159,6 +166,7 @@ just build          # OCI container image
 just build-raw      # Raw disk image (for dd)
 just build-iso      # Anaconda ISO (needs 4+ GB RAM to install)
 just build-qcow2    # QCOW2 for VM testing
+just convert-raw    # Convert raw to QCOW2 (for GNOME Boxes)
 ```
 
 ### Test in a VM
@@ -167,6 +175,8 @@ just build-qcow2    # QCOW2 for VM testing
 just run-vm-qcow2
 just run-vm-raw
 ```
+
+> **GNOME Boxes users**: Do not import `disk.raw` directly — Boxes may truncate the image. Run `just convert-raw` first and import the resulting QCOW2.
 
 ### Lint and check
 
@@ -208,7 +218,10 @@ files/
     yum.repos.d/google-chrome.repo    # Chrome package source
   usr/
     bin/universal-lite-settings       # Settings GUI (Python/GTK4)
+    bin/universal-lite-setup-wizard   # First-boot setup wizard (Python/GTK4)
     libexec/universal-lite-apply-settings  # Settings applier
+    libexec/universal-lite-greeter-setup   # Greeter config (first-boot vs login)
+    libexec/universal-lite-flatpak-setup   # Flathub + default apps installer
     libexec/universal-lite-session-init    # Session startup script
     share/backgrounds/                # Bundled wallpapers
     share/universal-lite/             # Default settings + themes
