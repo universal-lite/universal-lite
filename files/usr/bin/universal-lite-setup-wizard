@@ -423,20 +423,95 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return scrolled
 
     def _build_network_page(self) -> Gtk.ScrolledWindow:
-        """Stub — replaced in Task 3."""
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled.set_propagate_natural_height(True)
+
         wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         wrapper.set_halign(Gtk.Align.CENTER)
         wrapper.set_valign(Gtk.Align.CENTER)
+
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         card.add_css_class("card")
         card.set_size_request(480, -1)
+
         title = Gtk.Label(label="Connect to Wi-Fi")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
+
+        subtitle = Gtk.Label(label="Select a network to get online.")
+        subtitle.add_css_class("welcome-subtitle")
+        subtitle.set_halign(Gtk.Align.CENTER)
+        card.append(subtitle)
+
+        # WiFi network list
+        self._wifi_list = Gtk.ListBox()
+        self._wifi_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        self._wifi_list.set_vexpand(False)
+        card.append(self._wifi_list)
+
+        # "No networks" placeholder
+        self._wifi_empty_label = Gtk.Label(label="Scanning for networks...")
+        self._wifi_empty_label.add_css_class("wifi-detail")
+        self._wifi_empty_label.set_margin_top(16)
+        self._wifi_empty_label.set_margin_bottom(8)
+        card.append(self._wifi_empty_label)
+
+        # Rescan button
+        self._rescan_button = Gtk.Button(label="Rescan")
+        self._rescan_button.add_css_class("back-button")
+        self._rescan_button.set_halign(Gtk.Align.CENTER)
+        self._rescan_button.set_visible(False)
+        self._rescan_button.connect("clicked", lambda _: self._request_wifi_scan())
+        card.append(self._rescan_button)
+
+        # Hidden network section
+        self._hidden_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self._hidden_box.set_visible(False)
+        self._hidden_box.set_margin_top(8)
+
+        self._hidden_box.append(self._make_label("Network Name (SSID)"))
+        self._hidden_ssid_entry = Gtk.Entry()
+        self._hidden_ssid_entry.add_css_class("form-entry")
+        self._hidden_ssid_entry.set_hexpand(True)
+        self._hidden_box.append(self._hidden_ssid_entry)
+
+        self._hidden_box.append(self._make_label("Password"))
+        self._hidden_pw_entry = Gtk.PasswordEntry()
+        self._hidden_pw_entry.set_show_peek_icon(True)
+        self._hidden_pw_entry.add_css_class("form-entry")
+        self._hidden_pw_entry.set_hexpand(True)
+        self._hidden_box.append(self._hidden_pw_entry)
+
+        hidden_connect_btn = Gtk.Button(label="Connect")
+        hidden_connect_btn.add_css_class("create-button")
+        hidden_connect_btn.set_halign(Gtk.Align.END)
+        hidden_connect_btn.set_margin_top(8)
+        hidden_connect_btn.connect("clicked", lambda _: self._connect_hidden_network())
+        self._hidden_box.append(hidden_connect_btn)
+
+        card.append(self._hidden_box)
+
+        # "Join hidden network" toggle
+        hidden_link = Gtk.Button(label="Join hidden network...")
+        hidden_link.add_css_class("back-button")
+        hidden_link.set_halign(Gtk.Align.START)
+        hidden_link.set_margin_top(8)
+        hidden_link.connect("clicked", lambda _: self._hidden_box.set_visible(
+            not self._hidden_box.get_visible()))
+        card.append(hidden_link)
+
+        # Network status
+        self._net_status_label = Gtk.Label(label="")
+        self._net_status_label.add_css_class("status-label")
+        self._net_status_label.set_halign(Gtk.Align.CENTER)
+        self._net_status_label.set_wrap(True)
+        self._net_status_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._net_status_label.set_max_width_chars(50)
+        self._net_status_label.set_margin_top(8)
+        card.append(self._net_status_label)
+
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
@@ -606,6 +681,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
+
+    def _request_wifi_scan(self) -> None:
+        """Trigger a WiFi scan via NM. Implemented in Task 4."""
+        pass
+
+    def _connect_hidden_network(self) -> None:
+        """Connect to a hidden network. Implemented in Task 4."""
+        pass
 
     # ------------------------------------------------------------------
     # Helpers
