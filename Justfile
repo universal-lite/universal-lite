@@ -163,8 +163,7 @@ _build-bib $target_image $tag $type $config: (_rootful_load_image target_image t
     set -euo pipefail
 
     args="--type ${type} "
-    args+="--use-librepo=True "
-    args+="--rootfs=btrfs"
+    args+="--use-librepo=True"
 
     BUILDTMP=$(mktemp -p "${PWD}" -d -t _build-bib.XXXXXXXXXX)
 
@@ -220,6 +219,21 @@ rebuild-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_reb
 # Rebuild an ISO virtual machine image
 [group('Build Virtal Machine Image')]
 rebuild-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_rebuild-bib target_image tag "iso" "disk_config/iso.toml")
+
+# Convert a RAW disk image to QCOW2 (for GNOME Boxes or other VM managers)
+[group('Build Virtal Machine Image')]
+convert-raw:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    raw="output/raw/disk.raw"
+    qcow2="output/raw/disk.qcow2"
+    if [[ ! -f "${raw}" ]]; then
+        echo "Error: ${raw} not found. Run 'just build-raw' first."
+        exit 1
+    fi
+    echo "Converting ${raw} to ${qcow2}..."
+    qemu-img convert -f raw -O qcow2 "${raw}" "${qcow2}"
+    echo "Done. Import ${qcow2} into GNOME Boxes (do not import the raw file directly)."
 
 # Run a virtual machine with the specified image type and configuration
 _run-vm $target_image $tag $type $config:
