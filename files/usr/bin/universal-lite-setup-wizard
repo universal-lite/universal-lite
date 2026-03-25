@@ -699,12 +699,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         subtitle.set_halign(Gtk.Align.CENTER)
         card.append(subtitle)
 
+        self._summary_network = self._make_summary_row(card, "Network")
         self._summary_name = self._make_summary_row(card, "Name")
         self._summary_username = self._make_summary_row(card, "Username")
         self._summary_timezone = self._make_summary_row(card, "Timezone")
         self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_admin = self._make_summary_row(card, "Administrator")
         self._summary_root = self._make_summary_row(card, "Root password")
+        self._summary_apps = self._make_summary_row(card, "Apps")
 
         wrapper.append(card)
         scrolled.set_child(wrapper)
@@ -1136,6 +1138,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _populate_summary(self) -> None:
+        # Network
+        if self._connected_ssid == "(Wired)":
+            self._summary_network.set_text("Wired connection")
+        elif self._connected_ssid:
+            self._summary_network.set_text(f"Connected to {self._connected_ssid}")
+        else:
+            self._summary_network.set_text("No network (offline setup)")
+
         self._summary_name.set_text(self._fullname_entry.get_text().strip())
         self._summary_username.set_text(self._username_entry.get_text().strip())
         self._summary_timezone.set_text(self._get_selected_timezone())
@@ -1149,6 +1159,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._summary_memory.set_text(f"zswap with {swap_gb} GB disk swap")
         else:
             self._summary_memory.set_text("zram only (compressed RAM)")
+
+        # Apps
+        selected = self._get_selected_apps()
+        if selected:
+            self._summary_apps.set_text(", ".join(name for _, name in selected))
+        else:
+            self._summary_apps.set_text("No apps selected")
 
     # ------------------------------------------------------------------
     # Swap signal handlers
