@@ -7,13 +7,23 @@ set -euo pipefail
 
 CONFIG="/etc/greetd/config.toml"
 
+# WLR_NO_HARDWARE_CURSORS: fixes upside-down/offset cursor on VMs and some GPUs
+CAGE_ENV="WLR_NO_HARDWARE_CURSORS=1"
+
+# Force GTK4 software rendering in VMs where the virtual GPU garbles output
+if systemd-detect-virt -q 2>/dev/null; then
+    CAGE_ENV="$CAGE_ENV GSK_RENDERER=cairo"
+fi
+
+CAGE="env $CAGE_ENV cage -s --"
+
 if getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {found=1} END {exit !found}'; then
     # Users exist — normal login
-    COMMAND='cage -s -- gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments'
+    COMMAND="$CAGE gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments"
     USER="greetd"
 else
     # No users — first boot setup (needs root for useradd/chpasswd)
-    COMMAND='cage -s -- /usr/bin/universal-lite-setup-wizard'
+    COMMAND="$CAGE /usr/bin/universal-lite-setup-wizard"
     USER="root"
 fi
 
