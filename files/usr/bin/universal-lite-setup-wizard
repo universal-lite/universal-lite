@@ -709,27 +709,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         check=True, capture_output=True, text=True,
                     )
                     subprocess.run(
-                        ["mkswap", "/var/swap"],
-                        check=True, capture_output=True, text=True,
-                    )
-
-                    Path("/etc/systemd/system/var-swap.swap").write_text(
-                        "[Unit]\n"
-                        "Description=Disk swap file\n"
-                        "\n"
-                        "[Swap]\n"
-                        "What=/var/swap\n"
-                        "Priority=0\n"
-                        "\n"
-                        "[Install]\n"
-                        "WantedBy=swap.target\n"
-                    )
-                    subprocess.run(
-                        ["systemctl", "enable", "var-swap.swap"],
-                        check=True, capture_output=True, text=True,
-                    )
-                    subprocess.run(
-                        ["swapon", "/var/swap"],
+                        ["systemctl", "enable", "universal-lite-encrypted-swap.service"],
                         check=True, capture_output=True, text=True,
                     )
                 except subprocess.CalledProcessError as exc:
