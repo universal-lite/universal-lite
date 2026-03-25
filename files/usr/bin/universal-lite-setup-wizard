@@ -1384,7 +1384,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         if use_zswap:
             try:
-                Path("/etc/systemd/zram-generator.conf").write_text("")
+                conf = Path("/etc/systemd/zram-generator.conf")
+                conf.unlink(missing_ok=True)
+                conf.write_text("")
                 subprocess.run(
                     [
                         "grubby", "--update-kernel=ALL",
