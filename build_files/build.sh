@@ -108,7 +108,6 @@ chmod 0755 \
 systemctl mask plymouth-quit-wait.service plymouth-quit.service
 systemctl enable greetd.service
 systemctl enable power-profiles-daemon.service
-systemctl enable systemd-repart.service
 systemctl enable universal-lite-greeter-setup.service
 systemctl enable accounts-daemon.service
 systemctl enable cups.service

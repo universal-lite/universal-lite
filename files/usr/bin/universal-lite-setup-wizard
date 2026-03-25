@@ -611,6 +611,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._root_password_entry.connect("activate", lambda _: self._go_next())
         card.append(self._root_password_entry)
 
+        # Partition expansion
+        self._expand_root_check = Gtk.CheckButton(label="Expand root partition to fill disk")
+        self._expand_root_check.set_active(True)
+        self._expand_root_check.add_css_class("form-label")
+        card.append(self._expand_root_check)
+
+        expand_desc = Gtk.Label(
+            label="Grows the root partition to use all available disk space on next boot."
+        )
+        expand_desc.add_css_class("form-description")
+        expand_desc.set_halign(Gtk.Align.START)
+        expand_desc.set_wrap(True)
+        expand_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        expand_desc.set_max_width_chars(50)
+        card.append(expand_desc)
+
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
@@ -706,6 +722,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_admin = self._make_summary_row(card, "Administrator")
         self._summary_root = self._make_summary_row(card, "Root password")
+        self._summary_expand = self._make_summary_row(card, "Expand partition")
         self._summary_apps = self._make_summary_row(card, "Apps")
 
         wrapper.append(card)
@@ -1201,6 +1218,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         else:
             self._summary_memory.set_text("zram only (compressed RAM)")
 
+        self._summary_expand.set_text(
+            "Yes" if self._expand_root_check.get_active() else "No"
+        )
+
         # Apps
         selected = self._get_selected_apps()
         if selected:
@@ -1396,6 +1417,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             except OSError as exc:
                 return f"Failed to configure swap: {exc}"
 
+        if self._setup_expand_root:
+            try:
+                subprocess.run(
+                    ["systemctl", "enable", "systemd-repart.service"],
+                    check=True, capture_output=True, text=True,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to enable partition expansion: {exc.stderr.strip() or exc}"
+
         return None
 
     def _step_add_flathub(self) -> str | None:
@@ -1435,6 +1465,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._setup_root_password = self._root_password_entry.get_text()
         self._setup_timezone = self._get_selected_timezone()
         self._setup_use_zswap, self._setup_swap_gb = self._get_swap_config()
+        self._setup_expand_root = self._expand_root_check.get_active()
 
         # Build step list: (label, callable, is_flatpak_step)
         self._steps: list[tuple[str, callable, bool]] = [
