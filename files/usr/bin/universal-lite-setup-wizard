@@ -3,12 +3,16 @@
 
 Runs inside cage (kiosk Wayland compositor) on the login screen when no user
 accounts exist.  Creates a local user with sudo (wheel) access, configures
-timezone and swap, then reboots into the normal login screen.
+timezone, swap, and optional Flatpak apps, then reboots into the normal
+login screen.
 
-Three-page flow:
+Six-page flow:
+  Page 0 — Network (WiFi scan-and-connect, auto-skipped if online)
   Page 1 — Account (name, username, password)
   Page 2 — System setup (timezone, memory management, admin/root)
-  Page 3 — Summary and confirmation
+  Page 3 — Apps (Flatpak app selection)
+  Page 4 — Summary and confirmation
+  Page 5 — Progress (real-time setup execution)
 """
 
 import os
@@ -21,7 +25,8 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, Gdk, GLib, Gio, Pango  # noqa: E402
+gi.require_version("NM", "1.0")
+from gi.repository import Gtk, Gdk, GLib, Gio, NM, Pango  # noqa: E402
 
 APP_ID = "org.universallite.SetupWizard"
 
@@ -163,6 +168,80 @@ button.back-button:hover label {
     color: #999999;
     margin-bottom: 8px;
 }
+
+.wifi-row {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: #363636;
+    margin-bottom: 4px;
+}
+
+.wifi-row:hover {
+    background-color: #404040;
+}
+
+.wifi-ssid {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.wifi-detail {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: #aaaaaa;
+}
+
+.wifi-connected {
+    background-color: #1a3a1a;
+    border: 1px solid #57e389;
+}
+
+.app-row {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: #363636;
+    margin-bottom: 4px;
+}
+
+.app-name {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+.app-description {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: #aaaaaa;
+}
+
+.progress-step {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    padding: 8px 0;
+}
+
+.progress-pending {
+    color: #888888;
+}
+
+.progress-active {
+    color: #62a0ea;
+}
+
+.progress-done {
+    color: #57e389;
+}
+
+.progress-failed {
+    color: #ff6b6b;
+}
+
+.progress-skipped {
+    color: #888888;
+    font-style: italic;
+}
 """
 
 USERNAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
@@ -174,9 +253,18 @@ SWAP_STRATEGIES = [
 
 SWAP_SIZES = ["2 GB", "4 GB", "Custom"]
 
-PAGE_ACCOUNT = 0
-PAGE_SYSTEM = 1
-PAGE_CONFIRM = 2
+PAGE_NETWORK = 0
+PAGE_ACCOUNT = 1
+PAGE_SYSTEM = 2
+PAGE_APPS = 3
+PAGE_CONFIRM = 4
+PAGE_PROGRESS = 5
+
+DEFAULT_FLATPAKS = [
+    ("dev.bazaar.app", "Bazaar", "Browse and install apps"),
+]
+
+FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
 
 
 def _hash_password(plaintext: str) -> str:
@@ -214,7 +302,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self.set_default_size(800, 600)
 
         self._timezones = _load_timezones()
-        self._current_page = PAGE_ACCOUNT
+        self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
+        self._connected_ssid: str | None = None
+        self._current_page = PAGE_ACCOUNT  # Start at Account (network skipped by default)
 
         # --- outer centering container ---
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
@@ -224,7 +314,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         outer.set_margin_bottom(24)
 
         # Step indicator
-        self._step_label = Gtk.Label(label="Step 1 of 3")
+        self._step_label = Gtk.Label(label="Step 1 of 4")
         self._step_label.add_css_class("step-indicator")
         self._step_label.set_halign(Gtk.Align.CENTER)
         outer.append(self._step_label)
@@ -234,9 +324,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(200)
 
+        self._stack.add_named(self._build_network_page(), "network")
         self._stack.add_named(self._build_account_page(), "account")
         self._stack.add_named(self._build_system_page(), "system")
+        self._stack.add_named(self._build_apps_page(), "apps")
         self._stack.add_named(self._build_confirm_page(), "confirm")
+        self._stack.add_named(self._build_progress_page(), "progress")
         outer.append(self._stack)
 
         # Status label (shared across pages)
@@ -267,6 +360,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         outer.append(btn_row)
         self.set_child(outer)
+        self._update_navigation()
 
     # ------------------------------------------------------------------
     # Page builders
@@ -324,6 +418,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._confirm_entry.connect("activate", lambda _: self._go_next())
         card.append(self._confirm_entry)
 
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
+
+    def _build_network_page(self) -> Gtk.ScrolledWindow:
+        """Stub — replaced in Task 3."""
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_propagate_natural_height(True)
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+        title = Gtk.Label(label="Connect to Wi-Fi")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
@@ -422,6 +535,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         scrolled.set_child(wrapper)
         return scrolled
 
+    def _build_apps_page(self) -> Gtk.ScrolledWindow:
+        """Stub — replaced in Task 5."""
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_propagate_natural_height(True)
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+        title = Gtk.Label(label="Install Apps")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
+
     def _build_confirm_page(self) -> Gtk.ScrolledWindow:
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -456,9 +588,32 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         scrolled.set_child(wrapper)
         return scrolled
 
+    def _build_progress_page(self) -> Gtk.ScrolledWindow:
+        """Stub — replaced in Task 7."""
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_propagate_natural_height(True)
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+        title = Gtk.Label(label="Setting Up...")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
+
     # ------------------------------------------------------------------
     # Helpers
     # ------------------------------------------------------------------
+
+    def _get_selected_apps(self) -> list[tuple[str, str]]:
+        """Return list of (app_id, app_name) for checked apps. Stub until Task 5."""
+        return []
 
     @staticmethod
     def _make_label(text: str) -> Gtk.Label:
@@ -484,6 +639,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # Navigation
     # ------------------------------------------------------------------
 
+    def _get_pages(self) -> list[str]:
+        """Return ordered page names, excluding auto-skipped network."""
+        pages = ["network", "account", "system", "apps", "confirm", "progress"]
+        if self._network_skipped:
+            pages.remove("network")
+        return pages
+
+    def _get_first_page(self) -> int:
+        return PAGE_ACCOUNT if self._network_skipped else PAGE_NETWORK
+
     def _go_next(self) -> None:
         if not self._validate_page(self._current_page):
             return
@@ -500,18 +665,38 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._populate_summary()
 
     def _go_back(self) -> None:
-        if self._current_page == PAGE_ACCOUNT:
+        if self._current_page <= self._get_first_page():
             return
         self._current_page -= 1
         self._set_status("")
         self._update_navigation()
 
     def _update_navigation(self) -> None:
-        pages = ["account", "system", "confirm"]
-        self._stack.set_visible_child_name(pages[self._current_page])
-        self._step_label.set_text(f"Step {self._current_page + 1} of 3")
-        self._back_button.set_visible(self._current_page > PAGE_ACCOUNT)
-        self._next_button.set_label("Set Up" if self._current_page == PAGE_CONFIRM else "Next")
+        page_names = {
+            PAGE_NETWORK: "network", PAGE_ACCOUNT: "account",
+            PAGE_SYSTEM: "system", PAGE_APPS: "apps",
+            PAGE_CONFIRM: "confirm", PAGE_PROGRESS: "progress",
+        }
+        self._stack.set_visible_child_name(page_names[self._current_page])
+
+        pages = self._get_pages()
+        current_name = page_names[self._current_page]
+        visible_idx = pages.index(current_name) if current_name in pages else 0
+        total = len(pages) - 1  # Exclude progress from step count
+
+        is_progress = self._current_page == PAGE_PROGRESS
+        self._step_label.set_visible(not is_progress)
+        if not is_progress:
+            self._step_label.set_text(f"Step {visible_idx + 1} of {total}")
+
+        first = self._get_first_page()
+        self._back_button.set_visible(
+            self._current_page > first and not is_progress
+        )
+        self._next_button.set_visible(not is_progress)
+        self._next_button.set_label(
+            "Set Up" if self._current_page == PAGE_CONFIRM else "Next"
+        )
 
         # Focus first input on new page
         if self._current_page == PAGE_ACCOUNT:
@@ -528,7 +713,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return self._validate_account()
         elif page == PAGE_SYSTEM:
             return self._validate_system()
-        return True
+        return True  # Network, Apps, Confirm have no blocking validation
 
     def _validate_account(self) -> bool:
         fullname = self._fullname_entry.get_text().strip()
