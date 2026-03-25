@@ -616,20 +616,62 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return scrolled
 
     def _build_apps_page(self) -> Gtk.ScrolledWindow:
-        """Stub — replaced in Task 5."""
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled.set_propagate_natural_height(True)
+
         wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         wrapper.set_halign(Gtk.Align.CENTER)
         wrapper.set_valign(Gtk.Align.CENTER)
+
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         card.add_css_class("card")
         card.set_size_request(480, -1)
+
         title = Gtk.Label(label="Install Apps")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
+
+        subtitle = Gtk.Label(
+            label="These apps will be installed during setup. Uncheck any you don't want."
+        )
+        subtitle.add_css_class("welcome-subtitle")
+        subtitle.set_halign(Gtk.Align.CENTER)
+        subtitle.set_wrap(True)
+        subtitle.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        subtitle.set_max_width_chars(50)
+        card.append(subtitle)
+
+        self._app_checks: list[tuple[str, str, Gtk.CheckButton]] = []
+
+        for app_id, app_name, app_desc in DEFAULT_FLATPAKS:
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+            row.add_css_class("app-row")
+
+            text_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            text_box.set_hexpand(True)
+
+            name_label = Gtk.Label(label=app_name)
+            name_label.add_css_class("app-name")
+            name_label.set_halign(Gtk.Align.START)
+            text_box.append(name_label)
+
+            desc_label = Gtk.Label(label=app_desc)
+            desc_label.add_css_class("app-description")
+            desc_label.set_halign(Gtk.Align.START)
+            text_box.append(desc_label)
+
+            row.append(text_box)
+
+            check = Gtk.CheckButton()
+            check.set_active(True)
+            check.set_valign(Gtk.Align.CENTER)
+            row.append(check)
+
+            self._app_checks.append((app_id, app_name, check))
+            card.append(row)
+
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
@@ -941,8 +983,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _get_selected_apps(self) -> list[tuple[str, str]]:
-        """Return list of (app_id, app_name) for checked apps. Stub until Task 5."""
-        return []
+        """Return list of (app_id, app_name) for checked apps."""
+        return [(aid, name) for aid, name, check in self._app_checks if check.get_active()]
 
     @staticmethod
     def _make_label(text: str) -> Gtk.Label:
