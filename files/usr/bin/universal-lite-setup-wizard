@@ -4,11 +4,17 @@
 Runs inside cage (kiosk Wayland compositor) on the login screen when no user
 accounts exist.  Creates a local user with sudo (wheel) access, configures
 timezone and swap, then reboots into the normal login screen.
+
+Three-page flow:
+  Page 1 — Account (name, username, password)
+  Page 2 — System setup (timezone, memory management, admin/root)
+  Page 3 — Summary and confirmation
 """
 
 import re
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 import gi
@@ -69,7 +75,6 @@ window {
     border-radius: 8px;
     background-color: #3584e4;
     color: #ffffff;
-    margin-top: 24px;
 }
 
 .create-button:hover {
@@ -81,10 +86,25 @@ window {
     color: #999999;
 }
 
+.back-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 18px;
+    padding: 12px 32px;
+    border-radius: 8px;
+    background-color: transparent;
+    color: #aaaaaa;
+    border: none;
+}
+
+.back-button:hover {
+    color: #dddddd;
+}
+
 .status-label {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
-    margin-top: 12px;
+    margin-top: 8px;
+    min-height: 20px;
 }
 
 .status-error {
@@ -98,24 +118,29 @@ window {
 .card {
     background-color: #2e2e2e;
     border-radius: 16px;
-    padding: 48px;
+    padding: 40px;
     border: 1px solid #444444;
 }
 
-.section-header {
+.step-indicator {
     font-family: "Roboto", sans-serif;
-    font-size: 18px;
-    font-weight: bold;
-    color: #ffffff;
-    margin-top: 20px;
-    margin-bottom: 8px;
+    font-size: 14px;
+    color: #aaaaaa;
+    margin-bottom: 16px;
 }
 
-.separator {
-    background-color: #444444;
-    min-height: 1px;
-    margin-top: 16px;
-    margin-bottom: 8px;
+.summary-row {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    color: #aaaaaa;
+    margin-top: 8px;
+}
+
+.summary-value {
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    color: #ffffff;
+    margin-bottom: 4px;
 }
 
 .form-description {
@@ -135,6 +160,10 @@ SWAP_STRATEGIES = [
 
 SWAP_SIZES = ["2 GB", "4 GB", "Custom"]
 
+PAGE_ACCOUNT = 0
+PAGE_SYSTEM = 1
+PAGE_CONFIRM = 2
+
 
 def _load_timezones() -> list[str]:
     """Return the list of available timezones from timedatectl."""
@@ -149,7 +178,6 @@ def _load_timezones() -> list[str]:
             return zones
     except Exception:
         pass
-    # Fallback if timedatectl is unavailable
     return ["America/New_York", "America/Chicago", "America/Denver",
             "America/Los_Angeles", "Europe/London", "UTC"]
 
@@ -157,137 +185,179 @@ def _load_timezones() -> list[str]:
 class SetupWizardWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app, title="Universal-Lite Setup Wizard")
-        self.set_default_size(800, 750)
+        self.set_default_size(800, 600)
 
-        # Load timezones at startup
         self._timezones = _load_timezones()
+        self._current_page = PAGE_ACCOUNT
 
-        # --- outer centering container with scrolling ---
-        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
-        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-
+        # --- outer centering container ---
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         outer.set_halign(Gtk.Align.CENTER)
         outer.set_valign(Gtk.Align.CENTER)
         outer.set_margin_top(24)
         outer.set_margin_bottom(24)
 
-        # --- card ---
+        # Step indicator
+        self._step_label = Gtk.Label(label="Step 1 of 3")
+        self._step_label.add_css_class("step-indicator")
+        self._step_label.set_halign(Gtk.Align.CENTER)
+        outer.append(self._step_label)
+
+        # Page stack
+        self._stack = Gtk.Stack()
+        self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self._stack.set_transition_duration(200)
+
+        self._stack.add_named(self._build_account_page(), "account")
+        self._stack.add_named(self._build_system_page(), "system")
+        self._stack.add_named(self._build_confirm_page(), "confirm")
+        outer.append(self._stack)
+
+        # Status label (shared across pages)
+        self._status_label = Gtk.Label(label="")
+        self._status_label.add_css_class("status-label")
+        self._status_label.set_halign(Gtk.Align.CENTER)
+        self._status_label.set_wrap(True)
+        self._status_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._status_label.set_max_width_chars(50)
+        outer.append(self._status_label)
+
+        # Button row
+        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        btn_row.set_halign(Gtk.Align.END)
+        btn_row.set_margin_top(16)
+        btn_row.set_size_request(480, -1)
+
+        self._back_button = Gtk.Button(label="Back")
+        self._back_button.add_css_class("back-button")
+        self._back_button.connect("clicked", lambda _: self._go_back())
+        self._back_button.set_visible(False)
+        btn_row.append(self._back_button)
+
+        self._next_button = Gtk.Button(label="Next")
+        self._next_button.add_css_class("create-button")
+        self._next_button.connect("clicked", lambda _: self._go_next())
+        btn_row.append(self._next_button)
+
+        outer.append(btn_row)
+        self.set_child(outer)
+
+    # ------------------------------------------------------------------
+    # Page builders
+    # ------------------------------------------------------------------
+
+    def _build_account_page(self) -> Gtk.ScrolledWindow:
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
+
         card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        # Title
         title = Gtk.Label(label="Welcome to Universal-Lite")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
 
-        # Subtitle
         subtitle = Gtk.Label(label="Create your account to get started.")
         subtitle.add_css_class("welcome-subtitle")
         subtitle.set_halign(Gtk.Align.CENTER)
         card.append(subtitle)
 
-        # Full name
         card.append(self._make_label("Full Name"))
-        self.fullname_entry = Gtk.Entry()
-        self.fullname_entry.set_placeholder_text("Jane Doe")
-        self.fullname_entry.add_css_class("form-entry")
-        self.fullname_entry.set_hexpand(True)
-        card.append(self.fullname_entry)
+        self._fullname_entry = Gtk.Entry()
+        self._fullname_entry.set_placeholder_text("Jane Doe")
+        self._fullname_entry.add_css_class("form-entry")
+        self._fullname_entry.set_hexpand(True)
+        card.append(self._fullname_entry)
 
-        # Username
         card.append(self._make_label("Username"))
-        self.username_entry = Gtk.Entry()
-        self.username_entry.set_placeholder_text("janedoe")
-        self.username_entry.add_css_class("form-entry")
-        self.username_entry.set_hexpand(True)
-        card.append(self.username_entry)
+        self._username_entry = Gtk.Entry()
+        self._username_entry.set_placeholder_text("janedoe")
+        self._username_entry.add_css_class("form-entry")
+        self._username_entry.set_hexpand(True)
+        card.append(self._username_entry)
 
-        # Password
         card.append(self._make_label("Password"))
-        self.password_entry = Gtk.PasswordEntry()
-        self.password_entry.set_show_peek_icon(True)
-        self.password_entry.add_css_class("form-entry")
-        self.password_entry.set_hexpand(True)
-        card.append(self.password_entry)
+        self._password_entry = Gtk.PasswordEntry()
+        self._password_entry.set_show_peek_icon(True)
+        self._password_entry.add_css_class("form-entry")
+        self._password_entry.set_hexpand(True)
+        card.append(self._password_entry)
 
-        # Confirm password
         card.append(self._make_label("Confirm Password"))
-        self.confirm_entry = Gtk.PasswordEntry()
-        self.confirm_entry.set_show_peek_icon(True)
-        self.confirm_entry.add_css_class("form-entry")
-        self.confirm_entry.set_hexpand(True)
-        card.append(self.confirm_entry)
+        self._confirm_entry = Gtk.PasswordEntry()
+        self._confirm_entry.set_show_peek_icon(True)
+        self._confirm_entry.add_css_class("form-entry")
+        self._confirm_entry.set_hexpand(True)
+        self._confirm_entry.connect("activate", lambda _: self._go_next())
+        card.append(self._confirm_entry)
 
-        # Administrator checkbox
-        self.admin_check = Gtk.CheckButton(label="Administrator account (sudo)")
-        self.admin_check.set_active(True)
-        self.admin_check.add_css_class("form-label")
-        card.append(self.admin_check)
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
 
-        # Root password (optional)
-        card.append(self._make_label("Root Password (optional)"))
-        self.root_password_entry = Gtk.PasswordEntry()
-        self.root_password_entry.set_show_peek_icon(True)
-        self.root_password_entry.add_css_class("form-entry")
-        self.root_password_entry.set_hexpand(True)
-        card.append(self.root_password_entry)
+    def _build_system_page(self) -> Gtk.ScrolledWindow:
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
-        # --- separator ---
-        sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        sep.add_css_class("separator")
-        card.append(sep)
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
 
-        # --- System Setup sub-header ---
-        section_header = Gtk.Label(label="System Setup")
-        section_header.add_css_class("section-header")
-        section_header.set_halign(Gtk.Align.START)
-        card.append(section_header)
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
 
-        # --- Timezone dropdown ---
+        title = Gtk.Label(label="System Setup")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+
+        # Timezone
         card.append(self._make_label("Timezone"))
         tz_model = Gtk.StringList.new(self._timezones)
-        self.tz_dropdown = Gtk.DropDown(model=tz_model)
-        self.tz_dropdown.set_hexpand(True)
-        # Set default to America/New_York
+        self._tz_dropdown = Gtk.DropDown(model=tz_model)
+        self._tz_dropdown.set_hexpand(True)
         default_tz_idx = 0
         for i, tz in enumerate(self._timezones):
             if tz == "America/New_York":
                 default_tz_idx = i
                 break
-        self.tz_dropdown.set_selected(default_tz_idx)
-        card.append(self.tz_dropdown)
+        self._tz_dropdown.set_selected(default_tz_idx)
+        card.append(self._tz_dropdown)
 
-        # --- Swap strategy dropdown ---
+        # Memory management
         card.append(self._make_label("Memory management"))
         swap_model = Gtk.StringList.new(SWAP_STRATEGIES)
-        self.swap_strategy_dropdown = Gtk.DropDown(model=swap_model)
-        self.swap_strategy_dropdown.set_hexpand(True)
-        self.swap_strategy_dropdown.set_selected(0)
-        card.append(self.swap_strategy_dropdown)
+        self._swap_strategy_dropdown = Gtk.DropDown(model=swap_model)
+        self._swap_strategy_dropdown.set_hexpand(True)
+        self._swap_strategy_dropdown.set_selected(0)
+        card.append(self._swap_strategy_dropdown)
 
-        # --- Swap size controls (only visible when zswap selected) ---
-        self.swap_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        # Swap size controls (conditional)
+        self._swap_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        self.swap_size_box.append(self._make_label("Disk swap size"))
+        self._swap_size_box.append(self._make_label("Disk swap size"))
         swap_size_model = Gtk.StringList.new(SWAP_SIZES)
-        self.swap_size_dropdown = Gtk.DropDown(model=swap_size_model)
-        self.swap_size_dropdown.set_hexpand(True)
-        self.swap_size_dropdown.set_selected(0)
-        self.swap_size_box.append(self.swap_size_dropdown)
+        self._swap_size_dropdown = Gtk.DropDown(model=swap_size_model)
+        self._swap_size_dropdown.set_hexpand(True)
+        self._swap_size_dropdown.set_selected(0)
+        self._swap_size_box.append(self._swap_size_dropdown)
 
-        # Custom size entry (only visible when "Custom" selected)
-        self.custom_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.custom_size_box.append(self._make_label("Custom size (GB)"))
-        self.custom_size_entry = Gtk.Entry()
-        self.custom_size_entry.set_placeholder_text("8")
-        self.custom_size_entry.add_css_class("form-entry")
-        self.custom_size_entry.set_hexpand(True)
-        self.custom_size_box.append(self.custom_size_entry)
-        self.custom_size_box.set_visible(False)
-        self.swap_size_box.append(self.custom_size_box)
+        self._custom_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self._custom_size_box.append(self._make_label("Custom size (GB)"))
+        self._custom_size_entry = Gtk.Entry()
+        self._custom_size_entry.set_placeholder_text("8")
+        self._custom_size_entry.add_css_class("form-entry")
+        self._custom_size_entry.set_hexpand(True)
+        self._custom_size_box.append(self._custom_size_entry)
+        self._custom_size_box.set_visible(False)
+        self._swap_size_box.append(self._custom_size_box)
 
         desc = Gtk.Label(
             label="zswap uses compressed RAM as a cache and spills to a disk swap file when full."
@@ -297,36 +367,70 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         desc.set_wrap(True)
         desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
         desc.set_max_width_chars(50)
-        self.swap_size_box.append(desc)
+        self._swap_size_box.append(desc)
 
-        self.swap_size_box.set_visible(False)
-        card.append(self.swap_size_box)
+        self._swap_size_box.set_visible(False)
+        card.append(self._swap_size_box)
 
-        # Connect signals for swap strategy visibility
-        self.swap_strategy_dropdown.connect("notify::selected", self._on_swap_strategy_changed)
-        self.swap_size_dropdown.connect("notify::selected", self._on_swap_size_changed)
+        self._swap_strategy_dropdown.connect("notify::selected", self._on_swap_strategy_changed)
+        self._swap_size_dropdown.connect("notify::selected", self._on_swap_size_changed)
 
-        # Create account button
-        self.create_button = Gtk.Button(label="Create Account")
-        self.create_button.add_css_class("create-button")
-        self.create_button.set_halign(Gtk.Align.CENTER)
-        self.create_button.connect("clicked", self._on_create_clicked)
-        card.append(self.create_button)
+        # Administrator checkbox
+        self._admin_check = Gtk.CheckButton(label="Administrator account (sudo)")
+        self._admin_check.set_active(True)
+        self._admin_check.add_css_class("form-label")
+        card.append(self._admin_check)
 
-        # Status label
-        self.status_label = Gtk.Label(label="")
-        self.status_label.add_css_class("status-label")
-        self.status_label.set_halign(Gtk.Align.CENTER)
-        self.status_label.set_wrap(True)
-        self.status_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-        self.status_label.set_max_width_chars(50)
-        card.append(self.status_label)
+        # Root password
+        card.append(self._make_label("Root Password (optional)"))
+        self._root_password_entry = Gtk.PasswordEntry()
+        self._root_password_entry.set_show_peek_icon(True)
+        self._root_password_entry.add_css_class("form-entry")
+        self._root_password_entry.set_hexpand(True)
+        self._root_password_entry.connect("activate", lambda _: self._go_next())
+        card.append(self._root_password_entry)
 
-        outer.append(card)
-        scrolled.set_child(outer)
-        self.set_child(scrolled)
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
+
+    def _build_confirm_page(self) -> Gtk.ScrolledWindow:
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
+
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+
+        title = Gtk.Label(label="Ready to Go")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+
+        subtitle = Gtk.Label(label="Review your settings and click Set Up to finish.")
+        subtitle.add_css_class("welcome-subtitle")
+        subtitle.set_halign(Gtk.Align.CENTER)
+        card.append(subtitle)
+
+        self._summary_name = self._make_summary_row(card, "Name")
+        self._summary_username = self._make_summary_row(card, "Username")
+        self._summary_timezone = self._make_summary_row(card, "Timezone")
+        self._summary_memory = self._make_summary_row(card, "Memory")
+        self._summary_admin = self._make_summary_row(card, "Administrator")
+        self._summary_root = self._make_summary_row(card, "Root password")
+
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
 
     # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+
     @staticmethod
     def _make_label(text: str) -> Gtk.Label:
         lbl = Gtk.Label(label=text)
@@ -334,137 +438,211 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         lbl.set_halign(Gtk.Align.START)
         return lbl
 
-    # ------------------------------------------------------------------
-    def _on_swap_strategy_changed(self, dropdown: Gtk.DropDown, _pspec: object) -> None:
-        """Show/hide swap size options based on selected strategy."""
-        is_zswap = dropdown.get_selected() == 1
-        self.swap_size_box.set_visible(is_zswap)
+    @staticmethod
+    def _make_summary_row(parent: Gtk.Box, label_text: str) -> Gtk.Label:
+        lbl = Gtk.Label(label=label_text)
+        lbl.add_css_class("summary-row")
+        lbl.set_halign(Gtk.Align.START)
+        parent.append(lbl)
+
+        value = Gtk.Label(label="—")
+        value.add_css_class("summary-value")
+        value.set_halign(Gtk.Align.START)
+        parent.append(value)
+        return value
 
     # ------------------------------------------------------------------
-    def _on_swap_size_changed(self, dropdown: Gtk.DropDown, _pspec: object) -> None:
-        """Show/hide custom size entry based on selected swap size."""
-        is_custom = dropdown.get_selected() == 2  # "Custom" index
-        self.custom_size_box.set_visible(is_custom)
+    # Navigation
+    # ------------------------------------------------------------------
+
+    def _go_next(self) -> None:
+        if not self._validate_page(self._current_page):
+            return
+
+        if self._current_page == PAGE_CONFIRM:
+            self._on_setup_clicked()
+            return
+
+        self._current_page += 1
+        self._set_status("")
+        self._update_navigation()
+
+        if self._current_page == PAGE_CONFIRM:
+            self._populate_summary()
+
+    def _go_back(self) -> None:
+        if self._current_page == PAGE_ACCOUNT:
+            return
+        self._current_page -= 1
+        self._set_status("")
+        self._update_navigation()
+
+    def _update_navigation(self) -> None:
+        pages = ["account", "system", "confirm"]
+        self._stack.set_visible_child_name(pages[self._current_page])
+        self._step_label.set_text(f"Step {self._current_page + 1} of 3")
+        self._back_button.set_visible(self._current_page > PAGE_ACCOUNT)
+        self._next_button.set_label("Set Up" if self._current_page == PAGE_CONFIRM else "Next")
+
+        # Focus first input on new page
+        if self._current_page == PAGE_ACCOUNT:
+            self._fullname_entry.grab_focus()
+        elif self._current_page == PAGE_SYSTEM:
+            self._tz_dropdown.grab_focus()
 
     # ------------------------------------------------------------------
-    def _set_status(self, message: str, error: bool = True) -> None:
-        self.status_label.set_text(message)
-        self.status_label.remove_css_class("status-error")
-        self.status_label.remove_css_class("status-success")
-        self.status_label.add_css_class("status-error" if error else "status-success")
-
+    # Validation
     # ------------------------------------------------------------------
-    def _get_selected_timezone(self) -> str:
-        """Return the currently selected timezone string."""
-        idx = self.tz_dropdown.get_selected()
-        if 0 <= idx < len(self._timezones):
-            return self._timezones[idx]
-        return "America/New_York"
 
-    # ------------------------------------------------------------------
-    def _get_swap_config(self) -> tuple[bool, int]:
-        """Return (use_zswap, swap_gb).
+    def _validate_page(self, page: int) -> bool:
+        if page == PAGE_ACCOUNT:
+            return self._validate_account()
+        elif page == PAGE_SYSTEM:
+            return self._validate_system()
+        return True
 
-        use_zswap is False for zram-only (index 0), True for zswap (index 1).
-        swap_gb is only meaningful when use_zswap is True.
-        """
-        use_zswap = self.swap_strategy_dropdown.get_selected() == 1
-        swap_gb = 2  # default
-
-        if use_zswap:
-            size_idx = self.swap_size_dropdown.get_selected()
-            if size_idx == 0:
-                swap_gb = 2
-            elif size_idx == 1:
-                swap_gb = 4
-            else:
-                # Custom
-                custom_text = self.custom_size_entry.get_text().strip()
-                try:
-                    swap_gb = int(custom_text)
-                    if swap_gb <= 0:
-                        raise ValueError("must be positive")
-                except (ValueError, TypeError):
-                    swap_gb = -1  # sentinel for validation error
-
-        return use_zswap, swap_gb
-
-    # ------------------------------------------------------------------
-    def _validate(self) -> tuple[str, str, str] | None:
-        """Return (fullname, username, password) or None on validation failure."""
-        fullname = self.fullname_entry.get_text().strip()
-        username = self.username_entry.get_text().strip()
-        password = self.password_entry.get_text()
-        confirm = self.confirm_entry.get_text()
+    def _validate_account(self) -> bool:
+        fullname = self._fullname_entry.get_text().strip()
+        username = self._username_entry.get_text().strip()
+        password = self._password_entry.get_text()
+        confirm = self._confirm_entry.get_text()
 
         if not fullname:
             self._set_status("Full name is required.")
-            return None
-
+            return False
         if not username:
             self._set_status("Username is required.")
-            return None
-
+            return False
         if len(username) > 32:
             self._set_status("Username must be 32 characters or fewer.")
-            return None
-
+            return False
         if not USERNAME_RE.match(username):
             self._set_status(
                 "Username must start with a lowercase letter and contain "
                 "only lowercase letters, numbers, and hyphens."
             )
-            return None
-
+            return False
         if not password:
             self._set_status("Password is required.")
-            return None
-
+            return False
         if password != confirm:
             self._set_status("Passwords do not match.")
-            return None
+            return False
+        return True
 
-        is_admin = self.admin_check.get_active()
-        root_password = self.root_password_entry.get_text()
+    def _validate_system(self) -> bool:
+        is_admin = self._admin_check.get_active()
+        root_password = self._root_password_entry.get_text()
         if not is_admin and not root_password:
             self._set_status(
                 "Either enable administrator access or set a root password. "
                 "Without one of these you will be locked out of system management."
             )
-            return None
+            return False
 
-        # Validate swap configuration
         use_zswap, swap_gb = self._get_swap_config()
         if use_zswap and swap_gb == -1:
             self._set_status("Custom swap size must be a positive whole number (in GB).")
-            return None
-
-        return fullname, username, password
+            return False
+        return True
 
     # ------------------------------------------------------------------
-    def _on_create_clicked(self, _button: Gtk.Button) -> None:
-        result = self._validate()
-        if result is None:
-            return
+    # Summary
+    # ------------------------------------------------------------------
 
-        fullname, username, password = result
-        is_admin = self.admin_check.get_active()
-        root_password = self.root_password_entry.get_text()
+    def _populate_summary(self) -> None:
+        self._summary_name.set_text(self._fullname_entry.get_text().strip())
+        self._summary_username.set_text(self._username_entry.get_text().strip())
+        self._summary_timezone.set_text(self._get_selected_timezone())
+        self._summary_admin.set_text("Yes" if self._admin_check.get_active() else "No")
+        self._summary_root.set_text(
+            "Set" if self._root_password_entry.get_text() else "Not set"
+        )
+
+        use_zswap, swap_gb = self._get_swap_config()
+        if use_zswap:
+            self._summary_memory.set_text(f"zswap with {swap_gb} GB disk swap")
+        else:
+            self._summary_memory.set_text("zram only (compressed RAM)")
+
+    # ------------------------------------------------------------------
+    # Swap signal handlers
+    # ------------------------------------------------------------------
+
+    def _on_swap_strategy_changed(self, dropdown: Gtk.DropDown, _pspec: object) -> None:
+        self._swap_size_box.set_visible(dropdown.get_selected() == 1)
+
+    def _on_swap_size_changed(self, dropdown: Gtk.DropDown, _pspec: object) -> None:
+        self._custom_size_box.set_visible(dropdown.get_selected() == 2)
+
+    # ------------------------------------------------------------------
+    # Status
+    # ------------------------------------------------------------------
+
+    def _set_status(self, message: str, error: bool = True) -> None:
+        self._status_label.set_text(message)
+        self._status_label.remove_css_class("status-error")
+        self._status_label.remove_css_class("status-success")
+        if message:
+            self._status_label.add_css_class("status-error" if error else "status-success")
+
+    # ------------------------------------------------------------------
+    # Field readers
+    # ------------------------------------------------------------------
+
+    def _get_selected_timezone(self) -> str:
+        idx = self._tz_dropdown.get_selected()
+        if 0 <= idx < len(self._timezones):
+            return self._timezones[idx]
+        return "America/New_York"
+
+    def _get_swap_config(self) -> tuple[bool, int]:
+        use_zswap = self._swap_strategy_dropdown.get_selected() == 1
+        swap_gb = 2
+
+        if use_zswap:
+            size_idx = self._swap_size_dropdown.get_selected()
+            if size_idx == 0:
+                swap_gb = 2
+            elif size_idx == 1:
+                swap_gb = 4
+            else:
+                custom_text = self._custom_size_entry.get_text().strip()
+                try:
+                    swap_gb = int(custom_text)
+                    if swap_gb <= 0:
+                        raise ValueError("must be positive")
+                except (ValueError, TypeError):
+                    swap_gb = -1
+
+        return use_zswap, swap_gb
+
+    # ------------------------------------------------------------------
+    # Account creation (business logic — unchanged)
+    # ------------------------------------------------------------------
+
+    def _on_setup_clicked(self) -> None:
+        fullname = self._fullname_entry.get_text().strip()
+        username = self._username_entry.get_text().strip()
+        password = self._password_entry.get_text()
+        is_admin = self._admin_check.get_active()
+        root_password = self._root_password_entry.get_text()
         timezone = self._get_selected_timezone()
         use_zswap, swap_gb = self._get_swap_config()
 
-        # Disable the button to prevent double-clicks
-        self.create_button.set_sensitive(False)
+        self._next_button.set_sensitive(False)
+        self._back_button.set_sensitive(False)
         self._set_status("Setting up your system...", error=False)
 
-        # Run account creation in the background so the UI stays responsive
         def _create_account() -> str | None:
             """Return None on success or an error string."""
             groups = ["video"]
             if is_admin:
                 groups.append("wheel")
-            useradd_cmd = ["useradd", "-m", "-s", "/bin/bash", "-G", ",".join(groups), "-c", fullname]
-            useradd_cmd.append(username)
+            useradd_cmd = [
+                "useradd", "-m", "-s", "/bin/bash",
+                "-G", ",".join(groups), "-c", fullname, username,
+            ]
 
             try:
                 subprocess.run(useradd_cmd, check=True, capture_output=True, text=True)
@@ -475,9 +653,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 subprocess.run(
                     ["chpasswd"],
                     input=f"{username}:{password}",
-                    check=True,
-                    capture_output=True,
-                    text=True,
+                    check=True, capture_output=True, text=True,
                 )
             except subprocess.CalledProcessError as exc:
                 return f"Failed to set password: {exc.stderr.strip() or exc}"
@@ -487,48 +663,32 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     subprocess.run(
                         ["chpasswd"],
                         input=f"root:{root_password}",
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
                 except subprocess.CalledProcessError as exc:
                     return f"Failed to set root password: {exc.stderr.strip() or exc}"
 
-            # --- Set timezone ---
             try:
                 subprocess.run(
                     ["timedatectl", "set-timezone", timezone],
-                    check=True,
-                    capture_output=True,
-                    text=True,
+                    check=True, capture_output=True, text=True,
                 )
             except subprocess.CalledProcessError as exc:
                 return f"Failed to set timezone: {exc.stderr.strip() or exc}"
 
-            # --- Configure swap ---
             if use_zswap:
                 try:
-                    # Disable zram
                     subprocess.run(
                         ["bash", "-c", 'echo "" > /etc/systemd/zram-generator.conf'],
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
-
-                    # Enable zswap kernel params
                     subprocess.run(
                         [
-                            "grubby",
-                            "--update-kernel=ALL",
+                            "grubby", "--update-kernel=ALL",
                             "--args=zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=zstd",
                         ],
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
-
-                    # Enable zswap at runtime (may fail if module not loaded yet)
                     for param, value in [
                         ("enabled", "1"),
                         ("max_pool_percent", "25"),
@@ -537,30 +697,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         try:
                             Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
                         except (OSError, FileNotFoundError):
-                            pass  # will take effect on next boot via grubby
+                            pass
 
-                    # Create swap file (use dd, NOT fallocate)
                     size_mb = swap_gb * 1024
                     subprocess.run(
                         ["dd", "if=/dev/zero", "of=/var/swap", "bs=1M", f"count={size_mb}"],
-                        check=True,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
+                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                     )
                     subprocess.run(
                         ["chmod", "600", "/var/swap"],
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
                     subprocess.run(
                         ["mkswap", "/var/swap"],
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
 
-                    # Create systemd swap unit
                     Path("/etc/systemd/system/var-swap.swap").write_text(
                         "[Unit]\n"
                         "Description=Disk swap file\n"
@@ -574,15 +726,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     )
                     subprocess.run(
                         ["systemctl", "enable", "var-swap.swap"],
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
                     subprocess.run(
                         ["swapon", "/var/swap"],
-                        check=True,
-                        capture_output=True,
-                        text=True,
+                        check=True, capture_output=True, text=True,
                     )
                 except subprocess.CalledProcessError as exc:
                     return f"Failed to configure swap: {exc.stderr.strip() or exc}"
@@ -594,19 +742,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         def _on_done(error: str | None) -> None:
             if error is not None:
                 self._set_status(error)
-                self.create_button.set_sensitive(True)
+                self._next_button.set_sensitive(True)
+                self._back_button.set_sensitive(True)
                 return
 
             self._set_status("Setup complete! Restarting...", error=False)
-            # Give the user a moment to read the message, then reboot
             GLib.timeout_add_seconds(2, _reboot)
 
         def _reboot() -> bool:
             subprocess.run(["systemctl", "reboot"])
             return GLib.SOURCE_REMOVE
-
-        # Run blocking work off the main thread
-        import threading
 
         def _thread_target() -> None:
             err = _create_account()
@@ -619,7 +764,7 @@ class SetupWizardApp(Gtk.Application):
     def __init__(self) -> None:
         super().__init__(application_id=APP_ID)
 
-    def do_activate(self) -> None:  # noqa: D401
+    def do_activate(self) -> None:
         provider = Gtk.CssProvider()
         provider.load_from_string(CSS)
         Gtk.StyleContext.add_provider_for_display(
