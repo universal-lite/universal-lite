@@ -1,0 +1,12 @@
+[Unit]
+Description=Mask zram to enable disk swap
+DefaultDependencies=no
+Before=swap.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/ln -sf /dev/null /etc/systemd/system/systemd-zram-setup@.service
+RemainAfterExit=yes
+
+[Install]
+WantedBy=swap.target
