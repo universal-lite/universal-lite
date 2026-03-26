@@ -1417,7 +1417,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _step_create_swap_file(self) -> str | None:
         """Configure boot-time swap file creation and enable encrypted swap service."""
         try:
-            Path("/etc/universal-lite-swap-size").write_text(str(self._setup_swap_gb))
+            swap_dir = Path("/var/lib/universal-lite")
+            swap_dir.mkdir(parents=True, exist_ok=True)
+            (swap_dir / "swap-size").write_text(str(self._setup_swap_gb))
             subprocess.run(
                 ["systemctl", "enable",
                  "universal-lite-swap-init.service",

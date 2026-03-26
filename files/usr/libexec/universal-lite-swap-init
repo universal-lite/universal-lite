@@ -1,11 +1,11 @@
 #!/bin/bash
-# Creates /var/swap on first boot using the size recorded in /etc/universal-lite-swap-size.
+# Creates /var/swap on first boot using the size recorded in /var/lib/universal-lite/swap-size.
 # Called by universal-lite-swap-init.service.
 
 set -euo pipefail
 
 SWAPFILE=/var/swap
-SIZE_FILE=/etc/universal-lite-swap-size
+SIZE_FILE=/var/lib/universal-lite/swap-size
 
 size_gb=$(cat "$SIZE_FILE")
 
