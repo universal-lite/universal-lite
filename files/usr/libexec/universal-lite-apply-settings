@@ -187,7 +187,7 @@ def _build_tokens(settings: dict) -> dict:
         "accent_hex": accent_hex,
         "accent_rgba_30": f"rgba({r}, {g}, {b}, 0.3)",
         "accent_rgba_15": f"rgba({r}, {g}, {b}, 0.15)",
-        "accent_mako": accent_hex + "ff",
+        "accent_mako": accent_hex + "FF",
         "accent_fuzzel": _strip_hash(accent_hex) + "ff",
         # State backgrounds
         "state_hover": _rgba_css(palette["fg"], 0.08),
@@ -606,7 +606,7 @@ def write_fuzzel_config(tokens: dict) -> None:
 
     ini = f"""\
 [main]
-font={tokens["font_ui"]}:size=12
+font={tokens["font_ui"]}:size={tokens["font_size_ui"]}
 icons-enabled=yes
 terminal=foot
 layer=overlay
@@ -622,7 +622,7 @@ text={_hex_to_rgba(tokens["text_primary"])}
 match={tokens["accent_fuzzel"]}
 selection={tokens["accent_fuzzel"]}
 selection-text={_hex_to_rgba("#ffffff")}
-selection-match=ffffffff
+selection-match={_hex_to_rgba("#ffffff")}
 border={_hex_to_rgba(tokens["accent_hex"])}
 
 [border]
@@ -638,7 +638,7 @@ def write_mako_config(tokens: dict) -> None:
     MAKO_DIR.mkdir(parents=True, exist_ok=True)
 
     config = f"""\
-font={tokens["font_ui"]} {tokens["font_size_mono"]}
+font={tokens["font_ui"]} {tokens["font_size_ui"]}
 background-color={_hex_to_mako(tokens["surface_base"])}
 text-color={_hex_to_mako(tokens["text_primary"])}
 border-color={tokens["accent_mako"]}
@@ -664,7 +664,7 @@ def write_foot_config(tokens: dict) -> None:
     FOOT_DIR.mkdir(parents=True, exist_ok=True)
 
     theme = tokens["theme"]
-    accent = ACCENTS[tokens["accent"]]
+    accent = tokens["accent_hex"]
     term = ADWAITA_TERMINAL[theme]
     alpha = "0.97" if theme == "light" else "0.95"
     selection_bg = _strip_hash(accent)
