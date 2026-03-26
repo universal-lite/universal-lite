@@ -261,6 +261,7 @@ PAGE_CONFIRM = 4
 PAGE_PROGRESS = 5
 
 DEFAULT_FLATPAKS = [
+    ("com.google.Chrome", "Google Chrome", "Web browser"),
     ("dev.bazaar.app", "Bazaar", "Browse and install apps"),
 ]
 

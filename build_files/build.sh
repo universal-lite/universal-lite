@@ -4,11 +4,8 @@ set -ouex pipefail
 
 FEDORA_MAJOR="$(rpm -E %fedora)"
 
-install -d /etc/yum.repos.d /usr/share/wayland-sessions
-install -Dm644 /ctx/files/etc/yum.repos.d/google-chrome.repo /etc/yum.repos.d/google-chrome.repo
+install -d /usr/share/wayland-sessions
 install -Dm644 /ctx/files/usr/share/wayland-sessions/universal-lite.desktop /usr/share/wayland-sessions/universal-lite.desktop
-
-rpm --import https://dl.google.com/linux/linux_signing_key.pub
 
 dnf5 install -y \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_MAJOR}.noarch.rpm" \
@@ -35,7 +32,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     fuzzel \
     labwc-menu-generator \
     nwg-drawer \
-    google-chrome-stable \
     google-roboto-fonts \
     google-roboto-mono-fonts \
     greetd \
