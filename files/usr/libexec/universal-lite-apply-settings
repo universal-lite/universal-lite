@@ -599,80 +599,80 @@ def write_gtk_settings(settings: dict) -> None:
         subprocess.run(command, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def write_fuzzel_config(settings: dict) -> None:
+def write_fuzzel_config(tokens: dict) -> None:
     FUZZEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    palette = ADWAITA[settings["theme"]]
-    accent = ACCENTS[settings["accent"]]
-
-    bg = _hex_to_rgba(palette["window_bg"])
-    fg = _hex_to_rgba(palette["fg"])
-    border_color = _hex_to_rgba(accent)
-    match_color = _hex_to_rgba(accent)
-    selection_bg = _hex_to_rgba(accent)
-    selection_fg = _hex_to_rgba("#ffffff")
-    selection_match = _hex_to_rgba("#ffffff")
+    width = 34 if tokens["density"] == "compact" else 40
 
     ini = f"""\
 [main]
-font=Roboto:size=12
-
-[border]
-radius=12
-width=2
+font={tokens["font_ui"]}:size=12
+icons-enabled=yes
+terminal=foot
+layer=overlay
+exit-on-keyboard-focus-loss=yes
+width={width}
+horizontal-pad=16
+vertical-pad=12
+inner-pad=8
 
 [colors]
-background={bg}
-text={fg}
-match={match_color}
-selection={selection_bg}
-selection-text={selection_fg}
-selection-match={selection_match}
-border={border_color}
+background={_hex_to_rgba(tokens["surface_base"])}
+text={_hex_to_rgba(tokens["text_primary"])}
+match={tokens["accent_fuzzel"]}
+selection={tokens["accent_fuzzel"]}
+selection-text={_hex_to_rgba("#ffffff")}
+selection-match=ffffffff
+border={_hex_to_rgba(tokens["accent_hex"])}
+
+[border]
+width=2
+radius=12
 """
 
     with (FUZZEL_DIR / "fuzzel.ini").open("w", encoding="utf-8") as handle:
         handle.write(ini)
 
 
-def write_mako_config(settings: dict) -> None:
+def write_mako_config(tokens: dict) -> None:
     MAKO_DIR.mkdir(parents=True, exist_ok=True)
 
-    palette = ADWAITA[settings["theme"]]
-    accent = ACCENTS[settings["accent"]]
-
-    bg = _hex_to_mako(palette["window_bg"])
-    fg = _hex_to_mako(palette["fg"])
-    border_color = _hex_to_mako(accent)
-
     config = f"""\
-font=Roboto 11
-background-color={bg}
-text-color={fg}
-border-color={border_color}
-border-radius=12
+font={tokens["font_ui"]} {tokens["font_size_mono"]}
+background-color={_hex_to_mako(tokens["surface_base"])}
+text-color={_hex_to_mako(tokens["text_primary"])}
+border-color={tokens["accent_mako"]}
 border-size=2
+border-radius=12
+padding=12
 width=360
+height=120
+margin=12
 default-timeout=5000
-anchor=top-right
+max-visible=3
+layer=overlay
+anchor={tokens["mako_anchor"]}
+icon-location=left
+max-icon-size=48
 """
 
     with (MAKO_DIR / "config").open("w", encoding="utf-8") as handle:
         handle.write(config)
 
 
-def write_foot_config(settings: dict) -> None:
+def write_foot_config(tokens: dict) -> None:
     FOOT_DIR.mkdir(parents=True, exist_ok=True)
 
-    theme = settings["theme"]
-    accent = ACCENTS[settings["accent"]]
+    theme = tokens["theme"]
+    accent = ACCENTS[tokens["accent"]]
     term = ADWAITA_TERMINAL[theme]
     alpha = "0.97" if theme == "light" else "0.95"
     selection_bg = _strip_hash(accent)
 
     ini = f"""\
 [main]
-font=Roboto Mono:size=11
+font={tokens["font_mono"]}:size={tokens["font_size_mono"]}
+pad=12x12 center
 
 [colors]
 alpha={alpha}
