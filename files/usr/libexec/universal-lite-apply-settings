@@ -564,10 +564,10 @@ def write_waybar_config(tokens: dict) -> None:
         handle.write(css)
 
 
-def write_gtk_settings(settings: dict) -> None:
-    theme_name = "adw-gtk3-dark" if settings["theme"] == "dark" else "adw-gtk3"
+def write_gtk_settings(tokens: dict) -> None:
+    theme_name = "adw-gtk3-dark" if tokens["theme"] == "dark" else "adw-gtk3"
     icon_theme = "Adwaita"
-    dark_pref = 1 if settings["theme"] == "dark" else 0
+    dark_pref = 1 if tokens["theme"] == "dark" else 0
 
     for directory in (GTK3_DIR, GTK4_DIR):
         directory.mkdir(parents=True, exist_ok=True)
@@ -588,9 +588,9 @@ def write_gtk_settings(settings: dict) -> None:
             "set",
             "org.gnome.desktop.interface",
             "color-scheme",
-            "prefer-dark" if settings["theme"] == "dark" else "default",
+            "prefer-dark" if tokens["theme"] == "dark" else "default",
         ],
-        ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", settings["accent"]],
+        ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", tokens["accent"]],
         ["gsettings", "set", "org.gnome.desktop.interface", "font-name", "Roboto 11"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", "Adwaita"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", "24"],
@@ -703,11 +703,11 @@ bright7={term["bright7"]}
         handle.write(ini)
 
 
-def write_labwc_themerc(settings: dict) -> None:
+def write_labwc_themerc(tokens: dict) -> None:
     LABWC_DIR.mkdir(parents=True, exist_ok=True)
 
-    palette = ADWAITA[settings["theme"]]
-    accent = ACCENTS[settings["accent"]]
+    palette = ADWAITA[tokens["theme"]]
+    accent = ACCENTS[tokens["accent"]]
 
     themerc = f"""\
 # Window borders
