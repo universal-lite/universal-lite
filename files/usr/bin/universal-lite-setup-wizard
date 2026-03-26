@@ -1432,28 +1432,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Failed to configure swap: {exc}"
         return None
 
-    def _step_add_flathub(self) -> str | None:
-        """Add Flathub remote."""
+    def _step_schedule_flatpak(self, selected_apps: list[tuple[str, str]]) -> str | None:
+        """Write app list and enable boot-time Flatpak installer service."""
         try:
+            app_dir = Path("/var/lib/universal-lite")
+            app_dir.mkdir(parents=True, exist_ok=True)
+            (app_dir / "flatpak-apps").write_text(
+                "\n".join(app_id for app_id, _ in selected_apps) + "\n"
+            )
             subprocess.run(
-                ["flatpak", "remote-add", "--system", "--if-not-exists",
-                 "flathub", FLATHUB_URL],
+                ["systemctl", "enable", "universal-lite-flatpak-setup.service"],
                 check=True, capture_output=True, text=True,
             )
         except subprocess.CalledProcessError as exc:
-            return f"Failed to add Flathub: {exc.stderr.strip() or exc}"
-        return None
-
-    def _step_install_flatpak(self, app_id: str) -> str | None:
-        """Install a single Flatpak app."""
-        try:
-            subprocess.run(
-                ["flatpak", "install", "--system", "--noninteractive",
-                 "flathub", app_id],
-                check=True, capture_output=True, text=True,
-            )
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to install: {exc.stderr.strip() or exc}"
+            return f"Failed to schedule app install: {exc.stderr.strip() or exc}"
+        except OSError as exc:
+            return f"Failed to schedule app install: {exc}"
         return None
 
     # ------------------------------------------------------------------
@@ -1481,13 +1475,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._steps.append(("Creating swap file", self._step_create_swap_file, False))
         selected_apps = self._get_selected_apps()
         if selected_apps:
-            self._steps.append(("Adding Flathub repository", self._step_add_flathub, True))
-            for app_id, app_name in selected_apps:
-                self._steps.append((
-                    f"Installing {app_name}",
-                    lambda aid=app_id: self._step_install_flatpak(aid),
-                    True,
-                ))
+            self._steps.append((
+                "Scheduling app installation",
+                lambda apps=selected_apps: self._step_schedule_flatpak(apps),
+                False,
+            ))
 
         # Build progress UI
         while child := self._progress_steps_box.get_first_child():
@@ -1529,10 +1521,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     return
                 GLib.idle_add(self._update_step_status, i, "done")
 
-            # All done — write stamp file and show reboot
-            stamp = Path("/var/lib/universal-lite/flatpak-setup.done")
-            stamp.parent.mkdir(parents=True, exist_ok=True)
-            stamp.touch()
             GLib.idle_add(self._on_all_steps_done)
 
         threading.Thread(target=_thread, daemon=True).start()
@@ -1586,11 +1574,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             _, _, is_flatpak = self._steps[i]
             if is_flatpak:
                 self._update_step_status(i, "skipped")
-
-        # Write stamp and show reboot
-        stamp = Path("/var/lib/universal-lite/flatpak-setup.done")
-        stamp.parent.mkdir(parents=True, exist_ok=True)
-        stamp.touch()
         self._on_all_steps_done()
 
     def _progress_go_back(self) -> None:

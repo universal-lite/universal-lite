@@ -1,0 +1,14 @@
+[Unit]
+Description=Install Flatpak apps selected during setup wizard
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/var/lib/universal-lite/flatpak-apps
+ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/universal-lite-flatpak-setup
+RemainAfterExit=yes
+
+[Install]
+WantedBy=graphical.target

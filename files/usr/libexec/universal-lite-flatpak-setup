@@ -1,0 +1,19 @@
+#!/bin/bash
+# Installs Flatpak apps selected during the setup wizard.
+# Runs once on first boot after setup. Called by universal-lite-flatpak-setup.service.
+
+set -euo pipefail
+
+APPS_FILE=/var/lib/universal-lite/flatpak-apps
+STAMP=/var/lib/universal-lite/flatpak-setup.done
+
+flatpak remote-add --system --if-not-exists flathub \
+    https://dl.flathub.org/repo/flathub.flatpakrepo
+
+while IFS= read -r app_id; do
+    [[ -z "$app_id" ]] && continue
+    flatpak install --system --noninteractive flathub "$app_id" || \
+        echo "Warning: failed to install $app_id" >&2
+done < "$APPS_FILE"
+
+touch "$STAMP"
