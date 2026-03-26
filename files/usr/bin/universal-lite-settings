@@ -92,7 +92,10 @@ class SettingsWindow(Gtk.ApplicationWindow):
         return []
 
     def _save_pinned_and_apply(self) -> None:
-        data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+        try:
+            data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            data = dict(self.settings)
         data["pinned"] = [dict(p) for p in self.pinned_data]
         SETTINGS_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
         subprocess.run(APPLY_SCRIPT, check=False)
