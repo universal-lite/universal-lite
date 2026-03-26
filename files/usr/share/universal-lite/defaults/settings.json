@@ -8,5 +8,9 @@
     "center": ["wlr/taskbar"],
     "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"]
   },
-  "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg"
+  "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg",
+  "pinned": [
+    {"name": "Chrome",  "command": "flatpak run com.google.Chrome", "icon": "com.google.Chrome"},
+    {"name": "Bazaar",  "command": "flatpak run dev.bazaar.app",    "icon": "dev.bazaar.app"}
+  ]
 }
