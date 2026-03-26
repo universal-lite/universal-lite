@@ -1353,11 +1353,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_configure_system(self) -> str | None:
-        """Set timezone, root password, and swap configuration."""
+        """Set timezone, root password, and optional partition expansion."""
         root_password = self._setup_root_password
         timezone = self._setup_timezone
-        use_zswap = self._setup_use_zswap
-        swap_gb = self._setup_swap_gb
 
         if root_password:
             try:
@@ -1383,29 +1381,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"Failed to set timezone: {exc.stderr.strip() or exc}"
 
-        if use_zswap:
-            try:
-                subprocess.run(
-                    ["systemctl", "enable", "universal-lite-zram-disable.service"],
-                    check=True, capture_output=True, text=True,
-                )
-                subprocess.run(
-                    [
-                        "grubby", "--update-kernel=ALL",
-                        "--args=zswap.enabled=1 zswap.max_pool_percent=25 zswap.compressor=zstd",
-                    ],
-                    check=True, capture_output=True, text=True,
-                )
-                for param, value in [
-                    ("enabled", "1"), ("max_pool_percent", "25"), ("compressor", "zstd"),
-                ]:
-                    try:
-                        Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
-                    except (OSError, FileNotFoundError):
-                        pass
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to configure swap: {exc.stderr.strip() or exc}"
-
         if self._setup_expand_root:
             try:
                 subprocess.run(
@@ -1414,6 +1389,30 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 )
             except subprocess.CalledProcessError as exc:
                 return f"Failed to enable partition expansion: {exc.stderr.strip() or exc}"
+
+        return None
+
+    def _step_configure_zswap(self) -> str | None:
+        """Enable zswap boot-time services and apply /sys parameters for current session."""
+        try:
+            subprocess.run(
+                ["systemctl", "enable", "universal-lite-zram-disable.service"],
+                check=True, capture_output=True, text=True,
+            )
+            subprocess.run(
+                ["systemctl", "enable", "universal-lite-zswap.service"],
+                check=True, capture_output=True, text=True,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to configure zswap: {exc.stderr.strip() or exc}"
+
+        for param, value in [
+            ("enabled", "1"), ("max_pool_percent", "25"), ("compressor", "zstd"),
+        ]:
+            try:
+                Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
+            except (OSError, FileNotFoundError):
+                pass
 
         return None
 
@@ -1480,6 +1479,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             ("Configuring system", self._step_configure_system, False),
         ]
         if self._setup_use_zswap:
+            self._steps.append(("Configuring zswap", self._step_configure_zswap, False))
             self._steps.append(("Creating swap file", self._step_create_swap_file, False))
         selected_apps = self._get_selected_apps()
         if selected_apps:

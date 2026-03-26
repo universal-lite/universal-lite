@@ -1,0 +1,16 @@
+[Unit]
+Description=Configure zswap for disk swap
+DefaultDependencies=no
+Before=swap.target
+Before=universal-lite-encrypted-swap.service
+ConditionPathExists=/var/swap
+
+[Service]
+Type=oneshot
+ExecStart=-/bin/sh -c 'echo 1 > /sys/module/zswap/parameters/enabled'
+ExecStart=-/bin/sh -c 'echo 25 > /sys/module/zswap/parameters/max_pool_percent'
+ExecStart=-/bin/sh -c 'echo zstd > /sys/module/zswap/parameters/compressor'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=swap.target
