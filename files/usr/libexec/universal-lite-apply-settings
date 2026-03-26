@@ -760,6 +760,8 @@ menu.items.active.bg: flat solid
 menu.items.active.bg.color: {accent}
 menu.items.active.text.color: #ffffff
 menu.separator.color: {palette["border"]}
+menu.border.width: 1
+menu.border.color: {palette["border"]}
 
 # OSD
 osd.bg: flat solid
@@ -772,21 +774,21 @@ osd.label.text.color: {palette["fg"]}
         handle.write(themerc)
 
 
-def write_swaylock_config(settings: dict) -> None:
+def write_swaylock_config(tokens: dict) -> None:
     SWAYLOCK_DIR.mkdir(parents=True, exist_ok=True)
 
-    palette = ADWAITA[settings["theme"]]
-    accent = ACCENTS[settings["accent"]]
-
-    bg = _strip_hash(palette["window_bg"])
-    fg = _strip_hash(palette["fg"])
-    inside = _strip_hash(palette["view_bg"])
-    ring = _strip_hash(accent)
+    inside = _strip_hash(tokens["surface_card"])
+    ring = _strip_hash(tokens["accent_hex"])
+    bg = _strip_hash(tokens["surface_base"])
+    fg = _strip_hash(tokens["text_primary"])
     wrong = "c01c28"
     transparent = "00000000"
 
     config = f"""\
 color={bg}
+indicator-radius=80
+indicator-thickness=8
+show-failed-attempts
 inside-color={inside}
 inside-clear-color={inside}
 inside-ver-color={inside}
