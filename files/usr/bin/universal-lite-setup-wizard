@@ -1384,10 +1384,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         if use_zswap:
             try:
-                subprocess.run(
-                    ["systemctl", "mask", "systemd-zram-setup@.service"],
-                    check=True, capture_output=True, text=True,
-                )
+                try:
+                    sysd = Gio.DBusProxy.new_for_bus_sync(
+                        Gio.BusType.SYSTEM, Gio.DBusProxyFlags.NONE, None,
+                        "org.freedesktop.systemd1",
+                        "/org/freedesktop/systemd1",
+                        "org.freedesktop.systemd1.Manager",
+                        None,
+                    )
+                    sysd.call_sync(
+                        "MaskUnitFiles",
+                        GLib.Variant("(asbb)", (["systemd-zram-setup@.service"], False, False)),
+                        Gio.DBusCallFlags.NONE, -1, None,
+                    )
+                except Exception as exc:
+                    return f"Failed to configure swap: {exc}"
                 subprocess.run(
                     [
                         "grubby", "--update-kernel=ALL",
