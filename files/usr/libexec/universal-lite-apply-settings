@@ -291,9 +291,9 @@ def ensure_settings() -> dict:
 def write_waybar_config(settings: dict) -> None:
     WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
 
-    height = 36 if settings["density"] == "compact" else 46
-    spacing = 6 if settings["density"] == "compact" else 10
-    icon_size = 14 if settings["density"] == "compact" else 18
+    height = settings["panel_height"]
+    spacing = settings["panel_spacing"]
+    icon_size = settings["panel_icon_size"]
 
     layout = settings["layout"]
 
