@@ -12,8 +12,7 @@ flatpak remote-add --system --if-not-exists flathub \
 
 while IFS= read -r app_id; do
     [[ -z "$app_id" ]] && continue
-    flatpak install --system --noninteractive flathub "$app_id" || \
-        echo "Warning: failed to install $app_id" >&2
+    flatpak install --system --noninteractive flathub "$app_id"
 done < "$APPS_FILE"
 
 touch "$STAMP"

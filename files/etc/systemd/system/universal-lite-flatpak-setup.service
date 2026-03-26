@@ -1,7 +1,7 @@
 [Unit]
 Description=Install Flatpak apps selected during setup wizard
-After=network-online.target
-Wants=network-online.target
+After=NetworkManager-wait-online.service
+Wants=NetworkManager-wait-online.service
 ConditionPathExists=/var/lib/universal-lite/flatpak-apps
 ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
 

@@ -1,6 +1,7 @@
 [Unit]
 Description=Configure zswap for disk swap
 DefaultDependencies=no
+After=universal-lite-swap-init.service
 Before=swap.target
 Before=universal-lite-encrypted-swap.service
 ConditionPathExists=/var/swap
