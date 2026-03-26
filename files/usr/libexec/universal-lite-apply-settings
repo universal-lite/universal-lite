@@ -446,6 +446,7 @@ def write_waybar_config(tokens: dict) -> None:
     else:
         config["height"] = tokens["panel_height"]
 
+    # Always define all module configs; Waybar only renders those in the module lists.
     config["custom/launcher"] = {
         "format": " Apps ",
         "tooltip": False,
@@ -537,7 +538,7 @@ def write_waybar_config(tokens: dict) -> None:
     # Generate custom/pin-N modules for each pinned app
     for i, app in enumerate(pinned):
         icon = app.get("icon") or "application-x-executable"
-        name = app.get("name") or app["command"].split()[-1]
+        name = app["name"]
         # json.dumps handles escaping; replace ' in result for shell safety
         exec_json = json.dumps({"icon": icon, "tooltip": name})
         exec_cmd = "echo '" + exec_json.replace("'", "'\\''") + "'"
