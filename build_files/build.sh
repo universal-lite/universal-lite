@@ -98,6 +98,7 @@ chmod 0755 \
     /usr/bin/universal-lite-setup-wizard \
     /usr/libexec/universal-lite-apply-settings \
     /usr/libexec/universal-lite-encrypted-swap \
+    /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-setup \
     /usr/libexec/universal-lite-session-init
 

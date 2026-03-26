@@ -1374,12 +1374,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 return f"Failed to set root password: {exc}"
 
         try:
-            subprocess.run(
-                ["timedatectl", "set-timezone", timezone],
-                check=True, capture_output=True, text=True,
-            )
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to set timezone: {exc.stderr.strip() or exc}"
+            Path("/etc/localtime").unlink(missing_ok=True)
+            Path("/etc/localtime").symlink_to(f"/usr/share/zoneinfo/{timezone}")
+        except OSError as exc:
+            return f"Failed to set timezone: {exc}"
 
         if self._setup_expand_root:
             try:
@@ -1417,21 +1415,19 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_create_swap_file(self) -> str | None:
-        """Create and activate the encrypted swap file."""
-        size_mb = self._setup_swap_gb * 1024
+        """Configure boot-time swap file creation and enable encrypted swap service."""
         try:
+            Path("/etc/universal-lite-swap-size").write_text(str(self._setup_swap_gb))
             subprocess.run(
-                ["dd", "if=/dev/zero", "of=/var/swap", "bs=1M", f"count={size_mb}"],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                ["systemctl", "enable",
+                 "universal-lite-swap-init.service",
+                 "universal-lite-encrypted-swap.service"],
+                check=True, capture_output=True, text=True,
             )
-            subprocess.run(["chmod", "600", "/var/swap"],
-                           check=True, capture_output=True, text=True)
-            subprocess.run(["systemctl", "enable", "universal-lite-encrypted-swap.service"],
-                           check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as exc:
-            return f"Failed to create swap file: {exc.stderr.strip() or exc}"
+            return f"Failed to configure swap: {exc.stderr.strip() or exc}"
         except OSError as exc:
-            return f"Failed to create swap file: {exc}"
+            return f"Failed to configure swap: {exc}"
         return None
 
     def _step_add_flathub(self) -> str | None:

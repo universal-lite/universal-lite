@@ -1,0 +1,15 @@
+[Unit]
+Description=Create encrypted swap file
+DefaultDependencies=no
+After=local-fs.target
+Before=swap.target universal-lite-encrypted-swap.service
+ConditionPathExists=!/var/swap
+ConditionPathExists=/etc/universal-lite-swap-size
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/universal-lite-swap-init
+RemainAfterExit=yes
+
+[Install]
+WantedBy=swap.target
