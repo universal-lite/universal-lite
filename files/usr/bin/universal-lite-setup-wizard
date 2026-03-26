@@ -1384,9 +1384,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         if use_zswap:
             try:
-                mask = Path("/etc/systemd/system/systemd-zram-setup@zram0.service")
-                mask.unlink(missing_ok=True)
-                mask.symlink_to("/dev/null")
+                subprocess.run(
+                    ["systemctl", "mask", "systemd-zram-setup@.service"],
+                    check=True, capture_output=True, text=True,
+                )
                 subprocess.run(
                     [
                         "grubby", "--update-kernel=ALL",
