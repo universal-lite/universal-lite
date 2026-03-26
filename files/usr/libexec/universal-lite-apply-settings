@@ -147,6 +147,70 @@ def _rgba_css(color: str, opacity: float) -> str:
     return f"rgba({r}, {g}, {b}, {opacity})"
 
 
+def _build_tokens(settings: dict) -> dict:
+    """Build the full design token dict from validated settings."""
+    palette = ADWAITA[settings["theme"]]
+    accent_hex = ACCENTS[settings["accent"]]
+    r, g, b = _hex_to_rgb_tuple(accent_hex)
+
+    density = settings["density"]
+    edge = settings["edge"]
+    is_vertical = edge in ("left", "right")
+
+    panel_height = 36 if density == "compact" else 46
+    panel_width = 56 if density == "compact" else 64
+    panel_spacing = 6 if density == "compact" else 10
+    panel_icon_size = 14 if density == "compact" else 18
+
+    if edge == "top":
+        mako_anchor = "bottom-right"
+    else:
+        mako_anchor = "top-right"
+
+    border_strong = "#666666" if settings["theme"] == "dark" else palette["border"]
+
+    return {
+        **settings,
+        # Surfaces
+        "surface_base": palette["window_bg"],
+        "surface_card": palette["card_bg"],
+        "surface_headerbar": palette["headerbar_bg"],
+        "surface_overlay": palette["view_bg"],
+        # Text
+        "text_primary": palette["fg"],
+        "text_secondary": palette["secondary_fg"],
+        "text_disabled": palette["inactive_fg"],
+        # Borders
+        "border_default": palette["border"],
+        "border_strong": border_strong,
+        # Accent — pre-derived in all formats needed downstream
+        "accent_hex": accent_hex,
+        "accent_rgba_30": f"rgba({r}, {g}, {b}, 0.3)",
+        "accent_rgba_15": f"rgba({r}, {g}, {b}, 0.15)",
+        "accent_mako": accent_hex + "ff",
+        "accent_fuzzel": _strip_hash(accent_hex) + "ff",
+        # State backgrounds
+        "state_hover": _rgba_css(palette["fg"], 0.08),
+        "state_active": f"rgba({r}, {g}, {b}, 0.3)",
+        # Status indicators
+        "color_warning": ACCENTS["yellow"],
+        "color_error": ACCENTS["red"],
+        # Typography
+        "font_ui": "Roboto",
+        "font_mono": "Roboto Mono",
+        "font_size_ui": 13,
+        "font_size_mono": 11,
+        # Panel geometry
+        "panel_height": panel_height,
+        "panel_width": panel_width,
+        "panel_spacing": panel_spacing,
+        "panel_icon_size": panel_icon_size,
+        "is_vertical": is_vertical,
+        # Notification anchor (opposite corner from panel)
+        "mako_anchor": mako_anchor,
+    }
+
+
 def ensure_settings() -> dict:
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
     if not SETTINGS_PATH.exists():
@@ -171,6 +235,20 @@ def ensure_settings() -> dict:
         wallpaper = DEFAULT_WALLPAPER
     if accent not in VALID_ACCENT:
         accent = "blue"
+
+    # Validate pinned launchers
+    raw_pinned = data.get("pinned", [])
+    pinned: list[dict] = []
+    if isinstance(raw_pinned, list):
+        for entry in raw_pinned:
+            if not isinstance(entry, dict):
+                continue
+            cmd = str(entry.get("command", "")).strip()
+            if not cmd:
+                continue
+            name = str(entry.get("name", "")).strip() or cmd.split()[-1]
+            icon = str(entry.get("icon", "")).strip() or "application-x-executable"
+            pinned.append({"name": name, "command": cmd, "icon": icon})
 
     # Validate layout
     raw_layout = data.get("layout")
@@ -200,6 +278,7 @@ def ensure_settings() -> dict:
         "wallpaper": wallpaper,
         "accent": accent,
         "layout": layout,
+        "pinned": pinned,
     }
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -631,16 +710,17 @@ def restart_program(name: str, command: list[str]) -> None:
 
 def main() -> int:
     settings = ensure_settings()
-    write_waybar_config(settings)
-    write_gtk_settings(settings)
-    write_fuzzel_config(settings)
-    write_mako_config(settings)
-    write_foot_config(settings)
-    write_labwc_themerc(settings)
-    write_swaylock_config(settings)
+    tokens = _build_tokens(settings)
+    write_waybar_config(tokens)
+    write_gtk_settings(tokens)
+    write_fuzzel_config(tokens)
+    write_mako_config(tokens)
+    write_foot_config(tokens)
+    write_labwc_themerc(tokens)
+    write_swaylock_config(tokens)
 
     if os.environ.get("WAYLAND_DISPLAY"):
-        restart_program("swaybg", ["swaybg", "-i", settings["wallpaper"], "-m", "fill"])
+        restart_program("swaybg", ["swaybg", "-i", tokens["wallpaper"], "-m", "fill"])
         restart_program("waybar", ["waybar"])
         subprocess.run(["makoctl", "reload"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(["labwc", "--reconfigure"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
