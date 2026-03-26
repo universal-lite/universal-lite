@@ -288,166 +288,276 @@ def ensure_settings() -> dict:
     return normalized
 
 
-def write_waybar_config(settings: dict) -> None:
-    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
-
-    height = settings["panel_height"]
-    spacing = settings["panel_spacing"]
-    icon_size = settings["panel_icon_size"]
-
-    layout = settings["layout"]
-
-    config = {
-        "layer": "top",
-        "position": settings["edge"],
-        "height": height,
-        "spacing": spacing,
-        "modules-left": layout["start"],
-        "modules-center": layout["center"],
-        "modules-right": layout["end"],
-        "custom/launcher": {
-            "format": " Apps ",
-            "tooltip": False,
-            "on-click": "wtype -M ctrl -k F12",
-        },
-        "wlr/taskbar": {
-            "format": "{title}",
-            "icon-size": icon_size,
-            "all-outputs": False,
-            "on-click": "activate",
-            "on-click-middle": "close",
-            "tooltip-format": "{title}",
-        },
-        "network": {
-            "format-wifi": "NET {essid}",
-            "format-ethernet": "NET wired",
-            "format-disconnected": "NET offline",
-            "tooltip-format": "{ifname} {ipaddr}",
-        },
-        "pulseaudio": {
-            "format": "VOL {volume}%",
-            "format-muted": "VOL muted",
-            "on-click": "pavucontrol",
-        },
-        "backlight": {
-            "format": "BRI {percent}%",
-        },
-        "battery": {
-            "format": "BAT {capacity}%",
-            "format-charging": "BAT +{capacity}%",
-            "format-plugged": "BAT AC",
-            "states": {
-                "warning": 25,
-                "critical": 12,
-            },
-        },
-        "clock": {
-            "format": "{:%a %b %-d  %I:%M %p}",
-        },
-        "tray": {
-            "icon-size": icon_size,
-            "spacing": 8,
-        },
-    }
-
-    with (WAYBAR_DIR / "config.jsonc").open("w", encoding="utf-8") as handle:
-        json.dump(config, handle, indent=2)
-        handle.write("\n")
-
-    palette = ADWAITA[settings["theme"]]
-    accent = ACCENTS[settings["accent"]]
-
-    bar_bg = _rgba_css(palette["window_bg"], 0.95)
-    accent_active = _rgba_css(accent, 0.3)
-
-    css = f"""\
+def _waybar_css_common(tokens: dict) -> str:
+    r, g, b = _hex_to_rgb_tuple(tokens["surface_base"])
+    return f"""\
 * {{
-    font-family: "Roboto", sans-serif;
-    font-size: 13px;
-    color: {palette["fg"]};
+    font-family: "{tokens["font_ui"]}", sans-serif;
+    font-size: {tokens["font_size_ui"]}px;
+    color: {tokens["text_primary"]};
+    border: none;
+    box-shadow: none;
 }}
 
 window#waybar {{
-    background: {bar_bg};
-    border: 1px solid {palette["border"]};
+    background: rgba({r}, {g}, {b}, 0.95);
+    border: 1px solid {tokens["border_strong"]};
     border-radius: 999px;
     margin: 8px;
 }}
 
 #custom-launcher {{
-    background: {accent};
+    background: {tokens["accent_hex"]};
     color: #ffffff;
-    padding: 0 16px;
     border-radius: 999px;
     font-weight: bold;
-    min-height: {height}px;
 }}
 
-#custom-launcher:hover {{
-    opacity: 0.85;
-}}
+#custom-launcher:hover {{ opacity: 0.85; }}
 
-#taskbar {{
-    padding: 0;
-    min-height: {height}px;
-}}
-
-#taskbar button {{
-    padding: 0 10px;
-    border-radius: 999px;
-    min-height: {height}px;
-}}
-
-#taskbar button.active {{
-    background: {accent_active};
-}}
-
-#taskbar button:hover {{
-    background: {_rgba_css(palette["border"], 0.5)};
-}}
-
-#clock,
-#network,
-#battery,
-#backlight,
-#pulseaudio,
-#tray {{
-    padding: 0 10px;
-    border-radius: 999px;
-    min-height: {height}px;
-}}
-
-#clock {{
-    font-weight: bold;
-}}
-
-#battery.warning {{
-    color: {ACCENTS["yellow"]};
-}}
-
-#battery.critical {{
-    color: {ACCENTS["red"]};
-}}
-
-#network.disconnected {{
-    color: {palette["secondary_fg"]};
-}}
-
-#pulseaudio.muted {{
-    color: {palette["secondary_fg"]};
-}}
-
-#tray {{
-    padding: 0 6px;
-}}
+#battery.warning {{ color: {tokens["color_warning"]}; }}
+#battery.critical {{ color: {tokens["color_error"]}; }}
+#network.disconnected {{ color: {tokens["text_secondary"]}; }}
+#pulseaudio.muted {{ color: {tokens["text_secondary"]}; }}
 
 tooltip {{
-    background: {palette["card_bg"]};
-    border: 1px solid {palette["border"]};
+    background: {tokens["surface_card"]};
+    border: 1px solid {tokens["border_default"]};
     border-radius: 8px;
-    color: {palette["fg"]};
+    color: {tokens["text_primary"]};
 }}
 """
+
+
+def _waybar_css_horizontal(tokens: dict) -> str:
+    h = tokens["panel_height"]
+    pinned = tokens.get("pinned", [])
+
+    pin_css = ""
+    if pinned:
+        selectors = ", ".join(f"#custom-pin-{i}" for i in range(len(pinned)))
+        hover_selectors = ", ".join(f"#custom-pin-{i}:hover" for i in range(len(pinned)))
+        pin_css = f"""
+{selectors} {{
+    padding: 0 8px;
+    min-height: {h}px;
+    border-radius: 999px;
+}}
+{hover_selectors} {{ background: {tokens["state_hover"]}; }}
+"""
+
+    return f"""
+#custom-launcher {{ padding: 0 16px; min-height: {h}px; }}
+
+#taskbar {{ padding: 0; }}
+#taskbar button {{
+    padding: 0 8px;
+    border-radius: 999px;
+    min-height: {h}px;
+}}
+#taskbar button.active {{ background: {tokens["accent_rgba_30"]}; }}
+#taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
+{pin_css}
+#clock, #network, #battery, #backlight, #pulseaudio, #tray {{
+    padding: 0 10px;
+    min-height: {h}px;
+}}
+
+#clock {{ font-weight: bold; padding: 0 14px; }}
+#tray  {{ padding: 0 6px; }}
+"""
+
+
+def _waybar_css_vertical(tokens: dict) -> str:
+    w = tokens["panel_width"]
+    pinned = tokens.get("pinned", [])
+
+    pin_css = ""
+    if pinned:
+        selectors = ", ".join(f"#custom-pin-{i}" for i in range(len(pinned)))
+        hover_selectors = ", ".join(f"#custom-pin-{i}:hover" for i in range(len(pinned)))
+        pin_css = f"""
+{selectors} {{
+    padding: 8px 0;
+    min-width: {w}px;
+    border-radius: 999px;
+}}
+{hover_selectors} {{ background: {tokens["state_hover"]}; }}
+"""
+
+    return f"""
+window#waybar {{ min-width: {w}px; }}
+
+#custom-launcher {{
+    padding: 12px 0;
+    min-width: {w}px;
+    margin-bottom: 4px;
+}}
+
+#taskbar {{ padding: 0; }}
+#taskbar button {{
+    padding: 8px 0;
+    border-radius: 999px;
+    min-width: {w}px;
+}}
+#taskbar button.active {{ background: {tokens["accent_rgba_30"]}; }}
+#taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
+{pin_css}
+#clock, #network, #battery, #backlight, #pulseaudio, #tray {{
+    padding: 10px 0;
+    min-width: {w}px;
+}}
+
+#clock {{ font-weight: bold; }}
+#tray  {{ padding: 6px 0; }}
+"""
+
+
+def write_waybar_config(tokens: dict) -> None:
+    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
+
+    layout = tokens["layout"]
+    pinned = tokens.get("pinned", [])
+    is_vertical = tokens["is_vertical"]
+    icon_size = tokens["panel_icon_size"]
+    spacing = tokens["panel_spacing"]
+
+    # Build modules-left: inject pin-N modules after the launcher
+    modules_left = list(layout["start"])
+    pin_ids = [f"custom/pin-{i}" for i in range(len(pinned))]
+    if pin_ids:
+        try:
+            idx = modules_left.index("custom/launcher")
+            modules_left = modules_left[:idx + 1] + pin_ids + modules_left[idx + 1:]
+        except ValueError:
+            modules_left = pin_ids + modules_left
+
+    config: dict = {
+        "layer": "top",
+        "position": tokens["edge"],
+        "spacing": spacing,
+        "modules-left": modules_left,
+        "modules-center": layout["center"],
+        "modules-right": layout["end"],
+    }
+
+    if is_vertical:
+        config["width"] = tokens["panel_width"]
+    else:
+        config["height"] = tokens["panel_height"]
+
+    config["custom/launcher"] = {
+        "format": " Apps ",
+        "tooltip": False,
+        "on-click": "wtype -M ctrl -k F12",
+    }
+
+    config["wlr/taskbar"] = {
+        "format": "",
+        "icon-size": icon_size,
+        "all-outputs": False,
+        "on-click": "activate",
+        "on-click-middle": "close",
+        "tooltip-format": "{title}",
+    }
+
+    config["network"] = {
+        "format": "{icon}",
+        "format-icons": {
+            "wifi": [
+                "network-wireless-signal-none-symbolic",
+                "network-wireless-signal-weak-symbolic",
+                "network-wireless-signal-ok-symbolic",
+                "network-wireless-signal-good-symbolic",
+                "network-wireless-signal-excellent-symbolic",
+            ],
+            "ethernet": "network-wired-symbolic",
+            "disconnected": "network-offline-symbolic",
+        },
+        "tooltip-format": "{essid} — {ipaddr}",
+        "tooltip-format-ethernet": "{ifname} — {ipaddr}",
+        "tooltip-format-disconnected": "Disconnected",
+    }
+
+    config["pulseaudio"] = {
+        "format": "{icon}",
+        "format-muted": "{icon}",
+        "format-icons": {
+            "default": [
+                "audio-volume-muted-symbolic",
+                "audio-volume-low-symbolic",
+                "audio-volume-medium-symbolic",
+                "audio-volume-high-symbolic",
+            ],
+        },
+        "tooltip-format": "{volume}%",
+        "on-click": "pavucontrol",
+        "scroll-step": 5,
+    }
+
+    config["backlight"] = {
+        "format": "{icon}",
+        "format-icons": ["display-brightness-symbolic"],
+        "tooltip-format": "{percent}%",
+    }
+
+    config["battery"] = {
+        "format": "{icon}",
+        "format-charging": "{icon}",
+        "format-icons": {
+            "charging": [
+                "battery-empty-charging-symbolic",
+                "battery-caution-charging-symbolic",
+                "battery-low-charging-symbolic",
+                "battery-good-charging-symbolic",
+                "battery-full-charging-symbolic",
+            ],
+            "default": [
+                "battery-empty-symbolic",
+                "battery-caution-symbolic",
+                "battery-low-symbolic",
+                "battery-good-symbolic",
+                "battery-full-symbolic",
+            ],
+        },
+        "states": {"warning": 25, "critical": 12},
+        "tooltip-format": "{capacity}%",
+    }
+
+    config["clock"] = {
+        "format": "{:%H:%M}",
+        "tooltip-format": "{:%A, %B %-d, %Y}",
+    }
+
+    config["tray"] = {
+        "icon-size": icon_size,
+        "spacing": 8,
+    }
+
+    # Generate custom/pin-N modules for each pinned app
+    for i, app in enumerate(pinned):
+        icon = app.get("icon") or "application-x-executable"
+        name = app.get("name") or app["command"].split()[-1]
+        # json.dumps handles escaping; replace ' in result for shell safety
+        exec_json = json.dumps({"icon": icon, "tooltip": name})
+        exec_cmd = "echo '" + exec_json.replace("'", "'\\''") + "'"
+        config[f"custom/pin-{i}"] = {
+            "return-type": "json",
+            "exec": exec_cmd,
+            "interval": "once",
+            "on-click": app["command"],
+            "format": "{icon}",
+        }
+
+    with (WAYBAR_DIR / "config.jsonc").open("w", encoding="utf-8") as handle:
+        json.dump(config, handle, indent=2)
+        handle.write("\n")
+
+    css = _waybar_css_common(tokens)
+    if is_vertical:
+        css += _waybar_css_vertical(tokens)
+    else:
+        css += _waybar_css_horizontal(tokens)
 
     with (WAYBAR_DIR / "style.css").open("w", encoding="utf-8") as handle:
         handle.write(css)
