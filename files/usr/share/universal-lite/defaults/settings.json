@@ -3,6 +3,7 @@
   "density": "normal",
   "theme": "light",
   "accent": "blue",
+  "scale": 1.0,
   "layout": {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],

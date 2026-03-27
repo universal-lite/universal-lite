@@ -66,6 +66,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     udisks2 \
     unzip \
     waybar \
+    wlr-randr \
     wireplumber \
     wl-clipboard \
     wtype \
