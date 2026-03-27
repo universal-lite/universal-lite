@@ -22,7 +22,8 @@ if not SHARE_ROOT.joinpath("universal-lite/defaults/settings.json").exists():
 
 SETTINGS_PATH = Path.home() / ".config" / "universal-lite" / "settings.json"
 DEFAULTS_PATH = SHARE_ROOT / "universal-lite/defaults/settings.json"
-WALLPAPER_DIR = SHARE_ROOT / "backgrounds/universal-lite"
+BACKGROUNDS_ROOT = SHARE_ROOT / "backgrounds"
+WALLPAPER_EXTS = frozenset({".svg", ".jpg", ".jpeg", ".png", ".webp"})
 APPLY_SCRIPT = [str(LIBEXEC_ROOT / "universal-lite-apply-settings")]
 
 MODULE_NAMES = {
@@ -144,8 +145,8 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self.accent = Gtk.DropDown.new_from_strings(
             ["blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"]
         )
-        wallpaper_choices = self._wallpaper_choices()
-        self.wallpaper = Gtk.DropDown.new_from_strings(wallpaper_choices)
+        wallpaper_names, self._wallpaper_paths = self._wallpaper_choices()
+        self.wallpaper = Gtk.DropDown.new_from_strings(wallpaper_names)
         self.custom_wallpaper = Gtk.Entry()
         self.custom_wallpaper.set_placeholder_text("Custom wallpaper path")
         self.custom_wallpaper.set_text(self.settings.get("wallpaper", ""))
@@ -155,10 +156,10 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self._set_dropdown(self.theme, self.settings.get("theme", "light"))
         self._set_dropdown(self.accent, self.settings.get("accent", "blue"))
 
-        wallpaper_name = Path(self.settings.get("wallpaper", "")).name
-        if wallpaper_name in wallpaper_choices:
-            self._set_dropdown(self.wallpaper, wallpaper_name)
-        else:
+        current_wp = Path(self.settings.get("wallpaper", ""))
+        try:
+            self.wallpaper.set_selected(self._wallpaper_paths.index(current_wp))
+        except ValueError:
             self.wallpaper.set_selected(0)
 
         # Connect edge dropdown to update layout section headers live.
@@ -178,7 +179,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             ("Panel density", self.density),
             ("Theme", self.theme),
             ("Accent color", self.accent),
-            ("Bundled wallpaper", self.wallpaper),
+            ("Wallpaper", self.wallpaper),
             ("Custom wallpaper", self.custom_wallpaper),
         ):
             label = Gtk.Label(label=label_text, xalign=0)
@@ -577,11 +578,20 @@ class SettingsWindow(Gtk.ApplicationWindow):
     #  Common helpers                                                     #
     # ------------------------------------------------------------------ #
 
-    def _wallpaper_choices(self) -> list[str]:
-        choices = sorted(path.name for path in WALLPAPER_DIR.glob("*.svg"))
-        if not choices:
-            return ["chrome-dawn.svg"]
-        return choices
+    def _wallpaper_choices(self) -> tuple[list[str], list[Path]]:
+        items: list[tuple[str, Path]] = []
+        if BACKGROUNDS_ROOT.is_dir():
+            for path in BACKGROUNDS_ROOT.rglob("*"):
+                if path.is_file() and path.suffix.lower() in WALLPAPER_EXTS:
+                    rel = path.relative_to(BACKGROUNDS_ROOT)
+                    prefix = rel.parts[0] if len(rel.parts) > 1 else ""
+                    label = f"{prefix}/{path.stem}" if prefix else path.stem
+                    items.append((label, path))
+        items.sort(key=lambda x: (0 if "universal-lite" in str(x[1]) else 1, x[0]))
+        if not items:
+            fallback = BACKGROUNDS_ROOT / "universal-lite/chrome-dawn.svg"
+            return ["universal-lite/chrome-dawn"], [fallback]
+        return [x[0] for x in items], [x[1] for x in items]
 
     def _set_dropdown(self, widget: Gtk.DropDown, value: str) -> None:
         model = widget.get_model()
@@ -722,7 +732,9 @@ class SettingsWindow(Gtk.ApplicationWindow):
         accent = self.accent.get_selected_item().get_string()
         wallpaper = self.custom_wallpaper.get_text().strip()
         if not wallpaper:
-            wallpaper = str(WALLPAPER_DIR / self.wallpaper.get_selected_item().get_string())
+            idx = self.wallpaper.get_selected()
+            if 0 <= idx < len(self._wallpaper_paths):
+                wallpaper = str(self._wallpaper_paths[idx])
 
         payload = {
             "edge": edge,

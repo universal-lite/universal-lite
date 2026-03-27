@@ -33,6 +33,9 @@ dnf5 install -y --setopt=install_weak_deps=False \
     fuzzel \
     labwc-menu-generator \
     nwg-drawer \
+    "f${FEDORA_MAJOR}-backgrounds-base" \
+    "f${FEDORA_MAJOR}-backgrounds-extras" \
+    gnome-backgrounds \
     google-roboto-fonts \
     google-roboto-mono-fonts \
     greetd \
