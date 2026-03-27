@@ -12,7 +12,7 @@ CAGE="env WLR_NO_HARDWARE_CURSORS=1 cage -s --"
 
 if getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {found=1} END {exit !found}'; then
     # Users exist — normal login
-    COMMAND="$CAGE gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments"
+    COMMAND="$CAGE gtkgreet -l -s /etc/greetd/gtkgreet.css"
     USER="greetd"
 else
     # No users — first boot setup (needs root for useradd/chpasswd)
