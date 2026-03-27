@@ -34,7 +34,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     labwc-menu-generator \
     nwg-drawer \
     "f${FEDORA_MAJOR}-backgrounds-base" \
-    "f${FEDORA_MAJOR}-backgrounds-extras" \
+    "f${FEDORA_MAJOR}-backgrounds-gnome" \
     gnome-backgrounds \
     google-roboto-fonts \
     google-roboto-mono-fonts \
