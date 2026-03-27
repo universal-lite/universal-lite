@@ -18,6 +18,14 @@ _settings="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
 _wallpaper=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('wallpaper',''))" "$_settings" 2>/dev/null || true)
 [ -n "$_wallpaper" ] && swaybg -i "$_wallpaper" -m fill >/dev/null 2>&1 &
 
+# Apply display scale to all active outputs (no-op at default 1.0).
+_scale=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('scale', 1.0))" "$_settings" 2>/dev/null || echo "1.0")
+if [ "$_scale" != "1.0" ]; then
+    wlr-randr | awk '/^[A-Za-z]/{print $1}' | while IFS= read -r _out; do
+        wlr-randr --output "$_out" --scale "$_scale" 2>/dev/null || true
+    done
+fi
+
 waybar >/dev/null 2>&1 &
 mako >/dev/null 2>&1 &
 pgrep -x nm-applet  >/dev/null 2>&1 || nm-applet --indicator >/dev/null 2>&1 &
