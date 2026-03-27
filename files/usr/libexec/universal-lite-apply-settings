@@ -31,6 +31,7 @@ VALID_EDGES = {"top", "bottom", "left", "right"}
 VALID_DENSITY = {"compact", "normal"}
 VALID_THEME = {"light", "dark"}
 VALID_ACCENT = {"blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"}
+VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 
 DEFAULT_LAYOUT = {
     "start": ["custom/launcher"],
@@ -236,6 +237,10 @@ def ensure_settings() -> dict:
     if accent not in VALID_ACCENT:
         accent = "blue"
 
+    scale = data.get("scale", 1.0)
+    if scale not in VALID_SCALE:
+        scale = 1.0
+
     # Validate pinned launchers
     raw_pinned = data.get("pinned", [])
     pinned: list[dict] = []
@@ -277,6 +282,7 @@ def ensure_settings() -> dict:
         "theme": theme,
         "wallpaper": wallpaper,
         "accent": accent,
+        "scale": scale,
         "layout": layout,
         "pinned": pinned,
     }
