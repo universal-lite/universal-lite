@@ -581,12 +581,24 @@ class SettingsWindow(Gtk.ApplicationWindow):
     def _wallpaper_choices(self) -> tuple[list[str], list[Path]]:
         items: list[tuple[str, Path]] = []
         if BACKGROUNDS_ROOT.is_dir():
-            for path in BACKGROUNDS_ROOT.rglob("*"):
-                if path.is_file() and path.suffix.lower() in WALLPAPER_EXTS:
-                    rel = path.relative_to(BACKGROUNDS_ROOT)
-                    prefix = rel.parts[0] if len(rel.parts) > 1 else ""
-                    label = f"{prefix}/{path.stem}" if prefix else path.stem
-                    items.append((label, path))
+            try:
+                candidates = list(BACKGROUNDS_ROOT.rglob("*"))
+            except OSError:
+                candidates = []
+            seen_labels: set[str] = set()
+            for path in candidates:
+                try:
+                    if not (path.is_file() and path.suffix.lower() in WALLPAPER_EXTS):
+                        continue
+                except OSError:
+                    continue
+                rel = path.relative_to(BACKGROUNDS_ROOT)
+                prefix = rel.parts[0] if len(rel.parts) > 1 else ""
+                label = f"{prefix}/{path.stem}" if prefix else path.stem
+                if label in seen_labels:
+                    label = f"{prefix}/{path.name}" if prefix else path.name
+                seen_labels.add(label)
+                items.append((label, path))
         items.sort(key=lambda x: (0 if "universal-lite" in str(x[1]) else 1, x[0]))
         if not items:
             fallback = BACKGROUNDS_ROOT / "universal-lite/chrome-dawn.svg"
