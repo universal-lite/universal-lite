@@ -8,7 +8,8 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk  # noqa: E402
+gi.require_version("GLib", "2.0")
+from gi.repository import GLib, Gtk  # noqa: E402
 
 APP_ID = "org.universallite.Settings"
 SCRIPT_ROOT = Path(__file__).resolve()
@@ -45,6 +46,8 @@ DEFAULT_LAYOUT = {
 HORIZONTAL_LABELS = {"start": "Left", "center": "Center", "end": "Right"}
 VERTICAL_LABELS = {"start": "Top", "center": "Center", "end": "Bottom"}
 SECTION_ORDER = ["start", "center", "end"]
+SCALE_OPTIONS = ["75%", "100%", "125%", "150%", "175%", "200%", "225%", "250%"]
+SCALE_VALUES = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
 
 def ensure_settings() -> dict:
@@ -74,6 +77,10 @@ class SettingsWindow(Gtk.ApplicationWindow):
         # -- Layout tab --
         layout_page = self._build_layout_tab()
         notebook.append_page(layout_page, Gtk.Label(label="Layout"))
+
+        # -- Display tab --
+        display_page = self._build_display_tab()
+        notebook.append_page(display_page, Gtk.Label(label="Display"))
 
     # ------------------------------------------------------------------ #
     #  Layout data helpers                                                #
@@ -184,6 +191,46 @@ class SettingsWindow(Gtk.ApplicationWindow):
         grid.attach(save_button, 1, row, 1, 1)
         row += 1
         grid.attach(self.status, 0, row, 2, 1)
+
+        return outer
+
+    # ------------------------------------------------------------------ #
+    #  Display tab                                                        #
+    # ------------------------------------------------------------------ #
+
+    def _build_display_tab(self) -> Gtk.Widget:
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        outer.set_margin_top(20)
+        outer.set_margin_bottom(20)
+        outer.set_margin_start(20)
+        outer.set_margin_end(20)
+
+        title = Gtk.Label(xalign=0)
+        title.set_markup("<span size='x-large' weight='bold'>Display</span>")
+        outer.append(title)
+
+        subtitle = Gtk.Label(xalign=0, wrap=True)
+        subtitle.set_text(
+            "Set the display scale. A preview is shown immediately — "
+            "confirm within 15 seconds or the change will be reverted."
+        )
+        outer.append(subtitle)
+
+        grid = Gtk.Grid(column_spacing=12, row_spacing=12)
+        outer.append(grid)
+
+        self.scale = Gtk.DropDown.new_from_strings(SCALE_OPTIONS)
+        self._set_scale_dropdown(self.settings.get("scale", 1.0))
+
+        apply_btn = Gtk.Button(label="Apply")
+        apply_btn.connect("clicked", self.on_apply_scale)
+
+        self.scale_status = Gtk.Label(xalign=0)
+
+        grid.attach(Gtk.Label(label="Display scale", xalign=0), 0, 0, 1, 1)
+        grid.attach(self.scale, 1, 0, 1, 1)
+        grid.attach(apply_btn, 1, 1, 1, 1)
+        grid.attach(self.scale_status, 0, 2, 2, 1)
 
         return outer
 
@@ -544,6 +591,105 @@ class SettingsWindow(Gtk.ApplicationWindow):
                 return
         widget.set_selected(0)
 
+    def _set_scale_dropdown(self, scale: float) -> None:
+        try:
+            idx = SCALE_VALUES.index(scale)
+        except ValueError:
+            idx = SCALE_VALUES.index(1.0)
+        self.scale.set_selected(idx)
+
+    def _apply_scale(self, scale: float) -> None:
+        """Apply scale to all active wlr-output-management outputs. Silent on failure."""
+        result = subprocess.run(
+            ["wlr-randr"], capture_output=True, text=True, check=False
+        )
+        outputs = [
+            line.split()[0]
+            for line in result.stdout.splitlines()
+            if line and not line[0].isspace()
+        ]
+        for output in outputs:
+            subprocess.run(
+                ["wlr-randr", "--output", output, "--scale", str(scale)],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+    def on_apply_scale(self, _button: Gtk.Button) -> None:
+        selected = self.scale.get_selected()
+        new_scale = SCALE_VALUES[selected]
+        prev_scale = self.settings.get("scale", 1.0)
+
+        if new_scale == prev_scale:
+            self.scale_status.set_text("No change.")
+            return
+
+        self._apply_scale(new_scale)
+
+        # --- Revert dialog ---
+        dialog = Gtk.Window(title="Keep this display scale?", modal=True, transient_for=self)
+        dialog.set_default_size(320, -1)
+        dialog.set_resizable(False)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        box.set_margin_top(20)
+        box.set_margin_bottom(20)
+        box.set_margin_start(20)
+        box.set_margin_end(20)
+        dialog.set_child(box)
+
+        countdown_label = Gtk.Label(label="Reverting in 15 seconds\u2026", xalign=0)
+        box.append(countdown_label)
+
+        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8, halign=Gtk.Align.END)
+        box.append(btn_box)
+
+        revert_btn = Gtk.Button(label="Revert")
+        keep_btn = Gtk.Button(label="Keep Settings")
+        keep_btn.add_css_class("suggested-action")
+        btn_box.append(revert_btn)
+        btn_box.append(keep_btn)
+
+        remaining = [15]
+        timer_id = [0]
+
+        def _revert(_widget=None):
+            if timer_id[0]:
+                GLib.source_remove(timer_id[0])
+                timer_id[0] = 0
+            self._apply_scale(prev_scale)
+            self._set_scale_dropdown(prev_scale)
+            self.scale_status.set_text("Reverted.")
+            dialog.destroy()
+
+        def _keep(_widget=None):
+            if timer_id[0]:
+                GLib.source_remove(timer_id[0])
+                timer_id[0] = 0
+            self.settings["scale"] = new_scale
+            payload = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+            payload["scale"] = new_scale
+            SETTINGS_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            subprocess.run(APPLY_SCRIPT, check=False)
+            self.scale_status.set_text("Applied.")
+            dialog.destroy()
+
+        def _tick():
+            remaining[0] -= 1
+            if remaining[0] <= 0:
+                timer_id[0] = 0
+                _revert()
+                return GLib.SOURCE_REMOVE
+            countdown_label.set_text(f"Reverting in {remaining[0]} seconds\u2026")
+            return GLib.SOURCE_CONTINUE
+
+        timer_id[0] = GLib.timeout_add(1000, _tick)
+        revert_btn.connect("clicked", _revert)
+        keep_btn.connect("clicked", _keep)
+        dialog.connect("close-request", lambda _: _revert() or False)
+        dialog.present()
+
     def on_choose_wallpaper(self, _button: Gtk.Button) -> None:
         dialog = Gtk.FileDialog.new()
         dialog.set_title("Choose wallpaper")
@@ -574,6 +720,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             "theme": theme,
             "accent": accent,
             "wallpaper": wallpaper,
+            "scale": self.settings.get("scale", 1.0),
             "layout": {k: list(v) for k, v in self.layout_data.items()},
             "pinned": [dict(p) for p in self.pinned_data],
         }
