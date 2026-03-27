@@ -653,8 +653,12 @@ class SettingsWindow(Gtk.ApplicationWindow):
 
         remaining = [15]
         timer_id = [0]
+        _done = [False]
 
         def _revert(_widget=None):
+            if _done[0]:
+                return
+            _done[0] = True
             if timer_id[0]:
                 GLib.source_remove(timer_id[0])
                 timer_id[0] = 0
@@ -664,11 +668,17 @@ class SettingsWindow(Gtk.ApplicationWindow):
             dialog.destroy()
 
         def _keep(_widget=None):
+            if _done[0]:
+                return
+            _done[0] = True
             if timer_id[0]:
                 GLib.source_remove(timer_id[0])
                 timer_id[0] = 0
             self.settings["scale"] = new_scale
-            payload = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+            try:
+                payload = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                payload = {}
             payload["scale"] = new_scale
             SETTINGS_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
             subprocess.run(APPLY_SCRIPT, check=False)
