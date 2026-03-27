@@ -2,5 +2,5 @@
 vt = 7
 
 [default_session]
-command = "cage -s -- gtkgreet -l -s /etc/greetd/gtkgreet.css -c /etc/greetd/environments"
+command = "env WLR_NO_HARDWARE_CURSORS=1 cage -s -- gtkgreet -l -s /etc/greetd/gtkgreet.css"
 user = "greetd"

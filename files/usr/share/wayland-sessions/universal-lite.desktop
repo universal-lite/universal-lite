@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Universal-Lite
 Comment=Lightweight Chromebook-style Wayland session
-Exec=labwc
+Exec=/usr/libexec/universal-lite-session
 Type=Application
 DesktopNames=labwc;Universal-Lite

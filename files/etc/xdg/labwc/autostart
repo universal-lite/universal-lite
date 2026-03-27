@@ -1,3 +1,30 @@
 #!/bin/sh
 
-/usr/libexec/universal-lite-session-init
+# Export Wayland environment to D-Bus and the systemd user manager.
+# These must run after labwc creates the Wayland socket.
+dbus-update-activation-environment --systemd \
+  WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP \
+  XDG_SESSION_TYPE GTK_USE_PORTAL || true
+systemctl --user import-environment \
+  WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP \
+  XDG_SESSION_TYPE GTK_USE_PORTAL || true
+xdg-user-dirs-update >/dev/null 2>&1 || true
+
+# Only start Universal-Lite daemons in a Universal-Lite session.
+[ "${UNIVERSAL_LITE:-}" = "1" ] || exit 0
+
+# Read wallpaper path from user settings and start the wallpaper daemon.
+_settings="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
+_wallpaper=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('wallpaper',''))" "$_settings" 2>/dev/null || true)
+[ -n "$_wallpaper" ] && swaybg -i "$_wallpaper" -m fill >/dev/null 2>&1 &
+
+waybar >/dev/null 2>&1 &
+mako >/dev/null 2>&1 &
+pgrep -x nm-applet  >/dev/null 2>&1 || nm-applet --indicator >/dev/null 2>&1 &
+pgrep -x xfce-polkit >/dev/null 2>&1 || xfce-polkit >/dev/null 2>&1 &
+swayidle -w \
+  timeout 300  'swaylock -f' \
+  timeout 600  'wlopm --off "*"' resume 'wlopm --on "*"' \
+  before-sleep 'swaylock -f' \
+  >/dev/null 2>&1 &
+pgrep -x Thunar >/dev/null 2>&1 || Thunar --daemon >/dev/null 2>&1 &

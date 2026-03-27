@@ -6,6 +6,7 @@ FEDORA_MAJOR="$(rpm -E %fedora)"
 
 install -d /usr/share/wayland-sessions
 install -Dm644 /ctx/files/usr/share/wayland-sessions/universal-lite.desktop /usr/share/wayland-sessions/universal-lite.desktop
+install -Dm644 /ctx/files/usr/share/wayland-sessions/vanilla-labwc.desktop /usr/share/wayland-sessions/vanilla-labwc.desktop
 
 dnf5 install -y \
     "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-${FEDORA_MAJOR}.noarch.rpm" \
@@ -94,6 +95,7 @@ sed -i '/<\/openbox_menu>/i \
   <\/menu>' /etc/xdg/labwc/menu.xml
 
 chmod 0755 \
+    /etc/xdg/labwc/autostart \
     /usr/bin/universal-lite-settings \
     /usr/bin/universal-lite-setup-wizard \
     /usr/libexec/universal-lite-apply-settings \
@@ -101,6 +103,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-flatpak-setup \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-setup \
+    /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-session-init
 
 systemctl mask plymouth-quit-wait.service plymouth-quit.service
