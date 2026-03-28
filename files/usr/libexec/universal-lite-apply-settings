@@ -165,6 +165,8 @@ def _build_tokens(settings: dict) -> dict:
 
     if edge == "top":
         mako_anchor = "bottom-right"
+    elif edge == "right":
+        mako_anchor = "top-left"
     else:
         mako_anchor = "top-right"
 
@@ -680,10 +682,14 @@ def write_foot_config(tokens: dict) -> None:
 font={tokens["font_mono"]}:size={tokens["font_size_mono"]}
 pad=12x12 center
 
+[scrollback]
+lines=10000
+
 [colors]
 alpha={alpha}
 foreground={term["foreground"]}
 background={term["background"]}
+selection-foreground=ffffff
 selection-background={selection_bg}
 
 regular0={term["regular0"]}
@@ -744,7 +750,10 @@ window.inactive.label.text.color: {palette["secondary_fg"]}
 window.inactive.label.text.justify: center
 
 # Buttons
+window.button.width: 26
+window.button.height: 26
 window.button.spacing: 4
+window.button.hover.bg.corner-radius: 13
 
 # Active buttons
 window.active.button.unpressed.image.color: {palette["fg"]}
@@ -768,6 +777,7 @@ menu.items.active.text.color: #ffffff
 menu.separator.color: {palette["border"]}
 menu.border.width: 1
 menu.border.color: {palette["border"]}
+menu.border.radius: 8
 
 # OSD
 osd.bg: flat solid

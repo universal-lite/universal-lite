@@ -51,3 +51,4 @@ menu.items.active.text.color: #ffffff
 menu.separator.color: #d1d1d1
 menu.border.width: 1
 menu.border.color: #d1d1d1
+menu.border.radius: 8
