@@ -168,7 +168,12 @@ def ensure_settings() -> dict:
     SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
     if not SETTINGS_PATH.exists():
         SETTINGS_PATH.write_text(DEFAULTS_PATH.read_text(encoding="utf-8"), encoding="utf-8")
-    return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    try:
+        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        default_text = DEFAULTS_PATH.read_text(encoding="utf-8")
+        SETTINGS_PATH.write_text(default_text, encoding="utf-8")
+        return json.loads(default_text)
 
 
 # ------------------------------------------------------------------ #
@@ -704,6 +709,7 @@ class MouseTouchpadPage:
     def __init__(self, win: 'SettingsWindow') -> None:
         self.win = win
         self._tp_speed_timer = 0
+        self._tp_scroll_timer = 0
         self._mouse_speed_timer = 0
 
     def build(self) -> Gtk.Widget:
@@ -749,6 +755,22 @@ class MouseTouchpadPage:
             self._tp_speed_timer = GLib.timeout_add(300, _apply)
         tp_scale.connect("value-changed", _on_tp_speed)
         page.append(self.win._make_setting_row("Pointer speed", "", tp_scale))
+
+        # Scroll speed (touchpad)
+        tp_scroll = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1.0, 10.0, 1.0)
+        tp_scroll.set_value(self.win.settings.get("touchpad_scroll_speed", 5))
+        tp_scroll.set_size_request(200, -1)
+        tp_scroll.set_draw_value(False)
+        def _on_tp_scroll(scale):
+            if self._tp_scroll_timer:
+                GLib.source_remove(self._tp_scroll_timer)
+            def _apply():
+                self.win.save_and_apply("touchpad_scroll_speed", int(scale.get_value()))
+                self._tp_scroll_timer = 0
+                return False
+            self._tp_scroll_timer = GLib.timeout_add(300, _apply)
+        tp_scroll.connect("value-changed", _on_tp_scroll)
+        page.append(self.win._make_setting_row("Scroll speed", "", tp_scroll))
 
         # Mouse group
         page.append(self.win._make_group_label("Mouse"))
@@ -858,10 +880,7 @@ class KeyboardPage:
             variant_display = ["(Default)"] + variants
             new_model = Gtk.StringList.new(variant_display)
             variant_dropdown.set_model(new_model)
-            if variant_row.get_visible():
-                variant_row.set_visible(bool(variants))
-            else:
-                variant_row.set_visible(bool(variants))
+            variant_row.set_visible(bool(variants))
             # Select saved variant or default
             try:
                 sel_idx = variant_codes.index(current_variant if layout_code == current_layout else "")
@@ -886,18 +905,16 @@ class KeyboardPage:
             if idx == Gtk.INVALID_LIST_POSITION or idx >= len(layout_codes):
                 return
             code = layout_codes[idx]
-            self.win.save_and_apply("keyboard_layout", code)
-            # Reset variant to default before repopulating
-            self.win.save_and_apply("keyboard_variant", "")
+            self.win.save_dict_and_apply({"keyboard_layout": code, "keyboard_variant": ""})
             _build_variant_dropdown(code)
 
         layout_dropdown.connect("notify::selected", _on_layout_changed)
 
         page.append(self.win._make_setting_row("Keyboard layout", "", layout_dropdown))
 
-        # Build variants for the initially selected layout
-        _build_variant_dropdown(current_layout)
+        # Create variant row first so _build_variant_dropdown can reference it
         variant_row = self.win._make_setting_row("Variant", "", variant_dropdown)
+        _build_variant_dropdown(current_layout)
         page.append(variant_row)
 
         # ---- Repeat group ------------------------------------------------
@@ -1392,12 +1409,12 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(150)
 
-        content_scroll = Gtk.ScrolledWindow()
-        content_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        content_scroll.set_child(self._stack)
-        content_scroll.set_hexpand(True)
-        content_scroll.set_vexpand(True)
-        paned.set_end_child(content_scroll)
+        self._content_scroll = Gtk.ScrolledWindow()
+        self._content_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self._content_scroll.set_child(self._stack)
+        self._content_scroll.set_hexpand(True)
+        self._content_scroll.set_vexpand(True)
+        paned.set_end_child(self._content_scroll)
 
         # Build sidebar rows and stack pages
         page_classes = [
@@ -1455,6 +1472,9 @@ class SettingsWindow(Gtk.ApplicationWindow):
         idx = row.get_index()
         if 0 <= idx < len(self._page_names):
             self._stack.set_visible_child_name(self._page_names[idx])
+            adj = self._content_scroll.get_vadjustment()
+            if adj:
+                adj.set_value(0)
 
     # ------------------------------------------------------------------ #
     #  Settings persistence helpers                                        #
@@ -1468,7 +1488,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         data[key] = value
         self.settings[key] = value
         SETTINGS_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-        subprocess.run(APPLY_SCRIPT, check=False)
+        subprocess.Popen(APPLY_SCRIPT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def save_dict_and_apply(self, updates: dict) -> None:
         try:
@@ -1478,7 +1498,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         data.update(updates)
         self.settings.update(updates)
         SETTINGS_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-        subprocess.run(APPLY_SCRIPT, check=False)
+        subprocess.Popen(APPLY_SCRIPT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # ------------------------------------------------------------------ #
     #  Widget factory helpers                                              #

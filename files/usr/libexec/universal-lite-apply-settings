@@ -785,6 +785,9 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     tap = "yes" if settings.get("touchpad_tap_to_click", True) else "no"
     tp_nat = "yes" if settings.get("touchpad_natural_scroll", False) else "no"
     tp_speed = settings.get("touchpad_pointer_speed", 0.0)
+    tp_scroll = settings.get("touchpad_scroll_speed", 5)
+    # Map 1-10 UI range to libinput scrollFactor (0.2 - 2.0)
+    scroll_factor = round(0.2 + (tp_scroll - 1) * (1.8 / 9), 2)
     m_nat = "yes" if settings.get("mouse_natural_scroll", False) else "no"
     m_speed = settings.get("mouse_pointer_speed", 0.0)
     m_accel = settings.get("mouse_accel_profile", "adaptive")
@@ -806,6 +809,7 @@ def write_labwc_rc_overrides(settings: dict) -> None:
       <tap>{tap}</tap>
       <naturalScroll>{tp_nat}</naturalScroll>
       <pointerSpeed>{tp_speed}</pointerSpeed>
+      <scrollFactor>{scroll_factor}</scrollFactor>
     </device>
     <device category="default">
       <naturalScroll>{m_nat}</naturalScroll>

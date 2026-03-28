@@ -17,6 +17,7 @@
   "touchpad_tap_to_click": true,
   "touchpad_natural_scroll": false,
   "touchpad_pointer_speed": 0.0,
+  "touchpad_scroll_speed": 5,
   "mouse_natural_scroll": false,
   "mouse_pointer_speed": 0.0,
   "mouse_accel_profile": "adaptive",
