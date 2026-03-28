@@ -517,6 +517,7 @@ def write_waybar_config(tokens: dict) -> None:
     config["clock"] = {
         "format": "{:%-I:%M %p}",
         "tooltip-format": "{:%A, %B %-d, %Y}",
+        "interval": 60,
     }
 
     config["custom/power"] = {
