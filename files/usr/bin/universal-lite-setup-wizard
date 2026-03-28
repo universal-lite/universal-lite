@@ -16,9 +16,11 @@ Six-page flow:
 """
 
 import os
+import pwd
 import re
 import subprocess
 import sys
+import tempfile
 import threading
 from pathlib import Path
 
@@ -825,10 +827,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # No WiFi adapter — stay skipped
             return
 
-        # WiFi available, no connectivity — show network page
+        # WiFi available, no connectivity — show network page if user hasn't advanced
         self._network_skipped = False
-        self._current_page = PAGE_NETWORK
-        self._update_navigation()
+        if self._current_page == PAGE_ACCOUNT:
+            self._current_page = PAGE_NETWORK
+            self._update_navigation()
         self._request_wifi_scan()
 
     def _detect_current_ssid(self) -> str | None:
@@ -1310,14 +1313,27 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         account_type = 1 if is_admin else 0
 
         try:
-            result = accounts.call_sync(
-                "CreateUser",
-                GLib.Variant("(ssi)", (username, fullname, account_type)),
-                Gio.DBusCallFlags.NONE, -1, None,
-            )
-            user_object_path = result.get_child_value(0).get_string()
-        except Exception as exc:
-            return f"Failed to create user: {exc}"
+            pwd.getpwnam(username)
+            # User exists from a prior partial run — look up their path
+            try:
+                result = accounts.call_sync(
+                    "FindUserByName",
+                    GLib.Variant("(s)", (username,)),
+                    Gio.DBusCallFlags.NONE, -1, None,
+                )
+                user_object_path = result.get_child_value(0).get_string()
+            except Exception as exc:
+                return f"Failed to find existing user: {exc}"
+        except KeyError:
+            try:
+                result = accounts.call_sync(
+                    "CreateUser",
+                    GLib.Variant("(ssi)", (username, fullname, account_type)),
+                    Gio.DBusCallFlags.NONE, -1, None,
+                )
+                user_object_path = result.get_child_value(0).get_string()
+            except Exception as exc:
+                return f"Failed to create user: {exc}"
 
         try:
             user_proxy = Gio.DBusProxy.new_for_bus_sync(
@@ -1334,21 +1350,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Failed to set user password: {exc}"
 
         try:
-            group_path = Path("/etc/group")
-            lines = group_path.read_text().splitlines()
-            new_lines = []
-            for line in lines:
-                if line.startswith("video:"):
-                    parts = line.split(":")
-                    members = parts[3].split(",") if parts[3] else []
-                    if username not in members:
-                        members.append(username)
-                    parts[3] = ",".join(members)
-                    line = ":".join(parts)
-                new_lines.append(line)
-            group_path.write_text("\n".join(new_lines) + "\n")
-        except (OSError, IndexError) as exc:
-            return f"Failed to add user to video group: {exc}"
+            subprocess.run(
+                ["usermod", "-aG", "video", username],
+                check=True, capture_output=True, text=True,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to add user to video group: {exc.stderr.strip() or exc}"
 
         return None
 
@@ -1369,7 +1376,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         parts[1] = root_hash
                         line = ":".join(parts)
                     new_lines.append(line)
-                shadow_path.write_text("\n".join(new_lines) + "\n")
+                content = "\n".join(new_lines) + "\n"
+                fd, tmp = tempfile.mkstemp(dir="/etc", prefix=".shadow-")
+                try:
+                    os.write(fd, content.encode())
+                    os.fsync(fd)
+                    os.fchmod(fd, 0o000)
+                    os.close(fd)
+                    os.rename(tmp, str(shadow_path))
+                except BaseException:
+                    os.close(fd)
+                    os.unlink(tmp)
+                    raise
             except (OSError, IndexError, subprocess.CalledProcessError) as exc:
                 return f"Failed to set root password: {exc}"
 
@@ -1394,11 +1412,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         """Enable zswap boot-time services and apply /sys parameters for current session."""
         try:
             subprocess.run(
-                ["systemctl", "enable", "universal-lite-zram-disable.service"],
-                check=True, capture_output=True, text=True,
-            )
-            subprocess.run(
-                ["systemctl", "enable", "universal-lite-zswap.service"],
+                ["systemctl", "enable",
+                 "universal-lite-zram-disable.service",
+                 "universal-lite-zswap.service"],
                 check=True, capture_output=True, text=True,
             )
         except subprocess.CalledProcessError as exc:

@@ -1,7 +1,7 @@
 [Unit]
 Description=Install Flatpak apps selected during setup wizard
-After=NetworkManager-wait-online.service
-Wants=NetworkManager-wait-online.service
+Wants=NetworkManager-wait-online.service network-online.target
+After=NetworkManager-wait-online.service network-online.target
 ConditionPathExists=/var/lib/universal-lite/flatpak-apps
 ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
 
@@ -9,6 +9,7 @@ ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
 Type=oneshot
 ExecStart=/usr/libexec/universal-lite-flatpak-setup
 RemainAfterExit=yes
+TimeoutStartSec=600
 
 [Install]
 WantedBy=graphical.target
