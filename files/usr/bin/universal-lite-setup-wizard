@@ -1351,7 +1351,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         try:
             subprocess.run(
-                ["usermod", "-aG", "video", username],
+                ["gpasswd", "-a", username, "video"],
                 check=True, capture_output=True, text=True,
             )
         except subprocess.CalledProcessError as exc:
