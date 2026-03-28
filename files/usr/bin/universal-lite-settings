@@ -1194,7 +1194,7 @@ APP_MIME_TYPES = [
     ("File Manager", "inode/directory"),
     ("Terminal", None),  # filter by TerminalEmulator category
     ("Text Editor", "text/plain"),
-    ("Media Player", "video/mp4"),
+    ("Media Player", "video/x-matroska"),
 ]
 
 
@@ -1363,6 +1363,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         super().__init__(application=app)
         self.set_title("Universal-Lite Settings")
         self.set_default_size(900, 600)
+        self.set_size_request(700, 500)
 
         self.settings = ensure_settings()
 
@@ -1538,6 +1539,8 @@ class SettingsWindow(Gtk.ApplicationWindow):
 
         def _on_toggled(btn: Gtk.ToggleButton, value: str) -> None:
             if not btn.get_active():
+                # Prevent deselecting the active card — re-activate it
+                btn.set_active(True)
                 return
             # Deselect all others
             for other in buttons:

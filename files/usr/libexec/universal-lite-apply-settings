@@ -278,7 +278,8 @@ def ensure_settings() -> dict:
         for mod in ALL_MODULES - seen:
             layout["end"].append(mod)
 
-    normalized = {
+    # Write back validated values, preserving all other keys (input, keyboard, power)
+    data.update({
         "edge": edge,
         "density": density,
         "theme": theme,
@@ -287,13 +288,13 @@ def ensure_settings() -> dict:
         "scale": scale,
         "layout": layout,
         "pinned": pinned,
-    }
+    })
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
-        json.dump(normalized, handle, indent=2)
+        json.dump(data, handle, indent=2)
         handle.write("\n")
 
-    return normalized
+    return data
 
 
 def _waybar_css_common(tokens: dict) -> str:
