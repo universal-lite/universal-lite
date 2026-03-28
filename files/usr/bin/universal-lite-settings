@@ -2,6 +2,7 @@
 
 import copy
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -934,6 +935,72 @@ class KeyboardPage:
 class SoundPage:
     def __init__(self, win: 'SettingsWindow') -> None:
         self.win = win
+        self._out_vol_timer = 0
+        self._in_vol_timer = 0
+
+    # ------------------------------------------------------------------ #
+    #  Helpers                                                             #
+    # ------------------------------------------------------------------ #
+
+    def _get_sinks(self):
+        try:
+            result = subprocess.run(["pactl", "-f", "json", "list", "sinks"],
+                                    capture_output=True, text=True)
+            sinks = json.loads(result.stdout)
+            return [(s["name"], s.get("description", s["name"])) for s in sinks]
+        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+            return []
+
+    def _get_default_sink(self):
+        try:
+            result = subprocess.run(["pactl", "get-default-sink"],
+                                    capture_output=True, text=True)
+            return result.stdout.strip()
+        except FileNotFoundError:
+            return ""
+
+    def _get_sources(self):
+        try:
+            result = subprocess.run(["pactl", "-f", "json", "list", "sources"],
+                                    capture_output=True, text=True)
+            all_sources = json.loads(result.stdout)
+            return [(s["name"], s.get("description", s["name"]))
+                    for s in all_sources if ".monitor" not in s["name"]]
+        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+            return []
+
+    def _get_default_source(self):
+        try:
+            result = subprocess.run(["pactl", "get-default-source"],
+                                    capture_output=True, text=True)
+            return result.stdout.strip()
+        except FileNotFoundError:
+            return ""
+
+    def _get_volume(self, sink_or_source="@DEFAULT_SINK@", is_source=False):
+        cmd = "get-source-volume" if is_source else "get-sink-volume"
+        try:
+            result = subprocess.run(["pactl", cmd, sink_or_source],
+                                    capture_output=True, text=True)
+            match = re.search(r'(\d+)%', result.stdout)
+            if match:
+                return int(match.group(1))
+        except FileNotFoundError:
+            pass
+        return 50
+
+    def _get_mute(self, sink_or_source="@DEFAULT_SINK@", is_source=False):
+        cmd = "get-source-mute" if is_source else "get-sink-mute"
+        try:
+            result = subprocess.run(["pactl", cmd, sink_or_source],
+                                    capture_output=True, text=True)
+            return "yes" in result.stdout.lower()
+        except FileNotFoundError:
+            return False
+
+    # ------------------------------------------------------------------ #
+    #  Build                                                               #
+    # ------------------------------------------------------------------ #
 
     def build(self) -> Gtk.Widget:
         page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
@@ -941,8 +1008,127 @@ class SoundPage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
-        page.append(self.win._make_group_label("Sound"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        # ---- Output group ------------------------------------------------
+        page.append(self.win._make_group_label("Output"))
+
+        # Output device dropdown
+        sinks = self._get_sinks()
+        sink_names = [name for name, _desc in sinks]
+        sink_descs = [desc for _name, desc in sinks]
+        default_sink = self._get_default_sink()
+        try:
+            sink_idx = sink_names.index(default_sink)
+        except ValueError:
+            sink_idx = 0
+
+        sink_string_list = Gtk.StringList.new(sink_descs if sink_descs else ["(No output devices)"])
+        sink_dropdown = Gtk.DropDown.new(sink_string_list, None)
+        sink_dropdown.set_selected(sink_idx)
+        sink_dropdown.set_size_request(240, -1)
+
+        def _on_sink_changed(dd, _pspec):
+            idx = dd.get_selected()
+            if idx == Gtk.INVALID_LIST_POSITION or not sink_names or idx >= len(sink_names):
+                return
+            subprocess.run(["pactl", "set-default-sink", sink_names[idx]],
+                           capture_output=True)
+
+        sink_dropdown.connect("notify::selected", _on_sink_changed)
+        page.append(self.win._make_setting_row("Output device", "", sink_dropdown))
+
+        # Output volume slider
+        out_vol_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
+        out_vol_scale.set_value(self._get_volume("@DEFAULT_SINK@", is_source=False))
+        out_vol_scale.set_size_request(200, -1)
+        out_vol_scale.set_draw_value(True)
+        out_vol_scale.set_format_value_func(lambda _s, v: f"{v:.0f}%")
+
+        def _on_out_vol_changed(scale):
+            if self._out_vol_timer:
+                GLib.source_remove(self._out_vol_timer)
+            def _apply():
+                subprocess.run(["pactl", "set-sink-volume", "@DEFAULT_SINK@",
+                                f"{int(scale.get_value())}%"], capture_output=True)
+                self._out_vol_timer = 0
+                return False
+            self._out_vol_timer = GLib.timeout_add(300, _apply)
+
+        out_vol_scale.connect("value-changed", _on_out_vol_changed)
+        page.append(self.win._make_setting_row("Volume", "", out_vol_scale))
+
+        # Output mute switch
+        out_mute = Gtk.Switch()
+        out_mute.set_active(self._get_mute("@DEFAULT_SINK@", is_source=False))
+
+        def _on_out_mute(_, state):
+            subprocess.run(["pactl", "set-sink-mute", "@DEFAULT_SINK@",
+                            "1" if state else "0"], capture_output=True)
+            return False
+
+        out_mute.connect("state-set", _on_out_mute)
+        page.append(self.win._make_setting_row("Mute", "", out_mute))
+
+        # ---- Input group -------------------------------------------------
+        page.append(self.win._make_group_label("Input"))
+
+        # Input device dropdown
+        sources = self._get_sources()
+        source_names = [name for name, _desc in sources]
+        source_descs = [desc for _name, desc in sources]
+        default_source = self._get_default_source()
+        try:
+            source_idx = source_names.index(default_source)
+        except ValueError:
+            source_idx = 0
+
+        source_string_list = Gtk.StringList.new(source_descs if source_descs else ["(No input devices)"])
+        source_dropdown = Gtk.DropDown.new(source_string_list, None)
+        source_dropdown.set_selected(source_idx)
+        source_dropdown.set_size_request(240, -1)
+
+        def _on_source_changed(dd, _pspec):
+            idx = dd.get_selected()
+            if idx == Gtk.INVALID_LIST_POSITION or not source_names or idx >= len(source_names):
+                return
+            subprocess.run(["pactl", "set-default-source", source_names[idx]],
+                           capture_output=True)
+
+        source_dropdown.connect("notify::selected", _on_source_changed)
+        page.append(self.win._make_setting_row("Input device", "", source_dropdown))
+
+        # Input volume slider
+        in_vol_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
+        in_vol_scale.set_value(self._get_volume("@DEFAULT_SOURCE@", is_source=True))
+        in_vol_scale.set_size_request(200, -1)
+        in_vol_scale.set_draw_value(True)
+        in_vol_scale.set_format_value_func(lambda _s, v: f"{v:.0f}%")
+
+        def _on_in_vol_changed(scale):
+            if self._in_vol_timer:
+                GLib.source_remove(self._in_vol_timer)
+            def _apply():
+                subprocess.run(["pactl", "set-source-volume", "@DEFAULT_SOURCE@",
+                                f"{int(scale.get_value())}%"], capture_output=True)
+                self._in_vol_timer = 0
+                return False
+            self._in_vol_timer = GLib.timeout_add(300, _apply)
+
+        in_vol_scale.connect("value-changed", _on_in_vol_changed)
+        page.append(self.win._make_setting_row("Volume", "", in_vol_scale))
+
+        # Input mute switch
+        in_mute = Gtk.Switch()
+        in_mute.set_active(self._get_mute("@DEFAULT_SOURCE@", is_source=True))
+
+        def _on_in_mute(_, state):
+            subprocess.run(["pactl", "set-source-mute", "@DEFAULT_SOURCE@",
+                            "1" if state else "0"], capture_output=True)
+            return False
+
+        in_mute.connect("state-set", _on_in_mute)
+        page.append(self.win._make_setting_row("Mute", "", in_mute))
+
         return page
 
 
