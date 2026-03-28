@@ -10,7 +10,8 @@ import gi
 gi.require_version("Gdk", "4.0")
 gi.require_version("Gtk", "4.0")
 gi.require_version("GLib", "2.0")
-from gi.repository import Gdk, GLib, Gtk  # noqa: E402
+gi.require_version("Gio", "2.0")
+from gi.repository import Gdk, GLib, Gio, Gtk  # noqa: E402
 
 APP_ID = "org.universallite.Settings"
 SCRIPT_ROOT = Path(__file__).resolve()
@@ -50,6 +51,18 @@ VERTICAL_LABELS = {"start": "Top", "center": "Center", "end": "Bottom"}
 SECTION_ORDER = ["start", "center", "end"]
 SCALE_OPTIONS = ["75%", "100%", "125%", "150%", "175%", "200%", "225%", "250%"]
 SCALE_VALUES = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
+
+ACCENT_COLORS = [
+    ("blue", "#3584e4"),
+    ("teal", "#2190a4"),
+    ("green", "#3a944a"),
+    ("yellow", "#c88800"),
+    ("orange", "#ed5b00"),
+    ("red", "#e62d42"),
+    ("pink", "#d56199"),
+    ("purple", "#9141ac"),
+    ("slate", "#6f8396"),
+]
 
 CATEGORIES = [
     ("display-brightness-symbolic", "Appearance"),
@@ -114,6 +127,15 @@ CSS = """\
 .accent-circle:checked {
     box-shadow: 0 0 0 3px @accent_color;
 }
+.accent-blue { background-color: #3584e4; }
+.accent-teal { background-color: #2190a4; }
+.accent-green { background-color: #3a944a; }
+.accent-yellow { background-color: #c88800; }
+.accent-orange { background-color: #ed5b00; }
+.accent-red { background-color: #e62d42; }
+.accent-pink { background-color: #d56199; }
+.accent-purple { background-color: #9141ac; }
+.accent-slate { background-color: #6f8396; }
 """
 
 
@@ -138,8 +160,110 @@ class AppearancePage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
-        page.append(self.win._make_group_label("Appearance"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        # -- Theme group --
+        page.append(self.win._make_group_label("Theme"))
+        options = [("light", "Light"), ("dark", "Dark")]
+        active = self.win.settings.get("theme", "light")
+        callback = lambda v: self.win.save_and_apply("theme", v)
+        page.append(self.win._make_toggle_cards(options, active, callback))
+
+        # -- Accent color group --
+        page.append(self.win._make_group_label("Accent color"))
+        accent_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        accent_buttons: list[Gtk.ToggleButton] = []
+        current_accent = self.win.settings.get("accent", "blue")
+
+        def _on_accent_toggled(btn: Gtk.ToggleButton, name: str) -> None:
+            if not btn.get_active():
+                return
+            for other in accent_buttons:
+                if other is not btn and other.get_active():
+                    other.set_active(False)
+            self.win.save_and_apply("accent", name)
+
+        for name, _hex in ACCENT_COLORS:
+            btn = Gtk.ToggleButton()
+            btn.add_css_class("accent-circle")
+            btn.add_css_class(f"accent-{name}")
+            btn.set_active(name == current_accent)
+            btn.connect("toggled", _on_accent_toggled, name)
+            accent_buttons.append(btn)
+            accent_box.append(btn)
+
+        page.append(accent_box)
+
+        # -- Wallpaper group --
+        page.append(self.win._make_group_label("Wallpaper"))
+        flow = Gtk.FlowBox()
+        flow.set_max_children_per_line(4)
+        flow.set_selection_mode(Gtk.SelectionMode.NONE)
+        flow.set_column_spacing(8)
+        flow.set_row_spacing(8)
+        wallpaper_buttons: list[tuple[Gtk.ToggleButton, str]] = []
+        current_wallpaper = self.win.settings.get("wallpaper", "")
+
+        def _on_wallpaper_toggled(btn: Gtk.ToggleButton, path: str) -> None:
+            if not btn.get_active():
+                return
+            for other_btn, _ in wallpaper_buttons:
+                if other_btn is not btn and other_btn.get_active():
+                    other_btn.set_active(False)
+            self.win.save_and_apply("wallpaper", path)
+
+        # Scan for wallpaper files
+        wallpaper_paths: list[Path] = []
+        if BACKGROUNDS_ROOT.is_dir():
+            for p in sorted(BACKGROUNDS_ROOT.rglob("*")):
+                if p.is_file() and p.suffix.lower() in WALLPAPER_EXTS:
+                    wallpaper_paths.append(p)
+
+        for wp_path in wallpaper_paths:
+            pic = Gtk.Picture.new_for_filename(str(wp_path))
+            pic.set_content_fit(Gtk.ContentFit.COVER)
+            pic.set_size_request(120, 80)
+
+            btn = Gtk.ToggleButton()
+            btn.add_css_class("toggle-card")
+            btn.set_child(pic)
+            btn.set_active(str(wp_path) == current_wallpaper)
+            btn.connect("toggled", _on_wallpaper_toggled, str(wp_path))
+            wallpaper_buttons.append((btn, str(wp_path)))
+            flow.append(btn)
+
+        # "Custom..." button
+        def _on_custom_clicked(_btn: Gtk.Button) -> None:
+            dialog = Gtk.FileDialog()
+            dialog.set_title("Choose Wallpaper")
+            image_filter = Gtk.FileFilter()
+            image_filter.set_name("Images")
+            for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp", "*.svg"):
+                image_filter.add_pattern(ext)
+            filters = Gio.ListStore.new(Gtk.FileFilter)
+            filters.append(image_filter)
+            dialog.set_filters(filters)
+
+            def _on_open_finish(d, result):
+                try:
+                    file = d.open_finish(result)
+                    if file is not None:
+                        path = file.get_path()
+                        self.win.save_and_apply("wallpaper", path)
+                        # Deselect all existing wallpaper buttons
+                        for other_btn, _ in wallpaper_buttons:
+                            if other_btn.get_active():
+                                other_btn.set_active(False)
+                except Exception:
+                    pass
+
+            dialog.open(self.win, None, _on_open_finish)
+
+        custom_btn = Gtk.Button(label="Custom...")
+        custom_btn.connect("clicked", _on_custom_clicked)
+        flow.append(custom_btn)
+
+        page.append(flow)
+
         return page
 
 
