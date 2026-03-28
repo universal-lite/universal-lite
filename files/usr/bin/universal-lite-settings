@@ -29,18 +29,18 @@ APPLY_SCRIPT = [str(LIBEXEC_ROOT / "universal-lite-apply-settings")]
 MODULE_NAMES = {
     "custom/launcher": "Apps",
     "wlr/taskbar": "Window list",
-    "network": "Network",
     "pulseaudio": "Volume",
     "backlight": "Brightness",
     "battery": "Battery",
     "clock": "Clock",
+    "custom/power": "Power",
     "tray": "System tray",
 }
 
 DEFAULT_LAYOUT = {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
-    "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"],
+    "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
 }
 
 # Section labels depending on panel orientation.

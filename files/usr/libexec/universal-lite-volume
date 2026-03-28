@@ -1,0 +1,21 @@
+#!/bin/sh
+# Volume control with on-screen notification via mako.
+case "$1" in
+    up)   pactl set-sink-volume @DEFAULT_SINK@ +5% ;;
+    down) pactl set-sink-volume @DEFAULT_SINK@ -5% ;;
+    mute) pactl set-sink-mute @DEFAULT_SINK@ toggle ;;
+esac
+
+vol=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\d+%' | head -1)
+muted=$(pactl get-sink-mute @DEFAULT_SINK@ | awk '{print $2}')
+
+if [ "$muted" = "yes" ]; then
+    icon="audio-volume-muted-symbolic"
+    summary="Volume: Muted"
+else
+    icon="audio-volume-high-symbolic"
+    summary="Volume: $vol"
+fi
+
+notify-send -h string:x-canonical-private-synchronous:volume \
+    -i "$icon" "$summary" -t 1500

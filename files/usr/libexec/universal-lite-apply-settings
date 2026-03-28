@@ -36,10 +36,10 @@ VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 DEFAULT_LAYOUT = {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
-    "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"],
+    "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
 }
 
-ALL_MODULES = {"custom/launcher", "wlr/taskbar", "network", "pulseaudio", "backlight", "battery", "clock", "tray"}
+ALL_MODULES = {"custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"}
 
 ACCENTS = {
     "blue": "#3584e4",
@@ -325,7 +325,6 @@ window#waybar {{
 
 #battery.warning {{ color: {tokens["color_warning"]}; }}
 #battery.critical {{ color: {tokens["color_error"]}; }}
-#network.disconnected {{ color: {tokens["text_secondary"]}; }}
 #pulseaudio.muted {{ color: {tokens["text_secondary"]}; }}
 
 tooltip {{
@@ -366,7 +365,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 #taskbar button.active {{ background: {tokens["accent_rgba_30"]}; }}
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
-#clock, #network, #battery, #backlight, #pulseaudio, #tray {{
+#clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
     padding: 0 10px;
     min-height: {h}px;
 }}
@@ -411,7 +410,7 @@ window#waybar {{ min-width: {w}px; }}
 #taskbar button.active {{ background: {tokens["accent_rgba_30"]}; }}
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
-#clock, #network, #battery, #backlight, #pulseaudio, #tray {{
+#clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
     padding: 10px 0;
     min-width: {w}px;
 }}
@@ -458,34 +457,16 @@ def write_waybar_config(tokens: dict) -> None:
     config["custom/launcher"] = {
         "format": " Apps ",
         "tooltip": False,
-        "on-click": "wtype -M ctrl -k F12",
+        "on-click": "nwg-drawer -term foot",
     }
 
     config["wlr/taskbar"] = {
-        "format": "",
+        "format": "{icon}",
         "icon-size": icon_size,
         "all-outputs": False,
         "on-click": "activate",
         "on-click-middle": "close",
         "tooltip-format": "{title}",
-    }
-
-    config["network"] = {
-        "format": "{icon}",
-        "format-icons": {
-            "wifi": [
-                "network-wireless-signal-none-symbolic",
-                "network-wireless-signal-weak-symbolic",
-                "network-wireless-signal-ok-symbolic",
-                "network-wireless-signal-good-symbolic",
-                "network-wireless-signal-excellent-symbolic",
-            ],
-            "ethernet": "network-wired-symbolic",
-            "disconnected": "network-offline-symbolic",
-        },
-        "tooltip-format": "{essid} — {ipaddr}",
-        "tooltip-format-ethernet": "{ifname} — {ipaddr}",
-        "tooltip-format-disconnected": "Disconnected",
     }
 
     config["pulseaudio"] = {
@@ -534,8 +515,14 @@ def write_waybar_config(tokens: dict) -> None:
     }
 
     config["clock"] = {
-        "format": "{:%H:%M}",
+        "format": "{:%-I:%M %p}",
         "tooltip-format": "{:%A, %B %-d, %Y}",
+    }
+
+    config["custom/power"] = {
+        "format": "\u23fb",
+        "tooltip": False,
+        "on-click": "universal-lite-power-menu",
     }
 
     config["tray"] = {
@@ -786,7 +773,7 @@ osd.border.color: {palette["border"]}
 osd.label.text.color: {palette["fg"]}
 """
 
-    with (LABWC_DIR / "themerc").open("w", encoding="utf-8") as handle:
+    with (LABWC_DIR / "themerc-override").open("w", encoding="utf-8") as handle:
         handle.write(themerc)
 
 

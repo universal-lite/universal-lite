@@ -7,7 +7,7 @@
   "layout": {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
-    "end": ["network", "pulseaudio", "backlight", "battery", "clock", "tray"]
+    "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"]
   },
   "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg",
   "pinned": [

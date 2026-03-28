@@ -29,6 +29,7 @@ fi
 waybar >/dev/null 2>&1 &
 mako >/dev/null 2>&1 &
 pgrep -x nm-applet  >/dev/null 2>&1 || nm-applet --indicator >/dev/null 2>&1 &
+pgrep -x blueman-applet >/dev/null 2>&1 || blueman-applet >/dev/null 2>&1 &
 pgrep -x xfce-polkit >/dev/null 2>&1 || xfce-polkit >/dev/null 2>&1 &
 swayidle -w \
   timeout 300  'swaylock -f' \

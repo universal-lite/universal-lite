@@ -18,6 +18,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     adw-gtk3-theme \
     alsa-utils \
     bash-completion \
+    blueman \
     bluez \
     bluez-tools \
     brightnessctl \
@@ -47,6 +48,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     gvfs-mtp \
     htop \
     labwc \
+    libnotify \
     mako \
     mousepad \
     mpv \
@@ -96,6 +98,8 @@ sed -i '/<\/openbox_menu>/i \
     <separator\/>\
     <item label="Lock Screen"><action name="Execute" command="swaylock -f"\/><\/item>\
     <item label="Log Out"><action name="Exit"\/><\/item>\
+    <item label="Restart"><action name="Execute" command="systemctl reboot"\/><\/item>\
+    <item label="Shut Down"><action name="Execute" command="systemctl poweroff"\/><\/item>\
   <\/menu>' /etc/xdg/labwc/menu.xml
 
 chmod 0755 \
@@ -107,7 +111,10 @@ chmod 0755 \
     /usr/libexec/universal-lite-flatpak-setup \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-setup \
-    /usr/libexec/universal-lite-session
+    /usr/libexec/universal-lite-session \
+    /usr/libexec/universal-lite-volume \
+    /usr/libexec/universal-lite-brightness \
+    /usr/bin/universal-lite-power-menu
 
 systemctl mask plymouth-quit-wait.service plymouth-quit.service
 systemctl enable greetd.service

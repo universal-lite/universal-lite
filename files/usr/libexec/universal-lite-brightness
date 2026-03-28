@@ -1,0 +1,10 @@
+#!/bin/sh
+# Brightness control with on-screen notification via mako.
+case "$1" in
+    up)   brightnessctl set 5%+ ;;
+    down) brightnessctl set 5%- ;;
+esac
+
+pct=$(brightnessctl -m | awk -F, '{print $4}')
+notify-send -h string:x-canonical-private-synchronous:brightness \
+    -i display-brightness-symbolic "Brightness: $pct" -t 1500
