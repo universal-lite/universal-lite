@@ -53,6 +53,16 @@ SECTION_ORDER = ["start", "center", "end"]
 SCALE_OPTIONS = ["75%", "100%", "125%", "150%", "175%", "200%", "225%", "250%"]
 SCALE_VALUES = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
+TIMEOUT_OPTIONS = [
+    ("1 minute", 60),
+    ("2 minutes", 120),
+    ("5 minutes", 300),
+    ("10 minutes", 600),
+    ("15 minutes", 900),
+    ("30 minutes", 1800),
+    ("Never", 0),
+]
+
 LAYOUT_NAMES = {
     "us": "English (US)", "gb": "English (UK)", "de": "German",
     "fr": "French", "es": "Spanish", "it": "Italian", "pt": "Portuguese",
@@ -1142,8 +1152,38 @@ class PowerLockPage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
-        page.append(self.win._make_group_label("Power & Lock"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        page.append(self.win._make_group_label("Lock & Display"))
+
+        labels = [label for label, _ in TIMEOUT_OPTIONS]
+        seconds_list = [secs for _, secs in TIMEOUT_OPTIONS]
+
+        # Lock screen timeout dropdown
+        lock_dropdown = Gtk.DropDown.new_from_strings(labels)
+        current_lock = self.win.settings.get("lock_timeout", 300)
+        try:
+            idx = seconds_list.index(current_lock)
+        except ValueError:
+            idx = 2  # default to 5 minutes
+        lock_dropdown.set_selected(idx)
+        lock_dropdown.connect("notify::selected", lambda d, _:
+            self.win.save_and_apply("lock_timeout", seconds_list[d.get_selected()]))
+
+        page.append(self.win._make_setting_row("Lock screen after", "", lock_dropdown))
+
+        # Display off timeout dropdown
+        dpms_dropdown = Gtk.DropDown.new_from_strings(labels)
+        current_dpms = self.win.settings.get("display_off_timeout", 600)
+        try:
+            idx = seconds_list.index(current_dpms)
+        except ValueError:
+            idx = 2  # default to 5 minutes
+        dpms_dropdown.set_selected(idx)
+        dpms_dropdown.connect("notify::selected", lambda d, _:
+            self.win.save_and_apply("display_off_timeout", seconds_list[d.get_selected()]))
+
+        page.append(self.win._make_setting_row("Turn off display after", "", dpms_dropdown))
+
         return page
 
 
