@@ -52,6 +52,18 @@ SECTION_ORDER = ["start", "center", "end"]
 SCALE_OPTIONS = ["75%", "100%", "125%", "150%", "175%", "200%", "225%", "250%"]
 SCALE_VALUES = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
+LAYOUT_NAMES = {
+    "us": "English (US)", "gb": "English (UK)", "de": "German",
+    "fr": "French", "es": "Spanish", "it": "Italian", "pt": "Portuguese",
+    "ru": "Russian", "jp": "Japanese", "kr": "Korean", "cn": "Chinese",
+    "ar": "Arabic", "br": "Portuguese (Brazil)", "ca": "Canadian",
+    "dk": "Danish", "fi": "Finnish", "nl": "Dutch", "no": "Norwegian",
+    "pl": "Polish", "se": "Swedish", "ch": "Swiss", "tr": "Turkish",
+    "ua": "Ukrainian", "in": "Indian", "il": "Hebrew", "th": "Thai",
+    "cz": "Czech", "hu": "Hungarian", "ro": "Romanian", "sk": "Slovak",
+    "hr": "Croatian", "si": "Slovenian", "bg": "Bulgarian", "gr": "Greek",
+}
+
 ACCENT_COLORS = [
     ("blue", "#3584e4"),
     ("teal", "#2190a4"),
@@ -767,6 +779,35 @@ class MouseTouchpadPage:
 class KeyboardPage:
     def __init__(self, win: 'SettingsWindow') -> None:
         self.win = win
+        self._delay_timer = 0
+        self._rate_timer = 0
+
+    # ------------------------------------------------------------------ #
+    #  Helpers                                                             #
+    # ------------------------------------------------------------------ #
+
+    def _get_layouts(self):
+        try:
+            result = subprocess.run(
+                ["localectl", "list-x11-keymap-layouts"],
+                capture_output=True, text=True)
+            return [l.strip() for l in result.stdout.splitlines() if l.strip()]
+        except FileNotFoundError:
+            return ["us"]
+
+    def _get_variants(self, layout):
+        try:
+            result = subprocess.run(
+                ["localectl", "list-x11-keymap-variants", layout],
+                capture_output=True, text=True)
+            variants = [v.strip() for v in result.stdout.splitlines() if v.strip()]
+            return variants
+        except FileNotFoundError:
+            return []
+
+    # ------------------------------------------------------------------ #
+    #  Build                                                               #
+    # ------------------------------------------------------------------ #
 
     def build(self) -> Gtk.Widget:
         page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
@@ -774,8 +815,119 @@ class KeyboardPage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
-        page.append(self.win._make_group_label("Keyboard"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        # ---- Layout group ------------------------------------------------
+        page.append(self.win._make_group_label("Layout"))
+
+        layout_codes = self._get_layouts()
+        display_names = [LAYOUT_NAMES.get(code, code) for code in layout_codes]
+        string_list = Gtk.StringList.new(display_names)
+
+        current_layout = self.win.settings.get("keyboard_layout", "us")
+        try:
+            layout_idx = layout_codes.index(current_layout)
+        except ValueError:
+            layout_idx = 0
+
+        layout_dropdown = Gtk.DropDown.new(string_list, None)
+        layout_dropdown.set_selected(layout_idx)
+        layout_dropdown.set_size_request(240, -1)
+
+        # Variant dropdown — built once here, repopulated on layout change
+        current_variant = self.win.settings.get("keyboard_variant", "")
+        variant_codes: list[str] = []
+
+        def _build_variant_dropdown(layout_code: str) -> None:
+            variants = self._get_variants(layout_code)
+            variant_codes.clear()
+            variant_codes.append("")          # default slot
+            variant_codes.extend(variants)
+            variant_display = ["(Default)"] + variants
+            new_model = Gtk.StringList.new(variant_display)
+            variant_dropdown.set_model(new_model)
+            if variant_row.get_visible():
+                variant_row.set_visible(bool(variants))
+            else:
+                variant_row.set_visible(bool(variants))
+            # Select saved variant or default
+            try:
+                sel_idx = variant_codes.index(current_variant if layout_code == current_layout else "")
+            except ValueError:
+                sel_idx = 0
+            variant_dropdown.set_selected(sel_idx)
+
+        variant_dropdown = Gtk.DropDown.new(Gtk.StringList.new(["(Default)"]), None)
+        variant_dropdown.set_size_request(240, -1)
+
+        def _on_variant_changed(dd, _pspec):
+            idx = dd.get_selected()
+            if idx == Gtk.INVALID_LIST_POSITION or not variant_codes:
+                return
+            code = variant_codes[idx] if idx < len(variant_codes) else ""
+            self.win.save_and_apply("keyboard_variant", code)
+
+        variant_dropdown.connect("notify::selected", _on_variant_changed)
+
+        def _on_layout_changed(dd, _pspec):
+            idx = dd.get_selected()
+            if idx == Gtk.INVALID_LIST_POSITION or idx >= len(layout_codes):
+                return
+            code = layout_codes[idx]
+            self.win.save_and_apply("keyboard_layout", code)
+            # Reset variant to default before repopulating
+            self.win.save_and_apply("keyboard_variant", "")
+            _build_variant_dropdown(code)
+
+        layout_dropdown.connect("notify::selected", _on_layout_changed)
+
+        page.append(self.win._make_setting_row("Keyboard layout", "", layout_dropdown))
+
+        # Build variants for the initially selected layout
+        _build_variant_dropdown(current_layout)
+        variant_row = self.win._make_setting_row("Variant", "", variant_dropdown)
+        page.append(variant_row)
+
+        # ---- Repeat group ------------------------------------------------
+        page.append(self.win._make_group_label("Repeat"))
+
+        # Repeat delay
+        delay_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 150, 1000, 50)
+        delay_scale.set_value(self.win.settings.get("keyboard_repeat_delay", 300))
+        delay_scale.set_size_request(200, -1)
+        delay_scale.set_draw_value(True)
+        delay_scale.set_format_value_func(lambda _s, v: f"{v:.0f} ms")
+
+        def _on_delay_changed(scale):
+            if self._delay_timer:
+                GLib.source_remove(self._delay_timer)
+            def _apply():
+                self.win.save_and_apply("keyboard_repeat_delay", int(scale.get_value()))
+                self._delay_timer = 0
+                return False
+            self._delay_timer = GLib.timeout_add(300, _apply)
+
+        delay_scale.connect("value-changed", _on_delay_changed)
+        page.append(self.win._make_setting_row("Repeat delay", "", delay_scale))
+
+        # Repeat rate
+        rate_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 10, 80, 5)
+        rate_scale.set_value(self.win.settings.get("keyboard_repeat_rate", 40))
+        rate_scale.set_size_request(200, -1)
+        rate_scale.set_draw_value(True)
+        rate_scale.set_format_value_func(lambda _s, v: f"{v:.0f}/s")
+
+        def _on_rate_changed(scale):
+            if self._rate_timer:
+                GLib.source_remove(self._rate_timer)
+            def _apply():
+                self.win.save_and_apply("keyboard_repeat_rate", int(scale.get_value()))
+                self._rate_timer = 0
+                return False
+            self._rate_timer = GLib.timeout_add(300, _apply)
+
+        rate_scale.connect("value-changed", _on_rate_changed)
+        page.append(self.win._make_setting_row("Repeat rate", "", rate_scale))
+
         return page
 
 
