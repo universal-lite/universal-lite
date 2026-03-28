@@ -107,8 +107,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-flatpak-setup \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-setup \
-    /usr/libexec/universal-lite-session \
-    /usr/libexec/universal-lite-session-init
+    /usr/libexec/universal-lite-session
 
 systemctl mask plymouth-quit-wait.service plymouth-quit.service
 systemctl enable greetd.service
