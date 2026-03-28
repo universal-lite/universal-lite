@@ -13,5 +13,17 @@
   "pinned": [
     {"name": "Chrome",  "command": "flatpak run com.google.Chrome", "icon": "com.google.Chrome"},
     {"name": "Bazaar",  "command": "flatpak run dev.bazaar.app",    "icon": "dev.bazaar.app"}
-  ]
+  ],
+  "touchpad_tap_to_click": true,
+  "touchpad_natural_scroll": false,
+  "touchpad_pointer_speed": 0.0,
+  "mouse_natural_scroll": false,
+  "mouse_pointer_speed": 0.0,
+  "mouse_accel_profile": "adaptive",
+  "keyboard_layout": "us",
+  "keyboard_variant": "",
+  "keyboard_repeat_delay": 300,
+  "keyboard_repeat_rate": 40,
+  "lock_timeout": 300,
+  "display_off_timeout": 600
 }

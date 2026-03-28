@@ -31,9 +31,13 @@ mako >/dev/null 2>&1 &
 pgrep -x nm-applet  >/dev/null 2>&1 || nm-applet --indicator >/dev/null 2>&1 &
 pgrep -x blueman-applet >/dev/null 2>&1 || blueman-applet >/dev/null 2>&1 &
 pgrep -x xfce-polkit >/dev/null 2>&1 || xfce-polkit >/dev/null 2>&1 &
-swayidle -w \
-  timeout 300  'swaylock -f' \
-  timeout 600  'wlopm --off "*"' resume 'wlopm --on "*"' \
-  before-sleep 'swaylock -f' \
-  >/dev/null 2>&1 &
+# Read idle timeouts from user settings (defaults: lock 300s, display-off 600s)
+_lock_timeout=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('lock_timeout', 300))" "$_settings" 2>/dev/null || echo "300")
+_dpms_timeout=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('display_off_timeout', 600))" "$_settings" 2>/dev/null || echo "600")
+
+_idle_args="swayidle -w"
+[ "$_lock_timeout" != "0" ] && _idle_args="$_idle_args timeout $_lock_timeout 'swaylock -f'"
+[ "$_dpms_timeout" != "0" ] && _idle_args="$_idle_args timeout $_dpms_timeout 'wlopm --off \"*\"' resume 'wlopm --on \"*\"'"
+_idle_args="$_idle_args before-sleep 'swaylock -f'"
+eval "$_idle_args" >/dev/null 2>&1 &
 pgrep -x Thunar >/dev/null 2>&1 || Thunar --daemon >/dev/null 2>&1 &
