@@ -2,7 +2,9 @@
 
 import copy
 import json
+import os
 import re
+import socket
 import subprocess
 from pathlib import Path
 
@@ -1290,8 +1292,65 @@ class AboutPage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
+
         page.append(self.win._make_group_label("About"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        # OS
+        os_name = "Universal-Lite"
+        os_version = ""
+        try:
+            for line in Path("/etc/os-release").read_text().splitlines():
+                if line.startswith("VERSION_ID="):
+                    os_version = line.split("=", 1)[1].strip('"')
+        except OSError:
+            pass
+        page.append(self.win._make_info_row("Operating System", f"{os_name} {os_version}".strip()))
+
+        # Hostname
+        page.append(self.win._make_info_row("Hostname", socket.gethostname()))
+
+        # CPU
+        cpu = "Unknown"
+        try:
+            for line in Path("/proc/cpuinfo").read_text().splitlines():
+                if line.startswith("model name"):
+                    cpu = line.split(":", 1)[1].strip()
+                    break
+        except OSError:
+            pass
+        page.append(self.win._make_info_row("Processor", cpu))
+
+        # RAM
+        ram = "Unknown"
+        try:
+            for line in Path("/proc/meminfo").read_text().splitlines():
+                if line.startswith("MemTotal:"):
+                    kb = int(line.split()[1])
+                    ram = f"{kb / 1048576:.1f} GB"
+                    break
+        except (OSError, ValueError):
+            pass
+        page.append(self.win._make_info_row("Memory", ram))
+
+        # Disk
+        try:
+            st = os.statvfs("/")
+            total = st.f_blocks * st.f_frsize
+            used = (st.f_blocks - st.f_bfree) * st.f_frsize
+            page.append(self.win._make_info_row(
+                "Disk", f"{used / 1073741824:.1f} GB used of {total / 1073741824:.1f} GB"))
+        except OSError:
+            pass
+
+        # Desktop
+        labwc_ver = "unknown"
+        try:
+            result = subprocess.run(["labwc", "--version"], capture_output=True, text=True)
+            labwc_ver = result.stdout.strip()
+        except FileNotFoundError:
+            pass
+        page.append(self.win._make_info_row("Desktop", f"labwc {labwc_ver}"))
+
         return page
 
 
