@@ -678,6 +678,8 @@ class PanelPage:
 class MouseTouchpadPage:
     def __init__(self, win: 'SettingsWindow') -> None:
         self.win = win
+        self._tp_speed_timer = 0
+        self._mouse_speed_timer = 0
 
     def build(self) -> Gtk.Widget:
         page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
@@ -685,8 +687,80 @@ class MouseTouchpadPage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
-        page.append(self.win._make_group_label("Mouse & Touchpad"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        # Touchpad group
+        page.append(self.win._make_group_label("Touchpad"))
+
+        # Tap to click
+        tp_tap = Gtk.Switch()
+        tp_tap.set_active(self.win.settings.get("touchpad_tap_to_click", True))
+        def _on_tp_tap(_, state):
+            self.win.save_and_apply("touchpad_tap_to_click", state)
+            return False
+        tp_tap.connect("state-set", _on_tp_tap)
+        page.append(self.win._make_setting_row("Tap to click", "", tp_tap))
+
+        # Natural scrolling (touchpad)
+        tp_natural = Gtk.Switch()
+        tp_natural.set_active(self.win.settings.get("touchpad_natural_scroll", False))
+        def _on_tp_natural(_, state):
+            self.win.save_and_apply("touchpad_natural_scroll", state)
+            return False
+        tp_natural.connect("state-set", _on_tp_natural)
+        page.append(self.win._make_setting_row("Natural scrolling", "Content moves with your fingers", tp_natural))
+
+        # Pointer speed (touchpad)
+        tp_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
+        tp_scale.set_value(self.win.settings.get("touchpad_pointer_speed", 0.0))
+        tp_scale.set_size_request(200, -1)
+        tp_scale.set_draw_value(False)
+        def _on_tp_speed(scale):
+            if self._tp_speed_timer:
+                GLib.source_remove(self._tp_speed_timer)
+            def _apply():
+                self.win.save_and_apply("touchpad_pointer_speed", round(scale.get_value(), 1))
+                self._tp_speed_timer = 0
+                return False
+            self._tp_speed_timer = GLib.timeout_add(300, _apply)
+        tp_scale.connect("value-changed", _on_tp_speed)
+        page.append(self.win._make_setting_row("Pointer speed", "", tp_scale))
+
+        # Mouse group
+        page.append(self.win._make_group_label("Mouse"))
+
+        # Natural scrolling (mouse)
+        mouse_natural = Gtk.Switch()
+        mouse_natural.set_active(self.win.settings.get("mouse_natural_scroll", False))
+        def _on_mouse_natural(_, state):
+            self.win.save_and_apply("mouse_natural_scroll", state)
+            return False
+        mouse_natural.connect("state-set", _on_mouse_natural)
+        page.append(self.win._make_setting_row("Natural scrolling", "", mouse_natural))
+
+        # Pointer speed (mouse)
+        mouse_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
+        mouse_scale.set_value(self.win.settings.get("mouse_pointer_speed", 0.0))
+        mouse_scale.set_size_request(200, -1)
+        mouse_scale.set_draw_value(False)
+        def _on_mouse_speed(scale):
+            if self._mouse_speed_timer:
+                GLib.source_remove(self._mouse_speed_timer)
+            def _apply():
+                self.win.save_and_apply("mouse_pointer_speed", round(scale.get_value(), 1))
+                self._mouse_speed_timer = 0
+                return False
+            self._mouse_speed_timer = GLib.timeout_add(300, _apply)
+        mouse_scale.connect("value-changed", _on_mouse_speed)
+        page.append(self.win._make_setting_row("Pointer speed", "", mouse_scale))
+
+        # Acceleration profile
+        cards = self.win._make_toggle_cards(
+            [("adaptive", "Adaptive"), ("flat", "Flat")],
+            self.win.settings.get("mouse_accel_profile", "adaptive"),
+            lambda v: self.win.save_and_apply("mouse_accel_profile", v),
+        )
+        page.append(self.win._make_setting_row("Acceleration", "", cards))
+
         return page
 
 
