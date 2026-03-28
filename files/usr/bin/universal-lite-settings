@@ -1187,9 +1187,56 @@ class PowerLockPage:
         return page
 
 
+APP_MIME_TYPES = [
+    ("Web Browser", "x-scheme-handler/http"),
+    ("File Manager", "inode/directory"),
+    ("Terminal", None),  # filter by TerminalEmulator category
+    ("Text Editor", "text/plain"),
+    ("Media Player", "video/mp4"),
+]
+
+
 class DefaultAppsPage:
     def __init__(self, win: 'SettingsWindow') -> None:
         self.win = win
+
+    def _get_apps_for_mime(self, mime_type):
+        """Return list of (desktop_id, display_name) for apps handling mime_type."""
+        if mime_type is None:
+            # Terminal: filter all apps by TerminalEmulator category
+            apps = []
+            seen = set()
+            for app in Gio.AppInfo.get_all():
+                desktop_id = app.get_id()
+                if not desktop_id or desktop_id in seen:
+                    continue
+                cats = app.get_categories() or ""
+                if "TerminalEmulator" in cats:
+                    seen.add(desktop_id)
+                    apps.append((desktop_id, app.get_display_name()))
+            return apps
+        seen = set()
+        apps = []
+        for app in Gio.AppInfo.get_all_for_type(mime_type):
+            desktop_id = app.get_id()
+            if not desktop_id or desktop_id in seen:
+                continue
+            seen.add(desktop_id)
+            apps.append((desktop_id, app.get_display_name()))
+        return apps
+
+    def _get_default_app(self, mime_type):
+        """Return desktop file ID of current default for mime_type."""
+        if mime_type is None:
+            return ""
+        try:
+            result = subprocess.run(
+                ["xdg-mime", "query", "default", mime_type],
+                capture_output=True, text=True,
+            )
+            return result.stdout.strip()
+        except FileNotFoundError:
+            return ""
 
     def build(self) -> Gtk.Widget:
         page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
@@ -1197,8 +1244,39 @@ class DefaultAppsPage:
         page.set_margin_bottom(32)
         page.set_margin_start(40)
         page.set_margin_end(40)
-        page.append(self.win._make_group_label("Default Apps"))
-        page.append(Gtk.Label(label="Coming soon", xalign=0))
+
+        page.append(self.win._make_group_label("Default Applications"))
+
+        for label, mime_type in APP_MIME_TYPES:
+            apps = self._get_apps_for_mime(mime_type)
+            if not apps:
+                continue
+
+            desktop_ids = [did for did, _ in apps]
+            display_names = [name for _, name in apps]
+
+            dropdown = Gtk.DropDown.new_from_strings(display_names)
+
+            # Select current default
+            current = self._get_default_app(mime_type)
+            try:
+                idx = desktop_ids.index(current)
+            except ValueError:
+                idx = 0
+            dropdown.set_selected(idx)
+
+            if mime_type:  # Skip xdg-mime for Terminal (no standard mime type)
+                dropdown.connect(
+                    "notify::selected",
+                    lambda d, _, mt=mime_type, ids=desktop_ids:
+                        subprocess.run(
+                            ["xdg-mime", "default", ids[d.get_selected()], mt],
+                            check=False,
+                        ),
+                )
+
+            page.append(self.win._make_setting_row(label, "", dropdown))
+
         return page
 
 
