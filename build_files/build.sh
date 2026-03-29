@@ -37,6 +37,20 @@ dnf5 install -y --setopt=install_weak_deps=False \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
     gammastep \
+    glibc-langpack-ar \
+    glibc-langpack-de \
+    glibc-langpack-es \
+    glibc-langpack-fr \
+    glibc-langpack-it \
+    glibc-langpack-ja \
+    glibc-langpack-ko \
+    glibc-langpack-nl \
+    glibc-langpack-pl \
+    glibc-langpack-pt \
+    glibc-langpack-ru \
+    glibc-langpack-sv \
+    glibc-langpack-tr \
+    glibc-langpack-zh \
     gnome-backgrounds \
     google-roboto-fonts \
     google-roboto-mono-fonts \
