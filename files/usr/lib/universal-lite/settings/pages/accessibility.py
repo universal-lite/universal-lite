@@ -28,10 +28,10 @@ class AccessibilityPage(BasePage):
 
         # Large text toggle
         large_text = Gtk.Switch()
-        large_text.set_active(self.store.get("font_size", 11) >= 14)
+        large_text.set_active(self.store.get("font_size", 11) >= 15)
 
         def _on_large_text(_, state):
-            self.store.save_and_apply("font_size", 14 if state else 11)
+            self.store.save_and_apply("font_size", 15 if state else 11)
             return False
 
         large_text.connect("state-set", _on_large_text)

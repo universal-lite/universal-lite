@@ -36,6 +36,10 @@ class AppearancePage(BasePage):
             self.store.get("theme", "light"),
             lambda v: self.store.save_and_apply("theme", v),
         ))
+        if self.store.get("high_contrast", False):
+            note = Gtk.Label(label="Theme is set to Dark by High Contrast mode", xalign=0)
+            note.add_css_class("setting-subtitle")
+            page.append(note)
 
         # -- Accent color group --
         page.append(self.make_group_label("Accent color"))

@@ -530,4 +530,8 @@ class PulseAudioSubscriber:
     def stop(self) -> None:
         if self._proc is not None:
             self._proc.terminate()
+            try:
+                self._proc.stdout.close()
+            except Exception:
+                pass
             self._proc = None
