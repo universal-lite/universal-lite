@@ -41,6 +41,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-ar \
     glibc-langpack-de \
     glibc-langpack-es \
+    glibc-langpack-fa \
     glibc-langpack-fr \
     glibc-langpack-ha \
     glibc-langpack-hi \
