@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from dataclasses import dataclass, field
 
 import gi
@@ -424,3 +425,109 @@ class BlueZHelper:
         iface_name = params.unpack()[0]
         if iface_name in ("org.bluez.Adapter1", "org.bluez.Device1"):
             self._event_bus.publish("bluetooth-changed")
+
+
+# ---------------------------------------------------------------------------
+#  power-profiles-daemon helper
+# ---------------------------------------------------------------------------
+
+class PowerProfilesHelper:
+    """Wraps net.hadess.PowerProfiles D-Bus. Publishes event: power-profile-changed."""
+
+    BUS_NAME = "net.hadess.PowerProfiles"
+    OBJECT_PATH = "/net/hadess/PowerProfiles"
+    IFACE = "net.hadess.PowerProfiles"
+
+    def __init__(self, event_bus: EventBus) -> None:
+        self._event_bus = event_bus
+        self._bus: Gio.DBusConnection | None = None
+        try:
+            self._bus = Gio.bus_get_sync(Gio.BusType.SYSTEM)
+        except GLib.Error:
+            return
+        self._bus.signal_subscribe(
+            self.BUS_NAME, "org.freedesktop.DBus.Properties",
+            "PropertiesChanged", self.OBJECT_PATH, None,
+            Gio.DBusSignalFlags.NONE, self._on_props_changed, None,
+        )
+
+    @property
+    def available(self) -> bool:
+        return self._bus is not None
+
+    def get_active_profile(self) -> str:
+        if self._bus is None:
+            return "balanced"
+        try:
+            result = self._bus.call_sync(
+                self.BUS_NAME, self.OBJECT_PATH,
+                "org.freedesktop.DBus.Properties", "Get",
+                GLib.Variant("(ss)", (self.IFACE, "ActiveProfile")),
+                GLib.VariantType("(v)"),
+                Gio.DBusCallFlags.NONE, -1, None,
+            )
+            return result.unpack()[0]
+        except GLib.Error:
+            return "balanced"
+
+    def set_active_profile(self, profile: str) -> None:
+        if self._bus is None:
+            return
+        try:
+            self._bus.call_sync(
+                self.BUS_NAME, self.OBJECT_PATH,
+                "org.freedesktop.DBus.Properties", "Set",
+                GLib.Variant("(ssv)", (self.IFACE, "ActiveProfile", GLib.Variant("s", profile))),
+                None, Gio.DBusCallFlags.NONE, -1, None,
+            )
+        except GLib.Error:
+            pass
+
+    def _on_props_changed(self, _conn, _sender, _path, _iface, _signal, params, _data) -> None:
+        changed = params.unpack()[1]
+        if "ActiveProfile" in changed:
+            self._event_bus.publish("power-profile-changed", changed["ActiveProfile"])
+
+
+# ---------------------------------------------------------------------------
+#  PulseAudio event subscriber
+# ---------------------------------------------------------------------------
+
+class PulseAudioSubscriber:
+    """Runs `pactl subscribe` in background thread, publishes audio-changed events."""
+
+    def __init__(self, event_bus: EventBus) -> None:
+        self._event_bus = event_bus
+        self._proc: subprocess.Popen | None = None
+        self._start()
+
+    def _start(self) -> None:
+        import shutil
+        import threading
+
+        if shutil.which("pactl") is None:
+            return
+        try:
+            self._proc = subprocess.Popen(
+                ["pactl", "subscribe"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True,
+            )
+        except FileNotFoundError:
+            return
+
+        def _reader():
+            for line in self._proc.stdout:
+                line = line.strip()
+                if not line:
+                    continue
+                if any(kw in line for kw in ("sink", "source", "server")):
+                    self._event_bus.publish("audio-changed")
+
+        threading.Thread(target=_reader, daemon=True).start()
+
+    def stop(self) -> None:
+        if self._proc is not None:
+            self._proc.terminate()
+            self._proc = None
