@@ -1,0 +1,72 @@
+.sidebar {
+    background-color: @headerbar_bg_color;
+}
+.sidebar row {
+    padding: 12px 16px;
+    margin: 2px 8px;
+    border-radius: 8px;
+}
+.sidebar row:selected {
+    background-color: alpha(@accent_color, 0.15);
+}
+.sidebar .category-icon {
+    margin-end: 12px;
+    opacity: 0.8;
+}
+.sidebar .category-label {
+    font-size: 14px;
+}
+.group-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.setting-row {
+    min-height: 48px;
+    padding: 8px 0;
+}
+.setting-subtitle {
+    font-size: 12px;
+    opacity: 0.6;
+}
+.toggle-card {
+    padding: 16px 24px;
+    border-radius: 12px;
+    border: 2px solid alpha(@borders, 0.5);
+    background: none;
+}
+.toggle-card:checked {
+    border-color: @accent_color;
+    background: alpha(@accent_color, 0.08);
+}
+.accent-circle {
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 16px;
+    padding: 0;
+}
+.accent-circle:checked {
+    box-shadow: 0 0 0 3px @accent_color;
+}
+.accent-blue { background-color: #3584e4; }
+.accent-teal { background-color: #2190a4; }
+.accent-green { background-color: #3a944a; }
+.accent-yellow { background-color: #c88800; }
+.accent-orange { background-color: #ed5b00; }
+.accent-red { background-color: #e62d42; }
+.accent-pink { background-color: #d56199; }
+.accent-purple { background-color: #9141ac; }
+.accent-slate { background-color: #6f8396; }
+.toast {
+    background-color: @headerbar_bg_color;
+    color: @theme_fg_color;
+    border-radius: 8px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px alpha(black, 0.15);
+    border: 1px solid alpha(@borders, 0.3);
+}
+.toast-error {
+    background-color: #c01c28;
+    color: white;
+    border-color: #c01c28;
+}
