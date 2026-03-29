@@ -89,6 +89,9 @@ dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
 cp -a /ctx/files/. /
 
+# Ensure video group exists for brightnessctl backlight access
+groupadd -f video
+
 install -d /etc/xdg/labwc
 labwc-menu-generator > /etc/xdg/labwc/menu.xml
 
