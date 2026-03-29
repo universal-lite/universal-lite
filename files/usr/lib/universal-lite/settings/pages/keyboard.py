@@ -17,6 +17,8 @@ LAYOUT_NAMES = {
     "ua": "Ukrainian", "in": "Indian", "il": "Hebrew", "th": "Thai",
     "cz": "Czech", "hu": "Hungarian", "ro": "Romanian", "sk": "Slovak",
     "hr": "Croatian", "si": "Slovenian", "bg": "Bulgarian", "gr": "Greek",
+    "ir": "Persian", "et": "Amharic", "vn": "Vietnamese",
+    "ke": "Swahili (Kenya)", "tz": "Swahili (Tanzania)", "ng": "Nigerian",
 }
 
 
