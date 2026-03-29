@@ -84,6 +84,9 @@ class BluetoothPage(BasePage):
         self.event_bus.subscribe("bluetooth-pair-error", self._on_pair_error)
 
         self._refresh_devices()
+
+        # Stop discovery if page is torn down
+        page.connect("unmap", lambda _: self._cleanup())
         return page
 
     def _on_toggle(self, _switch, state):
@@ -171,3 +174,9 @@ class BluetoothPage(BasePage):
     def _on_pair_error(self, message):
         self._status_label.set_text(f"Pairing failed: {message}")
         self._status_label.set_visible(True)
+
+    def _cleanup(self, *_args):
+        if self._scan_timer is not None:
+            GLib.source_remove(self._scan_timer)
+            self._scan_timer = None
+        self._bt.stop_discovery()

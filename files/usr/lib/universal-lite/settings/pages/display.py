@@ -59,6 +59,8 @@ class DisplayPage(BasePage):
 
     def _show_revert_dialog(self, old_scale, new_scale):
         dialog = Gtk.Window(title="Confirm Scale", modal=True)
+        if self._scale_buttons:
+            dialog.set_transient_for(self._scale_buttons[0].get_root())
         dialog.set_default_size(400, 150)
         dialog.set_resizable(False)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)

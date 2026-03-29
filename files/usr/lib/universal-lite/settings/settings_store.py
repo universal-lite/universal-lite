@@ -31,6 +31,7 @@ class SettingsStore:
         if not self._path.exists():
             default_text = self._defaults_path.read_text(encoding="utf-8")
             self._path.write_text(default_text, encoding="utf-8")
+            return json.loads(default_text)
         try:
             return json.loads(self._path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):

@@ -169,6 +169,7 @@ class NetworkPage(BasePage):
 
     def _show_password_dialog(self, ap):
         dialog = Gtk.Window(title=f"Connect to {ap.ssid}", modal=True)
+        dialog.set_transient_for(self._wifi_list.get_root())
         dialog.set_default_size(360, 180)
         dialog.set_resizable(False)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -208,6 +209,7 @@ class NetworkPage(BasePage):
 
     def _show_hidden_dialog(self):
         dialog = Gtk.Window(title="Connect to Hidden Network", modal=True)
+        dialog.set_transient_for(self._wifi_list.get_root())
         dialog.set_default_size(360, 260)
         dialog.set_resizable(False)
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)

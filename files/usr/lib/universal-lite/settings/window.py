@@ -1,7 +1,7 @@
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Gio, Gtk
 
 from .events import EventBus
 from .settings_store import SettingsStore
@@ -79,6 +79,10 @@ class SettingsWindow(Gtk.ApplicationWindow):
         first = self._sidebar.get_row_at_index(0)
         if first is not None:
             self._sidebar.select_row(first)
+
+        search_action = Gio.SimpleAction.new("search", None)
+        search_action.connect("activate", lambda *_: self.toggle_search())
+        self.add_action(search_action)
 
     def _build_pages(self) -> None:
         from .pages import ALL_PAGES

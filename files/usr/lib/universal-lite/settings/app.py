@@ -21,6 +21,10 @@ class SettingsApp(Gtk.Application):
         self._event_bus = EventBus()
 
     def do_activate(self) -> None:
+        win = self.get_active_window()
+        if win is not None:
+            win.present()
+            return
         provider = Gtk.CssProvider()
         provider.load_from_path(str(CSS_PATH))
         Gtk.StyleContext.add_provider_for_display(
