@@ -38,5 +38,7 @@
   "night_light_end": "06:00",
   "power_profile": "balanced",
   "suspend_timeout": 0,
-  "lid_close_action": "suspend"
+  "lid_close_action": "suspend",
+  "clock_24h": false,
+  "capslock_behavior": "default"
 }

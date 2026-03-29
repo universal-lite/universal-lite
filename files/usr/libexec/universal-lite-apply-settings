@@ -213,6 +213,8 @@ def _build_tokens(settings: dict) -> dict:
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
+        "clock_24h": settings.get("clock_24h", False),
+        "capslock_behavior": settings.get("capslock_behavior", "default"),
     }
 
 
@@ -314,6 +316,11 @@ def ensure_settings() -> dict:
     if power_profile not in ("balanced", "power-saver", "performance"):
         power_profile = "balanced"
 
+    clock_24h = bool(data.get("clock_24h", False))
+    capslock_behavior = data.get("capslock_behavior", "default")
+    if capslock_behavior not in ("default", "ctrl", "escape", "disabled"):
+        capslock_behavior = "default"
+
     # Write back validated values, preserving all other keys (input, keyboard, power)
     data.update({
         "edge": edge,
@@ -336,6 +343,8 @@ def ensure_settings() -> dict:
         "suspend_timeout": suspend_timeout,
         "lid_close_action": lid_close_action,
         "power_profile": power_profile,
+        "clock_24h": clock_24h,
+        "capslock_behavior": capslock_behavior,
     })
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -564,7 +573,7 @@ def write_waybar_config(tokens: dict) -> None:
     }
 
     config["clock"] = {
-        "format": "{:%-I:%M %p}",
+        "format": "{:%H:%M}" if tokens.get("clock_24h", False) else "{:%-I:%M %p}",
         "tooltip-format": "{:%A, %B %-d, %Y}",
         "interval": 60,
     }
@@ -850,6 +859,19 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     if kb_variant:
         variant_line = f"\n      <xkbVariant>{kb_variant}</xkbVariant>"
 
+    capslock = settings.get("capslock_behavior", "default")
+    xkb_options = ""
+    if capslock == "ctrl":
+        xkb_options = "caps:ctrl_modifier"
+    elif capslock == "escape":
+        xkb_options = "caps:escape"
+    elif capslock == "disabled":
+        xkb_options = "caps:none"
+
+    options_line = ""
+    if xkb_options:
+        options_line = f"\n      <xkbOptions>{xkb_options}</xkbOptions>"
+
     rc = f"""\
 <?xml version="1.0"?>
 <labwc_config>
@@ -873,7 +895,7 @@ def write_labwc_rc_overrides(settings: dict) -> None:
       <action name="None"/>
     </keybind>
     <xkb>
-      <xkbLayout>{kb_layout}</xkbLayout>{variant_line}
+      <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
     </xkb>
   </keyboard>
 </labwc_config>
