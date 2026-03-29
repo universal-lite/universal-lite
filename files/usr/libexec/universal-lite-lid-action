@@ -1,0 +1,26 @@
+#!/bin/bash
+# Sets lid close action via logind.conf.d override.
+# Must be run via pkexec for root access.
+set -euo pipefail
+
+ACTION="${1:-suspend}"
+
+case "$ACTION" in
+    suspend) LOGIND_ACTION="suspend" ;;
+    lock)    LOGIND_ACTION="lock" ;;
+    nothing) LOGIND_ACTION="ignore" ;;
+    *)
+        echo "Usage: $0 {suspend|lock|nothing}" >&2
+        exit 1
+        ;;
+esac
+
+mkdir -p /etc/systemd/logind.conf.d
+cat > /etc/systemd/logind.conf.d/lid-action.conf <<EOF
+[Login]
+HandleLidSwitch=$LOGIND_ACTION
+HandleLidSwitchExternalPower=$LOGIND_ACTION
+HandleLidSwitchDocked=ignore
+EOF
+
+systemctl kill -s HUP systemd-logind
