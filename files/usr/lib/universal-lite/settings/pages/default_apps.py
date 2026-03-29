@@ -1,4 +1,5 @@
 import subprocess
+from pathlib import Path
 
 import gi
 
@@ -12,14 +13,21 @@ APP_MIME_TYPES = [
     ("File Manager", "inode/directory"),
     ("Terminal", None),
     ("Text Editor", "text/plain"),
+    ("Image Viewer", "image/png"),
+    ("PDF Viewer", "application/pdf"),
     ("Media Player", "video/x-matroska"),
+    ("Email Client", "x-scheme-handler/mailto"),
 ]
 
 
 class DefaultAppsPage(BasePage):
     @property
     def search_keywords(self):
-        return [("Default Applications", label) for label, _ in APP_MIME_TYPES]
+        return [("Default Applications", label) for label, _ in APP_MIME_TYPES] + [
+            ("Default Applications", "Image Viewer"),
+            ("Default Applications", "PDF Viewer"),
+            ("Default Applications", "Email Client"),
+        ]
 
     def build(self):
         page = self.make_page_box()
@@ -36,11 +44,31 @@ class DefaultAppsPage(BasePage):
                 dropdown.set_selected(desktop_ids.index(current))
             except ValueError:
                 dropdown.set_selected(0)
-            if mime_type:
+            if mime_type is None:
+                # Terminal: write a wrapper desktop file so the choice takes effect
+                dropdown.connect("notify::selected", lambda d, _, ids=desktop_ids:
+                    self._set_terminal_by_id(ids[d.get_selected()]))
+            else:
                 dropdown.connect("notify::selected", lambda d, _, mt=mime_type, ids=desktop_ids:
                     subprocess.run(["xdg-mime", "default", ids[d.get_selected()], mt], check=False))
             page.append(self.make_setting_row(label, "", dropdown))
         return page
+
+    @staticmethod
+    def _set_terminal_by_id(desktop_id):
+        app_info = Gio.DesktopAppInfo.new(desktop_id)
+        if app_info:
+            DefaultAppsPage._set_terminal(app_info)
+
+    @staticmethod
+    def _set_terminal(app_info):
+        cmd = app_info.get_commandline() or app_info.get_executable() or ""
+        name = app_info.get_display_name()
+        desktop_dir = Path.home() / ".local/share/applications"
+        desktop_dir.mkdir(parents=True, exist_ok=True)
+        (desktop_dir / "terminal.desktop").write_text(
+            f"[Desktop Entry]\nName={name}\nExec={cmd}\nType=Application\nTerminal=false\nCategories=TerminalEmulator;\n"
+        )
 
     @staticmethod
     def _get_apps_for_mime(mime_type):
