@@ -36,6 +36,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     nwg-drawer \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
+    gammastep \
     gnome-backgrounds \
     google-roboto-fonts \
     google-roboto-mono-fonts \
@@ -53,6 +54,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     mousepad \
     mpv \
     network-manager-applet \
+    nm-connection-editor \
     pavucontrol \
     pipewire \
     power-profiles-daemon \
@@ -71,6 +73,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     udisks2 \
     unzip \
     waybar \
+    wdisplays \
     wlr-randr \
     wireplumber \
     wl-clipboard \
