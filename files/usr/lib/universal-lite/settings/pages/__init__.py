@@ -1,4 +1,5 @@
 from .about import AboutPage
+from .accessibility import AccessibilityPage
 from .appearance import AppearancePage
 from .bluetooth import BluetoothPage
 from .default_apps import DefaultAppsPage
@@ -21,5 +22,6 @@ ALL_PAGES = [
     ("audio-volume-high-symbolic", "Sound", SoundPage),
     ("system-shutdown-symbolic", "Power & Lock", PowerLockPage),
     ("application-x-executable-symbolic", "Default Apps", DefaultAppsPage),
+    ("preferences-desktop-accessibility-symbolic", "Accessibility", AccessibilityPage),
     ("help-about-symbolic", "About", AboutPage),
 ]
