@@ -18,6 +18,7 @@ class BluetoothPage(BasePage):
         self._scan_btn: Gtk.Button | None = None
         self._scan_timer: int | None = None
         self._status_label: Gtk.Label | None = None
+        self._updating = False
 
     @property
     def search_keywords(self):
@@ -90,6 +91,8 @@ class BluetoothPage(BasePage):
         return page
 
     def _on_toggle(self, _switch, state):
+        if self._updating:
+            return True
         self._bt.set_powered(state)
         return False
 
@@ -110,7 +113,9 @@ class BluetoothPage(BasePage):
     def _refresh_devices(self):
         if self._paired_list is None or self._found_list is None:
             return
+        self._updating = True
         self._toggle.set_active(self._bt.is_powered())
+        self._updating = False
         # Clear lists
         for lb in (self._paired_list, self._found_list):
             while (child := lb.get_row_at_index(0)) is not None:

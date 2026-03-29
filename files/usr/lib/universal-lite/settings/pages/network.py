@@ -17,6 +17,7 @@ class NetworkPage(BasePage):
         self._active_box: Gtk.Box | None = None
         self._wired_label: Gtk.Label | None = None
         self._status_label: Gtk.Label | None = None
+        self._updating = False
 
     @property
     def search_keywords(self):
@@ -91,10 +92,14 @@ class NetworkPage(BasePage):
         return page
 
     def _on_nm_ready(self, _data):
+        self._updating = True
         self._wifi_toggle.set_active(self._nm.is_wifi_enabled())
+        self._updating = False
         self._refresh_all()
 
     def _on_wifi_toggled(self, _switch, state):
+        if self._updating:
+            return True
         if self._nm:
             self._nm.set_wifi_enabled(state)
         return False
@@ -111,7 +116,9 @@ class NetworkPage(BasePage):
             self._wifi_list.remove(child)
         if not self._nm.ready:
             return
+        self._updating = True
         self._wifi_toggle.set_active(self._nm.is_wifi_enabled())
+        self._updating = False
         for ap in self._nm.get_access_points():
             self._wifi_list.append(self._build_network_row(ap))
 

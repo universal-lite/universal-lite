@@ -284,7 +284,7 @@ def ensure_settings() -> dict:
 
     # Validate accessibility settings
     font_size = data.get("font_size", 11)
-    if font_size not in (10, 11, 13, 14, 15):
+    if font_size not in (10, 11, 13, 15):
         font_size = 11
     cursor_size = data.get("cursor_size", 24)
     if cursor_size not in (24, 32, 48):
@@ -1017,9 +1017,24 @@ def main() -> int:
             schedule = settings.get("night_light_schedule", "sunset-sunrise")
             if schedule == "sunset-sunrise":
                 gs_cmd = ["gammastep", "-t", f"{temp}:{temp}"]
+                restart_program("gammastep", gs_cmd)
             else:
-                gs_cmd = ["gammastep", "-O", temp]
-            restart_program("gammastep", gs_cmd)
+                # Custom schedule: check if current time is in range
+                import datetime
+                now = datetime.datetime.now().strftime("%H:%M")
+                start = settings.get("night_light_start", "20:00")
+                end = settings.get("night_light_end", "06:00")
+                if start > end:
+                    # Overnight range (e.g., 20:00 - 06:00)
+                    in_range = now >= start or now < end
+                else:
+                    # Same-day range (e.g., 08:00 - 17:00)
+                    in_range = start <= now < end
+                if in_range:
+                    restart_program("gammastep", ["gammastep", "-O", temp])
+                else:
+                    subprocess.run(["pkill", "-x", "gammastep"], check=False,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             subprocess.run(["pkill", "-x", "gammastep"], check=False,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
