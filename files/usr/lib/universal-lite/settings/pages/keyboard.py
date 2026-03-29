@@ -1,9 +1,12 @@
+import json
 import subprocess
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Gdk, GLib, Gtk
 
 from ..base import BasePage
 
@@ -21,13 +24,206 @@ LAYOUT_NAMES = {
     "ke": "Swahili (Kenya)", "tz": "Swahili (Tanzania)", "ng": "Nigerian",
 }
 
+SYSTEM_RC_XML = Path("/etc/xdg/labwc/rc.xml")
+USER_KEYBINDINGS = Path.home() / ".config/universal-lite/keybindings.json"
+
+# Human-readable names for action+command combos
+SHORTCUT_NAMES = {
+    ("Execute", "foot"): "Open Terminal",
+    ("Execute", "Thunar"): "Open File Manager",
+    ("Execute", "fuzzel"): "App Launcher",
+    ("Execute", "universal-lite-settings"): "Open Settings",
+    ("Execute", "swaylock -f"): "Lock Screen",
+    ("Execute", "foot -e htop"): "System Monitor",
+    ("NextWindow", ""): "Switch Windows",
+    ("PreviousWindow", ""): "Switch Windows (Reverse)",
+    ("Close", ""): "Close Window",
+    ("ToggleMaximize", ""): "Maximize / Restore",
+    ("Iconify", ""): "Minimize",
+    ("ToggleFullscreen", ""): "Toggle Fullscreen",
+    ("SnapToEdge", "left"): "Snap Left",
+    ("SnapToEdge", "right"): "Snap Right",
+}
+
+# Keys to skip in the shortcuts editor (internal bindings)
+_SKIP_KEYS = {"C-F12"}
+
+# Modifier key names that should be ignored during capture
+_MODIFIER_KEYVALS = {
+    "Shift_L", "Shift_R", "Control_L", "Control_R",
+    "Alt_L", "Alt_R", "Super_L", "Super_R",
+    "Meta_L", "Meta_R", "ISO_Level3_Shift", "Hyper_L", "Hyper_R",
+    "Caps_Lock", "Num_Lock",
+}
+
+
+def _human_key_label(key_str: str) -> str:
+    """Convert labwc key string like 'C-A-T' to 'Ctrl+Alt+T' for display."""
+    parts = key_str.split("-")
+    display = []
+    for p in parts:
+        if p == "C":
+            display.append("Ctrl")
+        elif p == "A":
+            display.append("Alt")
+        elif p == "S":
+            display.append("Shift")
+        elif p == "W":
+            display.append("Super")
+        elif p.startswith("XF86"):
+            # Make XF86 keys readable
+            name = p[4:]
+            # Insert spaces before capitals
+            readable = ""
+            for i, ch in enumerate(name):
+                if ch.isupper() and i > 0 and not name[i - 1].isupper():
+                    readable += " "
+                readable += ch
+            display.append(readable)
+        else:
+            display.append(p.capitalize() if len(p) == 1 else p)
+    return " + ".join(display)
+
+
+def _get_action_name(action_name, command, direction):
+    """Resolve a human-readable name for an action."""
+    # Check SnapToEdge with direction
+    if action_name == "SnapToEdge" and direction:
+        key = ("SnapToEdge", direction)
+        if key in SHORTCUT_NAMES:
+            return SHORTCUT_NAMES[key]
+        return f"Snap {direction.capitalize()}"
+
+    # Check exact match first
+    key = (action_name, command)
+    if key in SHORTCUT_NAMES:
+        return SHORTCUT_NAMES[key]
+
+    # Check without command for non-Execute actions
+    if action_name != "Execute":
+        key = (action_name, "")
+        if key in SHORTCUT_NAMES:
+            return SHORTCUT_NAMES[key]
+        return action_name
+
+    # For Execute actions, match by substring
+    if command:
+        cmd_lower = command.lower()
+        if "volume up" in cmd_lower:
+            return "Volume Up"
+        if "volume down" in cmd_lower:
+            return "Volume Down"
+        if "volume mute" in cmd_lower:
+            return "Mute"
+        if "brightness up" in cmd_lower:
+            return "Brightness Up"
+        if "brightness down" in cmd_lower:
+            return "Brightness Down"
+        if "grim -g" in cmd_lower:
+            return "Screenshot (Region)"
+        if "grim" in cmd_lower:
+            return "Screenshot"
+
+    return f"Run: {command}" if command else action_name
+
+
+def _parse_system_keybindings() -> list[dict]:
+    """Parse keybindings from the system rc.xml."""
+    bindings = []
+    try:
+        tree = ET.parse(SYSTEM_RC_XML)
+        root = tree.getroot()
+    except (ET.ParseError, FileNotFoundError, OSError):
+        return bindings
+
+    keyboard = root.find("keyboard")
+    if keyboard is None:
+        return bindings
+
+    for keybind in keyboard.findall("keybind"):
+        key = keybind.get("key", "")
+        if not key or key in _SKIP_KEYS:
+            continue
+
+        action_el = keybind.find("action")
+        if action_el is None:
+            continue
+
+        action_name = action_el.get("name", "")
+        command = action_el.get("command", "")
+        menu = action_el.get("menu", "")
+        direction = ""
+
+        # Skip ShowMenu internal bindings
+        if action_name == "ShowMenu":
+            continue
+
+        dir_el = action_el.find("direction")
+        if dir_el is not None and dir_el.text:
+            direction = dir_el.text.strip()
+
+        display_name = _get_action_name(action_name, command, direction)
+
+        bindings.append({
+            "key": key,
+            "action": action_name,
+            "command": command,
+            "direction": direction,
+            "menu": menu,
+            "display_name": display_name,
+        })
+
+    return bindings
+
+
+def _load_user_keybindings() -> list[dict] | None:
+    """Load user keybinding overrides. Returns None if no overrides exist."""
+    if not USER_KEYBINDINGS.exists():
+        return None
+    try:
+        data = json.loads(USER_KEYBINDINGS.read_text(encoding="utf-8"))
+        if not isinstance(data, list):
+            return None
+        # Reconstruct display_name for each binding
+        for entry in data:
+            if "display_name" not in entry:
+                entry["display_name"] = _get_action_name(
+                    entry.get("action", ""),
+                    entry.get("command", ""),
+                    entry.get("direction", ""),
+                )
+        return data
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _save_user_keybindings(bindings: list[dict]) -> None:
+    """Save keybinding overrides to JSON."""
+    USER_KEYBINDINGS.parent.mkdir(parents=True, exist_ok=True)
+    tmp = USER_KEYBINDINGS.with_suffix(".tmp")
+    tmp.write_text(json.dumps(bindings, indent=2) + "\n", encoding="utf-8")
+    tmp.rename(USER_KEYBINDINGS)
+
 
 class KeyboardPage(BasePage):
+    def __init__(self, store, event_bus):
+        super().__init__(store, event_bus)
+        self._default_bindings = _parse_system_keybindings()
+        user = _load_user_keybindings()
+        self._bindings = user if user is not None else list(self._default_bindings)
+        self._capture_controller = None
+        self._capture_button = None
+        self._capture_index = -1
+        self._shortcut_buttons: list[Gtk.Button] = []
+
     @property
     def search_keywords(self):
         return [
             ("Layout", "Keyboard layout"), ("Layout", "Variant"),
             ("Repeat", "Repeat delay"), ("Repeat", "Repeat rate"),
+            ("Caps Lock", "Caps Lock behavior"), ("Caps Lock", "Remap"),
+            ("Shortcuts", "Keyboard shortcuts"), ("Shortcuts", "Keybinding"),
+            ("Shortcuts", "Hotkey"), ("Shortcuts", "Key combo"),
         ]
 
     def build(self):
@@ -108,7 +304,276 @@ class KeyboardPage(BasePage):
         rate_scale.connect("value-changed", lambda s: self.store.save_debounced(
             "keyboard_repeat_rate", int(s.get_value())))
         page.append(self.make_setting_row("Repeat rate", "", rate_scale))
+
+        # -- Caps Lock --
+        page.append(self.make_group_label("Caps Lock Behavior"))
+        caps_options = ["Default", "Ctrl", "Escape", "Disabled"]
+        caps_values = ["default", "ctrl", "escape", "disabled"]
+        caps_dd = Gtk.DropDown.new_from_strings(caps_options)
+        current_caps = self.store.get("capslock_behavior", "default")
+        try:
+            caps_dd.set_selected(caps_values.index(current_caps))
+        except ValueError:
+            caps_dd.set_selected(0)
+        caps_dd.connect("notify::selected", lambda d, _:
+            self.store.save_and_apply("capslock_behavior", caps_values[d.get_selected()]))
+        page.append(self.make_setting_row(
+            "Caps Lock key", "Remap Caps Lock to another function", caps_dd))
+
+        # -- Keyboard Shortcuts --
+        page.append(self.make_group_label("Keyboard Shortcuts"))
+
+        self._shortcut_buttons.clear()
+        for i, binding in enumerate(self._bindings):
+            row = self._build_shortcut_row(i, binding)
+            page.append(row)
+
+        # Reset All button
+        reset_all_btn = Gtk.Button(label="Reset All Shortcuts")
+        reset_all_btn.set_halign(Gtk.Align.START)
+        reset_all_btn.set_margin_top(8)
+        reset_all_btn.connect("clicked", lambda _: self._reset_all_shortcuts())
+        page.append(reset_all_btn)
+
         return page
+
+    def _build_shortcut_row(self, index: int, binding: dict) -> Gtk.Box:
+        """Build a single shortcut row with label and key capture button."""
+        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        row.add_css_class("setting-row")
+        row.set_valign(Gtk.Align.CENTER)
+
+        # Left: description label
+        label = Gtk.Label(label=binding["display_name"], xalign=0)
+        label.set_hexpand(True)
+        row.append(label)
+
+        # Reset button (per-shortcut)
+        default_key = self._get_default_key(index)
+        if default_key and default_key != binding["key"]:
+            reset_btn = Gtk.Button()
+            reset_btn.set_icon_name("edit-undo-symbolic")
+            reset_btn.set_tooltip_text("Reset to default")
+            reset_btn.set_valign(Gtk.Align.CENTER)
+            reset_btn.connect("clicked", lambda _, idx=index: self._reset_shortcut(idx))
+            row.append(reset_btn)
+
+        # Right: key combo button
+        key_btn = Gtk.Button(label=_human_key_label(binding["key"]))
+        key_btn.set_valign(Gtk.Align.CENTER)
+        key_btn.set_size_request(180, -1)
+        key_btn.connect("clicked", lambda _, idx=index: self._start_capture(idx))
+        row.append(key_btn)
+
+        # Track the button for later updates
+        while len(self._shortcut_buttons) <= index:
+            self._shortcut_buttons.append(None)
+        self._shortcut_buttons[index] = key_btn
+
+        return row
+
+    def _get_default_key(self, index: int) -> str | None:
+        """Get the default key for a binding by matching its action signature."""
+        if index >= len(self._bindings):
+            return None
+        binding = self._bindings[index]
+        for default in self._default_bindings:
+            if (default["action"] == binding["action"]
+                    and default["command"] == binding["command"]
+                    and default["direction"] == binding["direction"]):
+                return default["key"]
+        return None
+
+    def _start_capture(self, index: int) -> None:
+        """Enter key capture mode for the given shortcut index."""
+        # Cancel any existing capture
+        self._cancel_capture()
+
+        if index >= len(self._shortcut_buttons) or self._shortcut_buttons[index] is None:
+            return
+
+        btn = self._shortcut_buttons[index]
+        self._capture_button = btn
+        self._capture_index = index
+        btn.set_label("Press new shortcut...")
+
+        window = btn.get_root()
+        if window is None:
+            return
+
+        controller = Gtk.EventControllerKey()
+        controller.connect("key-pressed", self._on_key_captured)
+        window.add_controller(controller)
+        self._capture_controller = controller
+
+    def _cancel_capture(self) -> None:
+        """Cancel the current key capture, restoring the button label."""
+        if self._capture_controller is not None:
+            window = self._capture_controller.get_widget()
+            if window is not None:
+                window.remove_controller(self._capture_controller)
+            self._capture_controller = None
+
+        if self._capture_button is not None and self._capture_index >= 0:
+            current_key = self._bindings[self._capture_index]["key"]
+            self._capture_button.set_label(_human_key_label(current_key))
+
+        self._capture_button = None
+        self._capture_index = -1
+
+    def _on_key_captured(self, _controller, keyval, _keycode, state):
+        """Handle a key press during capture mode."""
+        key_name = Gdk.keyval_name(keyval)
+
+        # Ignore lone modifier presses
+        if key_name in _MODIFIER_KEYVALS:
+            return True
+
+        # Escape cancels capture
+        if key_name == "Escape" and not (state & (
+                Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.ALT_MASK
+                | Gdk.ModifierType.SUPER_MASK)):
+            self._cancel_capture()
+            return True
+
+        new_key = self._build_key_string(keyval, state)
+        if not new_key:
+            return True
+
+        index = self._capture_index
+        self._cancel_capture()
+
+        # Check for conflicts
+        conflict_idx = self._find_conflict(new_key, index)
+        if conflict_idx is not None:
+            conflict_name = self._bindings[conflict_idx]["display_name"]
+            self._show_conflict_dialog(new_key, index, conflict_idx, conflict_name)
+            return True
+
+        self._apply_new_key(index, new_key)
+        return True
+
+    def _build_key_string(self, keyval, state):
+        """Build a labwc key string from GDK keyval and modifier state."""
+        parts = []
+        if state & Gdk.ModifierType.CONTROL_MASK:
+            parts.append("C")
+        if state & Gdk.ModifierType.ALT_MASK:
+            parts.append("A")
+        if state & Gdk.ModifierType.SHIFT_MASK:
+            parts.append("S")
+        if state & Gdk.ModifierType.SUPER_MASK:
+            parts.append("W")
+        key_name = Gdk.keyval_name(keyval)
+        if key_name:
+            parts.append(key_name)
+        return "-".join(parts) if parts else ""
+
+    def _find_conflict(self, new_key: str, exclude_index: int) -> int | None:
+        """Find index of binding that already uses this key, or None."""
+        for i, binding in enumerate(self._bindings):
+            if i == exclude_index:
+                continue
+            if binding["key"] == new_key:
+                return i
+        return None
+
+    def _show_conflict_dialog(self, new_key: str, target_idx: int,
+                              conflict_idx: int, conflict_name: str) -> None:
+        """Show a dialog asking the user to confirm reassigning a conflicting key."""
+        btn = self._shortcut_buttons[target_idx] if target_idx < len(self._shortcut_buttons) else None
+        window = btn.get_root() if btn else None
+
+        dialog = Gtk.AlertDialog()
+        dialog.set_message("Shortcut Conflict")
+        dialog.set_detail(
+            f'"{_human_key_label(new_key)}" is already assigned to '
+            f'"{conflict_name}".\n\n'
+            f"Reassign it to \"{self._bindings[target_idx]['display_name']}\"?"
+        )
+        dialog.set_buttons(["Cancel", "Reassign"])
+        dialog.set_default_button(1)
+        dialog.set_cancel_button(0)
+
+        def _on_response(dialog_obj, result):
+            try:
+                choice = dialog_obj.choose_finish(result)
+            except GLib.Error:
+                return
+            if choice == 1:
+                # Remove the conflicting binding's key (set to "None")
+                old_default = self._get_default_key(conflict_idx)
+                self._bindings[conflict_idx]["key"] = old_default or "None"
+                if conflict_idx < len(self._shortcut_buttons) and self._shortcut_buttons[conflict_idx]:
+                    self._shortcut_buttons[conflict_idx].set_label(
+                        _human_key_label(self._bindings[conflict_idx]["key"]))
+                self._apply_new_key(target_idx, new_key)
+
+        dialog.choose(window, None, _on_response)
+
+    def _apply_new_key(self, index: int, new_key: str) -> None:
+        """Set a new key for the binding at index, save, and reconfigure."""
+        if index >= len(self._bindings):
+            return
+        self._bindings[index]["key"] = new_key
+        if index < len(self._shortcut_buttons) and self._shortcut_buttons[index]:
+            self._shortcut_buttons[index].set_label(_human_key_label(new_key))
+        self._save_and_reconfigure()
+
+    def _reset_shortcut(self, index: int) -> None:
+        """Reset a single shortcut to its system default."""
+        default_key = self._get_default_key(index)
+        if default_key is None:
+            return
+        # Check if the default key conflicts with another modified binding
+        conflict_idx = self._find_conflict(default_key, index)
+        if conflict_idx is not None:
+            # Reset the conflicting one too
+            other_default = self._get_default_key(conflict_idx)
+            if other_default:
+                self._bindings[conflict_idx]["key"] = other_default
+                if conflict_idx < len(self._shortcut_buttons) and self._shortcut_buttons[conflict_idx]:
+                    self._shortcut_buttons[conflict_idx].set_label(
+                        _human_key_label(other_default))
+
+        self._bindings[index]["key"] = default_key
+        if index < len(self._shortcut_buttons) and self._shortcut_buttons[index]:
+            self._shortcut_buttons[index].set_label(_human_key_label(default_key))
+        self._save_and_reconfigure()
+
+    def _reset_all_shortcuts(self) -> None:
+        """Reset all shortcuts to system defaults."""
+        self._bindings = list(self._default_bindings)
+        # Update all button labels
+        for i, binding in enumerate(self._bindings):
+            if i < len(self._shortcut_buttons) and self._shortcut_buttons[i]:
+                self._shortcut_buttons[i].set_label(_human_key_label(binding["key"]))
+        # Delete user overrides and reconfigure
+        if USER_KEYBINDINGS.exists():
+            USER_KEYBINDINGS.unlink()
+        # Trigger apply-settings to regenerate rc.xml without custom keybindings
+        self.store.save_and_apply(
+            "keyboard_repeat_delay",
+            self.store.get("keyboard_repeat_delay", 300))
+
+    def _save_and_reconfigure(self) -> None:
+        """Save keybindings to JSON and trigger apply-settings + labwc reconfigure."""
+        # Save the full bindings list (for apply-settings to read)
+        save_data = []
+        for b in self._bindings:
+            save_data.append({
+                "key": b["key"],
+                "action": b["action"],
+                "command": b.get("command", ""),
+                "direction": b.get("direction", ""),
+                "menu": b.get("menu", ""),
+            })
+        _save_user_keybindings(save_data)
+
+        # Trigger apply-settings to rebuild rc.xml with keybindings
+        self.store.save_and_apply(
+            "keyboard_repeat_delay",
+            self.store.get("keyboard_repeat_delay", 300))
 
     @staticmethod
     def _get_layouts():

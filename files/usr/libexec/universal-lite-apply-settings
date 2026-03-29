@@ -837,6 +837,48 @@ osd.label.text.color: {palette["fg"]}
         handle.write(themerc)
 
 
+def _build_keybinds_xml() -> str:
+    """Read user keybinding overrides and build XML keybind elements."""
+    from xml.sax.saxutils import escape, quoteattr
+
+    keybinds_path = SETTINGS_DIR / "keybindings.json"
+    _fallback = '    <keybind key="NULL">\n      <action name="None"/>\n    </keybind>\n'
+    if not keybinds_path.exists():
+        return _fallback
+    try:
+        bindings = json.loads(keybinds_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return _fallback
+    if not bindings:
+        return _fallback
+    lines = []
+    for entry in bindings:
+        key = entry.get("key", "")
+        action_name = entry.get("action", "")
+        command = entry.get("command", "")
+        direction = entry.get("direction", "")
+        menu = entry.get("menu", "")
+        if not key or not action_name:
+            continue
+        if command:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)} command={quoteattr(command)}/>")
+            lines.append("    </keybind>")
+        elif direction:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)}><direction>{escape(direction)}</direction></action>")
+            lines.append("    </keybind>")
+        elif menu:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)} menu={quoteattr(menu)}/>")
+            lines.append("    </keybind>")
+        else:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)}/>")
+            lines.append("    </keybind>")
+    return "\n".join(lines) + "\n" if lines else _fallback
+
+
 def write_labwc_rc_overrides(settings: dict) -> None:
     LABWC_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -872,6 +914,8 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     if xkb_options:
         options_line = f"\n      <xkbOptions>{xkb_options}</xkbOptions>"
 
+    keybinds_xml = _build_keybinds_xml()
+
     rc = f"""\
 <?xml version="1.0"?>
 <labwc_config>
@@ -891,9 +935,7 @@ def write_labwc_rc_overrides(settings: dict) -> None:
   <keyboard>
     <repeatDelay>{repeat_delay}</repeatDelay>
     <repeatRate>{repeat_rate}</repeatRate>
-    <keybind key="NULL">
-      <action name="None"/>
-    </keybind>
+{keybinds_xml}\
     <xkb>
       <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
     </xkb>
