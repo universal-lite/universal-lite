@@ -201,8 +201,10 @@ def _build_tokens(settings: dict) -> dict:
         # Typography
         "font_ui": "Roboto",
         "font_mono": "Roboto Mono",
-        "font_size_ui": 13,
-        "font_size_mono": 11,
+        "font_size_ui": settings.get("font_size", 11) + 2,
+        "font_size_mono": settings.get("font_size", 11),
+        "cursor_size": settings.get("cursor_size", 24),
+        "reduce_motion": settings.get("reduce_motion", False),
         # Panel geometry
         "panel_height": panel_height,
         "panel_width": panel_width,
@@ -211,6 +213,8 @@ def _build_tokens(settings: dict) -> dict:
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
+        "clock_24h": settings.get("clock_24h", False),
+        "capslock_behavior": settings.get("capslock_behavior", "default"),
     }
 
 
@@ -278,6 +282,45 @@ def ensure_settings() -> dict:
         for mod in ALL_MODULES - seen:
             layout["end"].append(mod)
 
+    # Validate accessibility settings
+    font_size = data.get("font_size", 11)
+    if font_size not in (10, 11, 13, 14, 15):
+        font_size = 11
+    cursor_size = data.get("cursor_size", 24)
+    if cursor_size not in (24, 32, 48):
+        cursor_size = 24
+    high_contrast = bool(data.get("high_contrast", False))
+    reduce_motion = bool(data.get("reduce_motion", False))
+    if high_contrast:
+        theme = "dark"
+
+    # Validate night light settings
+    night_light_enabled = bool(data.get("night_light_enabled", False))
+    night_light_temp = int(data.get("night_light_temp", 4500))
+    if not (3500 <= night_light_temp <= 6500):
+        night_light_temp = 4500
+    night_light_schedule = data.get("night_light_schedule", "sunset-sunrise")
+    if night_light_schedule not in ("sunset-sunrise", "custom"):
+        night_light_schedule = "sunset-sunrise"
+    night_light_start = str(data.get("night_light_start", "20:00"))
+    night_light_end = str(data.get("night_light_end", "06:00"))
+
+    # Validate power settings
+    suspend_timeout = int(data.get("suspend_timeout", 0))
+    if suspend_timeout not in (0, 60, 120, 300, 600, 900, 1800):
+        suspend_timeout = 0
+    lid_close_action = data.get("lid_close_action", "suspend")
+    if lid_close_action not in ("suspend", "lock", "nothing"):
+        lid_close_action = "suspend"
+    power_profile = data.get("power_profile", "balanced")
+    if power_profile not in ("balanced", "power-saver", "performance"):
+        power_profile = "balanced"
+
+    clock_24h = bool(data.get("clock_24h", False))
+    capslock_behavior = data.get("capslock_behavior", "default")
+    if capslock_behavior not in ("default", "ctrl", "escape", "disabled"):
+        capslock_behavior = "default"
+
     # Write back validated values, preserving all other keys (input, keyboard, power)
     data.update({
         "edge": edge,
@@ -288,6 +331,20 @@ def ensure_settings() -> dict:
         "scale": scale,
         "layout": layout,
         "pinned": pinned,
+        "font_size": font_size,
+        "cursor_size": cursor_size,
+        "high_contrast": high_contrast,
+        "reduce_motion": reduce_motion,
+        "night_light_enabled": night_light_enabled,
+        "night_light_temp": night_light_temp,
+        "night_light_schedule": night_light_schedule,
+        "night_light_start": night_light_start,
+        "night_light_end": night_light_end,
+        "suspend_timeout": suspend_timeout,
+        "lid_close_action": lid_close_action,
+        "power_profile": power_profile,
+        "clock_24h": clock_24h,
+        "capslock_behavior": capslock_behavior,
     })
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -516,7 +573,7 @@ def write_waybar_config(tokens: dict) -> None:
     }
 
     config["clock"] = {
-        "format": "{:%-I:%M %p}",
+        "format": "{:%H:%M}" if tokens.get("clock_24h", False) else "{:%-I:%M %p}",
         "tooltip-format": "{:%A, %B %-d, %Y}",
         "interval": 60,
     }
@@ -573,9 +630,10 @@ def write_gtk_settings(tokens: dict) -> None:
             handle.write(f"gtk-application-prefer-dark-theme={dark_pref}\n")
             handle.write(f"gtk-theme-name={theme_name}\n")
             handle.write(f"gtk-icon-theme-name={icon_theme}\n")
-            handle.write("gtk-font-name=Roboto 11\n")
+            handle.write(f"gtk-font-name=Roboto {tokens['font_size_mono']}\n")
             handle.write("gtk-cursor-theme-name=Adwaita\n")
-            handle.write("gtk-cursor-theme-size=24\n")
+            handle.write(f"gtk-cursor-theme-size={tokens['cursor_size']}\n")
+            handle.write(f"gtk-enable-animations={'1' if not tokens['reduce_motion'] else '0'}\n")
 
     gsettings_commands = [
         ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
@@ -588,9 +646,9 @@ def write_gtk_settings(tokens: dict) -> None:
             "prefer-dark" if tokens["theme"] == "dark" else "default",
         ],
         ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", tokens["accent"]],
-        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", "Roboto 11"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", f"Roboto {tokens['font_size_mono']}"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", "Adwaita"],
-        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", "24"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(tokens["cursor_size"])],
     ]
     for command in gsettings_commands:
         subprocess.run(command, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -779,6 +837,48 @@ osd.label.text.color: {palette["fg"]}
         handle.write(themerc)
 
 
+def _build_keybinds_xml() -> str:
+    """Read user keybinding overrides and build XML keybind elements."""
+    from xml.sax.saxutils import escape, quoteattr
+
+    keybinds_path = SETTINGS_DIR / "keybindings.json"
+    _fallback = '    <keybind key="NULL">\n      <action name="None"/>\n    </keybind>\n'
+    if not keybinds_path.exists():
+        return _fallback
+    try:
+        bindings = json.loads(keybinds_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return _fallback
+    if not bindings:
+        return _fallback
+    lines = []
+    for entry in bindings:
+        key = entry.get("key", "")
+        action_name = entry.get("action", "")
+        command = entry.get("command", "")
+        direction = entry.get("direction", "")
+        menu = entry.get("menu", "")
+        if not key or not action_name:
+            continue
+        if command:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)} command={quoteattr(command)}/>")
+            lines.append("    </keybind>")
+        elif direction:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)}><direction>{escape(direction)}</direction></action>")
+            lines.append("    </keybind>")
+        elif menu:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)} menu={quoteattr(menu)}/>")
+            lines.append("    </keybind>")
+        else:
+            lines.append(f"    <keybind key={quoteattr(key)}>")
+            lines.append(f"      <action name={quoteattr(action_name)}/>")
+            lines.append("    </keybind>")
+    return "\n".join(lines) + "\n" if lines else _fallback
+
+
 def write_labwc_rc_overrides(settings: dict) -> None:
     LABWC_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -801,6 +901,21 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     if kb_variant:
         variant_line = f"\n      <xkbVariant>{kb_variant}</xkbVariant>"
 
+    capslock = settings.get("capslock_behavior", "default")
+    xkb_options = ""
+    if capslock == "ctrl":
+        xkb_options = "caps:ctrl_modifier"
+    elif capslock == "escape":
+        xkb_options = "caps:escape"
+    elif capslock == "disabled":
+        xkb_options = "caps:none"
+
+    options_line = ""
+    if xkb_options:
+        options_line = f"\n      <xkbOptions>{xkb_options}</xkbOptions>"
+
+    keybinds_xml = _build_keybinds_xml()
+
     rc = f"""\
 <?xml version="1.0"?>
 <labwc_config>
@@ -820,11 +935,9 @@ def write_labwc_rc_overrides(settings: dict) -> None:
   <keyboard>
     <repeatDelay>{repeat_delay}</repeatDelay>
     <repeatRate>{repeat_rate}</repeatRate>
-    <keybind key="NULL">
-      <action name="None"/>
-    </keybind>
+{keybinds_xml}\
     <xkb>
-      <xkbLayout>{kb_layout}</xkbLayout>{variant_line}
+      <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
     </xkb>
   </keyboard>
 </labwc_config>
@@ -898,6 +1011,18 @@ def main() -> int:
         restart_program("waybar", ["waybar"])
         subprocess.run(["makoctl", "reload"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(["labwc", "--reconfigure"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Manage gammastep (night light)
+        if settings.get("night_light_enabled", False):
+            temp = str(settings.get("night_light_temp", 4500))
+            schedule = settings.get("night_light_schedule", "sunset-sunrise")
+            if schedule == "sunset-sunrise":
+                gs_cmd = ["gammastep", "-t", f"{temp}:{temp}"]
+            else:
+                gs_cmd = ["gammastep", "-O", temp]
+            restart_program("gammastep", gs_cmd)
+        else:
+            subprocess.run(["pkill", "-x", "gammastep"], check=False,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # Restart swayidle with updated timeouts
         lock_t = int(settings.get("lock_timeout", 300))
         dpms_t = int(settings.get("display_off_timeout", 600))
@@ -907,6 +1032,9 @@ def main() -> int:
         if dpms_t > 0:
             idle_cmd += ["timeout", str(dpms_t), 'wlopm --off "*"',
                          "resume", 'wlopm --on "*"']
+        suspend_t = int(settings.get("suspend_timeout", 0))
+        if suspend_t > 0:
+            idle_cmd += ["timeout", str(suspend_t), "systemctl suspend"]
         idle_cmd += ["before-sleep", "swaylock -f"]
         restart_program("swayidle", idle_cmd)
 

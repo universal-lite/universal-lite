@@ -1351,6 +1351,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         try:
             subprocess.run(
+                ["groupadd", "-f", "video"],
+                check=False, capture_output=True,
+            )
+            subprocess.run(
                 ["gpasswd", "-a", username, "video"],
                 check=True, capture_output=True, text=True,
             )

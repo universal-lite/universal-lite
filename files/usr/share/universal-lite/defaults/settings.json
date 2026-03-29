@@ -26,5 +26,19 @@
   "keyboard_repeat_delay": 300,
   "keyboard_repeat_rate": 40,
   "lock_timeout": 300,
-  "display_off_timeout": 600
+  "display_off_timeout": 600,
+  "font_size": 11,
+  "cursor_size": 24,
+  "high_contrast": false,
+  "reduce_motion": false,
+  "night_light_enabled": false,
+  "night_light_temp": 4500,
+  "night_light_schedule": "sunset-sunrise",
+  "night_light_start": "20:00",
+  "night_light_end": "06:00",
+  "power_profile": "balanced",
+  "suspend_timeout": 0,
+  "lid_close_action": "suspend",
+  "clock_24h": false,
+  "capslock_behavior": "default"
 }

@@ -36,6 +36,29 @@ dnf5 install -y --setopt=install_weak_deps=False \
     nwg-drawer \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
+    gammastep \
+    glibc-langpack-am \
+    glibc-langpack-ar \
+    glibc-langpack-de \
+    glibc-langpack-es \
+    glibc-langpack-fa \
+    glibc-langpack-fr \
+    glibc-langpack-ha \
+    glibc-langpack-hi \
+    glibc-langpack-it \
+    glibc-langpack-ja \
+    glibc-langpack-ko \
+    glibc-langpack-nl \
+    glibc-langpack-pl \
+    glibc-langpack-pt \
+    glibc-langpack-ru \
+    glibc-langpack-sv \
+    glibc-langpack-sw \
+    glibc-langpack-th \
+    glibc-langpack-tr \
+    glibc-langpack-vi \
+    glibc-langpack-yo \
+    glibc-langpack-zh \
     gnome-backgrounds \
     google-roboto-fonts \
     google-roboto-mono-fonts \
@@ -53,6 +76,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     mousepad \
     mpv \
     network-manager-applet \
+    nm-connection-editor \
     pavucontrol \
     pipewire \
     power-profiles-daemon \
@@ -71,6 +95,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     udisks2 \
     unzip \
     waybar \
+    wdisplays \
     wlr-randr \
     wireplumber \
     wl-clipboard \
@@ -85,6 +110,9 @@ dnf5 install -y --setopt=install_weak_deps=False \
 dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
 cp -a /ctx/files/. /
+
+# Ensure video group exists for brightnessctl backlight access
+groupadd -f video
 
 install -d /etc/xdg/labwc
 labwc-menu-generator > /etc/xdg/labwc/menu.xml
