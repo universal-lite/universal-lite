@@ -3,7 +3,7 @@ import copy
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Gio, Gtk
 
 from ..base import BasePage
 
@@ -107,21 +107,56 @@ class PanelPage(BasePage):
         label = Gtk.Label(label=MODULE_NAMES.get(mod_key, mod_key), xalign=0)
         label.set_hexpand(True)
         box.append(label)
+
+        edge = self.store.get("edge", "bottom")
+        is_horizontal = edge in ("top", "bottom")
         sec_idx = SECTION_ORDER.index(section)
+        modules = self._layout_data.get(section, [])
+        mod_idx = modules.index(mod_key) if mod_key in modules else -1
+
+        # Section-move buttons
+        section_prev = "\u25C2" if is_horizontal else "\u25B2"
+        section_next = "\u25B8" if is_horizontal else "\u25BC"
+        # Reorder buttons (within section)
+        reorder_up = "\u25B2" if is_horizontal else "\u25C2"
+        reorder_down = "\u25BC" if is_horizontal else "\u25B8"
+
         if sec_idx > 0:
-            btn = Gtk.Button(label="\u25C2")
+            btn = Gtk.Button(label=section_prev)
             btn.set_tooltip_text(f"Move to {SECTION_ORDER[sec_idx - 1]}")
             btn.connect("clicked", lambda _, k=mod_key, s=section: self._move_module(
                 k, s, SECTION_ORDER[SECTION_ORDER.index(s) - 1]))
             box.append(btn)
         if sec_idx < len(SECTION_ORDER) - 1:
-            btn = Gtk.Button(label="\u25B8")
+            btn = Gtk.Button(label=section_next)
             btn.set_tooltip_text(f"Move to {SECTION_ORDER[sec_idx + 1]}")
             btn.connect("clicked", lambda _, k=mod_key, s=section: self._move_module(
                 k, s, SECTION_ORDER[SECTION_ORDER.index(s) + 1]))
             box.append(btn)
+        if mod_idx > 0:
+            btn = Gtk.Button(label=reorder_up)
+            btn.set_tooltip_text("Move up in section")
+            btn.connect("clicked", lambda _, k=mod_key, s=section: self._reorder_module(k, s, -1))
+            box.append(btn)
+        if mod_idx < len(modules) - 1:
+            btn = Gtk.Button(label=reorder_down)
+            btn.set_tooltip_text("Move down in section")
+            btn.connect("clicked", lambda _, k=mod_key, s=section: self._reorder_module(k, s, 1))
+            box.append(btn)
+
         row.set_child(box)
         return row
+
+    def _reorder_module(self, mod_key, section, direction):
+        modules = self._layout_data.get(section, [])
+        if mod_key not in modules:
+            return
+        idx = modules.index(mod_key)
+        new_idx = idx + direction
+        if 0 <= new_idx < len(modules):
+            modules[idx], modules[new_idx] = modules[new_idx], modules[idx]
+            self._refresh_module_lists()
+            self.store.save_and_apply("layout", self._layout_data)
 
     def _move_module(self, mod_key, from_section, to_section):
         if mod_key in self._layout_data.get(from_section, []):
@@ -182,54 +217,86 @@ class PanelPage(BasePage):
     def _show_add_pinned_dialog(self):
         dialog = Gtk.Window(title="Add Pinned App", modal=True)
         dialog.set_transient_for(self._pinned_list.get_root())
-        dialog.set_default_size(360, 220)
-        dialog.set_resizable(False)
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        outer.set_margin_top(24)
-        outer.set_margin_bottom(24)
-        outer.set_margin_start(24)
-        outer.set_margin_end(24)
-        grid = Gtk.Grid()
-        grid.set_row_spacing(8)
-        grid.set_column_spacing(12)
+        dialog.set_default_size(400, 500)
+        dialog.set_resizable(True)
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        outer.set_margin_top(12)
+        outer.set_margin_bottom(12)
+        outer.set_margin_start(12)
+        outer.set_margin_end(12)
 
-        def _entry(row_idx, label_text, placeholder):
-            lbl = Gtk.Label(label=label_text, xalign=1)
-            entry = Gtk.Entry()
-            entry.set_placeholder_text(placeholder)
-            entry.set_hexpand(True)
-            grid.attach(lbl, 0, row_idx, 1, 1)
-            grid.attach(entry, 1, row_idx, 1, 1)
-            return entry
+        search_entry = Gtk.SearchEntry()
+        search_entry.set_placeholder_text("Search apps\u2026")
+        outer.append(search_entry)
 
-        name_entry = _entry(0, "Name:", "e.g. Files")
-        cmd_entry = _entry(1, "Command:", "e.g. nautilus")
-        icon_entry = _entry(2, "Icon:", "e.g. folder-symbolic")
-        outer.append(grid)
-        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        btn_box.set_halign(Gtk.Align.END)
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        app_list = Gtk.ListBox()
+        app_list.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        apps = [a for a in Gio.AppInfo.get_all() if a.should_show()]
+        apps.sort(key=lambda a: a.get_display_name().lower())
+
+        for app in apps:
+            row = Gtk.ListBoxRow()
+            row_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            row_box.set_margin_top(4)
+            row_box.set_margin_bottom(4)
+            row_box.set_margin_start(4)
+            row_box.set_margin_end(4)
+
+            icon_info = app.get_icon()
+            if icon_info:
+                icon_widget = Gtk.Image.new_from_gicon(icon_info)
+            else:
+                icon_widget = Gtk.Image.new_from_icon_name("application-x-executable-symbolic")
+            icon_widget.set_pixel_size(24)
+            row_box.append(icon_widget)
+
+            name_label = Gtk.Label(label=app.get_display_name(), xalign=0)
+            name_label.set_hexpand(True)
+            row_box.append(name_label)
+
+            add_btn = Gtk.Button(label="Add")
+            add_btn.connect("clicked", lambda _, a=app: self._add_app_from_info(a, dialog))
+            row_box.append(add_btn)
+
+            row.set_child(row_box)
+            row._app_name = app.get_display_name().lower()
+            app_list.append(row)
+
+        def _filter_func(row):
+            query = search_entry.get_text().lower()
+            if not query:
+                return True
+            return query in row._app_name
+
+        app_list.set_filter_func(_filter_func)
+        search_entry.connect("search-changed", lambda _: app_list.invalidate_filter())
+
+        scrolled.set_child(app_list)
+        outer.append(scrolled)
+
         cancel_btn = Gtk.Button(label="Cancel")
+        cancel_btn.set_halign(Gtk.Align.END)
+        cancel_btn.set_margin_top(4)
         cancel_btn.connect("clicked", lambda _: dialog.destroy())
-        btn_box.append(cancel_btn)
-        add_btn = Gtk.Button(label="Add")
-        add_btn.add_css_class("suggested-action")
+        outer.append(cancel_btn)
 
-        def _on_add(_btn):
-            name = name_entry.get_text().strip()
-            cmd = cmd_entry.get_text().strip()
-            icon_name = icon_entry.get_text().strip() or "application-x-executable-symbolic"
-            if not name or not cmd:
-                return
-            self._pinned_data.append({"name": name, "command": cmd, "icon": icon_name})
-            self._refresh_pinned_list()
-            self.store.save_and_apply("pinned", self._pinned_data)
-            dialog.destroy()
-
-        add_btn.connect("clicked", _on_add)
-        btn_box.append(add_btn)
-        outer.append(btn_box)
         dialog.set_child(outer)
         dialog.present()
+
+    def _add_app_from_info(self, app_info, dialog):
+        name = app_info.get_display_name()
+        cmd = app_info.get_commandline() or ""
+        icon_gicon = app_info.get_icon()
+        icon = icon_gicon.to_string() if icon_gicon else "application-x-executable-symbolic"
+        self._pinned_data.append({"name": name, "command": cmd, "icon": icon})
+        self._refresh_pinned_list()
+        self.store.save_and_apply("pinned", self._pinned_data)
+        dialog.destroy()
 
     def _reset_layout(self):
         self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
