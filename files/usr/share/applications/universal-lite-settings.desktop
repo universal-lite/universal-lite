@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Universal-Lite Settings
-Comment=Adjust panel placement, theme, and wallpaper
+Comment=System settings for Universal-Lite
 Exec=universal-lite-settings
 Terminal=false
 Type=Application
