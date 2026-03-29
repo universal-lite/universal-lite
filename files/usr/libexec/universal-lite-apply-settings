@@ -292,6 +292,28 @@ def ensure_settings() -> dict:
     if high_contrast:
         theme = "dark"
 
+    # Validate night light settings
+    night_light_enabled = bool(data.get("night_light_enabled", False))
+    night_light_temp = int(data.get("night_light_temp", 4500))
+    if not (3500 <= night_light_temp <= 6500):
+        night_light_temp = 4500
+    night_light_schedule = data.get("night_light_schedule", "sunset-sunrise")
+    if night_light_schedule not in ("sunset-sunrise", "custom"):
+        night_light_schedule = "sunset-sunrise"
+    night_light_start = str(data.get("night_light_start", "20:00"))
+    night_light_end = str(data.get("night_light_end", "06:00"))
+
+    # Validate power settings
+    suspend_timeout = int(data.get("suspend_timeout", 0))
+    if suspend_timeout not in (0, 60, 120, 300, 600, 900, 1800):
+        suspend_timeout = 0
+    lid_close_action = data.get("lid_close_action", "suspend")
+    if lid_close_action not in ("suspend", "lock", "nothing"):
+        lid_close_action = "suspend"
+    power_profile = data.get("power_profile", "balanced")
+    if power_profile not in ("balanced", "power-saver", "performance"):
+        power_profile = "balanced"
+
     # Write back validated values, preserving all other keys (input, keyboard, power)
     data.update({
         "edge": edge,
@@ -306,6 +328,14 @@ def ensure_settings() -> dict:
         "cursor_size": cursor_size,
         "high_contrast": high_contrast,
         "reduce_motion": reduce_motion,
+        "night_light_enabled": night_light_enabled,
+        "night_light_temp": night_light_temp,
+        "night_light_schedule": night_light_schedule,
+        "night_light_start": night_light_start,
+        "night_light_end": night_light_end,
+        "suspend_timeout": suspend_timeout,
+        "lid_close_action": lid_close_action,
+        "power_profile": power_profile,
     })
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -917,6 +947,18 @@ def main() -> int:
         restart_program("waybar", ["waybar"])
         subprocess.run(["makoctl", "reload"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         subprocess.run(["labwc", "--reconfigure"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        # Manage gammastep (night light)
+        if settings.get("night_light_enabled", False):
+            temp = str(settings.get("night_light_temp", 4500))
+            schedule = settings.get("night_light_schedule", "sunset-sunrise")
+            if schedule == "sunset-sunrise":
+                gs_cmd = ["gammastep", "-t", f"{temp}:{temp}"]
+            else:
+                gs_cmd = ["gammastep", "-O", temp]
+            restart_program("gammastep", gs_cmd)
+        else:
+            subprocess.run(["pkill", "-x", "gammastep"], check=False,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         # Restart swayidle with updated timeouts
         lock_t = int(settings.get("lock_timeout", 300))
         dpms_t = int(settings.get("display_off_timeout", 600))
@@ -926,6 +968,9 @@ def main() -> int:
         if dpms_t > 0:
             idle_cmd += ["timeout", str(dpms_t), 'wlopm --off "*"',
                          "resume", 'wlopm --on "*"']
+        suspend_t = int(settings.get("suspend_timeout", 0))
+        if suspend_t > 0:
+            idle_cmd += ["timeout", str(suspend_t), "systemctl suspend"]
         idle_cmd += ["before-sleep", "swaylock -f"]
         restart_program("swayidle", idle_cmd)
 
