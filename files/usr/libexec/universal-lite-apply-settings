@@ -201,8 +201,10 @@ def _build_tokens(settings: dict) -> dict:
         # Typography
         "font_ui": "Roboto",
         "font_mono": "Roboto Mono",
-        "font_size_ui": 13,
-        "font_size_mono": 11,
+        "font_size_ui": settings.get("font_size", 11) + 2,
+        "font_size_mono": settings.get("font_size", 11),
+        "cursor_size": settings.get("cursor_size", 24),
+        "reduce_motion": settings.get("reduce_motion", False),
         # Panel geometry
         "panel_height": panel_height,
         "panel_width": panel_width,
@@ -278,6 +280,18 @@ def ensure_settings() -> dict:
         for mod in ALL_MODULES - seen:
             layout["end"].append(mod)
 
+    # Validate accessibility settings
+    font_size = data.get("font_size", 11)
+    if font_size not in (10, 11, 13, 14, 15):
+        font_size = 11
+    cursor_size = data.get("cursor_size", 24)
+    if cursor_size not in (24, 32, 48):
+        cursor_size = 24
+    high_contrast = bool(data.get("high_contrast", False))
+    reduce_motion = bool(data.get("reduce_motion", False))
+    if high_contrast:
+        theme = "dark"
+
     # Write back validated values, preserving all other keys (input, keyboard, power)
     data.update({
         "edge": edge,
@@ -288,6 +302,10 @@ def ensure_settings() -> dict:
         "scale": scale,
         "layout": layout,
         "pinned": pinned,
+        "font_size": font_size,
+        "cursor_size": cursor_size,
+        "high_contrast": high_contrast,
+        "reduce_motion": reduce_motion,
     })
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -573,9 +591,10 @@ def write_gtk_settings(tokens: dict) -> None:
             handle.write(f"gtk-application-prefer-dark-theme={dark_pref}\n")
             handle.write(f"gtk-theme-name={theme_name}\n")
             handle.write(f"gtk-icon-theme-name={icon_theme}\n")
-            handle.write("gtk-font-name=Roboto 11\n")
+            handle.write(f"gtk-font-name=Roboto {tokens['font_size_mono']}\n")
             handle.write("gtk-cursor-theme-name=Adwaita\n")
-            handle.write("gtk-cursor-theme-size=24\n")
+            handle.write(f"gtk-cursor-theme-size={tokens['cursor_size']}\n")
+            handle.write(f"gtk-enable-animations={'1' if not tokens['reduce_motion'] else '0'}\n")
 
     gsettings_commands = [
         ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
@@ -588,9 +607,9 @@ def write_gtk_settings(tokens: dict) -> None:
             "prefer-dark" if tokens["theme"] == "dark" else "default",
         ],
         ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", tokens["accent"]],
-        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", "Roboto 11"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", f"Roboto {tokens['font_size_mono']}"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", "Adwaita"],
-        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", "24"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(tokens["cursor_size"])],
     ]
     for command in gsettings_commands:
         subprocess.run(command, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
