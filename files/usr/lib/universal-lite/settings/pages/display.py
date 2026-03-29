@@ -11,7 +11,8 @@ from ..base import BasePage
 SCALE_OPTIONS = ["75%", "100%", "125%", "150%", "175%", "200%", "225%", "250%"]
 SCALE_VALUES = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
-SCHEDULE_OPTIONS = ["Sunset to Sunrise", "Custom"]
+SCHEDULE_LABELS = ["Sunset to Sunrise", "Custom"]
+SCHEDULE_VALUES = ["sunset-sunrise", "custom"]
 
 
 class DisplayPage(BasePage):
@@ -106,11 +107,10 @@ class DisplayPage(BasePage):
         page.append(self.make_setting_row("Temperature", "3500K (warm) to 6500K (cool)", temp_scale))
 
         # Schedule dropdown
-        schedule_labels = list(SCHEDULE_OPTIONS)
-        schedule_dd = Gtk.DropDown.new_from_strings(schedule_labels)
-        current_schedule = self.store.get("night_light_schedule", "Sunset to Sunrise")
+        schedule_dd = Gtk.DropDown.new_from_strings(list(SCHEDULE_LABELS))
+        current_schedule = self.store.get("night_light_schedule", "sunset-sunrise")
         try:
-            schedule_dd.set_selected(schedule_labels.index(current_schedule))
+            schedule_dd.set_selected(SCHEDULE_VALUES.index(current_schedule))
         except ValueError:
             schedule_dd.set_selected(0)
         schedule_dd.set_size_request(200, -1)
@@ -139,13 +139,14 @@ class DisplayPage(BasePage):
         )
         custom_box.append(self.make_setting_row("End time", "", end_entry))
 
-        custom_box.set_visible(current_schedule == "Custom")
+        custom_box.set_visible(current_schedule == "custom")
         page.append(custom_box)
 
         def _on_schedule_changed(dd, _param):
-            selected = schedule_labels[dd.get_selected()]
-            self.store.save_and_apply("night_light_schedule", selected)
-            custom_box.set_visible(selected == "Custom")
+            idx = dd.get_selected()
+            value = SCHEDULE_VALUES[idx]
+            self.store.save_and_apply("night_light_schedule", value)
+            custom_box.set_visible(value == "custom")
 
         schedule_dd.connect("notify::selected", _on_schedule_changed)
 
@@ -285,9 +286,13 @@ class DisplayPage(BasePage):
 
     @staticmethod
     def _apply_resolution(output_name, mode_str):
+        # mode_str: "1920x1080@60.0Hz"
         parts = mode_str.replace("Hz", "").split("@")
         res = parts[0]
         cmd = ["wlr-randr", "--output", output_name, "--mode", res]
+        if len(parts) > 1:
+            cmd = ["wlr-randr", "--output", output_name,
+                   "--custom-mode", mode_str]
         subprocess.run(cmd, check=False)
 
     def _show_res_revert_dialog(self, dropdown, output_name, modes, old_mode, new_mode):
