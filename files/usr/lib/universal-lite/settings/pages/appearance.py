@@ -22,6 +22,7 @@ class AppearancePage(BasePage):
         return [
             ("Theme", "Light"), ("Theme", "Dark"),
             ("Accent color", "Color"),
+            ("Font size", "Font"),
             ("Wallpaper", "Background"),
         ]
 
@@ -59,6 +60,21 @@ class AppearancePage(BasePage):
             accent_buttons.append(btn)
             accent_box.append(btn)
         page.append(accent_box)
+
+        # -- Font size group --
+        page.append(self.make_group_label("Font size"))
+        font_sizes = [("10", "Small"), ("11", "Default"), ("13", "Large"), ("15", "Larger")]
+        font_labels = [label for _, label in font_sizes]
+        font_values = [val for val, _ in font_sizes]
+        font_dd = Gtk.DropDown.new_from_strings(font_labels)
+        current_font = str(self.store.get("font_size", 11))
+        try:
+            font_dd.set_selected(font_values.index(current_font))
+        except ValueError:
+            font_dd.set_selected(1)
+        font_dd.connect("notify::selected", lambda d, _:
+            self.store.save_and_apply("font_size", int(font_values[d.get_selected()])))
+        page.append(self.make_setting_row("Font size", "Affects all text throughout the interface", font_dd))
 
         # -- Wallpaper group --
         page.append(self.make_group_label("Wallpaper"))
