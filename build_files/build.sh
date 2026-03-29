@@ -41,6 +41,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-de \
     glibc-langpack-es \
     glibc-langpack-fr \
+    glibc-langpack-hi \
     glibc-langpack-it \
     glibc-langpack-ja \
     glibc-langpack-ko \
@@ -49,7 +50,9 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-pt \
     glibc-langpack-ru \
     glibc-langpack-sv \
+    glibc-langpack-th \
     glibc-langpack-tr \
+    glibc-langpack-vi \
     glibc-langpack-zh \
     gnome-backgrounds \
     google-roboto-fonts \
