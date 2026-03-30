@@ -96,7 +96,7 @@ A setup wizard runs on first boot. It walks through six steps:
 
 1. **Network** — connect to WiFi if needed (skipped automatically if you're already online)
 2. **Account** — your full name, username, and password
-3. **System** — timezone, memory management, optional root password, partition expansion
+3. **System** — timezone, memory management, administrator (sudo), optional root password, partition expansion
 4. **Apps** — choose which Flatpak apps to install (Bazaar app store is on by default)
 5. **Confirm** — review everything before applying
 6. **Progress** — live status as each step runs, with retry/skip on failures
@@ -135,7 +135,7 @@ don't survive a reboot and aren't readable offline.
 | Bluetooth | `bluez` | Pair devices via system tray |
 | Printing | `CUPS` | Local and network printers |
 | App store | `Bazaar` (Flatpak, first-boot) | Browse and install apps from Flathub |
-| Settings | `universal-lite-settings` | Custom GTK4 app for panel, theme, wallpaper |
+| Settings | `universal-lite-settings` | Full system settings app (GTK4) — 15 pages covering display, network, input, power, accessibility, and more |
 | Multimedia | RPM Fusion + GStreamer | Codec support out of the box |
 
 ### Keyboard shortcuts
@@ -185,16 +185,31 @@ don't survive a reboot and aren't readable offline.
 | Text files | Mousepad |
 | Images | Ristretto |
 | Videos | mpv |
+| Audio | mpv |
 | Web links | Chrome |
 
 ### Settings app
 
-`Super+,` or the panel tray opens `universal-lite-settings`:
+`Super+,` or the panel tray opens `universal-lite-settings`, a full system settings
+app built with GTK4:
 
-- Panel edge (top / bottom / left / right)
-- Panel density (normal / compact)
-- Theme (light / dark)
-- Wallpaper (bundled or custom)
+| Page | What it configures |
+|------|--------------------|
+| Appearance | Theme (light/dark), accent color, font size, wallpaper |
+| Display | Scale, resolution, refresh rate, night light |
+| Network | WiFi scanning/connection, hidden networks, wired status |
+| Bluetooth | Device discovery, pairing, connect/disconnect |
+| Panel | Position, density, module layout (drag-and-drop), pinned apps |
+| Mouse & Touchpad | Pointer speed, natural scrolling, tap to click, acceleration |
+| Keyboard | Layout, repeat rate/delay, caps lock behavior, custom shortcuts |
+| Sound | Output/input device, volume, mute |
+| Power & Lock | Lock/display-off/suspend timeouts, power profile, lid close action |
+| Accessibility | Large text, cursor size, high contrast, reduce motion |
+| Date & Time | Timezone, NTP toggle, 12/24-hour clock |
+| Users | Display name, password, automatic login |
+| Language & Region | System locale, regional formats |
+| Default Apps | Browser, file manager, terminal, editor, image/PDF/media/email |
+| About | System info, hardware, disk usage, update check |
 
 Changes apply immediately without restarting anything.
 
@@ -255,6 +270,8 @@ Dependencies are kept current by Dependabot and Renovate.
 ```
 Containerfile                              # Image build definition
 build_files/build.sh                       # Package installation and configuration
+disk_config/                               # Disk image build configs (raw, ISO)
+tests/                                     # Unit tests for settings store, event bus
 files/
   etc/
     greetd/                                # Login greeter config (greetd + gtkgreet)
@@ -264,6 +281,7 @@ files/
       zram-generator.conf                  # zRAM swap config (default memory strategy)
       system/
         universal-lite-greeter-setup.service    # Switch greeter config after first-boot wizard
+        universal-lite-flatpak-setup.service    # Install Flatpak apps scheduled by wizard
         universal-lite-zram-disable.service     # Mask zRAM when zswap is chosen instead
         universal-lite-zswap.service            # Configure zswap parameters at boot
         universal-lite-swap-init.service        # Create /var/swap on first boot (zswap path)
@@ -271,26 +289,39 @@ files/
     xdg/
       foot/                                # Terminal config
       fuzzel/                              # App launcher config
+      gtk-3.0/, gtk-4.0/                   # GTK theme defaults
       labwc/                               # Compositor config, keybindings, autostart
       mako/                                # Notification daemon config
       swaylock/                            # Lock screen config
   usr/
     bin/
-      universal-lite-settings              # Settings GUI (Python/GTK4)
+      universal-lite-power-menu            # Power menu (logout/reboot/shutdown)
+      universal-lite-settings              # Settings app launcher
       universal-lite-setup-wizard          # First-boot setup wizard (Python/GTK4)
-    lib/bootc/install/
-      00-universal-lite.toml               # bootc install config (forces ext4)
+    lib/
+      bootc/install/
+        00-universal-lite.toml             # bootc install config (forces ext4)
+      universal-lite/settings/             # Settings app Python package
+        pages/                             # 15 settings pages (appearance, display, etc.)
+        app.py, window.py, base.py         # App shell, sidebar, base page class
+        settings_store.py, events.py       # Persistent store + event bus
     libexec/
       universal-lite-apply-settings        # Applies settings changes to compositor/panel
+      universal-lite-brightness            # Brightness control helper
       universal-lite-encrypted-swap        # dm-crypt swap setup script
+      universal-lite-flatpak-setup         # Flatpak app installer (runs at boot)
       universal-lite-greeter-setup         # Greeter config switcher (first-boot vs normal)
-      universal-lite-session-init          # Wayland session startup
+      universal-lite-lid-action            # Lid close action helper
+      universal-lite-session               # Wayland session startup
       universal-lite-swap-init             # Creates /var/swap at configured size
+      universal-lite-volume                # Volume control helper
     share/
       applications/                        # .desktop files + mimeapps.list
       backgrounds/universal-lite/          # Bundled wallpapers
+      polkit-1/actions/                    # Polkit policy for lid action
+      themes/Universal-Lite/               # Custom GTK theme (labwc openbox-3 compat)
       universal-lite/defaults/             # Default settings (JSON)
-      wayland-sessions/                    # Session .desktop entry for greetd
+      wayland-sessions/                    # Session .desktop entries for greetd
 .github/workflows/
   build.yml                                # OCI image build + sign + push
   build-disk.yml                           # Raw and ISO artifact builds
