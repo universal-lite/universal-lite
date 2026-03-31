@@ -391,6 +391,7 @@ window#waybar {{
 
 #custom-launcher {{
     background: {tokens["surface_card"]};
+    color: {tokens["accent_hex"]};
     border-radius: 999px;
 }}
 
@@ -546,7 +547,7 @@ def write_waybar_config(tokens: dict) -> None:
     # Always define all module configs; Waybar only renders those in the module lists.
     config["custom/launcher"] = {
         "return-type": "json",
-        "exec": """echo '{"icon": "fedora-logo-icon", "tooltip": "Applications"}'""",
+        "exec": """echo '{"icon": "start-here-symbolic", "tooltip": "Applications"}'""",
         "interval": "once",
         "format": "{icon}",
         "on-click": "wtype -M ctrl -k F12 -m ctrl",
