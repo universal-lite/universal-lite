@@ -573,6 +573,10 @@ class PulseAudioSubscriber:
         if self._proc is not None:
             self._proc.terminate()
             try:
+                self._proc.wait(timeout=2)
+            except Exception:
+                self._proc.kill()
+            try:
                 self._proc.stdout.close()
             except Exception:
                 pass

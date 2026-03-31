@@ -121,13 +121,23 @@ class DisplayPage(BasePage):
         # Custom time entries (start / end)
         custom_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
 
+        def _validate_and_save_time(entry, key):
+            text = entry.get_text().strip()
+            if re.fullmatch(r"[0-2]?\d:[0-5]\d", text):
+                h, m = text.split(":")
+                if int(h) < 24:
+                    entry.remove_css_class("error")
+                    self.store.save_and_apply(key, text)
+                    return
+            entry.add_css_class("error")
+
         start_entry = Gtk.Entry()
         start_entry.set_text(self.store.get("night_light_start", "20:00"))
         start_entry.set_placeholder_text("HH:MM")
         start_entry.set_max_width_chars(5)
         start_entry.connect(
             "activate",
-            lambda e: self.store.save_and_apply("night_light_start", e.get_text()),
+            lambda e: _validate_and_save_time(e, "night_light_start"),
         )
         custom_box.append(self.make_setting_row("Start time", "", start_entry))
 
@@ -137,7 +147,7 @@ class DisplayPage(BasePage):
         end_entry.set_max_width_chars(5)
         end_entry.connect(
             "activate",
-            lambda e: self.store.save_and_apply("night_light_end", e.get_text()),
+            lambda e: _validate_and_save_time(e, "night_light_end"),
         )
         custom_box.append(self.make_setting_row("End time", "", end_entry))
 

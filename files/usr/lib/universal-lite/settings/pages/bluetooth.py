@@ -52,6 +52,7 @@ class BluetoothPage(BasePage):
         page.append(self._status_label)
 
         if not self._bt.available:
+            self._toggle.set_sensitive(False)
             page.append(Gtk.Label(label="No Bluetooth adapter found", xalign=0))
             return page
 

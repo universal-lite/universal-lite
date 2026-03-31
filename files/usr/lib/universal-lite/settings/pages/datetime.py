@@ -84,12 +84,16 @@ class DateTimePage(BasePage):
             return "UTC"
 
     def _set_timezone(self, tz, entry=None):
-        result = subprocess.run(
-            ["timedatectl", "set-timezone", tz],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
+        try:
+            result = subprocess.run(
+                ["timedatectl", "set-timezone", tz],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            self.store.show_toast("Failed to set timezone", True)
+            return
         if result.returncode != 0:
             self.store.show_toast("Invalid timezone", True)
             if entry is not None:

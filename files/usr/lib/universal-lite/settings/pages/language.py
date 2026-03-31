@@ -61,40 +61,48 @@ class LanguagePage(BasePage):
     def _get_locales():
         try:
             r = subprocess.run(["localectl", "list-locales"],
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, timeout=10)
             return [l.strip() for l in r.stdout.splitlines() if l.strip()]
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return ["en_US.UTF-8"]
 
     @staticmethod
     def _get_current_locale():
         try:
-            r = subprocess.run(["localectl", "status"], capture_output=True, text=True)
+            r = subprocess.run(["localectl", "status"],
+                               capture_output=True, text=True, timeout=5)
             for line in r.stdout.splitlines():
                 if "LANG=" in line:
                     return line.split("LANG=")[-1].strip()
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
         return "en_US.UTF-8"
 
     @staticmethod
     def _get_current_format():
         try:
-            r = subprocess.run(["localectl", "status"], capture_output=True, text=True)
+            r = subprocess.run(["localectl", "status"],
+                               capture_output=True, text=True, timeout=5)
             for line in r.stdout.splitlines():
                 if "LC_TIME=" in line:
                     return line.split("LC_TIME=")[-1].strip()
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
         return LanguagePage._get_current_locale()
 
     @staticmethod
     def _set_locale(locale):
-        subprocess.run(["localectl", "set-locale", f"LANG={locale}"],
-                       check=False, capture_output=True)
+        try:
+            subprocess.run(["localectl", "set-locale", f"LANG={locale}"],
+                           check=False, capture_output=True, timeout=5)
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
 
     @staticmethod
     def _set_format(locale):
-        subprocess.run(["localectl", "set-locale", f"LC_TIME={locale}",
-                        f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
-                       check=False, capture_output=True)
+        try:
+            subprocess.run(["localectl", "set-locale", f"LC_TIME={locale}",
+                            f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
+                           check=False, capture_output=True, timeout=5)
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
