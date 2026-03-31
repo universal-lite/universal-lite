@@ -8,8 +8,8 @@ Wants=NetworkManager.service accounts-daemon.service
 [Service]
 Type=simple
 ExecStartPre=/bin/mkdir -p /run/user/0
-ExecStart=/usr/bin/dbus-run-session /usr/bin/cage -s -- /usr/bin/universal-lite-setup-wizard
-Environment=WLR_NO_HARDWARE_CURSORS=1 XDG_RUNTIME_DIR=/run/user/0
+ExecStart=/usr/bin/cage -s -- /usr/bin/universal-lite-setup-wizard
+Environment=WLR_NO_HARDWARE_CURSORS=1 XDG_RUNTIME_DIR=/run/user/0 DBUS_SESSION_BUS_ADDRESS=disabled:
 TTYPath=/dev/tty7
 StandardInput=tty-force
 StandardOutput=journal

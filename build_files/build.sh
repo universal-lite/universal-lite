@@ -25,7 +25,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     cage \
     cups \
     cryptsetup \
-    dbus-tools \
     evince \
     fastfetch \
     ffmpegthumbnailer \
