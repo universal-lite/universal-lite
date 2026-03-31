@@ -10,6 +10,10 @@ systemctl --user import-environment \
   XDG_SESSION_TYPE GTK_USE_PORTAL || true
 xdg-user-dirs-update >/dev/null 2>&1 || true
 
+# Start gnome-keyring-daemon for secret storage (Chrome passwords, WiFi keys, etc.)
+eval "$(gnome-keyring-daemon --start --components=pkcs11,secrets,ssh 2>/dev/null)" || true
+export SSH_AUTH_SOCK GNOME_KEYRING_CONTROL
+
 # Only start Universal-Lite daemons in a Universal-Lite session.
 [ "${UNIVERSAL_LITE:-}" = "1" ] || exit 0
 
