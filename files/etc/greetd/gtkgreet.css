@@ -1,22 +1,31 @@
+/* Universal-Lite login — Adwaita palette, ChromeOS spacing */
+
 window {
     background-color: rgba(250, 250, 250, 0.85);
 }
 
 box#body {
-    background-color: rgba(240, 240, 240, 0.95);
-    border-radius: 12px;
-    padding: 32px;
-    border: 1px solid rgba(209, 209, 209, 0.8);
+    background-color: rgba(255, 255, 255, 0.97);
+    border-radius: 16px;
+    padding: 40px 36px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08),
+                0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
 entry {
     background-color: #ffffff;
     color: #1e1e1e;
     border-radius: 8px;
-    padding: 8px 12px;
+    padding: 10px 14px;
     border: 1px solid #d1d1d1;
     font-family: "Roboto", sans-serif;
-    font-size: 14px;
+    font-size: 15px;
+    min-height: 22px;
+}
+
+entry:focus {
+    border-color: #3584e4;
+    box-shadow: 0 0 0 2px rgba(53, 132, 228, 0.25);
 }
 
 label {
@@ -25,21 +34,51 @@ label {
     font-size: 14px;
 }
 
+/* Login button — primary action */
 button {
     background-color: #3584e4;
     color: #ffffff;
     border-radius: 999px;
-    padding: 8px 24px;
+    padding: 10px 32px;
     border: none;
     font-family: "Roboto", sans-serif;
+    font-size: 15px;
     font-weight: 700;
+    min-height: 22px;
 }
 
 button:hover {
     background-color: #62a0ea;
 }
 
+button:active {
+    background-color: #1c71d8;
+}
+
+/* Session dropdown — subtle, secondary control */
 combobox {
-    color: #1e1e1e;
     font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: #5e5c64;
+}
+
+combobox button {
+    background: none;
+    border: 1px solid #d1d1d1;
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #5e5c64;
+    font-weight: 400;
+    font-size: 13px;
+    min-height: 16px;
+}
+
+combobox button:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    border-color: #b0b0b0;
+}
+
+combobox arrow {
+    color: #5e5c64;
+    -gtk-icon-size: 12px;
 }
