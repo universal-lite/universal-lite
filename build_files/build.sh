@@ -64,7 +64,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     greetd \
     grubby \
     grim \
-    gtkgreet \
     gvfs \
     gvfs-gphoto2 \
     gvfs-mtp \
@@ -146,6 +145,7 @@ chmod 0755 \
     /etc/xdg/labwc/autostart \
     /usr/bin/universal-lite-settings \
     /usr/bin/universal-lite-setup-wizard \
+    /usr/bin/universal-lite-greeter \
     /usr/libexec/universal-lite-apply-settings \
     /usr/libexec/universal-lite-encrypted-swap \
     /usr/libexec/universal-lite-flatpak-setup \
