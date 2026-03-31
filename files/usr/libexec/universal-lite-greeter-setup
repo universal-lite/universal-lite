@@ -1,30 +1,17 @@
 #!/bin/bash
-# Runs before greetd to configure the correct greeter command.
-# If no real users exist: point greetd at the setup wizard.
-# If users exist: point greetd at gtkgreet.
+# Ensure greetd config always points to the normal login greeter.
+# First-boot wizard is handled by universal-lite-first-boot.service.
 
 set -euo pipefail
 
 CONFIG="/etc/greetd/config.toml"
-
-# WLR_NO_HARDWARE_CURSORS: fixes upside-down/offset cursor on VMs and some GPUs
 CAGE="env WLR_NO_HARDWARE_CURSORS=1 cage -s --"
-
-if getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 {found=1} END {exit !found}'; then
-    # Users exist — normal login
-    COMMAND="$CAGE gtkgreet -l -s /etc/greetd/gtkgreet.css"
-    USER="greetd"
-else
-    # No users — first boot setup (needs root for useradd/chpasswd)
-    COMMAND="$CAGE /usr/bin/universal-lite-setup-wizard"
-    USER="root"
-fi
 
 cat > "$CONFIG" <<EOF
 [terminal]
 vt = 7
 
 [default_session]
-command = "$COMMAND"
-user = "$USER"
+command = "$CAGE gtkgreet -l -s /etc/greetd/gtkgreet.css"
+user = "greetd"
 EOF

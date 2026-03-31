@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Universal-Lite first-boot user creation wizard.
 
-Runs inside cage (kiosk Wayland compositor) on the login screen when no user
-accounts exist.  Creates a local user with sudo (wheel) access, configures
+Runs inside cage (kiosk Wayland compositor) via universal-lite-first-boot.service
+on first boot when no user accounts exist.  Creates a local user with sudo
+(wheel) access, configures
 timezone, swap, and optional Flatpak apps, then reboots into the normal
 login screen.
 
@@ -1392,15 +1393,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Failed to set user password: {exc}"
 
         # Add user to the video group for brightnessctl backlight access.
-        # Non-fatal: the group is declared in sysusers.d but may not exist
-        # yet on this boot if systemd-sysusers hasn't run.
         try:
             subprocess.run(
                 ["usermod", "-aG", "video", username],
                 check=True, capture_output=True, text=True, timeout=10,
             )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
-            pass  # Best-effort; sysusers.d ensures the group exists on next boot
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
+            return f"Failed to add user to video group: {exc}"
 
         return None
 
@@ -1667,6 +1666,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._progress_back_btn.set_visible(True)
 
     def _on_all_steps_done(self) -> None:
+        try:
+            stamp = Path("/var/lib/universal-lite/setup-done")
+            stamp.parent.mkdir(parents=True, exist_ok=True)
+            stamp.write_text("")
+        except OSError:
+            pass  # Non-fatal; wizard will re-run on next boot
         self._progress_title.set_text("Setup Complete!")
         self._progress_reboot_btn.set_visible(True)
 
@@ -1718,7 +1723,7 @@ def main() -> None:
     if os.getuid() != 0:
         sys.exit(
             "universal-lite-setup-wizard: must run as root "
-            "(launched via greetd firstboot path). Refusing to start."
+            "(launched via universal-lite-first-boot.service). Refusing to start."
         )
     app = SetupWizardApp()
     app.run(sys.argv)
