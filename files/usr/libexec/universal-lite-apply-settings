@@ -515,7 +515,7 @@ def write_waybar_config(tokens: dict) -> None:
     config["custom/launcher"] = {
         "format": " Apps ",
         "tooltip": False,
-        "on-click": "nwg-drawer -term foot",
+        "on-click": "wtype -M ctrl -k F12 -m ctrl",
     }
 
     config["wlr/taskbar"] = {

@@ -33,7 +33,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     foot \
     fuzzel \
     labwc-menu-generator \
-    nwg-drawer \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
     gammastep \
@@ -116,6 +115,19 @@ groupadd -f video
 
 install -d /etc/xdg/labwc
 labwc-menu-generator > /etc/xdg/labwc/menu.xml
+
+# Append system entries to the root-menu (shown by waybar Apps button via C-F12).
+# The root-menu's closing </menu> is the unindented one right before </openbox_menu>.
+sed -i '/^<\/menu>$/i \
+  <separator\/>\
+  <item label="Settings"><action name="Execute" command="universal-lite-settings"\/><\/item>\
+  <item label="File Manager"><action name="Execute" command="Thunar"\/><\/item>\
+  <item label="Terminal"><action name="Execute" command="foot"\/><\/item>\
+  <separator\/>\
+  <item label="Lock Screen"><action name="Execute" command="swaylock -f"\/><\/item>\
+  <item label="Log Out"><action name="Exit"\/><\/item>\
+  <item label="Restart"><action name="Execute" command="systemctl reboot"\/><\/item>\
+  <item label="Shut Down"><action name="Execute" command="systemctl poweroff"\/><\/item>' /etc/xdg/labwc/menu.xml
 
 # Append desktop right-click menu
 sed -i '/<\/openbox_menu>/i \
