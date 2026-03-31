@@ -2,5 +2,5 @@
 vt = 7
 
 [default_session]
-command = "env WLR_NO_HARDWARE_CURSORS=1 cage -s -- /usr/bin/universal-lite-greeter"
+command = "/usr/libexec/universal-lite-greeter-launch"
 user = "greetd"

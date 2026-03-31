@@ -1,0 +1,30 @@
+#!/bin/bash
+# Wrapper for the GTK4 greeter with crash fallback.
+# If the greeter crashes 3 times consecutively, fall back to a plain
+# TTY login so the user isn't locked out on a black screen.
+
+FAIL_COUNT_FILE="/run/universal-lite-greeter-failures"
+MAX_FAILURES=3
+
+# Read current failure count (0 if file doesn't exist)
+failures=0
+[ -f "$FAIL_COUNT_FILE" ] && failures=$(cat "$FAIL_COUNT_FILE")
+
+if [ "$failures" -ge "$MAX_FAILURES" ]; then
+    echo "Greeter crashed $failures times. Falling back to TTY login." >&2
+    echo "Fix the greeter, then: rm $FAIL_COUNT_FILE && systemctl restart greetd" >&2
+    exec /bin/login -f
+fi
+
+# Launch the greeter via cage
+env WLR_NO_HARDWARE_CURSORS=1 cage -s -- /usr/bin/universal-lite-greeter
+status=$?
+
+if [ "$status" -ne 0 ]; then
+    echo $(( failures + 1 )) > "$FAIL_COUNT_FILE"
+else
+    # Successful exit (login completed) — reset counter
+    rm -f "$FAIL_COUNT_FILE"
+fi
+
+exit "$status"

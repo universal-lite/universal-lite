@@ -27,41 +27,50 @@ APP_ID = "org.universallite.Greeter"
 LAST_USER_PATH = Path("/var/lib/universal-lite/last-user")
 GREETER_CONFIG_PATH = Path("/etc/universal-lite/greeter.json")
 SESSIONS_DIR = Path("/usr/share/wayland-sessions")
+PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 
 # ---------------------------------------------------------------------------
-#  Adwaita palettes (identical to apply-settings)
+#  Adwaita palettes — loaded from shared palette.json, extended for greeter
 # ---------------------------------------------------------------------------
 
-PALETTES = {
-    "light": {
-        "window_bg": "#fafafa",
-        "card_bg": "#ffffff",
-        "fg": "#1e1e1e",
-        "secondary_fg": "#5e5c64",
-        "border": "#d1d1d1",
-        "entry_bg": "#ffffff",
-        "accent": "#3584e4",
-        "accent_hover": "#62a0ea",
-        "accent_active": "#1c71d8",
-        "error": "#e62d42",
-        "hover": "rgba(0, 0, 0, 0.04)",
-        "card_shadow": "0 2px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)",
-    },
-    "dark": {
-        "window_bg": "#242424",
-        "card_bg": "#383838",
-        "fg": "#ffffff",
-        "secondary_fg": "#c0bfbc",
-        "border": "#4a4a4a",
-        "entry_bg": "#2e2e2e",
-        "accent": "#3584e4",
-        "accent_hover": "#62a0ea",
-        "accent_active": "#1c71d8",
-        "error": "#ff6b6b",
-        "hover": "rgba(255, 255, 255, 0.06)",
-        "card_shadow": "0 2px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)",
-    },
-}
+def _load_palettes() -> dict:
+    """Load base palette from shared JSON file and extend with greeter-specific tokens."""
+    try:
+        raw = json.loads(PALETTE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        # Hardcoded fallback if palette.json is missing (should not happen)
+        raw = {
+            "light": {"window_bg": "#fafafa", "card_bg": "#ffffff", "fg": "#1e1e1e",
+                       "secondary_fg": "#5e5c64", "border": "#d1d1d1"},
+            "dark": {"window_bg": "#242424", "card_bg": "#383838", "fg": "#ffffff",
+                      "secondary_fg": "#c0bfbc", "border": "#4a4a4a"},
+            "accents": {"blue": "#3584e4"},
+        }
+    accent = raw["accents"].get("blue", "#3584e4")
+    return {
+        "light": {
+            **raw["light"],
+            "entry_bg": raw["light"]["card_bg"],
+            "accent": accent,
+            "accent_hover": "#62a0ea",
+            "accent_active": "#1c71d8",
+            "error": raw["accents"].get("red", "#e62d42"),
+            "hover": "rgba(0, 0, 0, 0.04)",
+            "card_shadow": "0 2px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)",
+        },
+        "dark": {
+            **raw["dark"],
+            "entry_bg": "#2e2e2e",
+            "accent": accent,
+            "accent_hover": "#62a0ea",
+            "accent_active": "#1c71d8",
+            "error": "#ff6b6b",
+            "hover": "rgba(255, 255, 255, 0.06)",
+            "card_shadow": "0 2px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)",
+        },
+    }
+
+PALETTES = _load_palettes()
 
 
 def _load_theme() -> str:
