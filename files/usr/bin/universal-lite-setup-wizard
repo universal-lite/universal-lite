@@ -265,13 +265,8 @@ PAGE_PROGRESS = 5
 DEFAULT_FLATPAKS = [
     ("com.google.Chrome", "Google Chrome", "Web browser"),
     ("dev.bazaar.app", "Bazaar", "Browse and install apps"),
-]
-
-# Always installed alongside user-selected apps so GTK3 Flatpaks
-# use modern Adwaita styling instead of the dated GNOME 3 theme.
-FLATPAK_THEMES = [
-    "org.gtk.Gtk3theme.adw-gtk3",
-    "org.gtk.Gtk3theme.adw-gtk3-dark",
+    ("org.gtk.Gtk3theme.adw-gtk3", "Adwaita GTK3 Theme", "Modern styling for classic apps"),
+    ("org.gtk.Gtk3theme.adw-gtk3-dark", "Adwaita GTK3 Dark Theme", "Dark variant for classic apps"),
 ]
 
 FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
@@ -1556,18 +1551,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
             return f"Failed to add Flathub remote: {exc}"
 
-        # Install adw-gtk3 themes (so GTK3 Flatpaks get modern Adwaita styling)
-        for theme_id in FLATPAK_THEMES:
-            try:
-                subprocess.run(
-                    ["flatpak", "install", "--system", "--noninteractive",
-                     "flathub", theme_id],
-                    check=True, capture_output=True, text=True, timeout=120,
-                )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                pass  # Themes are nice-to-have, not fatal
-
-        # Install user-selected apps
+        # Install selected apps and themes
         failed: list[str] = []
         for app_id, app_name in selected_apps:
             try:
