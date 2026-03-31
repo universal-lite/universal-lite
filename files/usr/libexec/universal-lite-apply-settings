@@ -158,10 +158,21 @@ def _build_tokens(settings: dict) -> dict:
     edge = settings["edge"]
     is_vertical = edge in ("left", "right")
 
-    panel_height = 36 if density == "compact" else 46
-    panel_width = 56 if density == "compact" else 64
-    panel_spacing = 6 if density == "compact" else 10
-    panel_icon_size = 14 if density == "compact" else 18
+    # Scale panel dimensions proportionally with font size for accessibility.
+    # Base: font_size=11 → font_size_ui=13 → size_scale=1.0 (no change).
+    font_size_ui = settings.get("font_size", 11) + 2
+    size_scale = font_size_ui / 13
+
+    panel_height = round((36 if density == "compact" else 46) * size_scale)
+    panel_width = round((56 if density == "compact" else 64) * size_scale)
+    panel_spacing = round((6 if density == "compact" else 10) * size_scale)
+    panel_icon_size = round((14 if density == "compact" else 18) * size_scale)
+    panel_margin = round(8 * size_scale)
+    panel_pad_module = round(10 * size_scale)
+    panel_pad_launcher = round(14 * size_scale)
+    panel_pad_clock = round(14 * size_scale)
+    panel_pad_tray = round(6 * size_scale)
+    panel_pad_pin = round(8 * size_scale)
 
     if edge == "top":
         mako_anchor = "bottom-right"
@@ -205,11 +216,17 @@ def _build_tokens(settings: dict) -> dict:
         "font_size_mono": settings.get("font_size", 11),
         "cursor_size": settings.get("cursor_size", 24),
         "reduce_motion": settings.get("reduce_motion", False),
-        # Panel geometry
+        # Panel geometry (all scaled by font size)
         "panel_height": panel_height,
         "panel_width": panel_width,
         "panel_spacing": panel_spacing,
         "panel_icon_size": panel_icon_size,
+        "panel_margin": panel_margin,
+        "panel_pad_module": panel_pad_module,
+        "panel_pad_launcher": panel_pad_launcher,
+        "panel_pad_clock": panel_pad_clock,
+        "panel_pad_tray": panel_pad_tray,
+        "panel_pad_pin": panel_pad_pin,
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
@@ -356,6 +373,7 @@ def ensure_settings() -> dict:
 
 def _waybar_css_common(tokens: dict) -> str:
     r, g, b = _hex_to_rgb_tuple(tokens["surface_base"])
+    m = tokens["panel_margin"]
     return f"""\
 * {{
     font-family: "{tokens["font_ui"]}", sans-serif;
@@ -367,23 +385,26 @@ def _waybar_css_common(tokens: dict) -> str:
 
 window#waybar {{
     background: rgba({r}, {g}, {b}, 0.95);
-    border: 1px solid {tokens["border_strong"]};
     border-radius: 999px;
-    margin: 8px;
+    margin: {m}px;
 }}
 
 #custom-launcher {{
-    background: {tokens["accent_hex"]};
-    color: #ffffff;
+    background: {tokens["surface_card"]};
     border-radius: 999px;
-    font-weight: bold;
 }}
 
-#custom-launcher:hover {{ opacity: 0.85; }}
+#custom-launcher:hover {{ background: {tokens["state_hover"]}; }}
 
 #battery.warning {{ color: {tokens["color_warning"]}; }}
 #battery.critical {{ color: {tokens["color_error"]}; }}
 #pulseaudio.muted {{ color: {tokens["text_secondary"]}; }}
+
+#clock:hover, #battery:hover, #backlight:hover,
+#pulseaudio:hover, #custom-power:hover {{
+    background: {tokens["state_hover"]};
+    border-radius: 999px;
+}}
 
 tooltip {{
     background: {tokens["surface_card"]};
@@ -396,6 +417,11 @@ tooltip {{
 
 def _waybar_css_horizontal(tokens: dict) -> str:
     h = tokens["panel_height"]
+    pl = tokens["panel_pad_launcher"]
+    pm = tokens["panel_pad_module"]
+    pc = tokens["panel_pad_clock"]
+    pt = tokens["panel_pad_tray"]
+    pp = tokens["panel_pad_pin"]
     pinned = tokens.get("pinned", [])
 
     pin_css = ""
@@ -404,7 +430,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
         hover_selectors = ", ".join(f"#custom-pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
-    padding: 0 8px;
+    padding: 0 {pp}px;
     min-height: {h}px;
     border-radius: 999px;
 }}
@@ -412,11 +438,11 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 """
 
     return f"""
-#custom-launcher {{ padding: 0 16px; min-height: {h}px; }}
+#custom-launcher {{ padding: 0 {pl}px; min-height: {h}px; }}
 
 #taskbar {{ padding: 0; }}
 #taskbar button {{
-    padding: 0 8px;
+    padding: 0 {pp}px;
     border-radius: 999px;
     min-height: {h}px;
 }}
@@ -424,17 +450,22 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
-    padding: 0 10px;
+    padding: 0 {pm}px;
     min-height: {h}px;
+    border-radius: 999px;
 }}
 
-#clock {{ font-weight: bold; padding: 0 14px; }}
-#tray  {{ padding: 0 6px; }}
+#clock {{ font-weight: bold; padding: 0 {pc}px; }}
+#tray  {{ padding: 0 {pt}px; }}
 """
 
 
 def _waybar_css_vertical(tokens: dict) -> str:
     w = tokens["panel_width"]
+    pl = tokens["panel_pad_launcher"]
+    pm = tokens["panel_pad_module"]
+    pt = tokens["panel_pad_tray"]
+    pp = tokens["panel_pad_pin"]
     pinned = tokens.get("pinned", [])
 
     pin_css = ""
@@ -443,7 +474,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
         hover_selectors = ", ".join(f"#custom-pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
-    padding: 8px 0;
+    padding: {pp}px 0;
     min-width: {w}px;
     border-radius: 999px;
 }}
@@ -454,14 +485,14 @@ def _waybar_css_vertical(tokens: dict) -> str:
 window#waybar {{ min-width: {w}px; }}
 
 #custom-launcher {{
-    padding: 12px 0;
+    padding: {pl}px 0;
     min-width: {w}px;
     margin-bottom: 4px;
 }}
 
 #taskbar {{ padding: 0; }}
 #taskbar button {{
-    padding: 8px 0;
+    padding: {pp}px 0;
     border-radius: 999px;
     min-width: {w}px;
 }}
@@ -469,12 +500,13 @@ window#waybar {{ min-width: {w}px; }}
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
-    padding: 10px 0;
+    padding: {pm}px 0;
     min-width: {w}px;
+    border-radius: 999px;
 }}
 
 #clock {{ font-weight: bold; }}
-#tray  {{ padding: 6px 0; }}
+#tray  {{ padding: {pt}px 0; }}
 """
 
 
@@ -513,8 +545,10 @@ def write_waybar_config(tokens: dict) -> None:
 
     # Always define all module configs; Waybar only renders those in the module lists.
     config["custom/launcher"] = {
-        "format": " Apps ",
-        "tooltip": False,
+        "return-type": "json",
+        "exec": """echo '{"icon": "fedora-logo-icon", "tooltip": "Applications"}'""",
+        "interval": "once",
+        "format": "{icon}",
         "on-click": "wtype -M ctrl -k F12 -m ctrl",
     }
 
