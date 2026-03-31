@@ -286,14 +286,12 @@ class DisplayPage(BasePage):
 
     @staticmethod
     def _apply_resolution(output_name, mode_str):
-        # mode_str: "1920x1080@60.0Hz"
-        parts = mode_str.replace("Hz", "").split("@")
-        res = parts[0]
-        cmd = ["wlr-randr", "--output", output_name, "--mode", res]
-        if len(parts) > 1:
-            cmd = ["wlr-randr", "--output", output_name,
-                   "--custom-mode", mode_str]
-        subprocess.run(cmd, check=False)
+        # mode_str: "1920x1080@60.0Hz" — strip "Hz" for wlr-randr's --mode flag
+        mode_arg = mode_str.replace("Hz", "")
+        subprocess.run(
+            ["wlr-randr", "--output", output_name, "--mode", mode_arg],
+            check=False,
+        )
 
     def _show_res_revert_dialog(self, dropdown, output_name, modes, old_mode, new_mode):
         dialog = Gtk.Window(title="Confirm Resolution", modal=True)

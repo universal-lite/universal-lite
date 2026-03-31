@@ -74,3 +74,28 @@ def test_corrupted_file_resets_to_defaults(tmp_path):
         apply_script="/bin/true",
     )
     assert store.get("theme") == "light"
+
+
+def test_missing_defaults_file_returns_empty(tmp_path):
+    """App must not crash when the defaults file is absent."""
+    missing_defaults = tmp_path / "nonexistent_defaults.json"
+    settings_file = tmp_path / "settings.json"
+    store = SettingsStore(
+        settings_path=settings_file,
+        defaults_path=missing_defaults,
+        apply_script="/bin/true",
+    )
+    assert store.get("anything", "fallback") == "fallback"
+
+
+def test_corrupted_file_with_missing_defaults_returns_empty(tmp_path):
+    """Corrupt user file + missing defaults must not crash."""
+    missing_defaults = tmp_path / "nonexistent_defaults.json"
+    settings_file = tmp_path / "settings.json"
+    settings_file.write_text("{invalid json")
+    store = SettingsStore(
+        settings_path=settings_file,
+        defaults_path=missing_defaults,
+        apply_script="/bin/true",
+    )
+    assert store.get("anything", "fallback") == "fallback"

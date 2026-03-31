@@ -164,6 +164,14 @@ class NetworkManagerHelper:
     def connect_wifi(self, ssid: str, password: str | None, hidden: bool = False) -> None:
         if self._client is None or self._wifi_device is None:
             return
+        # Reuse existing saved connection when no new password is being supplied.
+        if not password and not hidden:
+            existing = self._find_connection_by_ssid(ssid)
+            if existing is not None:
+                self._client.activate_connection_async(
+                    existing, self._wifi_device, None, None, self._on_activate_done,
+                )
+                return
         conn = NM.SimpleConnection.new()
         s_con = NM.SettingConnection.new()
         s_con.set_property("type", "802-11-wireless")
@@ -194,6 +202,17 @@ class NetworkManagerHelper:
             else:
                 self._publish("network-connect-error", f"Connection failed: {err}")
 
+    def _on_activate_done(self, client: NM.Client, result: Gio.AsyncResult) -> None:
+        try:
+            client.activate_connection_finish(result)
+            self._publish("network-connect-success")
+        except Exception as exc:
+            err = str(exc)
+            if "802-11-wireless-security.psk" in err:
+                self._publish("network-connect-error", "Wrong password.")
+            else:
+                self._publish("network-connect-error", f"Connection failed: {err}")
+
     def disconnect_wifi(self) -> None:
         if self._client is None:
             return
@@ -210,6 +229,19 @@ class NetworkManagerHelper:
             if s_con and s_con.get_id() == ssid:
                 conn.delete_async(None, None)
                 break
+
+    def _find_connection_by_ssid(self, ssid: str) -> "NM.RemoteConnection | None":
+        if self._client is None:
+            return None
+        ssid_bytes = ssid.encode("utf-8")
+        for conn in self._client.get_connections():
+            s_wifi = conn.get_setting_wireless()
+            if s_wifi is None:
+                continue
+            stored = s_wifi.get_ssid()
+            if stored is not None and stored.get_data() == ssid_bytes:
+                return conn
+        return None
 
     def _get_active_wifi_ssid(self) -> str | None:
         if self._client is None:

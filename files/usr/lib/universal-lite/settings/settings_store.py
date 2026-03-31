@@ -29,15 +29,27 @@ class SettingsStore:
     def _load(self) -> dict:
         self._path.parent.mkdir(parents=True, exist_ok=True)
         if not self._path.exists():
-            default_text = self._defaults_path.read_text(encoding="utf-8")
-            self._path.write_text(default_text, encoding="utf-8")
-            return json.loads(default_text)
+            return self._load_defaults(write_to_user=True)
         try:
             return json.loads(self._path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
+            return self._load_defaults(write_to_user=True)
+
+    def _load_defaults(self, write_to_user: bool = False) -> dict:
+        try:
             default_text = self._defaults_path.read_text(encoding="utf-8")
-            self._path.write_text(default_text, encoding="utf-8")
-            return json.loads(default_text)
+        except OSError:
+            return {}
+        try:
+            data = json.loads(default_text)
+        except json.JSONDecodeError:
+            return {}
+        if write_to_user:
+            try:
+                self._path.write_text(default_text, encoding="utf-8")
+            except OSError:
+                pass
+        return data
 
     def get(self, key: str, default=None):
         return self._data.get(key, default)

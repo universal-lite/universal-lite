@@ -81,7 +81,8 @@ class AboutPage(BasePage):
 
         labwc_ver = "unknown"
         try:
-            labwc_ver = subprocess.run(["labwc", "--version"], capture_output=True, text=True).stdout.strip()
+            r = subprocess.run(["labwc", "--version"], capture_output=True, text=True)
+            labwc_ver = (r.stderr.strip() or r.stdout.strip()) or "unknown"
         except FileNotFoundError:
             pass
         page.append(self.make_info_row("Desktop", f"labwc {labwc_ver}"))

@@ -75,14 +75,21 @@ class BasePage:
     def make_toggle_cards(options: list[tuple[str, str]], active: str, callback) -> Gtk.Box:
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         buttons: list[Gtk.ToggleButton] = []
+        _updating = [False]
 
         def _on_toggled(btn: Gtk.ToggleButton, value: str) -> None:
-            if not btn.get_active():
-                btn.set_active(True)
+            if _updating[0]:
                 return
+            if not btn.get_active():
+                _updating[0] = True
+                btn.set_active(True)
+                _updating[0] = False
+                return
+            _updating[0] = True
             for other in buttons:
-                if other is not btn and other.get_active():
+                if other is not btn:
                     other.set_active(False)
+            _updating[0] = False
             callback(value)
 
         for value, label in options:

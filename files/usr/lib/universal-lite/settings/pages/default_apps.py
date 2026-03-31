@@ -38,19 +38,21 @@ class DefaultAppsPage(BasePage):
                 continue
             desktop_ids = [did for did, _ in apps]
             display_names = [name for _, name in apps]
+            _loading = [True]
             dropdown = Gtk.DropDown.new_from_strings(display_names)
             current = self._get_default_app(mime_type)
             try:
                 dropdown.set_selected(desktop_ids.index(current))
             except ValueError:
                 dropdown.set_selected(0)
+            _loading[0] = False
             if mime_type is None:
                 # Terminal: write a wrapper desktop file so the choice takes effect
-                dropdown.connect("notify::selected", lambda d, _, ids=desktop_ids:
-                    self._set_terminal_by_id(ids[d.get_selected()]))
+                dropdown.connect("notify::selected", lambda d, _, ids=desktop_ids, _l=_loading:
+                    None if _l[0] else self._set_terminal_by_id(ids[d.get_selected()]))
             else:
-                dropdown.connect("notify::selected", lambda d, _, mt=mime_type, ids=desktop_ids:
-                    subprocess.run(["xdg-mime", "default", ids[d.get_selected()], mt], check=False))
+                dropdown.connect("notify::selected", lambda d, _, mt=mime_type, ids=desktop_ids, _l=_loading:
+                    None if _l[0] else subprocess.run(["xdg-mime", "default", ids[d.get_selected()], mt], check=False))
             page.append(self.make_setting_row(label, "", dropdown))
         return page
 

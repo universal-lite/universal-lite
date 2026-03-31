@@ -31,7 +31,14 @@ class AccessibilityPage(BasePage):
         large_text.set_active(self.store.get("font_size", 11) >= 15)
 
         def _on_large_text(_, state):
-            self.store.save_and_apply("font_size", 15 if state else 11)
+            if state:
+                prev = self.store.get("font_size", 11)
+                if prev < 15:
+                    self.store.save_and_apply("_large_text_prev_font", prev)
+                self.store.save_and_apply("font_size", 15)
+            else:
+                prev = self.store.get("_large_text_prev_font", 11)
+                self.store.save_and_apply("font_size", prev)
             return False
 
         large_text.connect("state-set", _on_large_text)
