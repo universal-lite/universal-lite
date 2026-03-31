@@ -267,6 +267,13 @@ DEFAULT_FLATPAKS = [
     ("dev.bazaar.app", "Bazaar", "Browse and install apps"),
 ]
 
+# Always installed alongside user-selected apps so GTK3 Flatpaks
+# use modern Adwaita styling instead of the dated GNOME 3 theme.
+FLATPAK_THEMES = [
+    "org.gtk.Gtk3theme.adw-gtk3",
+    "org.gtk.Gtk3theme.adw-gtk3-dark",
+]
+
 FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
 
 
@@ -1523,8 +1530,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         return None
 
-    def _step_schedule_flatpak(self, selected_apps: list[tuple[str, str]]) -> str | None:
-        """Write app list and enable boot-time Flatpak installer service."""
+    def _step_install_flatpaks(self, selected_apps: list[tuple[str, str]]) -> str | None:
+        """Install Flatpak apps directly. Falls back to boot-time service on skip."""
+        # Write app list and enable service as fallback (if user skips)
         try:
             app_dir = Path("/var/lib/universal-lite")
             app_dir.mkdir(parents=True, exist_ok=True)
@@ -1535,10 +1543,51 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 ["systemctl", "enable", "universal-lite-flatpak-setup.service"],
                 check=True, capture_output=True, text=True, timeout=15,
             )
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
+            pass  # Fallback setup is best-effort; direct install is primary
+
+        # Add Flathub remote
+        try:
+            subprocess.run(
+                ["flatpak", "remote-add", "--system", "--if-not-exists",
+                 "flathub", FLATHUB_URL],
+                check=True, capture_output=True, text=True, timeout=60,
+            )
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to schedule app install: {exc}"
-        except OSError as exc:
-            return f"Failed to schedule app install: {exc}"
+            return f"Failed to add Flathub remote: {exc}"
+
+        # Install adw-gtk3 themes (so GTK3 Flatpaks get modern Adwaita styling)
+        for theme_id in FLATPAK_THEMES:
+            try:
+                subprocess.run(
+                    ["flatpak", "install", "--system", "--noninteractive",
+                     "flathub", theme_id],
+                    check=True, capture_output=True, text=True, timeout=120,
+                )
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                pass  # Themes are nice-to-have, not fatal
+
+        # Install user-selected apps
+        failed: list[str] = []
+        for app_id, app_name in selected_apps:
+            try:
+                subprocess.run(
+                    ["flatpak", "install", "--system", "--noninteractive",
+                     "flathub", app_id],
+                    check=True, capture_output=True, text=True, timeout=300,
+                )
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                failed.append(app_name)
+
+        if failed:
+            return f"Failed to install: {', '.join(failed)}"
+
+        # All succeeded — write stamp so boot-time service doesn't re-run
+        try:
+            (Path("/var/lib/universal-lite") / "flatpak-setup.done").write_text("")
+        except OSError:
+            pass
+
         return None
 
     # ------------------------------------------------------------------
@@ -1567,9 +1616,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         selected_apps = self._get_selected_apps()
         if selected_apps:
             self._steps.append((
-                "Scheduling app installation",
-                lambda apps=selected_apps: self._step_schedule_flatpak(apps),
-                False,
+                "Installing apps",
+                lambda apps=selected_apps: self._step_install_flatpaks(apps),
+                True,
             ))
 
         # Build progress UI
