@@ -45,6 +45,7 @@ PALETTES = {
         "accent_active": "#1c71d8",
         "error": "#e62d42",
         "hover": "rgba(0, 0, 0, 0.04)",
+        "card_shadow": "0 2px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)",
     },
     "dark": {
         "window_bg": "#242424",
@@ -58,6 +59,7 @@ PALETTES = {
         "accent_active": "#1c71d8",
         "error": "#ff6b6b",
         "hover": "rgba(255, 255, 255, 0.06)",
+        "card_shadow": "0 2px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)",
     },
 }
 
@@ -99,8 +101,7 @@ window {{
     background-color: {p["card_bg"]};
     border-radius: 16px;
     padding: 40px 36px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08),
-                0 0 0 1px rgba(0, 0, 0, 0.06);
+    box-shadow: {p["card_shadow"]};
 }}
 
 .greeting {{
@@ -125,6 +126,10 @@ window {{
 .form-entry:focus, .form-entry:focus-within {{
     border-color: {p["accent"]};
     box-shadow: 0 0 0 2px rgba(53, 132, 228, 0.25);
+}}
+
+.form-entry image {{
+    color: {p["secondary_fg"]};
 }}
 
 .error-label {{
@@ -521,8 +526,10 @@ class GreeterWindow(Gtk.ApplicationWindow):
             self._start_session()
             return
         elif resp.get("type") == "error":
-            self._show_error(resp.get("description", "Unknown error"))
+            # User may no longer exist (stale last-user) — fall back to username entry
             self._session_active = False
+            self._show_username_state()
+            self._show_error(resp.get("description", "Unknown error"))
             return
 
     def _on_submit(self) -> None:
