@@ -122,7 +122,7 @@ window {{
     min-height: 22px;
 }}
 
-.form-entry:focus {{
+.form-entry:focus, .form-entry:focus-within {{
     border-color: {p["accent"]};
     box-shadow: 0 0 0 2px rgba(53, 132, 228, 0.25);
 }}
@@ -149,6 +149,7 @@ window {{
 
 .login-button:hover {{ background: {p["accent_hover"]}; }}
 .login-button:active {{ background: {p["accent_active"]}; }}
+.login-button:disabled {{ background: {p["border"]}; color: {p["secondary_fg"]}; }}
 
 .switch-user {{
     font-family: "Roboto", sans-serif;
@@ -495,11 +496,22 @@ class GreeterWindow(Gtk.ApplicationWindow):
                 # Password prompt — already showing password entry
                 return
             elif msg_type == "info":
-                # Info message from PAM — acknowledge and wait
+                # Info message from PAM — acknowledge and read follow-up
                 try:
-                    self._greetd.post_auth_response(None)
-                except Exception:
-                    pass
+                    follow_up = self._greetd.post_auth_response(None)
+                except Exception as exc:
+                    self._show_error(f"Connection error: {exc}")
+                    return
+                # Follow-up is typically the real password prompt
+                if follow_up.get("type") == "auth_message" and follow_up.get("auth_message_type") == "secret":
+                    return  # Password entry already shown
+                elif follow_up.get("type") == "success":
+                    self._start_session()
+                    return
+                elif follow_up.get("type") == "error":
+                    self._show_error(follow_up.get("description", "Authentication error"))
+                    self._session_active = False
+                    return
                 return
             elif msg_type == "error":
                 self._show_error(resp.get("auth_message", "Authentication error"))
@@ -593,7 +605,12 @@ class GreeterWindow(Gtk.ApplicationWindow):
 
     def _reset_auth(self) -> None:
         """Reset after auth failure: cancel session, re-create, clear password."""
-        self._session_active = False
+        if self._session_active:
+            try:
+                self._greetd.cancel_session()
+            except Exception:
+                pass
+            self._session_active = False
         self._submit_btn.set_sensitive(True)
         self._password_entry.set_text("")
         self._password_entry.grab_focus()

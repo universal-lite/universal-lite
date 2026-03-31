@@ -1654,9 +1654,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _on_all_steps_done(self) -> None:
         try:
-            stamp = Path("/var/lib/universal-lite/setup-done")
-            stamp.parent.mkdir(parents=True, exist_ok=True)
-            stamp.write_text("")
+            state_dir = Path("/var/lib/universal-lite")
+            state_dir.mkdir(parents=True, exist_ok=True)
+            (state_dir / "setup-done").write_text("")
+            # Pre-populate last-user for the greeter (greeter runs as
+            # greetd user and can't write to this root-owned directory)
+            (state_dir / "last-user").write_text(self._setup_username + "\n")
         except OSError:
             pass  # Non-fatal; wizard will re-run on next boot
         self._progress_title.set_text("Setup Complete!")
