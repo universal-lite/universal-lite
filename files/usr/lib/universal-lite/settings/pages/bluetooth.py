@@ -185,3 +185,6 @@ class BluetoothPage(BasePage):
             GLib.source_remove(self._scan_timer)
             self._scan_timer = None
         self._bt.stop_discovery()
+        if self._scan_btn:
+            self._scan_btn.set_sensitive(True)
+            self._scan_btn.set_label("Search for devices")

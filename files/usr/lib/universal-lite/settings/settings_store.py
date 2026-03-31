@@ -78,6 +78,10 @@ class SettingsStore:
     def set_toast_callback(self, callback) -> None:
         self._toast_callback = callback
 
+    def show_toast(self, message: str, is_error: bool = False) -> None:
+        if self._toast_callback is not None:
+            self._toast_callback(message, is_error)
+
     def _write(self) -> None:
         tmp = self._path.with_suffix(".tmp")
         tmp.write_text(

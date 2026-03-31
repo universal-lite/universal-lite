@@ -40,7 +40,7 @@ class DateTimePage(BasePage):
         tz_entry.set_text(self._get_timezone())
         tz_entry.set_placeholder_text("e.g. America/New_York")
         tz_entry.set_size_request(280, -1)
-        tz_entry.connect("activate", lambda e: self._set_timezone(e.get_text().strip()))
+        tz_entry.connect("activate", lambda e: self._set_timezone(e.get_text().strip(), e))
         page.append(self.make_setting_row("Timezone", "Press Enter to apply", tz_entry))
 
         # Automatic time (NTP)
@@ -83,10 +83,18 @@ class DateTimePage(BasePage):
         except FileNotFoundError:
             return "UTC"
 
-    @staticmethod
-    def _set_timezone(tz):
-        subprocess.run(["timedatectl", "set-timezone", tz], check=False,
-                       capture_output=True)
+    def _set_timezone(self, tz, entry=None):
+        result = subprocess.run(
+            ["timedatectl", "set-timezone", tz],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            self.store.show_toast("Invalid timezone", True)
+            if entry is not None:
+                entry.add_css_class("error")
+        elif entry is not None:
+            entry.remove_css_class("error")
 
     @staticmethod
     def _get_ntp():

@@ -36,11 +36,13 @@ class UsersPage(BasePage):
             ("Users", "Account"),
         ]
 
+    _DBUS_TIMEOUT_MS = 5000
+
     def _ensure_dbus(self):
         """Lazily connect to the system bus and find the current user's object path."""
         if self._bus is not None:
             return
-        self._bus = Gio.bus_get_sync(Gio.BusType.SYSTEM)
+        self._bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         uid = os.getuid()
         result = self._bus.call_sync(
             "org.freedesktop.Accounts",
@@ -49,7 +51,7 @@ class UsersPage(BasePage):
             "FindUserById",
             GLib.Variant("(x)", (uid,)),
             GLib.VariantType("(o)"),
-            Gio.DBusCallFlags.NONE, -1, None,
+            Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
         )
         self._user_path = result.unpack()[0]
 
@@ -59,7 +61,7 @@ class UsersPage(BasePage):
             "org.freedesktop.Accounts", self._user_path,
             "org.freedesktop.DBus.Properties", "Get",
             GLib.Variant("(ss)", ("org.freedesktop.Accounts.User", prop_name)),
-            GLib.VariantType("(v)"), Gio.DBusCallFlags.NONE, -1, None,
+            GLib.VariantType("(v)"), Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
         )
         return result.unpack()[0]
 

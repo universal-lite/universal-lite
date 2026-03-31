@@ -61,6 +61,7 @@ class NetworkManagerHelper:
         try:
             self._client = NM.Client.new_finish(result)
         except Exception:
+            self._publish("nm-unavailable")
             return
         for dev in self._client.get_devices():
             if isinstance(dev, NM.DeviceWifi):
@@ -526,40 +527,49 @@ class PowerProfilesHelper:
 # ---------------------------------------------------------------------------
 
 class PulseAudioSubscriber:
-    """Runs `pactl subscribe` in background thread, publishes audio-changed events."""
+    """Runs `pactl subscribe` in background thread, publishes audio-changed events.
+    Automatically reconnects if the audio server restarts."""
 
     def __init__(self, event_bus: EventBus) -> None:
         self._event_bus = event_bus
         self._proc: subprocess.Popen | None = None
+        self._stopped = False
         self._start()
 
     def _start(self) -> None:
         import shutil
         import threading
+        import time
 
         if shutil.which("pactl") is None:
             return
-        try:
-            self._proc = subprocess.Popen(
-                ["pactl", "subscribe"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
-                text=True,
-            )
-        except FileNotFoundError:
-            return
 
         def _reader():
-            for line in self._proc.stdout:
-                line = line.strip()
-                if not line:
-                    continue
-                if any(kw in line for kw in ("sink", "source", "server")):
-                    self._event_bus.publish("audio-changed")
+            while not self._stopped:
+                try:
+                    self._proc = subprocess.Popen(
+                        ["pactl", "subscribe"],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.DEVNULL,
+                        text=True,
+                    )
+                    for line in self._proc.stdout:
+                        if self._stopped:
+                            break
+                        line = line.strip()
+                        if not line:
+                            continue
+                        if any(kw in line for kw in ("sink", "source", "server")):
+                            self._event_bus.publish("audio-changed")
+                except Exception:
+                    pass
+                if not self._stopped:
+                    time.sleep(2)
 
         threading.Thread(target=_reader, daemon=True).start()
 
     def stop(self) -> None:
+        self._stopped = True
         if self._proc is not None:
             self._proc.terminate()
             try:

@@ -88,11 +88,16 @@ class SettingsWindow(Gtk.ApplicationWindow):
         from .pages import ALL_PAGES
 
         for icon_name, label, page_cls in ALL_PAGES:
+            try:
+                page = page_cls(self._store, self._event_bus)
+                widget = page.build()
+            except Exception:
+                page = None
+                widget = Gtk.Label(label=f"Failed to load {label}", xalign=0)
+                widget.add_css_class("setting-subtitle")
+
             row = self._build_sidebar_row(icon_name, label)
             self._sidebar.append(row)
-
-            page = page_cls(self._store, self._event_bus)
-            widget = page.build()
             self._stack.add_named(widget, label)
             self._page_names.append(label)
             self._pages.append(page)
@@ -130,6 +135,8 @@ class SettingsWindow(Gtk.ApplicationWindow):
 
         matching: set[int] = set()
         for i, page in enumerate(self._pages):
+            if page is None:
+                continue
             for group, setting in page.search_keywords:
                 if text in group.lower() or text in setting.lower():
                     matching.add(i)

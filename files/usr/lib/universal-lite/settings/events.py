@@ -18,4 +18,10 @@ class EventBus:
 
     def publish(self, event: str, data=None) -> None:
         for cb in list(self._subscribers.get(event, [])):
-            GLib.idle_add(cb, data)
+            def _deliver(callback=cb, payload=data):
+                try:
+                    callback(payload)
+                except Exception:
+                    pass
+                return GLib.SOURCE_REMOVE
+            GLib.idle_add(_deliver)

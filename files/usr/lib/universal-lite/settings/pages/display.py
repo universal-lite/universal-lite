@@ -21,8 +21,10 @@ class DisplayPage(BasePage):
         self._scale_buttons: list[Gtk.ToggleButton] = []
         self._revert_timer_id: int | None = None
         self._revert_seconds: int = 15
+        self._revert_dialog: Gtk.Window | None = None
         self._res_revert_timer_id: int | None = None
         self._res_revert_seconds: int = 15
+        self._res_revert_dialog: Gtk.Window | None = None
 
     @property
     def search_keywords(self):
@@ -164,6 +166,12 @@ class DisplayPage(BasePage):
     # ── Display Scale helpers ──
 
     def _apply_scale(self, new_scale):
+        if self._revert_timer_id is not None:
+            GLib.source_remove(self._revert_timer_id)
+            self._revert_timer_id = None
+        if self._revert_dialog is not None:
+            self._revert_dialog.destroy()
+            self._revert_dialog = None
         old_scale = self.store.get("scale", 1.0)
         self._set_scale(new_scale)
         self._show_revert_dialog(old_scale, new_scale)
@@ -207,6 +215,7 @@ class DisplayPage(BasePage):
         btn_box.append(keep_btn)
         box.append(btn_box)
         dialog.set_child(box)
+        self._revert_dialog = dialog
         self._revert_timer_id = GLib.timeout_add_seconds(
             1, self._tick_revert, label, dialog, old_scale,
         )
@@ -225,6 +234,7 @@ class DisplayPage(BasePage):
         if self._revert_timer_id is not None:
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
+        self._revert_dialog = None
         self._set_scale(old_scale)
         self._sync_buttons(old_scale)
         dialog.destroy()
@@ -233,6 +243,7 @@ class DisplayPage(BasePage):
         if self._revert_timer_id is not None:
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
+        self._revert_dialog = None
         self.store.save_and_apply("scale", new_scale)
         self._sync_buttons(new_scale)
         dialog.destroy()
@@ -281,6 +292,12 @@ class DisplayPage(BasePage):
         new_mode = modes[dd.get_selected()]
         if new_mode == old_mode:
             return
+        if self._res_revert_timer_id is not None:
+            GLib.source_remove(self._res_revert_timer_id)
+            self._res_revert_timer_id = None
+        if self._res_revert_dialog is not None:
+            self._res_revert_dialog.destroy()
+            self._res_revert_dialog = None
         self._apply_resolution(output_name, new_mode)
         self._show_res_revert_dialog(dd, output_name, modes, old_mode, new_mode)
 
@@ -323,6 +340,7 @@ class DisplayPage(BasePage):
         btn_box.append(keep_btn)
         box.append(btn_box)
         dialog.set_child(box)
+        self._res_revert_dialog = dialog
         self._res_revert_timer_id = GLib.timeout_add_seconds(
             1, self._tick_res_revert, label, dialog, dropdown, output_name, modes, old_mode,
         )
@@ -344,6 +362,7 @@ class DisplayPage(BasePage):
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
+        self._res_revert_dialog = None
         self._apply_resolution(output_name, old_mode)
         if old_mode in modes:
             dropdown.set_selected(modes.index(old_mode))
@@ -353,4 +372,5 @@ class DisplayPage(BasePage):
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
+        self._res_revert_dialog = None
         dialog.destroy()

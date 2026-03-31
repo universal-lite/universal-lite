@@ -1,9 +1,10 @@
 import subprocess
+import threading
 
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk
 
 from ..base import BasePage
 
@@ -130,7 +131,12 @@ class PowerLockPage(BasePage):
                 btn.set_active(active)
 
     def _on_lid_action_changed(self, action):
-        self.store.save_and_apply("lid_close_action", action)
-        subprocess.Popen(
-            ["pkexec", "/usr/libexec/universal-lite-lid-action", action],
-        )
+        def _run():
+            result = subprocess.run(
+                ["pkexec", "/usr/libexec/universal-lite-lid-action", action],
+                capture_output=True,
+            )
+            if result.returncode == 0:
+                GLib.idle_add(lambda: self.store.save_and_apply("lid_close_action", action) or False)
+
+        threading.Thread(target=_run, daemon=True).start()
