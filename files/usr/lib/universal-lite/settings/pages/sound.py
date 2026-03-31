@@ -116,26 +116,35 @@ class SoundPage(BasePage):
             return
         idx = dropdown.get_selected()
         if self._sink_names and idx < len(self._sink_names):
-            subprocess.run(
-                ["pactl", "set-default-sink", self._sink_names[idx]],
-                capture_output=True,
-            )
+            try:
+                subprocess.run(
+                    ["pactl", "set-default-sink", self._sink_names[idx]],
+                    capture_output=True, timeout=5,
+                )
+            except (subprocess.TimeoutExpired, OSError):
+                pass
 
     def _on_out_vol_changed(self, scale):
         if self._updating:
             return
-        subprocess.run(
-            ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{int(scale.get_value())}%"],
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{int(scale.get_value())}%"],
+                capture_output=True, timeout=5,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            pass
 
     def _on_out_mute_set(self, _switch, state):
         if self._updating:
             return False
-        subprocess.run(
-            ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "1" if state else "0"],
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "1" if state else "0"],
+                capture_output=True, timeout=5,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            pass
         return False
 
     def _on_source_selected(self, dropdown, _pspec):
@@ -143,26 +152,35 @@ class SoundPage(BasePage):
             return
         idx = dropdown.get_selected()
         if self._source_names and idx < len(self._source_names):
-            subprocess.run(
-                ["pactl", "set-default-source", self._source_names[idx]],
-                capture_output=True,
-            )
+            try:
+                subprocess.run(
+                    ["pactl", "set-default-source", self._source_names[idx]],
+                    capture_output=True, timeout=5,
+                )
+            except (subprocess.TimeoutExpired, OSError):
+                pass
 
     def _on_in_vol_changed(self, scale):
         if self._updating:
             return
-        subprocess.run(
-            ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"{int(scale.get_value())}%"],
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"{int(scale.get_value())}%"],
+                capture_output=True, timeout=5,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            pass
 
     def _on_in_mute_set(self, _switch, state):
         if self._updating:
             return False
-        subprocess.run(
-            ["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "1" if state else "0"],
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                ["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "1" if state else "0"],
+                capture_output=True, timeout=5,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            pass
         return False
 
     # -- Live event handling --
@@ -228,48 +246,53 @@ class SoundPage(BasePage):
     @staticmethod
     def _get_sinks():
         try:
-            r = subprocess.run(["pactl", "-f", "json", "list", "sinks"], capture_output=True, text=True)
+            r = subprocess.run(["pactl", "-f", "json", "list", "sinks"],
+                               capture_output=True, text=True, timeout=5)
             return [(s["name"], s.get("description", s["name"])) for s in json.loads(r.stdout)]
-        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError):
             return []
 
     @staticmethod
     def _get_default_sink():
         try:
-            return subprocess.run(["pactl", "get-default-sink"], capture_output=True, text=True).stdout.strip()
-        except FileNotFoundError:
+            return subprocess.run(["pactl", "get-default-sink"],
+                                  capture_output=True, text=True, timeout=5).stdout.strip()
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return ""
 
     @staticmethod
     def _get_sources():
         try:
-            r = subprocess.run(["pactl", "-f", "json", "list", "sources"], capture_output=True, text=True)
+            r = subprocess.run(["pactl", "-f", "json", "list", "sources"],
+                               capture_output=True, text=True, timeout=5)
             return [(s["name"], s.get("description", s["name"]))
                     for s in json.loads(r.stdout) if ".monitor" not in s["name"]]
-        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError):
             return []
 
     @staticmethod
     def _get_default_source():
         try:
-            return subprocess.run(["pactl", "get-default-source"], capture_output=True, text=True).stdout.strip()
-        except FileNotFoundError:
+            return subprocess.run(["pactl", "get-default-source"],
+                                  capture_output=True, text=True, timeout=5).stdout.strip()
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return ""
 
     @staticmethod
     def _get_volume(target, is_source=False):
         cmd = "get-source-volume" if is_source else "get-sink-volume"
         try:
-            r = subprocess.run(["pactl", cmd, target], capture_output=True, text=True)
+            r = subprocess.run(["pactl", cmd, target], capture_output=True, text=True, timeout=5)
             m = re.search(r"(\d+)%", r.stdout)
             return int(m.group(1)) if m else 50
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return 50
 
     @staticmethod
     def _get_mute(target, is_source=False):
         cmd = "get-source-mute" if is_source else "get-sink-mute"
         try:
-            return "yes" in subprocess.run(["pactl", cmd, target], capture_output=True, text=True).stdout.lower()
-        except FileNotFoundError:
+            return "yes" in subprocess.run(["pactl", cmd, target],
+                                           capture_output=True, text=True, timeout=5).stdout.lower()
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return False

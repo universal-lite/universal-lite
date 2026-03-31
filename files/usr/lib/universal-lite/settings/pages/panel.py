@@ -168,7 +168,8 @@ class PanelPage(BasePage):
     # -- Pinned apps --
 
     def _build_pinned_apps(self):
-        self._pinned_data = list(self.store.get("pinned", []))
+        raw = self.store.get("pinned", [])
+        self._pinned_data = list(raw) if isinstance(raw, list) else []
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         self._pinned_list = Gtk.ListBox()
         self._pinned_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -302,5 +303,6 @@ class PanelPage(BasePage):
         self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
         self._refresh_module_lists()
         self.store.save_and_apply("layout", self._layout_data)
-        self._pinned_data = list(self.store.get("pinned", []))
+        raw = self.store.get("pinned", [])
+        self._pinned_data = list(raw) if isinstance(raw, list) else []
         self._refresh_pinned_list()

@@ -1,3 +1,5 @@
+import sys
+
 from gi.repository import GLib
 
 
@@ -21,7 +23,7 @@ class EventBus:
             def _deliver(callback=cb, payload=data):
                 try:
                     callback(payload)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    print(f"EventBus: callback error in {event!r}: {exc!r}", file=sys.stderr)
                 return GLib.SOURCE_REMOVE
             GLib.idle_add(_deliver)

@@ -11,14 +11,19 @@ from ..base import BasePage
 
 def _hash_password(plaintext: str) -> str:
     """Return a SHA-512 crypt(3) hash suitable for AccountsService.SetPassword."""
-    result = subprocess.run(
-        ["openssl", "passwd", "-6", "-stdin"],
-        input=plaintext,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return result.stdout.strip()
+    try:
+        import crypt
+        return crypt.crypt(plaintext, crypt.mksalt(crypt.METHOD_SHA512))
+    except ImportError:
+        # crypt removed in Python 3.13+; fall back to openssl
+        result = subprocess.run(
+            ["openssl", "passwd", "-6", "-stdin"],
+            input=plaintext,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return result.stdout.strip()
 
 
 class UsersPage(BasePage):

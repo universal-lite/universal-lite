@@ -549,8 +549,11 @@ class KeyboardPage(BasePage):
             if i < len(self._shortcut_buttons) and self._shortcut_buttons[i]:
                 self._shortcut_buttons[i].set_label(_human_key_label(binding["key"]))
         # Delete user overrides and reconfigure
-        if USER_KEYBINDINGS.exists():
-            USER_KEYBINDINGS.unlink()
+        try:
+            if USER_KEYBINDINGS.exists():
+                USER_KEYBINDINGS.unlink()
+        except OSError:
+            pass
         # Trigger apply-settings to regenerate rc.xml without custom keybindings
         self.store.save_and_apply(
             "keyboard_repeat_delay",
@@ -578,15 +581,21 @@ class KeyboardPage(BasePage):
     @staticmethod
     def _get_layouts():
         try:
-            r = subprocess.run(["localectl", "list-x11-keymap-layouts"], capture_output=True, text=True)
+            r = subprocess.run(
+                ["localectl", "list-x11-keymap-layouts"],
+                capture_output=True, text=True, timeout=10,
+            )
             return [l.strip() for l in r.stdout.splitlines() if l.strip()]
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return ["us"]
 
     @staticmethod
     def _get_variants(layout):
         try:
-            r = subprocess.run(["localectl", "list-x11-keymap-variants", layout], capture_output=True, text=True)
+            r = subprocess.run(
+                ["localectl", "list-x11-keymap-variants", layout],
+                capture_output=True, text=True, timeout=10,
+            )
             return [v.strip() for v in r.stdout.splitlines() if v.strip()]
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return []

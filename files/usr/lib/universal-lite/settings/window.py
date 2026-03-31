@@ -1,3 +1,5 @@
+import sys
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -91,7 +93,8 @@ class SettingsWindow(Gtk.ApplicationWindow):
             try:
                 page = page_cls(self._store, self._event_bus)
                 widget = page.build()
-            except Exception:
+            except Exception as exc:
+                print(f"Settings: failed to load page {label!r}: {exc!r}", file=sys.stderr)
                 page = None
                 widget = Gtk.Label(label=f"Failed to load {label}", xalign=0)
                 widget.add_css_class("setting-subtitle")

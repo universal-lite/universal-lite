@@ -336,7 +336,7 @@ class DisplayPage(BasePage):
         btn_box.append(revert_btn)
         keep_btn = Gtk.Button(label="Keep")
         keep_btn.add_css_class("suggested-action")
-        keep_btn.connect("clicked", lambda _: self._res_keep(dialog))
+        keep_btn.connect("clicked", lambda _: self._res_keep(dialog, output_name, new_mode))
         btn_box.append(keep_btn)
         box.append(btn_box)
         dialog.set_child(box)
@@ -368,9 +368,10 @@ class DisplayPage(BasePage):
             dropdown.set_selected(modes.index(old_mode))
         dialog.destroy()
 
-    def _res_keep(self, dialog):
+    def _res_keep(self, dialog, output_name, new_mode):
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         self._res_revert_dialog = None
+        self.store.save_and_apply(f"resolution_{output_name}", new_mode)
         dialog.destroy()

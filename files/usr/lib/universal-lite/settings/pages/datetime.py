@@ -78,9 +78,9 @@ class DateTimePage(BasePage):
     def _get_timezone():
         try:
             r = subprocess.run(["timedatectl", "show", "--property=Timezone", "--value"],
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, timeout=5)
             return r.stdout.strip()
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return "UTC"
 
     def _set_timezone(self, tz, entry=None):
@@ -88,6 +88,7 @@ class DateTimePage(BasePage):
             ["timedatectl", "set-timezone", tz],
             capture_output=True,
             text=True,
+            timeout=5,
         )
         if result.returncode != 0:
             self.store.show_toast("Invalid timezone", True)
@@ -100,12 +101,15 @@ class DateTimePage(BasePage):
     def _get_ntp():
         try:
             r = subprocess.run(["timedatectl", "show", "--property=NTP", "--value"],
-                               capture_output=True, text=True)
+                               capture_output=True, text=True, timeout=5)
             return r.stdout.strip().lower() == "yes"
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
 
     @staticmethod
     def _set_ntp(enabled):
-        subprocess.run(["timedatectl", "set-ntp", "true" if enabled else "false"],
-                       check=False, capture_output=True)
+        try:
+            subprocess.run(["timedatectl", "set-ntp", "true" if enabled else "false"],
+                           check=False, capture_output=True, timeout=5)
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
