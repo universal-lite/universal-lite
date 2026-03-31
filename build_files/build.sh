@@ -158,11 +158,16 @@ systemctl enable accounts-daemon.service
 systemctl enable cups.service
 systemctl enable bluetooth.service
 
-# Automatic updates: bootc image updates + Flatpak updates.
-# bootc-fetch-apply-updates.timer ships with bootc (no extra packages).
-# Runs 1h after boot then every 8h, stages image updates for next reboot.
-systemctl enable bootc-fetch-apply-updates.timer
+# Add ublue-os COPR for uupd (unified updater with hardware safety checks).
+dnf5 copr enable -y ublue-os/packages fedora-"${FEDORA_MAJOR}"-x86_64
+dnf5 install -y --setopt=install_weak_deps=False uupd
+
+# Unified updater: bootc image + Flatpak in one pass with hardware safety checks.
+# Replaces the separate rpm-ostree + flatpak timers from the base image.
+systemctl enable uupd.timer
 systemctl disable rpm-ostreed-automatic.timer
+systemctl disable flatpak-system-update.timer
+systemctl --global disable flatpak-user-update.timer
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
