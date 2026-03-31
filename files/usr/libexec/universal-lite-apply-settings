@@ -446,7 +446,10 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     border-radius: 999px;
     min-height: {h}px;
 }}
-#taskbar button.active {{ background: {tokens["accent_rgba_30"]}; }}
+#taskbar button.active {{
+    background: {tokens["accent_rgba_15"]};
+    border-bottom: 3px solid {tokens["accent_hex"]};
+}}
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
@@ -496,7 +499,10 @@ window#waybar {{ min-width: {w}px; }}
     border-radius: 999px;
     min-width: {w}px;
 }}
-#taskbar button.active {{ background: {tokens["accent_rgba_30"]}; }}
+#taskbar button.active {{
+    background: {tokens["accent_rgba_15"]};
+    border-bottom: 3px solid {tokens["accent_hex"]};
+}}
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
