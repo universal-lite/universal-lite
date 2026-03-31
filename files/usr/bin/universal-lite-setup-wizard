@@ -1391,17 +1391,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except Exception as exc:
             return f"Failed to set user password: {exc}"
 
+        # Add user to the video group for brightnessctl backlight access.
+        # Non-fatal: the group is declared in sysusers.d but may not exist
+        # yet on this boot if systemd-sysusers hasn't run.
         try:
             subprocess.run(
-                ["groupadd", "-f", "video"],
-                check=False, capture_output=True, timeout=10,
-            )
-            subprocess.run(
-                ["gpasswd", "-a", username, "video"],
+                ["usermod", "-aG", "video", username],
                 check=True, capture_output=True, text=True, timeout=10,
             )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to add user to video group: {exc}"
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+            pass  # Best-effort; sysusers.d ensures the group exists on next boot
 
         return None
 
