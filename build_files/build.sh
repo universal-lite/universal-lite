@@ -160,6 +160,8 @@ systemctl enable bluetooth.service
 
 # Unified updater: bootc image + Flatpak in one pass with hardware safety checks.
 # Replaces the separate rpm-ostree + flatpak timers from the base image.
+# uupd comes from ublue-os/packages COPR (already in base-main repos).
+dnf5 install -y --setopt=install_weak_deps=False uupd
 systemctl enable uupd.timer
 systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
