@@ -18,7 +18,7 @@ Seven-page flow:
 
 import json
 import os
-import pwd
+
 import re
 import subprocess
 import sys
@@ -281,7 +281,6 @@ DEFAULT_FLATPAKS = [
     ("org.gtk.Gtk3theme.adw-gtk3-dark", "Adwaita GTK3 Dark Theme", "Dark variant for classic apps"),
 ]
 
-FLATHUB_URL = "https://dl.flathub.org/repo/flathub.flatpakrepo"
 
 
 def _hash_password(plaintext: str) -> str:
@@ -1427,238 +1426,308 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return use_zswap, swap_gb
 
     # ------------------------------------------------------------------
-    # Step functions (business logic — one per concern)
+    # Sysroot management (installer mode)
     # ------------------------------------------------------------------
 
-    def _step_create_user(self) -> str | None:
-        """Create user account via AccountsService, set password, add to video group."""
-        fullname = self._setup_fullname
-        username = self._setup_username
-        password = self._setup_password
-        is_admin = self._setup_is_admin
+    def _mount_sysroot(self) -> str | None:
+        """Mount the installed system's root partition and locate the ostree deployment.
 
+        Sets self._sysroot_mount, self._sysroot_deploy, and self._sysroot_var.
+        Returns an error string or None on success.
+        """
+        target = self._setup_target_drive
+        mount_point = "/mnt/sysroot"
+
+        # Find root partition (last partition on the target disk)
         try:
-            user_pw_hash = _hash_password(password)
+            result = subprocess.run(
+                ["lsblk", "-lnpo", "NAME,TYPE", f"/dev/{target}"],
+                capture_output=True, text=True, check=True, timeout=10,
+            )
+            parts = [
+                line.split()[0]
+                for line in result.stdout.strip().splitlines()
+                if len(line.split()) >= 2 and line.split()[1] == "part"
+            ]
+            if not parts:
+                return "No partitions found on target disk after install"
+            root_part = parts[-1]
         except subprocess.CalledProcessError as exc:
-            return f"Failed to hash password: {exc.stderr.strip() or exc}"
+            return f"Failed to list partitions: {exc.stderr.strip() or exc}"
 
-        try:
-            accounts = Gio.DBusProxy.new_for_bus_sync(
-                Gio.BusType.SYSTEM, Gio.DBusProxyFlags.NONE, None,
-                "org.freedesktop.Accounts", "/org/freedesktop/Accounts",
-                "org.freedesktop.Accounts", None,
-            )
-        except Exception as exc:
-            return f"Failed to connect to AccountsService: {exc}"
-
-        account_type = 1 if is_admin else 0
-
-        try:
-            pwd.getpwnam(username)
-            # User exists from a prior partial run — look up their path
-            try:
-                result = accounts.call_sync(
-                    "FindUserByName",
-                    GLib.Variant("(s)", (username,)),
-                    Gio.DBusCallFlags.NONE, 30000, None,
-                )
-                user_object_path = result.get_child_value(0).get_string()
-            except Exception as exc:
-                return f"Failed to find existing user: {exc}"
-        except KeyError:
-            try:
-                result = accounts.call_sync(
-                    "CreateUser",
-                    GLib.Variant("(ssi)", (username, fullname, account_type)),
-                    Gio.DBusCallFlags.NONE, 30000, None,
-                )
-                user_object_path = result.get_child_value(0).get_string()
-            except Exception as exc:
-                return f"Failed to create user: {exc}"
-
-        try:
-            user_proxy = Gio.DBusProxy.new_for_bus_sync(
-                Gio.BusType.SYSTEM, Gio.DBusProxyFlags.NONE, None,
-                "org.freedesktop.Accounts", user_object_path,
-                "org.freedesktop.Accounts.User", None,
-            )
-            user_proxy.call_sync(
-                "SetPassword",
-                GLib.Variant("(ss)", (user_pw_hash, "")),
-                Gio.DBusCallFlags.NONE, 30000, None,
-            )
-        except Exception as exc:
-            return f"Failed to set user password: {exc}"
-
-        # Add user to the video group for brightnessctl backlight access.
+        Path(mount_point).mkdir(parents=True, exist_ok=True)
         try:
             subprocess.run(
-                ["usermod", "-aG", "video", username],
-                check=True, capture_output=True, text=True, timeout=10,
+                ["mount", root_part, mount_point],
+                check=True, capture_output=True, text=True, timeout=30,
             )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as exc:
-            return f"Failed to add user to video group: {exc}"
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to mount sysroot: {exc.stderr.strip() or exc}"
+
+        # Locate ostree deployment
+        deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
+        if not deploy_dirs:
+            return "No ostree deployment found on installed system"
+        self._sysroot_deploy = str(deploy_dirs[-1])
+
+        var_dirs = list(Path(mount_point).glob("ostree/deploy/*/var"))
+        if not var_dirs:
+            return "No var directory found on installed system"
+        self._sysroot_var = str(var_dirs[0])
+
+        self._sysroot_mount = mount_point
+        return None
+
+    def _unmount_sysroot(self) -> str | None:
+        """Unmount the sysroot. Returns error string or None."""
+        try:
+            subprocess.run(
+                ["umount", "-R", self._sysroot_mount],
+                check=True, capture_output=True, text=True, timeout=30,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to unmount sysroot: {exc.stderr.strip() or exc}"
+        return None
+
+    # ------------------------------------------------------------------
+    # Install pipeline steps
+    # ------------------------------------------------------------------
+
+    def _step_bootc_install(self) -> str | None:
+        """Partition disk and install OS image via bootc, then mount sysroot."""
+        target = self._setup_target_drive
+        fs = self._setup_filesystem
+
+        try:
+            subprocess.run(
+                ["bootc", "install", "to-disk", "--filesystem", fs,
+                 f"/dev/{target}"],
+                check=True, capture_output=True, text=True, timeout=900,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Installation failed: {exc.stderr.strip() or exc}"
+        except subprocess.TimeoutExpired:
+            return "Installation timed out after 15 minutes"
+
+        # Mount sysroot for post-install configuration
+        err = self._mount_sysroot()
+        if err:
+            return err
 
         return None
 
-    def _step_configure_system(self) -> str | None:
-        """Set timezone and root password."""
-        root_password = self._setup_root_password
-        timezone = self._setup_timezone
+    def _step_configure_user(self) -> str | None:
+        """Create user account, set root password, timezone, and locale on sysroot."""
+        deploy = self._sysroot_deploy
+        var_dir = self._sysroot_var
+        username = self._setup_username
+        fullname = self._setup_fullname
 
-        if root_password:
+        try:
+            hashed_pw = _hash_password(self._setup_password)
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to hash password: {exc.stderr.strip() or exc}"
+
+        # Create user in sysroot's /etc/passwd
+        groups = "video"
+        if self._setup_is_admin:
+            groups = "wheel,video"
+
+        try:
+            subprocess.run(
+                ["useradd", "--root", deploy,
+                 "--home-dir", f"/var/home/{username}",
+                 "--shell", "/bin/bash",
+                 "--groups", groups,
+                 "--password", hashed_pw,
+                 "--comment", fullname,
+                 username],
+                check=True, capture_output=True, text=True, timeout=15,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to create user: {exc.stderr.strip() or exc}"
+
+        # Create home directory in the var partition (ostree keeps /home in /var/home)
+        home = Path(var_dir) / "home" / username
+        home.mkdir(parents=True, exist_ok=True)
+
+        # Copy skeleton files
+        skel = Path(deploy) / "etc" / "skel"
+        if skel.is_dir():
+            subprocess.run(
+                ["cp", "-a", f"{skel}/.", str(home)],
+                check=False, capture_output=True, timeout=10,
+            )
+
+        # Read the UID/GID assigned by useradd for correct ownership
+        uid = gid = "1000"
+        try:
+            with open(Path(deploy) / "etc" / "passwd") as f:
+                for line in f:
+                    parts = line.strip().split(":")
+                    if parts[0] == username:
+                        uid, gid = parts[2], parts[3]
+                        break
+        except (OSError, IndexError):
+            pass
+
+        subprocess.run(
+            ["chown", "-R", f"{uid}:{gid}", str(home)],
+            check=False, capture_output=True, timeout=10,
+        )
+
+        # Set root password if provided
+        if self._setup_root_password:
             try:
-                root_hash = _hash_password(root_password)
+                root_hash = _hash_password(self._setup_root_password)
                 subprocess.run(
-                    ["chpasswd", "-e"],
+                    ["chpasswd", "--root", deploy, "-e"],
                     input=f"root:{root_hash}\n",
                     check=True, capture_output=True, text=True, timeout=10,
                 )
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
                 return f"Failed to set root password: {exc}"
 
-        try:
-            subprocess.run(
-                ["timedatectl", "set-timezone", timezone],
-                check=True, capture_output=True, text=True, timeout=10,
-            )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to set timezone: {exc}"
+        # Set timezone
+        tz = self._setup_timezone
+        localtime = Path(deploy) / "etc" / "localtime"
+        localtime.unlink(missing_ok=True)
+        localtime.symlink_to(f"/usr/share/zoneinfo/{tz}")
+
+        # Set locale
+        (Path(deploy) / "etc" / "locale.conf").write_text(f"LANG=en_US.UTF-8\n")
 
         return None
 
-    def _step_configure_zswap(self) -> str | None:
-        """Disable zram, enable zswap for current session and future boots."""
-        # 1. Disable zram for the current session (safe on first boot — minimal memory use)
-        subprocess.run(
-            ["swapoff", "/dev/zram0"],
-            check=False, capture_output=True, timeout=15,
-        )
+    def _step_copy_network(self) -> str | None:
+        """Copy NetworkManager connection profiles from live environment to sysroot."""
+        src = "/etc/NetworkManager/system-connections/"
+        dst = f"{self._sysroot_deploy}/etc/NetworkManager/system-connections/"
 
-        # 2. Mask zram and enable zswap for future boots
+        if not os.path.isdir(src) or not os.listdir(src):
+            return None  # No connections to copy (ethernet auto-connects without profiles)
+
+        os.makedirs(dst, exist_ok=True)
+
         try:
             subprocess.run(
-                ["systemctl", "mask", "systemd-zram-setup@.service"],
-                check=True, capture_output=True, text=True, timeout=15,
-            )
-            subprocess.run(
-                ["systemctl", "enable", "universal-lite-zswap.service"],
-                check=True, capture_output=True, text=True, timeout=15,
-            )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to configure zswap: {exc}"
-
-        # 3. Configure zswap parameters for current session
-        for param, value in [
-            ("enabled", "1"), ("max_pool_percent", "25"), ("compressor", "zstd"),
-        ]:
-            try:
-                Path(f"/sys/module/zswap/parameters/{param}").write_text(value)
-            except (OSError, FileNotFoundError):
-                pass
-
-        # 4. Tune swappiness for disk-backed swap (180 is zram-specific)
-        try:
-            subprocess.run(
-                ["sysctl", "-w", "vm.swappiness=100"],
-                check=False, capture_output=True, timeout=5,
-            )
-            # Persist for future boots
-            Path("/etc/sysctl.d/91-universal-lite-zswap.conf").write_text(
-                "vm.swappiness = 100\n"
-            )
-        except (OSError, subprocess.TimeoutExpired):
-            pass
-
-        return None
-
-    def _step_create_swap_file(self) -> str | None:
-        """Create swap file, encrypt, and activate — takes effect immediately."""
-        try:
-            swap_dir = Path("/var/lib/universal-lite")
-            swap_dir.mkdir(parents=True, exist_ok=True)
-            (swap_dir / "swap-size").write_text(str(self._setup_swap_gb))
-        except OSError as exc:
-            return f"Failed to write swap config: {exc}"
-
-        # Create swap file NOW (not just next boot)
-        if not Path("/var/swap").exists():
-            try:
-                subprocess.run(
-                    ["/usr/libexec/universal-lite-swap-init"],
-                    check=True, capture_output=True, text=True, timeout=120,
-                )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-                return f"Failed to create swap file: {exc}"
-
-        # Activate encrypted swap NOW
-        try:
-            subprocess.run(
-                ["/usr/libexec/universal-lite-encrypted-swap", "start"],
+                ["rsync", "-a", src, dst],
                 check=True, capture_output=True, text=True, timeout=30,
             )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to activate encrypted swap: {exc}"
-
-        # Enable services for future boots
-        try:
-            subprocess.run(
-                ["systemctl", "enable",
-                 "universal-lite-swap-init.service",
-                 "universal-lite-encrypted-swap.service"],
-                check=True, capture_output=True, text=True, timeout=15,
-            )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to enable swap services: {exc}"
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to copy network configuration: {exc.stderr.strip() or exc}"
 
         return None
 
-    def _step_install_flatpaks(self, selected_apps: list[tuple[str, str]]) -> str | None:
-        """Install Flatpak apps directly. Falls back to boot-time service on skip."""
-        # Write app list and enable service as fallback (if user skips)
-        try:
-            app_dir = Path("/var/lib/universal-lite")
-            app_dir.mkdir(parents=True, exist_ok=True)
-            (app_dir / "flatpak-apps").write_text(
-                "\n".join(app_id for app_id, _ in selected_apps) + "\n"
-            )
-            subprocess.run(
-                ["systemctl", "enable", "universal-lite-flatpak-setup.service"],
-                check=True, capture_output=True, text=True, timeout=15,
-            )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
-            pass  # Fallback setup is best-effort; direct install is primary
+    def _step_copy_flatpaks(self) -> str | None:
+        """rsync selected Flatpak apps from live USB to installed sysroot."""
+        var_dir = self._sysroot_var
+        selected_ids = {app_id for app_id, _ in self._setup_selected_apps}
+        src = "/var/lib/flatpak"
+        dst = f"{var_dir}/lib/flatpak"
 
-        # Add Flathub remote
-        try:
-            subprocess.run(
-                ["flatpak", "remote-add", "--system", "--if-not-exists",
-                 "flathub", FLATHUB_URL],
-                check=True, capture_output=True, text=True, timeout=60,
-            )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to add Flathub remote: {exc}"
+        if not os.path.isdir(src):
+            return "Flatpak store not found on live environment"
 
-        # Install selected apps and themes
-        failed: list[str] = []
-        for app_id, app_name in selected_apps:
+        Path(dst).mkdir(parents=True, exist_ok=True)
+
+        # Copy shared infrastructure: repo (ostree object store), exports, runtimes
+        for subdir in ["repo", "exports", "runtime", ".changed"]:
+            src_path = f"{src}/{subdir}"
+            if not os.path.exists(src_path):
+                continue
             try:
                 subprocess.run(
-                    ["flatpak", "install", "--system", "--noninteractive",
-                     "flathub", app_id],
+                    ["rsync", "-a", f"{src_path}/", f"{dst}/{subdir}/"],
+                    check=True, capture_output=True, text=True, timeout=600,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to copy Flatpak data ({subdir}): {exc.stderr.strip() or exc}"
+
+        # Copy only selected app directories
+        app_src = f"{src}/app"
+        app_dst = f"{dst}/app"
+        os.makedirs(app_dst, exist_ok=True)
+
+        failed = []
+        for app_id in selected_ids:
+            src_app = f"{app_src}/{app_id}"
+            if not os.path.isdir(src_app):
+                continue
+            try:
+                subprocess.run(
+                    ["rsync", "-a", f"{src_app}/", f"{app_dst}/{app_id}/"],
                     check=True, capture_output=True, text=True, timeout=300,
                 )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                failed.append(app_name)
+            except subprocess.CalledProcessError:
+                failed.append(app_id)
 
         if failed:
-            return f"Failed to install: {', '.join(failed)}"
+            return f"Failed to copy: {', '.join(failed)}"
 
-        # All succeeded — write stamp so boot-time service doesn't re-run
-        try:
-            (Path("/var/lib/universal-lite") / "flatpak-setup.done").write_text("")
-        except OSError:
-            pass
+        # Write app list for boot-time fallback service
+        state_dir = Path(var_dir) / "lib" / "universal-lite"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "flatpak-apps").write_text("\n".join(selected_ids) + "\n")
+
+        # Mark as complete so boot service doesn't re-run
+        (state_dir / "flatpak-setup.done").write_text("")
+
+        return None
+
+    def _step_configure_memory(self) -> str | None:
+        """Write memory management configuration to the sysroot."""
+        deploy = self._sysroot_deploy
+        var_dir = self._sysroot_var
+
+        state_dir = Path(var_dir) / "lib" / "universal-lite"
+        state_dir.mkdir(parents=True, exist_ok=True)
+
+        if self._setup_use_zswap:
+            # Write swap size for the first-boot service
+            (state_dir / "swap-size").write_text(str(self._setup_swap_gb))
+
+            # Persist swappiness for disk-backed swap
+            sysctl_dir = Path(deploy) / "etc" / "sysctl.d"
+            sysctl_dir.mkdir(parents=True, exist_ok=True)
+            (sysctl_dir / "91-universal-lite-zswap.conf").write_text(
+                "vm.swappiness = 100\n"
+            )
+        else:
+            # Explicitly write the zram-generator config to the sysroot
+            # (ensures 125% even if the image default changes later)
+            zram_dir = Path(deploy) / "etc" / "systemd"
+            zram_dir.mkdir(parents=True, exist_ok=True)
+            (zram_dir / "zram-generator.conf").write_text(
+                "[zram0]\n"
+                "zram-size = min(ram * 5 / 4, 3072)\n"
+                "compression-algorithm = zstd(level=3)\n"
+                "swap-priority = 100\n"
+            )
+
+        return None
+
+    def _step_finalize(self) -> str | None:
+        """Write first-boot config JSON and unmount the sysroot."""
+        var_dir = self._sysroot_var
+
+        # Write install config for first-boot service
+        state_dir = Path(var_dir) / "lib" / "universal-lite"
+        state_dir.mkdir(parents=True, exist_ok=True)
+
+        config = {
+            "memory_strategy": "zswap" if self._setup_use_zswap else "zram",
+            "swap_size_gb": self._setup_swap_gb if self._setup_use_zswap else None,
+            "username": self._setup_username,
+        }
+        (state_dir / "install-config.json").write_text(
+            json.dumps(config, indent=2) + "\n"
+        )
+
+        # Unmount sysroot
+        err = self._unmount_sysroot()
+        if err:
+            return err
 
         return None
 
