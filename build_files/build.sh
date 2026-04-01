@@ -82,6 +82,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     pipewire-pulseaudio \
     playerctl \
     python3-gobject \
+    rsync \
     ristretto \
     slurp \
     swaybg \
@@ -140,6 +141,7 @@ chmod 0755 \
     /usr/bin/universal-lite-greeter \
     /usr/libexec/universal-lite-apply-settings \
     /usr/libexec/universal-lite-encrypted-swap \
+    /usr/libexec/universal-lite-first-boot \
     /usr/libexec/universal-lite-flatpak-setup \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-launch \
@@ -157,6 +159,8 @@ systemctl enable power-profiles-daemon.service
 systemctl enable accounts-daemon.service
 systemctl enable cups.service
 systemctl enable bluetooth.service
+systemctl enable universal-lite-first-boot.service
+systemctl enable universal-lite-flatpak-setup.service
 
 # Add ublue-os COPR for uupd (unified updater with hardware safety checks).
 dnf5 copr enable -y ublue-os/packages fedora-"${FEDORA_MAJOR}"-x86_64
