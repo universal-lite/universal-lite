@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Universal-Lite first-boot user creation wizard.
 
-Runs inside cage (kiosk Wayland compositor) via universal-lite-first-boot.service
-on first boot when no user accounts exist.  Creates a local user with sudo
-(wheel) access, configures
-timezone, swap, and optional Flatpak apps, then reboots into the normal
-login screen.
+Launched by greetd's initial_session inside a labwc desktop session on
+first boot (DD install path) when no user accounts exist.  Creates a local
+user with sudo (wheel) access, configures timezone, swap, and optional
+Flatpak apps, then reboots into the normal login screen.
 
 Six-page flow:
   Page 0 — Network (WiFi scan-and-connect, auto-skipped if online)
@@ -1747,7 +1746,7 @@ def main() -> None:
     if os.getuid() != 0:
         sys.exit(
             "universal-lite-setup-wizard: must run as root "
-            "(launched via universal-lite-first-boot.service). Refusing to start."
+            "(launched via greetd initial_session as root). Refusing to start."
         )
     app = SetupWizardApp()
     app.run(sys.argv)
