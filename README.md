@@ -22,13 +22,13 @@ Apps beyond what's built in install from Flathub.
 
 ## Install
 
-### Flash to storage (raw/dd path)
+### USB installer (recommended)
 
-This is the recommended path for most installs. You need:
+The recommended path for Chromebooks and low-end laptops. You need:
 
-- A second Linux machine to prepare the media
-- A USB drive (boot medium, any size)
-- Your target storage — SD card, second USB, etc. — **64 GB minimum**
+- A second Linux machine to prepare the USB
+- A USB drive — **8 GB minimum** (holds the live environment and pre-downloaded apps)
+- A target drive in the machine — eMMC, SD card, second USB, etc. — **16 GB minimum** (32+ GB recommended)
 
 **Step 1 — Get the image.** Build locally or download the latest from
 [GitHub Actions → build-disk → Artifacts](../../actions/workflows/build-disk.yml):
@@ -37,26 +37,31 @@ This is the recommended path for most installs. You need:
 just build-raw
 ```
 
-**Step 2 — Flash the image to a USB drive** (this becomes your boot medium, not your
-final install target):
+**Step 2 — Flash the image to a USB drive:**
 
 ```bash
-lsblk   # identify the USB drive device — double-check before writing
+lsblk   # identify the USB drive — double-check before writing
 sudo dd if=output/raw/disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
-**Step 3 — Boot the Chromebook from the USB drive.** The first-boot wizard runs
-from the USB environment.
+**Step 3 — Boot from USB.** The installer wizard launches automatically.
+It walks through selecting a target drive, creating your user account,
+choosing apps, and writing the system to disk via `bootc install to-disk`.
 
-**Step 4 — Install to your target storage.** With your SD card (or other target)
-connected, identify it and write to it:
+**Step 4 — Reboot.** Remove the USB when prompted. The system boots into
+the login screen ready to use.
+
+### ISO installer (Anaconda)
+
+For machines with 4+ GB of RAM, you can use the standard Anaconda installer:
 
 ```bash
-lsblk   # confirm device name of target storage
-sudo dd if=/dev/sdUSB of=/dev/sdTARGET bs=4M status=progress conv=fsync
+just build-iso
 ```
 
-The root partition expands to fill the remaining space on first boot.
+Flash the ISO to a USB drive and boot from it. Anaconda handles partitioning,
+user creation, and timezone setup. A kickstart script automatically rebases the
+installed system to the Universal-Lite image.
 
 ### Switch from an existing Fedora Atomic system
 
@@ -86,31 +91,38 @@ verifies the container signature on every update.
 
 ### After install
 
-Once booted, the system manages itself. Daily image builds are pulled automatically.
+Once booted, the system manages itself. Daily image builds are pulled automatically
+via the unified updater (uupd), which handles both system images and Flatpak apps.
 If an update ever causes a problem, the previous image is always available in the boot
 menu — select it to roll back.
 
-## First-boot setup
+## Installer wizard
 
-A setup wizard runs on first boot. It walks through six steps:
+The USB installer boots into a full labwc desktop session running the setup wizard.
+It walks through seven steps:
 
-1. **Network** — connect to WiFi if needed (skipped automatically if you're already online)
-2. **Account** — your full name, username, and password
-3. **System** — timezone, memory management, administrator (sudo), optional root password, partition expansion
-4. **Apps** — choose which Flatpak apps to install (Bazaar app store is on by default)
-5. **Confirm** — review everything before applying
-6. **Progress** — live status as each step runs, with retry/skip on failures
+1. **Network** — connect to WiFi if needed (skipped automatically if already online)
+2. **Disk** — choose target drive, filesystem (ext4/xfs/btrfs), and memory management strategy
+3. **Account** — full name, username, and password
+4. **System** — timezone, administrator (sudo), optional root password
+5. **Apps** — choose which Flatpak apps to install (pre-downloaded on the USB, copied via rsync)
+6. **Confirm** — review everything before applying
+7. **Progress** — live status as `bootc install to-disk` writes the system, then configures the user account, copies network settings, installs apps, and sets up memory management
 
-After setup completes the system reboots into the normal login screen.
+Errors during installation are handled per-step: fatal errors (partitioning failure) send
+you back to change settings, retryable errors offer a retry button, and skippable errors
+(e.g. a single app) let you continue without blocking the install.
+
+After setup completes the system reboots into the login screen.
 
 ### Memory management options
 
-The wizard offers two memory strategies:
+The wizard offers two memory strategies on the Disk page:
 
 | Option | How it works | Best for |
 |--------|-------------|----------|
-| **zRAM** (default) | Compresses swap in RAM using zstd. 1.5× RAM, `vm.swappiness=180`. | Most machines — fast, no disk wear |
-| **zswap + encrypted disk swap** | Compressed RAM cache that spills to an encrypted swap file on disk when full. | Very low RAM (2 GB) — keeps more apps open at the cost of some disk I/O |
+| **zRAM** (default) | Compresses swap in RAM using zstd. 1.25x RAM, `vm.swappiness=180`. | Most machines — fast, no disk wear |
+| **zswap + encrypted disk swap** | Compressed RAM cache that spills to an encrypted swap file on disk when full. Configurable swap file size (2/4/8 GB). | Very low RAM (2 GB) — keeps more apps open at the cost of some disk I/O |
 
 The encrypted disk swap uses a random key generated at each boot — the swap contents
 don't survive a reboot and aren't readable offline.
@@ -127,7 +139,7 @@ don't survive a reboot and aren't readable offline.
 | Browser | Google Chrome | Familiar to Chromebook users, installed via Flatpak on first boot |
 | File manager | `Thunar` | Lightweight, thumbnail support |
 | Terminal | `foot` | GPU-accelerated, minimal |
-| Greeter | `greetd` + `gtkgreet` | Minimal login screen via `cage` kiosk |
+| Greeter | `greetd` + custom GTK4 greeter | Login screen via `cage` kiosk |
 | Notifications | `mako` | Low-overhead notification daemon |
 | Screen lock | `swayidle` + `swaylock` | Locks after 5 min idle, screen off at 10 min |
 | Power | `power-profiles-daemon` | Battery/performance profiles for laptops |
@@ -224,8 +236,8 @@ Changes apply immediately without restarting anything.
 
 ```bash
 just build          # OCI container image
-just build-raw      # Raw disk image (flash with dd)
-just build-iso      # ISO installer (requires 4+ GB RAM on the target machine)
+just build-raw      # Raw disk image (USB installer — flash with dd)
+just build-iso      # ISO installer (Anaconda — requires 4+ GB RAM)
 just build-qcow2    # QCOW2 for VM testing
 just convert-raw    # Convert raw → QCOW2 (for GNOME Boxes import)
 ```
@@ -270,19 +282,19 @@ Dependencies are kept current by Dependabot and Renovate.
 ```
 Containerfile                              # Image build definition
 build_files/build.sh                       # Package installation and configuration
-disk_config/                               # Disk image build configs (raw, ISO)
+disk_config/
+  disk.toml                                # Raw disk image config (10 GiB root)
+  iso.toml                                 # ISO config (Anaconda + bootc switch kickstart)
 tests/                                     # Unit tests for settings store, event bus
 files/
   etc/
-    greetd/                                # Login greeter config (greetd + gtkgreet)
+    greetd/                                # Login greeter config (greetd)
     sysctl.d/                              # Memory tuning (swappiness, etc.)
     systemd/
-      repart.d/                            # Auto-expand root partition on first boot
       zram-generator.conf                  # zRAM swap config (default memory strategy)
       system/
-        universal-lite-greeter-setup.service    # Switch greeter config after first-boot wizard
-        universal-lite-flatpak-setup.service    # Install Flatpak apps scheduled by wizard
-        universal-lite-zram-disable.service     # Mask zRAM when zswap is chosen instead
+        universal-lite-first-boot.service  # Post-install setup (runs once on first boot)
+        universal-lite-flatpak-setup.service    # Fallback Flatpak install from network
         universal-lite-zswap.service            # Configure zswap parameters at boot
         universal-lite-swap-init.service        # Create /var/swap on first boot (zswap path)
         universal-lite-encrypted-swap.service   # Activate encrypted swap via dm-crypt
@@ -295,12 +307,13 @@ files/
       swaylock/                            # Lock screen config
   usr/
     bin/
+      universal-lite-greeter               # Custom GTK4 login greeter (Python)
       universal-lite-power-menu            # Power menu (logout/reboot/shutdown)
       universal-lite-settings              # Settings app launcher
-      universal-lite-setup-wizard          # First-boot setup wizard (Python/GTK4)
+      universal-lite-setup-wizard          # Installer wizard (Python/GTK4)
     lib/
       bootc/install/
-        00-universal-lite.toml             # bootc install config (forces ext4)
+        00-universal-lite.toml             # bootc install config
       universal-lite/settings/             # Settings app Python package
         pages/                             # 15 settings pages (appearance, display, etc.)
         app.py, window.py, base.py         # App shell, sidebar, base page class
@@ -309,12 +322,16 @@ files/
       universal-lite-apply-settings        # Applies settings changes to compositor/panel
       universal-lite-brightness            # Brightness control helper
       universal-lite-encrypted-swap        # dm-crypt swap setup script
+      universal-lite-first-boot            # First-boot config (swap, greeter prefill)
       universal-lite-flatpak-setup         # Flatpak app installer (runs at boot)
-      universal-lite-greeter-setup         # Greeter config switcher (first-boot vs normal)
+      universal-lite-greeter-launch        # Cage kiosk wrapper for greeter
+      universal-lite-greeter-setup         # Detects users, sets greetd initial session
       universal-lite-lid-action            # Lid close action helper
+      universal-lite-menu                  # labwc pipemenu generator
       universal-lite-session               # Wayland session startup
       universal-lite-swap-init             # Creates /var/swap at configured size
       universal-lite-volume                # Volume control helper
+      universal-lite-wizard-session        # Wizard-mode labwc session script
     share/
       applications/                        # .desktop files + mimeapps.list
       backgrounds/universal-lite/          # Bundled wallpapers

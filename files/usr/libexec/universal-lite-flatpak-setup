@@ -1,10 +1,18 @@
 #!/bin/bash
-# Installs Flatpak apps selected during the setup wizard.
-# Runs once on first boot after setup. Called by universal-lite-flatpak-setup.service.
+# Installs Flatpak apps on first boot. Uses the wizard's selection if available,
+# otherwise falls back to a default set (Bazaar app store).
+# Called by universal-lite-flatpak-setup.service.
 
 set -uo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
+DEFAULT_APPS="dev.bazaar.app"
+
+# If the wizard didn't write an apps list, use defaults
+if [ ! -f "$APPS_FILE" ]; then
+    mkdir -p "$(dirname "$APPS_FILE")"
+    echo "$DEFAULT_APPS" > "$APPS_FILE"
+fi
 STAMP=/var/lib/universal-lite/flatpak-setup.done
 MAX_NET_WAIT=120
 RETRIES=3
