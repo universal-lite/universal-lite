@@ -3,8 +3,7 @@
 # Wizard mode: launch only the setup wizard, skip all desktop daemons.
 # Keeps RAM minimal on 2 GB Chromebooks that use the DD install path.
 if [ "${UNIVERSAL_LITE_WIZARD:-}" = "1" ]; then
-    /usr/bin/universal-lite-setup-wizard > /tmp/wizard.log 2>&1 &
-    foot &  # DEBUG: remove after testing — proves labwc is running
+    /usr/bin/universal-lite-setup-wizard &
     exit 0
 fi
 
