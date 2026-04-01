@@ -1527,8 +1527,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         try:
             subprocess.run(
-                ["bootc", "install", "to-disk", "--filesystem", fs,
-                 f"/dev/{target}"],
+                ["bootc", "install", "to-disk", "--wipe",
+                 "--filesystem", fs, f"/dev/{target}"],
                 check=True, capture_output=True, text=True, timeout=900,
             )
         except subprocess.CalledProcessError as exc:
@@ -1552,8 +1552,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         try:
             hashed_pw = _hash_password(self._setup_password)
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to hash password: {exc.stderr.strip() or exc}"
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+            return f"Failed to hash password: {exc}"
 
         # Create user in sysroot's /etc/passwd
         groups = "video"
@@ -1615,14 +1615,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
                 return f"Failed to set root password: {exc}"
 
-        # Set timezone
-        tz = self._setup_timezone
-        localtime = Path(deploy) / "etc" / "localtime"
-        localtime.unlink(missing_ok=True)
-        localtime.symlink_to(f"/usr/share/zoneinfo/{tz}")
-
-        # Set locale
-        (Path(deploy) / "etc" / "locale.conf").write_text(f"LANG=en_US.UTF-8\n")
+        # Set timezone and locale
+        try:
+            tz = self._setup_timezone
+            localtime = Path(deploy) / "etc" / "localtime"
+            localtime.unlink(missing_ok=True)
+            localtime.symlink_to(f"/usr/share/zoneinfo/{tz}")
+            (Path(deploy) / "etc" / "locale.conf").write_text("LANG=en_US.UTF-8\n")
+        except OSError as exc:
+            return f"Failed to configure timezone/locale: {exc}"
 
         return None
 
@@ -1680,6 +1681,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         for app_id in selected_ids:
             src_app = f"{app_src}/{app_id}"
             if not os.path.isdir(src_app):
+                failed.append(app_id)
                 continue
             try:
                 subprocess.run(
