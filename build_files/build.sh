@@ -144,6 +144,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-launch \
     /usr/libexec/universal-lite-greeter-setup \
+    /usr/libexec/universal-lite-wizard-session \
     /usr/libexec/universal-lite-menu \
     /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-volume \
@@ -152,7 +153,6 @@ chmod 0755 \
 
 systemctl mask plymouth-quit-wait.service plymouth-quit.service
 systemctl enable greetd.service
-systemctl enable universal-lite-first-boot.service
 systemctl enable power-profiles-daemon.service
 systemctl enable accounts-daemon.service
 systemctl enable cups.service
