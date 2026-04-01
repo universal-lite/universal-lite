@@ -16,8 +16,13 @@ if [ "$failures" -ge "$MAX_FAILURES" ]; then
     exec /bin/login -f
 fi
 
+# Fix wlroots hardware cursor rendering upside-down / misplaced in VMs.
+if systemd-detect-virt -q; then
+    export WLR_NO_HARDWARE_CURSORS=1
+fi
+
 # Launch the greeter via cage
-env WLR_NO_HARDWARE_CURSORS=1 cage -s -- /usr/bin/universal-lite-greeter
+cage -s -- /usr/bin/universal-lite-greeter
 status=$?
 
 if [ "$status" -ne 0 ]; then
