@@ -1737,29 +1737,41 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _on_setup_clicked(self) -> None:
         # Capture all form values for thread-safe access
+        # Disk page
+        drive_idx = self._drive_dropdown.get_selected()
+        self._setup_target_drive = self._drives[drive_idx]["name"]
+        self._setup_filesystem = FILESYSTEMS[self._fs_dropdown.get_selected()]
+        self._setup_use_zswap, self._setup_swap_gb = self._get_swap_config()
+
+        # Account page
         self._setup_fullname = self._fullname_entry.get_text().strip()
         self._setup_username = self._username_entry.get_text().strip()
         self._setup_password = self._password_entry.get_text()
+
+        # System page
         self._setup_is_admin = self._admin_check.get_active()
         self._setup_root_password = self._root_password_entry.get_text()
         self._setup_timezone = self._get_selected_timezone()
-        self._setup_use_zswap, self._setup_swap_gb = self._get_swap_config()
 
-        # Build step list: (label, callable, is_flatpak_step)
-        self._steps: list[tuple[str, callable, bool]] = [
-            ("Creating user account", self._step_create_user, False),
-            ("Configuring system", self._step_configure_system, False),
+        # Apps
+        self._setup_selected_apps = self._get_selected_apps()
+
+        # Build step list: (label, callable, error_behavior)
+        # error_behavior: "fatal" = Back button, "retry" = Retry button,
+        #                 "skippable" = Skip + Retry buttons
+        self._steps: list[tuple[str, callable, str]] = [
+            ("Partitioning and installing", self._step_bootc_install, "fatal"),
+            ("Configuring user account", self._step_configure_user, "retry"),
+            ("Copying network configuration", self._step_copy_network, "retry"),
         ]
-        if self._setup_use_zswap:
-            self._steps.append(("Configuring zswap", self._step_configure_zswap, False))
-            self._steps.append(("Creating swap file", self._step_create_swap_file, False))
-        selected_apps = self._get_selected_apps()
-        if selected_apps:
+        if self._setup_selected_apps:
             self._steps.append((
-                "Installing apps",
-                lambda apps=selected_apps: self._step_install_flatpaks(apps),
-                True,
+                "Installing selected apps",
+                self._step_copy_flatpaks,
+                "skippable",
             ))
+        self._steps.append(("Configuring memory management", self._step_configure_memory, "retry"))
+        self._steps.append(("Finalizing", self._step_finalize, "retry"))
 
         # Build progress UI
         while child := self._progress_steps_box.get_first_child():
@@ -1793,11 +1805,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         def _thread() -> None:
             for i in range(start, len(self._steps)):
-                label_text, func, is_flatpak = self._steps[i]
+                label_text, func, behavior = self._steps[i]
                 GLib.idle_add(self._update_step_status, i, "active")
                 err = func()
                 if err:
-                    GLib.idle_add(self._on_step_failed, i, err, is_flatpak)
+                    GLib.idle_add(self._on_step_failed, i, err, behavior)
                     return
                 GLib.idle_add(self._update_step_status, i, "done")
 
@@ -1825,45 +1837,43 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             lbl.set_text(f"  {label_text} (skipped)")
             lbl.add_css_class("progress-skipped")
 
-    def _on_step_failed(self, index: int, error: str, is_flatpak: bool) -> None:
+    def _on_step_failed(self, index: int, error: str, behavior: str) -> None:
         lbl = self._step_labels[index]
         label_text = self._steps[index][0]
-        lbl.set_text(f"  {label_text} — {error}")
+        lbl.set_text(f"  {label_text} \u2014 {error}")
 
         for cls in ("progress-pending", "progress-active", "progress-done"):
             lbl.remove_css_class(cls)
         lbl.add_css_class("progress-failed")
 
-        if is_flatpak:
+        if behavior == "fatal":
+            # bootc install failed — user can go back and change settings
+            self._progress_back_btn.set_visible(True)
+        elif behavior == "skippable":
+            # Flatpak copy failed — user can skip or retry
             self._progress_retry_btn.set_visible(True)
             self._progress_skip_btn.set_visible(True)
             self._run_from_step = index
-        else:
-            self._progress_back_btn.set_visible(True)
+        else:  # "retry"
+            # Post-install config failed — retry from this step
+            self._progress_retry_btn.set_visible(True)
+            self._run_from_step = index
 
     def _on_all_steps_done(self) -> None:
-        try:
-            state_dir = Path("/var/lib/universal-lite")
-            state_dir.mkdir(parents=True, exist_ok=True)
-            (state_dir / "setup-done").write_text("")
-            # Pre-populate last-user for the greeter (greeter runs as
-            # greetd user and can't write to this root-owned directory)
-            (state_dir / "last-user").write_text(self._setup_username + "\n")
-        except OSError:
-            pass  # Non-fatal; wizard will re-run on next boot
-        self._progress_title.set_text("Setup Complete!")
+        self._progress_title.set_text("Installation Complete!")
         self._progress_reboot_btn.set_visible(True)
 
     def _progress_retry(self) -> None:
         self._start_step_runner()
 
     def _progress_skip(self) -> None:
-        # Mark remaining Flatpak steps as skipped
-        for i in range(self._run_from_step, len(self._steps)):
-            _, _, is_flatpak = self._steps[i]
-            if is_flatpak:
-                self._update_step_status(i, "skipped")
-        self._on_all_steps_done()
+        """Skip the current (skippable) step and continue with the rest."""
+        self._update_step_status(self._run_from_step, "skipped")
+        self._run_from_step += 1
+        if self._run_from_step >= len(self._steps):
+            self._on_all_steps_done()
+        else:
+            self._start_step_runner()
 
     def _progress_go_back(self) -> None:
         """Return to confirm page on fatal error for correction."""
