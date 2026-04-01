@@ -1,12 +1,30 @@
 #!/bin/bash
-# Ensure greetd config always points to the normal login greeter.
-# First-boot wizard is handled by universal-lite-first-boot.service.
+# Generate greetd config.  On the DD install path (no user accounts),
+# include an initial_session that auto-logs in root to the wizard.
+# On Anaconda installs (user already exists), go straight to the greeter.
 
 set -euo pipefail
 
 CONFIG="/etc/greetd/config.toml"
 
-cat > "$CONFIG" <<EOF
+has_users=$(getent passwd \
+  | awk -F: '$3 >= 1000 && $3 < 65534 { found=1; exit } END { print found+0 }')
+
+if [ "$has_users" -eq 0 ]; then
+    cat > "$CONFIG" <<EOF
+[terminal]
+vt = 7
+
+[default_session]
+command = "/usr/libexec/universal-lite-greeter-launch"
+user = "greetd"
+
+[initial_session]
+command = "/usr/libexec/universal-lite-wizard-session"
+user = "root"
+EOF
+else
+    cat > "$CONFIG" <<EOF
 [terminal]
 vt = 7
 
@@ -14,3 +32,4 @@ vt = 7
 command = "/usr/libexec/universal-lite-greeter-launch"
 user = "greetd"
 EOF
+fi
