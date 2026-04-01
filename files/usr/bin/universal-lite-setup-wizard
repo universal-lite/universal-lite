@@ -6,15 +6,17 @@ first boot (DD install path) when no user accounts exist.  Creates a local
 user with sudo (wheel) access, configures timezone, swap, and optional
 Flatpak apps, then reboots into the normal login screen.
 
-Six-page flow:
+Seven-page flow:
   Page 0 — Network (WiFi scan-and-connect, auto-skipped if online)
-  Page 1 — Account (name, username, password)
-  Page 2 — System setup (timezone, memory management, admin/root)
-  Page 3 — Apps (Flatpak app selection)
-  Page 4 — Summary and confirmation
-  Page 5 — Progress (real-time setup execution)
+  Page 1 — Disk (target drive, filesystem, memory management)
+  Page 2 — Account (name, username, password)
+  Page 3 — System setup (timezone, admin/root)
+  Page 4 — Apps (Flatpak app selection)
+  Page 5 — Summary and confirmation
+  Page 6 — Progress (real-time setup execution)
 """
 
+import json
 import os
 import pwd
 import re
@@ -243,6 +245,14 @@ button.back-button:hover label {
     color: #888888;
     font-style: italic;
 }
+
+.warning-label {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: #ff6b6b;
+    font-weight: bold;
+    margin-top: 16px;
+}
 """
 
 USERNAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
@@ -252,14 +262,17 @@ SWAP_STRATEGIES = [
     "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay open",
 ]
 
-SWAP_SIZES = ["2 GB", "4 GB", "Custom"]
+SWAP_SIZES = ["2 GB", "4 GB", "8 GB", "Custom"]
+
+FILESYSTEMS = ["ext4", "xfs", "btrfs"]
 
 PAGE_NETWORK = 0
-PAGE_ACCOUNT = 1
-PAGE_SYSTEM = 2
-PAGE_APPS = 3
-PAGE_CONFIRM = 4
-PAGE_PROGRESS = 5
+PAGE_DISK = 1
+PAGE_ACCOUNT = 2
+PAGE_SYSTEM = 3
+PAGE_APPS = 4
+PAGE_CONFIRM = 5
+PAGE_PROGRESS = 6
 
 DEFAULT_FLATPAKS = [
     ("com.google.Chrome", "Google Chrome", "Web browser"),
@@ -307,6 +320,38 @@ def _load_timezones() -> list[str]:
             "America/Los_Angeles", "Europe/London", "UTC"]
 
 
+def _load_drives() -> list[dict]:
+    """Return list of eligible target drives from lsblk, excluding the boot device."""
+    try:
+        result = subprocess.run(
+            ["lsblk", "--json", "--output", "NAME,SIZE,MODEL,TRAN,RM,TYPE"],
+            capture_output=True, text=True, check=True, timeout=10,
+        )
+        data = json.loads(result.stdout)
+    except (subprocess.CalledProcessError, json.JSONDecodeError, subprocess.TimeoutExpired):
+        return []
+
+    # Identify the disk backing / so we can exclude the boot USB
+    boot_disk = ""
+    try:
+        root_result = subprocess.run(
+            ["findmnt", "-n", "-o", "SOURCE", "/"],
+            capture_output=True, text=True, timeout=5,
+        )
+        boot_disk = re.sub(r"p?\d+$", "", os.path.basename(root_result.stdout.strip()))
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        pass
+
+    drives = []
+    for dev in data.get("blockdevices", []):
+        if dev.get("type") != "disk":
+            continue
+        if dev.get("name") == boot_disk:
+            continue
+        drives.append(dev)
+    return drives
+
+
 class SetupWizardWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app, title="Universal-Lite Setup Wizard")
@@ -316,7 +361,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._timezones = _load_timezones()
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
         self._connected_ssid: str | None = None
-        self._current_page = PAGE_ACCOUNT  # Start at Account (network skipped by default)
+        self._current_page = PAGE_DISK  # Start at Disk (network skipped by default)
 
         # --- outer centering container ---
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
@@ -326,7 +371,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         outer.set_margin_bottom(24)
 
         # Step indicator
-        self._step_label = Gtk.Label(label="Step 1 of 4")
+        self._step_label = Gtk.Label(label="Step 1 of 6")
         self._step_label.add_css_class("step-indicator")
         self._step_label.set_halign(Gtk.Align.CENTER)
         outer.append(self._step_label)
@@ -337,6 +382,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._stack.set_transition_duration(200)
 
         self._stack.add_named(self._build_network_page(), "network")
+        self._stack.add_named(self._build_disk_page(), "disk")
         self._stack.add_named(self._build_account_page(), "account")
         self._stack.add_named(self._build_system_page(), "system")
         self._stack.add_named(self._build_apps_page(), "apps")
@@ -533,7 +579,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         scrolled.set_child(wrapper)
         return scrolled
 
-    def _build_system_page(self) -> Gtk.ScrolledWindow:
+    def _build_disk_page(self) -> Gtk.ScrolledWindow:
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled.set_propagate_natural_height(True)
@@ -546,25 +592,43 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="System Setup")
+        title = Gtk.Label(label="Choose Installation Disk")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
 
-        # Timezone
-        card.append(self._make_label("Timezone"))
-        tz_model = Gtk.StringList.new(self._timezones)
-        self._tz_dropdown = Gtk.DropDown(model=tz_model)
-        self._tz_dropdown.set_hexpand(True)
-        default_tz_idx = 0
-        for i, tz in enumerate(self._timezones):
-            if tz == "America/New_York":
-                default_tz_idx = i
-                break
-        self._tz_dropdown.set_selected(default_tz_idx)
-        card.append(self._tz_dropdown)
+        subtitle = Gtk.Label(label="Select the target drive and installation options.")
+        subtitle.add_css_class("welcome-subtitle")
+        subtitle.set_halign(Gtk.Align.CENTER)
+        card.append(subtitle)
 
-        # Memory management
+        # --- Target drive ---
+        card.append(self._make_label("Target drive"))
+        self._drives = _load_drives()
+        drive_labels = []
+        for d in self._drives:
+            model = d.get("model") or "Unknown"
+            label = f"{d['name']} \u2014 {d['size']} {model}"
+            tran = d.get("tran")
+            if tran:
+                label += f" ({tran})"
+            drive_labels.append(label)
+        if not drive_labels:
+            drive_labels = ["No eligible drives found"]
+        drive_model = Gtk.StringList.new(drive_labels)
+        self._drive_dropdown = Gtk.DropDown(model=drive_model)
+        self._drive_dropdown.set_hexpand(True)
+        card.append(self._drive_dropdown)
+
+        # --- Filesystem ---
+        card.append(self._make_label("Filesystem"))
+        fs_model = Gtk.StringList.new(FILESYSTEMS)
+        self._fs_dropdown = Gtk.DropDown(model=fs_model)
+        self._fs_dropdown.set_hexpand(True)
+        self._fs_dropdown.set_selected(0)  # ext4 default
+        card.append(self._fs_dropdown)
+
+        # --- Memory management (moved from System page) ---
         card.append(self._make_label("Memory management"))
         swap_model = Gtk.StringList.new(SWAP_STRATEGIES)
         self._swap_strategy_dropdown = Gtk.DropDown(model=swap_model)
@@ -572,7 +636,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._swap_strategy_dropdown.set_selected(0)
         card.append(self._swap_strategy_dropdown)
 
-        # Swap size controls (conditional)
+        # Swap size controls (visible only when zswap selected)
         self._swap_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         self._swap_size_box.append(self._make_label("Disk swap size"))
@@ -608,6 +672,47 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._swap_strategy_dropdown.connect("notify::selected", self._on_swap_strategy_changed)
         self._swap_size_dropdown.connect("notify::selected", self._on_swap_size_changed)
 
+        # --- Warning ---
+        warning = Gtk.Label(label="All data on the selected drive will be erased.")
+        warning.add_css_class("warning-label")
+        warning.set_halign(Gtk.Align.CENTER)
+        card.append(warning)
+
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
+
+    def _build_system_page(self) -> Gtk.ScrolledWindow:
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_propagate_natural_height(True)
+
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.CENTER)
+
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+
+        title = Gtk.Label(label="System Setup")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+
+        # Timezone
+        card.append(self._make_label("Timezone"))
+        tz_model = Gtk.StringList.new(self._timezones)
+        self._tz_dropdown = Gtk.DropDown(model=tz_model)
+        self._tz_dropdown.set_hexpand(True)
+        default_tz_idx = 0
+        for i, tz in enumerate(self._timezones):
+            if tz == "America/New_York":
+                default_tz_idx = i
+                break
+        self._tz_dropdown.set_selected(default_tz_idx)
+        card.append(self._tz_dropdown)
+
         # Administrator checkbox
         self._admin_check = Gtk.CheckButton(label="Administrator account (sudo)")
         self._admin_check.set_active(True)
@@ -622,22 +727,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._root_password_entry.set_hexpand(True)
         self._root_password_entry.connect("activate", lambda _: self._go_next())
         card.append(self._root_password_entry)
-
-        # Partition expansion
-        self._expand_root_check = Gtk.CheckButton(label="Expand root partition to fill disk")
-        self._expand_root_check.set_active(True)
-        self._expand_root_check.add_css_class("form-label")
-        card.append(self._expand_root_check)
-
-        expand_desc = Gtk.Label(
-            label="Grows the root partition to use all available disk space on next boot."
-        )
-        expand_desc.add_css_class("form-description")
-        expand_desc.set_halign(Gtk.Align.START)
-        expand_desc.set_wrap(True)
-        expand_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-        expand_desc.set_max_width_chars(50)
-        card.append(expand_desc)
 
         wrapper.append(card)
         scrolled.set_child(wrapper)
@@ -734,7 +823,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_admin = self._make_summary_row(card, "Administrator")
         self._summary_root = self._make_summary_row(card, "Root password")
-        self._summary_expand = self._make_summary_row(card, "Expand partition")
         self._summary_apps = self._make_summary_row(card, "Apps")
 
         wrapper.append(card)
@@ -837,7 +925,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # WiFi available, no connectivity — show network page if user hasn't advanced
         self._network_skipped = False
-        if self._current_page == PAGE_ACCOUNT:
+        if self._current_page == PAGE_DISK:
             self._current_page = PAGE_NETWORK
             self._update_navigation()
         self._request_wifi_scan()
@@ -1120,13 +1208,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _get_pages(self) -> list[str]:
         """Return ordered page names, excluding auto-skipped network."""
-        pages = ["network", "account", "system", "apps", "confirm", "progress"]
+        pages = ["network", "disk", "account", "system", "apps", "confirm", "progress"]
         if self._network_skipped:
             pages.remove("network")
         return pages
 
     def _get_first_page(self) -> int:
-        return PAGE_ACCOUNT if self._network_skipped else PAGE_NETWORK
+        return PAGE_DISK if self._network_skipped else PAGE_NETWORK
 
     def _go_next(self) -> None:
         if not self._validate_page(self._current_page):
@@ -1152,9 +1240,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _update_navigation(self) -> None:
         page_names = {
-            PAGE_NETWORK: "network", PAGE_ACCOUNT: "account",
-            PAGE_SYSTEM: "system", PAGE_APPS: "apps",
-            PAGE_CONFIRM: "confirm", PAGE_PROGRESS: "progress",
+            PAGE_NETWORK: "network", PAGE_DISK: "disk",
+            PAGE_ACCOUNT: "account", PAGE_SYSTEM: "system",
+            PAGE_APPS: "apps", PAGE_CONFIRM: "confirm",
+            PAGE_PROGRESS: "progress",
         }
         self._stack.set_visible_child_name(page_names[self._current_page])
 
@@ -1178,7 +1267,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         )
 
         # Focus first input on new page
-        if self._current_page == PAGE_ACCOUNT:
+        if self._current_page == PAGE_DISK:
+            self._drive_dropdown.grab_focus()
+        elif self._current_page == PAGE_ACCOUNT:
             self._fullname_entry.grab_focus()
         elif self._current_page == PAGE_SYSTEM:
             self._tz_dropdown.grab_focus()
@@ -1188,11 +1279,24 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _validate_page(self, page: int) -> bool:
-        if page == PAGE_ACCOUNT:
+        if page == PAGE_DISK:
+            return self._validate_disk()
+        elif page == PAGE_ACCOUNT:
             return self._validate_account()
         elif page == PAGE_SYSTEM:
             return self._validate_system()
         return True  # Network, Apps, Confirm have no blocking validation
+
+    def _validate_disk(self) -> bool:
+        if not self._drives:
+            self._set_status("No target drives found. Connect a drive and restart the installer.")
+            return False
+
+        use_zswap, swap_gb = self._get_swap_config()
+        if use_zswap and swap_gb == -1:
+            self._set_status("Custom swap size must be a positive whole number (in GB).")
+            return False
+        return True
 
     def _validate_account(self) -> bool:
         fullname = self._fullname_entry.get_text().strip()
@@ -1232,11 +1336,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 "Without one of these you will be locked out of system management."
             )
             return False
-
-        use_zswap, swap_gb = self._get_swap_config()
-        if use_zswap and swap_gb == -1:
-            self._set_status("Custom swap size must be a positive whole number (in GB).")
-            return False
         return True
 
     # ------------------------------------------------------------------
@@ -1266,10 +1365,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         else:
             self._summary_memory.set_text("zram only (compressed RAM)")
 
-        self._summary_expand.set_text(
-            "Yes" if self._expand_root_check.get_active() else "No"
-        )
-
         # Apps
         selected = self._get_selected_apps()
         if selected:
@@ -1285,7 +1380,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._swap_size_box.set_visible(dropdown.get_selected() == 1)
 
     def _on_swap_size_changed(self, dropdown: Gtk.DropDown, _pspec: object) -> None:
-        self._custom_size_box.set_visible(dropdown.get_selected() == 2)
+        self._custom_size_box.set_visible(dropdown.get_selected() == 3)
 
     # ------------------------------------------------------------------
     # Status
@@ -1318,6 +1413,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 swap_gb = 2
             elif size_idx == 1:
                 swap_gb = 4
+            elif size_idx == 2:
+                swap_gb = 8
             else:
                 custom_text = self._custom_size_entry.get_text().strip()
                 try:
@@ -1405,7 +1502,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_configure_system(self) -> str | None:
-        """Set timezone, root password, and optional partition expansion."""
+        """Set timezone and root password."""
         root_password = self._setup_root_password
         timezone = self._setup_timezone
 
@@ -1427,15 +1524,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             )
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
             return f"Failed to set timezone: {exc}"
-
-        if self._setup_expand_root:
-            try:
-                subprocess.run(
-                    ["systemctl", "enable", "systemd-repart.service"],
-                    check=True, capture_output=True, text=True, timeout=15,
-                )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-                return f"Failed to enable partition expansion: {exc}"
 
         return None
 
@@ -1587,7 +1675,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._setup_root_password = self._root_password_entry.get_text()
         self._setup_timezone = self._get_selected_timezone()
         self._setup_use_zswap, self._setup_swap_gb = self._get_swap_config()
-        self._setup_expand_root = self._expand_root_check.get_active()
 
         # Build step list: (label, callable, is_flatpak_step)
         self._steps: list[tuple[str, callable, bool]] = [
