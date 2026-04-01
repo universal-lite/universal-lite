@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-"""Universal-Lite first-boot user creation wizard.
+"""Universal-Lite USB installer wizard.
 
 Launched by greetd's initial_session inside a labwc desktop session on
-first boot (DD install path) when no user accounts exist.  Creates a local
-user with sudo (wheel) access, configures timezone, swap, and optional
-Flatpak apps, then reboots into the normal login screen.
+the USB live environment when no user accounts exist.  Installs the OS
+to a target disk via bootc, configures the sysroot directly (Anaconda
+pattern), and rsyncs pre-downloaded Flatpak apps from the live
+environment.
 
 Seven-page flow:
   Page 0 — Network (WiFi scan-and-connect, auto-skipped if online)
   Page 1 — Disk (target drive, filesystem, memory management)
   Page 2 — Account (name, username, password)
   Page 3 — System setup (timezone, admin/root)
-  Page 4 — Apps (Flatpak app selection)
+  Page 4 — Apps (Flatpak app selection — rsync from USB)
   Page 5 — Summary and confirmation
-  Page 6 — Progress (real-time setup execution)
+  Page 6 — Progress (real-time install execution)
 """
 
 import json
