@@ -1,0 +1,26 @@
+#!/bin/bash
+# Wizard-mode labwc session — launched by greetd's initial_session on
+# first boot (DD path) when no user accounts exist.  Sets the flag that
+# tells autostart to launch only the setup wizard in a bare environment.
+
+set -euo pipefail
+
+export UNIVERSAL_LITE_WIZARD=1
+export XDG_CURRENT_DESKTOP="labwc"
+export XDG_SESSION_DESKTOP="labwc"
+export XDG_SESSION_TYPE="wayland"
+
+# Fix wlroots hardware cursor rendering upside-down / misplaced in VMs.
+if systemd-detect-virt -q; then
+    export WLR_NO_HARDWARE_CURSORS=1
+fi
+
+# GTK 4.16+ defaults to the Vulkan renderer.  VMs and older Intel GPUs
+# (Bay Trail, Haswell) lack Vulkan support — force GL to avoid blank windows.
+if command -v vulkaninfo >/dev/null 2>&1 && vulkaninfo --summary >/dev/null 2>&1; then
+    : # Vulkan works, let GTK choose
+else
+    export GSK_RENDERER=gl
+fi
+
+exec labwc
