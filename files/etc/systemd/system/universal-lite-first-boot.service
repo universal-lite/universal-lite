@@ -1,0 +1,13 @@
+[Unit]
+Description=First-boot configuration for installer-deployed Universal-Lite
+After=local-fs.target
+Before=greetd.service swap.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/universal-lite-first-boot
+ConditionPathExists=/var/lib/universal-lite/install-config.json
+ConditionPathExists=!/var/lib/universal-lite/setup-done
+
+[Install]
+WantedBy=multi-user.target

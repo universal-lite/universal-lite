@@ -1,0 +1,61 @@
+#!/bin/bash
+# First-boot configuration for installer-deployed Universal-Lite systems.
+# Reads /var/lib/universal-lite/install-config.json and performs operations
+# that require the running target system: swap file creation, service
+# enablement, grubby kernel args.
+#
+# Called by universal-lite-first-boot.service.
+# Guards: runs only when install-config.json exists and setup-done does not.
+
+set -euo pipefail
+
+CONFIG=/var/lib/universal-lite/install-config.json
+STATE_DIR=/var/lib/universal-lite
+
+# --- Read config via Python (already available in the image) ---
+read_config() {
+    python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get(sys.argv[2], ''))" \
+        "$CONFIG" "$1"
+}
+
+strategy=$(read_config memory_strategy)
+swap_gb=$(read_config swap_size_gb)
+username=$(read_config username)
+
+# --- Memory management ---
+if [ "$strategy" = "zswap" ] && [ -n "$swap_gb" ] && [ "$swap_gb" != "None" ]; then
+    # Write swap size for the swap-init script
+    echo "$swap_gb" > "$STATE_DIR/swap-size"
+
+    # Create the swap file
+    /usr/libexec/universal-lite-swap-init
+
+    # Enable swap services for future boots
+    systemctl enable \
+        universal-lite-swap-init.service \
+        universal-lite-encrypted-swap.service \
+        universal-lite-zswap.service
+
+    # Activate encrypted swap for this boot
+    /usr/libexec/universal-lite-encrypted-swap start
+
+    # Mask zram-generator so it doesn't compete with disk swap
+    systemctl mask systemd-zram-setup@.service
+
+    # Apply zswap kernel args so they take effect from the next boot onward
+    grubby --update-kernel=ALL \
+        --args="zswap.enabled=1 zswap.compressor=zstd zswap.max_pool_percent=25"
+
+    # Persist swappiness for disk-backed swap
+    echo "vm.swappiness = 100" > /etc/sysctl.d/91-universal-lite-zswap.conf
+    sysctl -w vm.swappiness=100 || true
+fi
+# zram: no action needed — zram-generator.conf (125%) is already in the image
+
+# --- Greeter prefill ---
+if [ -n "$username" ]; then
+    echo "$username" > "$STATE_DIR/last-user"
+fi
+
+# --- Mark setup complete ---
+touch "$STATE_DIR/setup-done"
