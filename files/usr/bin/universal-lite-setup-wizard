@@ -284,7 +284,7 @@ DEFAULT_FLATPAKS = [
 
 
 def _hash_password(plaintext: str) -> str:
-    """Return a SHA-512 crypt(3) hash suitable for AccountsService.SetPassword."""
+    """Return a SHA-512 crypt(3) hash suitable for useradd --password."""
     try:
         import crypt
         return crypt.crypt(plaintext, crypt.mksalt(crypt.METHOD_SHA512))
@@ -750,7 +750,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(title)
 
         subtitle = Gtk.Label(
-            label="These apps will be installed during setup. Uncheck any you don't want."
+            label="These apps are pre-downloaded and will be copied during install. Uncheck any you don't want."
         )
         subtitle.add_css_class("welcome-subtitle")
         subtitle.set_halign(Gtk.Align.CENTER)
@@ -805,21 +805,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Ready to Go")
+        title = Gtk.Label(label="Ready to Install")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
 
-        subtitle = Gtk.Label(label="Review your settings and click Set Up to finish.")
+        subtitle = Gtk.Label(label="Review your settings and click Install to begin.")
         subtitle.add_css_class("welcome-subtitle")
         subtitle.set_halign(Gtk.Align.CENTER)
         card.append(subtitle)
 
         self._summary_network = self._make_summary_row(card, "Network")
+        self._summary_drive = self._make_summary_row(card, "Target drive")
+        self._summary_filesystem = self._make_summary_row(card, "Filesystem")
+        self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_name = self._make_summary_row(card, "Name")
         self._summary_username = self._make_summary_row(card, "Username")
         self._summary_timezone = self._make_summary_row(card, "Timezone")
-        self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_admin = self._make_summary_row(card, "Administrator")
         self._summary_root = self._make_summary_row(card, "Root password")
         self._summary_apps = self._make_summary_row(card, "Apps")
@@ -841,7 +843,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Setting Up...")
+        title = Gtk.Label(label="Installing...")
         title.add_css_class("welcome-title")
         title.set_halign(Gtk.Align.CENTER)
         card.append(title)
@@ -1262,7 +1264,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         )
         self._next_button.set_visible(not is_progress)
         self._next_button.set_label(
-            "Set Up" if self._current_page == PAGE_CONFIRM else "Next"
+            "Install" if self._current_page == PAGE_CONFIRM else "Next"
         )
 
         # Focus first input on new page
@@ -1348,8 +1350,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         elif self._connected_ssid:
             self._summary_network.set_text(f"Connected to {self._connected_ssid}")
         else:
-            self._summary_network.set_text("No network (offline setup)")
+            self._summary_network.set_text("No network (offline install)")
 
+        # Disk
+        self._summary_drive.set_text(self._get_selected_drive_display())
+        self._summary_filesystem.set_text(self._get_selected_filesystem())
+
+        # Memory
+        use_zswap, swap_gb = self._get_swap_config()
+        if use_zswap:
+            self._summary_memory.set_text(f"zswap with {swap_gb} GB disk swap")
+        else:
+            self._summary_memory.set_text("zram only (compressed RAM)")
+
+        # Account
         self._summary_name.set_text(self._fullname_entry.get_text().strip())
         self._summary_username.set_text(self._username_entry.get_text().strip())
         self._summary_timezone.set_text(self._get_selected_timezone())
@@ -1357,12 +1371,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_root.set_text(
             "Set" if self._root_password_entry.get_text() else "Not set"
         )
-
-        use_zswap, swap_gb = self._get_swap_config()
-        if use_zswap:
-            self._summary_memory.set_text(f"zswap with {swap_gb} GB disk swap")
-        else:
-            self._summary_memory.set_text("zram only (compressed RAM)")
 
         # Apps
         selected = self._get_selected_apps()
@@ -1424,6 +1432,24 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     swap_gb = -1
 
         return use_zswap, swap_gb
+
+    def _get_selected_drive_display(self) -> str:
+        """Return human-readable description of the selected target drive."""
+        if not self._drives:
+            return "None"
+        idx = self._drive_dropdown.get_selected()
+        if idx < 0 or idx >= len(self._drives):
+            return "None"
+        d = self._drives[idx]
+        model = d.get("model") or "Unknown"
+        return f"{d['name']} \u2014 {d['size']} {model}"
+
+    def _get_selected_filesystem(self) -> str:
+        """Return the selected filesystem name."""
+        idx = self._fs_dropdown.get_selected()
+        if 0 <= idx < len(FILESYSTEMS):
+            return FILESYSTEMS[idx]
+        return "ext4"
 
     # ------------------------------------------------------------------
     # Sysroot management (installer mode)
