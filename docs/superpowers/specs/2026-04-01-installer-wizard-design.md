@@ -116,9 +116,15 @@ Step runner executes the install pipeline:
    the sysroot's `/var/lib/flatpak`.  Only selected apps and their
    dependencies are copied.
 
-5. **"Configuring memory management..."** — write swap-size file and swap
-   strategy config to sysroot's `/var/lib/universal-lite/`.  Write
-   zram-generator config if zram selected.
+5. **"Configuring memory management..."** — write swap strategy (zram or
+   zswap) and swap-size file to sysroot's `/var/lib/universal-lite/`.
+   If zram: write zram-generator config to sysroot's `/etc/`.
+   If zswap: write config so first-boot service will enable
+   `universal-lite-encrypted-swap.service` (dm-crypt with random per-boot
+   key), create the swap file, mask zram-generator, and apply zswap kernel
+   args via grubby.  The encrypted swap architecture (loop device →
+   dm-crypt → mkswap → swapon, fresh random key each boot) must be
+   preserved exactly.
 
 6. **"Finalizing..."** — write first-boot config JSON, unmount sysroot.
 
