@@ -312,6 +312,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app, title="Universal-Lite Setup Wizard")
         self.set_default_size(800, 600)
+        self.fullscreen()
 
         self._timezones = _load_timezones()
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
