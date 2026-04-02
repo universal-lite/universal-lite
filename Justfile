@@ -309,6 +309,7 @@ test-installer $target_image=("localhost/" + image_name) $tag=default_tag ram="4
     echo "Installer USB: ${image_file}"
     echo "Target disk:   ${target_disk} (${disk})"
     echo ""
+    echo "After install, close the VM and run: just run-installed"
     echo "Ctrl+Alt+G = release mouse | Ctrl+Alt+F = fullscreen"
 
     qemu-system-x86_64 \
@@ -323,8 +324,31 @@ test-installer $target_image=("localhost/" + image_name) $tag=default_tag ram="4
         -display gtk \
         -vga virtio
 
-    # Clean up the target disk after the VM exits
-    rm -f "$target_disk"
+# Boot the installed system from a previous test-installer run
+[group('Run Virtal Machine')]
+run-installed ram="4G":
+    #!/usr/bin/bash
+    set -euo pipefail
+
+    target_disk="output/raw/target.qcow2"
+    if [[ ! -f "$target_disk" ]]; then
+        echo "No installed system found. Run 'just test-installer' first."
+        exit 1
+    fi
+
+    echo "Booting: ${target_disk}"
+    echo "Ctrl+Alt+G = release mouse | Ctrl+Alt+F = fullscreen"
+
+    qemu-system-x86_64 \
+        -enable-kvm \
+        -m "$ram" \
+        -smp 2 \
+        -bios /usr/share/edk2/ovmf/OVMF_CODE.fd \
+        -drive file="${target_disk}",format=qcow2,if=virtio \
+        -device virtio-net-pci,netdev=net0 \
+        -netdev user,id=net0 \
+        -display gtk \
+        -vga virtio
 
 # Run a virtual machine using systemd-vmspawn
 [group('Run Virtal Machine')]
