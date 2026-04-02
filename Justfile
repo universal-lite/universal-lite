@@ -291,7 +291,7 @@ run-vm-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-
 
 # Test the USB installer in a native QEMU window (raw image + blank target disk)
 [group('Run Virtal Machine')]
-test-installer $target_image=("localhost/" + image_name) $tag=default_tag ram="4G" disk="20G":
+test-installer $target_image=("localhost/" + image_name) $tag=default_tag $ram="4G" $disk="20G":
     #!/usr/bin/bash
     set -euo pipefail
 
@@ -326,7 +326,7 @@ test-installer $target_image=("localhost/" + image_name) $tag=default_tag ram="4
 
 # Boot the installed system from a previous test-installer run
 [group('Run Virtal Machine')]
-run-installed ram="4G":
+run-installed $ram="4G":
     #!/usr/bin/bash
     set -euo pipefail
 
