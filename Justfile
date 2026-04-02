@@ -289,6 +289,43 @@ run-vm-raw $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-
 [group('Run Virtal Machine')]
 run-vm-iso $target_image=("localhost/" + image_name) $tag=default_tag: && (_run-vm target_image tag "iso" "disk_config/iso.toml")
 
+# Test the USB installer in a native QEMU window (raw image + blank target disk)
+[group('Run Virtal Machine')]
+test-installer $target_image=("localhost/" + image_name) $tag=default_tag ram="4G" disk="20G":
+    #!/usr/bin/bash
+    set -euo pipefail
+
+    image_file="output/raw/disk.raw"
+
+    # Build the raw image if it doesn't exist
+    if [[ ! -f "${image_file}" ]]; then
+        just build-raw "$target_image" "$tag"
+    fi
+
+    # Create a blank target disk for the installer to write to
+    target_disk="output/raw/target.qcow2"
+    qemu-img create -f qcow2 "$target_disk" "$disk"
+
+    echo "Installer USB: ${image_file}"
+    echo "Target disk:   ${target_disk} (${disk})"
+    echo ""
+    echo "Ctrl+Alt+G = release mouse | Ctrl+Alt+F = fullscreen"
+
+    qemu-system-x86_64 \
+        -enable-kvm \
+        -m "$ram" \
+        -smp 2 \
+        -bios /usr/share/edk2/ovmf/OVMF_CODE.fd \
+        -drive file="${image_file}",format=raw,if=virtio,readonly=on \
+        -drive file="${target_disk}",format=qcow2,if=virtio \
+        -device virtio-net-pci,netdev=net0 \
+        -netdev user,id=net0 \
+        -display gtk \
+        -vga virtio
+
+    # Clean up the target disk after the VM exits
+    rm -f "$target_disk"
+
 # Run a virtual machine using systemd-vmspawn
 [group('Run Virtal Machine')]
 spawn-vm rebuild="0" type="qcow2" ram="6G":
