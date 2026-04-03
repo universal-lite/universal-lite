@@ -110,6 +110,9 @@ dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
 cp -a /ctx/files/. /
 
+# Install language name matrix for installer wizard locale selection
+install -Dm644 /ctx/po/language-names.json /usr/share/universal-lite/language-names.json
+
 # Ensure video group exists for brightnessctl backlight access
 groupadd -f video
 
