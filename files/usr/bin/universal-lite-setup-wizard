@@ -7,14 +7,15 @@ to a target disk via bootc, configures the sysroot directly (Anaconda
 pattern), and rsyncs pre-downloaded Flatpak apps from the live
 environment.
 
-Seven-page flow:
-  Page 0 — Network (WiFi scan-and-connect, auto-skipped if online)
-  Page 1 — Disk (target drive, filesystem, memory management)
-  Page 2 — Account (name, username, password)
-  Page 3 — System setup (timezone, admin/root)
-  Page 4 — Apps (Flatpak app selection — rsync from USB)
-  Page 5 — Summary and confirmation
-  Page 6 — Progress (real-time install execution)
+Eight-page flow:
+  Page 0 — Language (locale selection)
+  Page 1 — Network (WiFi scan-and-connect, auto-skipped if online)
+  Page 2 — Disk (target drive, filesystem, memory management)
+  Page 3 — Account (name, username, password)
+  Page 4 — System setup (timezone, admin/root)
+  Page 5 — Apps (Flatpak app selection — rsync from USB)
+  Page 6 — Summary and confirmation
+  Page 7 — Progress (real-time install execution)
 """
 
 import gettext
@@ -283,13 +284,14 @@ SWAP_SIZES = ["2 GB", "4 GB", "8 GB", N_("Custom")]
 
 FILESYSTEMS = ["ext4", "xfs", "btrfs"]
 
-PAGE_NETWORK = 0
-PAGE_DISK = 1
-PAGE_ACCOUNT = 2
-PAGE_SYSTEM = 3
-PAGE_APPS = 4
-PAGE_CONFIRM = 5
-PAGE_PROGRESS = 6
+PAGE_LANGUAGE = 0
+PAGE_NETWORK = 1
+PAGE_DISK = 2
+PAGE_ACCOUNT = 3
+PAGE_SYSTEM = 4
+PAGE_APPS = 5
+PAGE_CONFIRM = 6
+PAGE_PROGRESS = 7
 
 DEFAULT_FLATPAKS = [
     ("com.google.Chrome", "Google Chrome", "Web browser"),
@@ -377,10 +379,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Retranslation registry: list of (setter_callable, english_text)
         self._retranslatable: list[tuple[callable, str]] = []
 
+        self._selected_locale = "en_US.UTF-8"
+        self._selected_lang = "en"
+
+        # Load language name matrix
+        _lang_names_path = Path("/usr/share/universal-lite/language-names.json")
+        if not _lang_names_path.exists():
+            _lang_names_path = Path(__file__).resolve().parent / "../../po/language-names.json"
+        with open(_lang_names_path) as f:
+            self._language_names = json.load(f)
+
         self._timezones = _load_timezones()
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
         self._connected_ssid: str | None = None
-        self._current_page = PAGE_DISK  # Start at Disk (network skipped by default)
+        self._current_page = PAGE_LANGUAGE  # Start at Language page
 
         # --- outer centering container ---
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
@@ -400,6 +412,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(200)
 
+        self._stack.add_named(self._build_language_page(), "language")
         self._stack.add_named(self._build_network_page(), "network")
         self._stack.add_named(self._build_disk_page(), "disk")
         self._stack.add_named(self._build_account_page(), "account")
@@ -448,6 +461,195 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
     # Page builders
     # ------------------------------------------------------------------
+
+    def _build_language_page(self) -> Gtk.ScrolledWindow:
+        LANGUAGE_ENTRIES = [
+            ("am", "am_ET.UTF-8", []),
+            ("ar", "ar_EG.UTF-8", [
+                ("ar_SA.UTF-8", "العربية (السعودية)"), ("ar_MA.UTF-8", "العربية (المغرب)"),
+                ("ar_DZ.UTF-8", "العربية (الجزائر)"), ("ar_TN.UTF-8", "العربية (تونس)"),
+                ("ar_IQ.UTF-8", "العربية (العراق)"), ("ar_JO.UTF-8", "العربية (الأردن)"),
+                ("ar_LB.UTF-8", "العربية (لبنان)"), ("ar_SY.UTF-8", "العربية (سوريا)"),
+            ]),
+            ("de", "de_DE.UTF-8", [("de_AT.UTF-8", "Deutsch (Österreich)"), ("de_CH.UTF-8", "Deutsch (Schweiz)")]),
+            ("en", "en_US.UTF-8", [
+                ("en_GB.UTF-8", "English (United Kingdom)"), ("en_AU.UTF-8", "English (Australia)"),
+                ("en_CA.UTF-8", "English (Canada)"),
+            ]),
+            ("es", "es_ES.UTF-8", [
+                ("es_MX.UTF-8", "Español (México)"), ("es_AR.UTF-8", "Español (Argentina)"),
+                ("es_CO.UTF-8", "Español (Colombia)"), ("es_CL.UTF-8", "Español (Chile)"),
+                ("es_PE.UTF-8", "Español (Perú)"),
+            ]),
+            ("fa", "fa_IR.UTF-8", []),
+            ("fr", "fr_FR.UTF-8", [
+                ("fr_CA.UTF-8", "Français (Canada)"), ("fr_BE.UTF-8", "Français (Belgique)"),
+                ("fr_CH.UTF-8", "Français (Suisse)"),
+            ]),
+            ("ha", "ha_NG.UTF-8", []),
+            ("hi", "hi_IN.UTF-8", []),
+            ("it", "it_IT.UTF-8", []),
+            ("ja", "ja_JP.UTF-8", []),
+            ("ko", "ko_KR.UTF-8", []),
+            ("nl", "nl_NL.UTF-8", [("nl_BE.UTF-8", "Nederlands (België)")]),
+            ("pl", "pl_PL.UTF-8", []),
+            ("pt", "pt_BR.UTF-8", [("pt_PT.UTF-8", "Português (Portugal)")]),
+            ("ru", "ru_RU.UTF-8", []),
+            ("sv", "sv_SE.UTF-8", []),
+            ("sw", "sw_KE.UTF-8", [("sw_TZ.UTF-8", "Kiswahili (Tanzania)")]),
+            ("th", "th_TH.UTF-8", []),
+            ("tr", "tr_TR.UTF-8", []),
+            ("vi", "vi_VN.UTF-8", []),
+            ("yo", "yo_NG.UTF-8", []),
+            ("zh", "zh_CN.UTF-8", [
+                ("zh_CN.UTF-8", "简体中文 (Simplified)"),
+                ("zh_TW.UTF-8", "繁體中文 (Traditional)"),
+                ("zh_HK.UTF-8", "繁體中文 (Hong Kong)"),
+            ]),
+        ]
+
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_propagate_natural_height(True)
+
+        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        wrapper.set_halign(Gtk.Align.CENTER)
+        wrapper.set_valign(Gtk.Align.START)
+
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        card.add_css_class("card")
+        card.set_size_request(480, -1)
+
+        title = Gtk.Label(label="Language")
+        title.add_css_class("welcome-title")
+        title.set_halign(Gtk.Align.CENTER)
+        card.append(title)
+
+        self._language_subtitle = Gtk.Label(label=_("Select your language."))
+        self._language_subtitle.add_css_class("welcome-subtitle")
+        self._language_subtitle.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._language_subtitle.set_label, "Select your language."))
+        card.append(self._language_subtitle)
+
+        lang_list = Gtk.ListBox()
+        lang_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        lang_list.set_vexpand(False)
+
+        self._lang_rows: list[dict] = []
+        self._lang_selected_row_box: Gtk.Box | None = None
+
+        for code, default_locale, variants in LANGUAGE_ENTRIES:
+            row = Gtk.ListBoxRow()
+            row_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            row_box.add_css_class("wifi-row")
+
+            # Top line: native name (left) + translated name (right)
+            top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+
+            native_name = self._language_names[code][code]
+            native_label = Gtk.Label(label=native_name)
+            native_label.add_css_class("wifi-ssid")
+            native_label.set_halign(Gtk.Align.START)
+            native_label.set_hexpand(True)
+            top.append(native_label)
+
+            translated_name = self._language_names[self._selected_lang][code]
+            translated_label = Gtk.Label(label=translated_name)
+            translated_label.add_css_class("wifi-detail")
+            top.append(translated_label)
+
+            row_box.append(top)
+
+            # Variant expansion box (hidden by default)
+            variant_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            variant_box.set_visible(False)
+            variant_box.set_margin_top(8)
+
+            first_radio: Gtk.CheckButton | None = None
+            if variants:
+                for v_locale, v_label_text in variants:
+                    radio = Gtk.CheckButton(label=v_label_text)
+                    if first_radio is None:
+                        first_radio = radio
+                    else:
+                        radio.set_group(first_radio)
+                    radio.connect(
+                        "toggled",
+                        self._on_variant_toggled,
+                        code, v_locale,
+                    )
+                    variant_box.append(radio)
+                # Default: first variant selected
+                if first_radio is not None:
+                    first_radio.set_active(True)
+
+            row_box.append(variant_box)
+
+            row.set_child(row_box)
+
+            # Store row data for updating translated names later
+            row_data = {
+                "code": code,
+                "default_locale": default_locale,
+                "translated_label": translated_label,
+                "row_box": row_box,
+                "variant_box": variant_box,
+                "variants": variants,
+            }
+            self._lang_rows.append(row_data)
+
+            # Click handler via GestureClick
+            gesture = Gtk.GestureClick()
+            gesture.connect("released", self._on_lang_row_clicked, row_data)
+            row.add_controller(gesture)
+
+            lang_list.append(row)
+
+            # Highlight English as default selection
+            if code == "en":
+                row_box.add_css_class("wifi-connected")
+                self._lang_selected_row_box = row_box
+
+        card.append(lang_list)
+        wrapper.append(card)
+        scrolled.set_child(wrapper)
+        return scrolled
+
+    def _on_lang_row_clicked(self, gesture: Gtk.GestureClick, n_press: int,
+                             x: float, y: float, row_data: dict) -> None:
+        """Handle click on a language row."""
+        # Remove highlight from previously selected row
+        if self._lang_selected_row_box is not None:
+            self._lang_selected_row_box.remove_css_class("wifi-connected")
+            # Collapse the previously selected variant box
+            for rd in self._lang_rows:
+                if rd["row_box"] is self._lang_selected_row_box:
+                    rd["variant_box"].set_visible(False)
+                    break
+
+        # Highlight the clicked row
+        row_box = row_data["row_box"]
+        row_box.add_css_class("wifi-connected")
+        self._lang_selected_row_box = row_box
+
+        # Toggle variant expansion if variants exist
+        if row_data["variants"]:
+            row_data["variant_box"].set_visible(True)
+
+        # Update selected language and locale
+        self._selected_lang = row_data["code"]
+        self._selected_locale = row_data["default_locale"]
+        self._switch_language(row_data["code"])
+
+    def _on_variant_toggled(self, check_button: Gtk.CheckButton,
+                            lang_code: str, locale: str) -> None:
+        """Handle variant radio button toggle."""
+        if check_button.get_active():
+            self._selected_locale = locale
+
+    def _switch_language(self, lang_code: str) -> None:
+        """Stub — full implementation in Task 4."""
+        pass
 
     def _build_account_page(self) -> Gtk.ScrolledWindow:
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
@@ -941,7 +1143,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         try:
             self._nm_client = NM.Client.new_finish(result)
         except Exception:
-            # NM unavailable — stay on Account page (network already skipped by default)
+            # NM unavailable — stay on Language page (network already skipped by default)
             return
 
         # Check existing connectivity (force fresh check)
@@ -970,7 +1172,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # WiFi available, no connectivity — show network page if user hasn't advanced
         self._network_skipped = False
-        if self._current_page == PAGE_DISK:
+        if self._current_page < PAGE_NETWORK:
             self._current_page = PAGE_NETWORK
             self._update_navigation()
         self._request_wifi_scan()
@@ -1267,13 +1469,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _get_pages(self) -> list[str]:
         """Return ordered page names, excluding auto-skipped network."""
-        pages = ["network", "disk", "account", "system", "apps", "confirm", "progress"]
+        pages = ["language", "network", "disk", "account", "system", "apps", "confirm", "progress"]
         if self._network_skipped:
             pages.remove("network")
         return pages
 
     def _get_first_page(self) -> int:
-        return PAGE_DISK if self._network_skipped else PAGE_NETWORK
+        return PAGE_LANGUAGE
 
     def _go_next(self) -> None:
         if not self._validate_page(self._current_page):
@@ -1284,6 +1486,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return
 
         self._current_page += 1
+        if self._current_page == PAGE_NETWORK and self._network_skipped:
+            self._current_page += 1
         self._set_status("")
         self._update_navigation()
 
@@ -1294,11 +1498,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if self._current_page <= self._get_first_page():
             return
         self._current_page -= 1
+        if self._current_page == PAGE_NETWORK and self._network_skipped:
+            self._current_page -= 1
         self._set_status("")
         self._update_navigation()
 
     def _update_navigation(self) -> None:
         page_names = {
+            PAGE_LANGUAGE: "language",
             PAGE_NETWORK: "network", PAGE_DISK: "disk",
             PAGE_ACCOUNT: "account", PAGE_SYSTEM: "system",
             PAGE_APPS: "apps", PAGE_CONFIRM: "confirm",
