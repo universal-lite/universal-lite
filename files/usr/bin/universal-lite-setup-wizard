@@ -1084,6 +1084,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._retranslatable.append((self._confirm_subtitle.set_label, "Review your settings and click Install to begin."))
         card.append(self._confirm_subtitle)
 
+        self._summary_language = self._make_summary_row(card, "Language")
         self._summary_network = self._make_summary_row(card, "Network")
         self._summary_drive = self._make_summary_row(card, "Target drive")
         self._summary_filesystem = self._make_summary_row(card, "Filesystem")
@@ -1654,6 +1655,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _populate_summary(self) -> None:
+        # Language
+        native_name = self._language_names[self._selected_lang][self._selected_lang]
+        locale_display = self._selected_locale.replace(".UTF-8", "")
+        self._summary_language.set_text(f"{native_name} ({locale_display})")
+
         # Network
         if self._connected_ssid == "(Wired)":
             self._summary_network.set_text(_("Wired connection"))
@@ -1968,7 +1974,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             localtime = Path(deploy) / "etc" / "localtime"
             localtime.unlink(missing_ok=True)
             localtime.symlink_to(f"/usr/share/zoneinfo/{tz}")
-            (Path(deploy) / "etc" / "locale.conf").write_text("LANG=en_US.UTF-8\n")
+            (Path(deploy) / "etc" / "locale.conf").write_text(
+                f"LANG={self._setup_locale}\n"
+            )
         except OSError as exc:
             return f"Failed to configure timezone/locale: {exc}"
 
@@ -2131,6 +2139,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # Apps
         self._setup_selected_apps = self._get_selected_apps()
+
+        # Language
+        self._setup_locale = self._selected_locale
 
         # Build step list: (english_label, callable, error_behavior)
         # error_behavior: "fatal" = Back button, "retry" = Retry button,
