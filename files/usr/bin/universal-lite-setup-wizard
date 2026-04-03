@@ -17,6 +17,7 @@ Seven-page flow:
   Page 6 — Progress (real-time install execution)
 """
 
+import gettext
 import json
 import os
 
@@ -31,6 +32,21 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("NM", "1.0")
 from gi.repository import Gtk, Gdk, GLib, Gio, NM, Pango  # noqa: E402
+
+# --- gettext setup ---
+TEXTDOMAIN = "universal-lite-setup-wizard"
+LOCALEDIR = "/usr/share/locale"
+
+_translation = gettext.translation(
+    TEXTDOMAIN, localedir=LOCALEDIR, languages=["en"], fallback=True
+)
+_ = _translation.gettext
+
+
+def N_(s):
+    """Mark a string for extraction without translating it now."""
+    return s
+
 
 APP_ID = "org.universallite.SetupWizard"
 
@@ -259,11 +275,11 @@ button.back-button:hover label {
 USERNAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
 SWAP_STRATEGIES = [
-    "Compressed RAM only (zram) — fast, but apps may close if memory fills",
-    "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay open",
+    N_("Compressed RAM only (zram) — fast, but apps may close if memory fills"),
+    N_("Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay open"),
 ]
 
-SWAP_SIZES = ["2 GB", "4 GB", "8 GB", "Custom"]
+SWAP_SIZES = ["2 GB", "4 GB", "8 GB", N_("Custom")]
 
 FILESYSTEMS = ["ext4", "xfs", "btrfs"]
 
@@ -358,6 +374,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self.set_default_size(800, 600)
         self.fullscreen()
 
+        # Retranslation registry: list of (setter_callable, english_text)
+        self._retranslatable: list[tuple[callable, str]] = []
+
         self._timezones = _load_timezones()
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
         self._connected_ssid: str | None = None
@@ -370,8 +389,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         outer.set_margin_top(24)
         outer.set_margin_bottom(24)
 
-        # Step indicator
-        self._step_label = Gtk.Label(label="Step 1 of 6")
+        # Step indicator (text set dynamically by _update_navigation)
+        self._step_label = Gtk.Label(label="")
         self._step_label.add_css_class("step-indicator")
         self._step_label.set_halign(Gtk.Align.CENTER)
         outer.append(self._step_label)
@@ -405,13 +424,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         btn_row.set_margin_top(16)
         btn_row.set_size_request(480, -1)
 
-        self._back_button = Gtk.Button(label="Back")
+        self._back_button = Gtk.Button(label=_("Back"))
         self._back_button.add_css_class("back-button")
         self._back_button.connect("clicked", lambda _: self._go_back())
         self._back_button.set_visible(False)
+        self._retranslatable.append((self._back_button.set_label, "Back"))
         btn_row.append(self._back_button)
 
-        self._next_button = Gtk.Button(label="Next")
+        self._next_button = Gtk.Button(label=_("Next"))
         self._next_button.add_css_class("create-button")
         self._next_button.connect("clicked", lambda _: self._go_next())
         btn_row.append(self._next_button)
@@ -442,38 +462,41 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Welcome to Universal-Lite")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._account_title = Gtk.Label(label=_("Welcome to Universal-Lite"))
+        self._account_title.add_css_class("welcome-title")
+        self._account_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._account_title.set_label, "Welcome to Universal-Lite"))
+        card.append(self._account_title)
 
-        subtitle = Gtk.Label(label="Create your account to get started.")
-        subtitle.add_css_class("welcome-subtitle")
-        subtitle.set_halign(Gtk.Align.CENTER)
-        card.append(subtitle)
+        self._account_subtitle = Gtk.Label(label=_("Create your account to get started."))
+        self._account_subtitle.add_css_class("welcome-subtitle")
+        self._account_subtitle.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._account_subtitle.set_label, "Create your account to get started."))
+        card.append(self._account_subtitle)
 
-        card.append(self._make_label("Full Name"))
+        card.append(self._make_translated_label("Full Name"))
         self._fullname_entry = Gtk.Entry()
-        self._fullname_entry.set_placeholder_text("Jane Doe")
+        self._fullname_entry.set_placeholder_text(_("Jane Doe"))
+        self._retranslatable.append((self._fullname_entry.set_placeholder_text, "Jane Doe"))
         self._fullname_entry.add_css_class("form-entry")
         self._fullname_entry.set_hexpand(True)
         card.append(self._fullname_entry)
 
-        card.append(self._make_label("Username"))
+        card.append(self._make_translated_label("Username"))
         self._username_entry = Gtk.Entry()
         self._username_entry.set_placeholder_text("janedoe")
         self._username_entry.add_css_class("form-entry")
         self._username_entry.set_hexpand(True)
         card.append(self._username_entry)
 
-        card.append(self._make_label("Password"))
+        card.append(self._make_translated_label("Password"))
         self._password_entry = Gtk.PasswordEntry()
         self._password_entry.set_show_peek_icon(True)
         self._password_entry.add_css_class("form-entry")
         self._password_entry.set_hexpand(True)
         card.append(self._password_entry)
 
-        card.append(self._make_label("Confirm Password"))
+        card.append(self._make_translated_label("Confirm Password"))
         self._confirm_entry = Gtk.PasswordEntry()
         self._confirm_entry.set_show_peek_icon(True)
         self._confirm_entry.add_css_class("form-entry")
@@ -498,15 +521,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Connect to Wi-Fi")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._network_title = Gtk.Label(label=_("Connect to Wi-Fi"))
+        self._network_title.add_css_class("welcome-title")
+        self._network_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._network_title.set_label, "Connect to Wi-Fi"))
+        card.append(self._network_title)
 
-        subtitle = Gtk.Label(label="Select a network to get online.")
-        subtitle.add_css_class("welcome-subtitle")
-        subtitle.set_halign(Gtk.Align.CENTER)
-        card.append(subtitle)
+        self._network_subtitle = Gtk.Label(label=_("Select a network to get online."))
+        self._network_subtitle.add_css_class("welcome-subtitle")
+        self._network_subtitle.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._network_subtitle.set_label, "Select a network to get online."))
+        card.append(self._network_subtitle)
 
         # WiFi network list
         self._wifi_list = Gtk.ListBox()
@@ -515,18 +540,19 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._wifi_list)
 
         # "No networks" placeholder
-        self._wifi_empty_label = Gtk.Label(label="Scanning for networks...")
+        self._wifi_empty_label = Gtk.Label(label=_("Scanning for networks..."))
         self._wifi_empty_label.add_css_class("wifi-detail")
         self._wifi_empty_label.set_margin_top(16)
         self._wifi_empty_label.set_margin_bottom(8)
         card.append(self._wifi_empty_label)
 
         # Rescan button
-        self._rescan_button = Gtk.Button(label="Rescan")
+        self._rescan_button = Gtk.Button(label=_("Rescan"))
         self._rescan_button.add_css_class("back-button")
         self._rescan_button.set_halign(Gtk.Align.CENTER)
         self._rescan_button.set_visible(False)
         self._rescan_button.connect("clicked", lambda _: self._request_wifi_scan())
+        self._retranslatable.append((self._rescan_button.set_label, "Rescan"))
         card.append(self._rescan_button)
 
         # Hidden network section
@@ -534,36 +560,38 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._hidden_box.set_visible(False)
         self._hidden_box.set_margin_top(8)
 
-        self._hidden_box.append(self._make_label("Network Name (SSID)"))
+        self._hidden_box.append(self._make_translated_label("Network Name (SSID)"))
         self._hidden_ssid_entry = Gtk.Entry()
         self._hidden_ssid_entry.add_css_class("form-entry")
         self._hidden_ssid_entry.set_hexpand(True)
         self._hidden_box.append(self._hidden_ssid_entry)
 
-        self._hidden_box.append(self._make_label("Password"))
+        self._hidden_box.append(self._make_translated_label("Password"))
         self._hidden_pw_entry = Gtk.PasswordEntry()
         self._hidden_pw_entry.set_show_peek_icon(True)
         self._hidden_pw_entry.add_css_class("form-entry")
         self._hidden_pw_entry.set_hexpand(True)
         self._hidden_box.append(self._hidden_pw_entry)
 
-        hidden_connect_btn = Gtk.Button(label="Connect")
-        hidden_connect_btn.add_css_class("create-button")
-        hidden_connect_btn.set_halign(Gtk.Align.END)
-        hidden_connect_btn.set_margin_top(8)
-        hidden_connect_btn.connect("clicked", lambda _: self._connect_hidden_network())
-        self._hidden_box.append(hidden_connect_btn)
+        self._hidden_connect_btn = Gtk.Button(label=_("Connect"))
+        self._hidden_connect_btn.add_css_class("create-button")
+        self._hidden_connect_btn.set_halign(Gtk.Align.END)
+        self._hidden_connect_btn.set_margin_top(8)
+        self._hidden_connect_btn.connect("clicked", lambda _: self._connect_hidden_network())
+        self._retranslatable.append((self._hidden_connect_btn.set_label, "Connect"))
+        self._hidden_box.append(self._hidden_connect_btn)
 
         card.append(self._hidden_box)
 
         # "Join hidden network" toggle
-        hidden_link = Gtk.Button(label="Join hidden network...")
-        hidden_link.add_css_class("back-button")
-        hidden_link.set_halign(Gtk.Align.START)
-        hidden_link.set_margin_top(8)
-        hidden_link.connect("clicked", lambda _: self._hidden_box.set_visible(
+        self._hidden_link = Gtk.Button(label=_("Join hidden network..."))
+        self._hidden_link.add_css_class("back-button")
+        self._hidden_link.set_halign(Gtk.Align.START)
+        self._hidden_link.set_margin_top(8)
+        self._hidden_link.connect("clicked", lambda _: self._hidden_box.set_visible(
             not self._hidden_box.get_visible()))
-        card.append(hidden_link)
+        self._retranslatable.append((self._hidden_link.set_label, "Join hidden network..."))
+        card.append(self._hidden_link)
 
         # Network status
         self._net_status_label = Gtk.Label(label="")
@@ -592,36 +620,39 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Choose Installation Disk")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._disk_title = Gtk.Label(label=_("Choose Installation Disk"))
+        self._disk_title.add_css_class("welcome-title")
+        self._disk_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._disk_title.set_label, "Choose Installation Disk"))
+        card.append(self._disk_title)
 
-        subtitle = Gtk.Label(label="Select the target drive and installation options.")
-        subtitle.add_css_class("welcome-subtitle")
-        subtitle.set_halign(Gtk.Align.CENTER)
-        card.append(subtitle)
+        self._disk_subtitle = Gtk.Label(label=_("Select the target drive and installation options."))
+        self._disk_subtitle.add_css_class("welcome-subtitle")
+        self._disk_subtitle.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._disk_subtitle.set_label, "Select the target drive and installation options."))
+        card.append(self._disk_subtitle)
 
         # --- Target drive ---
-        card.append(self._make_label("Target drive"))
+        card.append(self._make_translated_label("Target drive"))
         self._drives = _load_drives()
         drive_labels = []
         for d in self._drives:
             model = d.get("model") or "Unknown"
-            label = f"{d['name']} \u2014 {d['size']} {model}"
+            label = "{name} \u2014 {size} {model}".format(
+                name=d['name'], size=d['size'], model=model)
             tran = d.get("tran")
             if tran:
-                label += f" ({tran})"
+                label += " ({tran})".format(tran=tran)
             drive_labels.append(label)
         if not drive_labels:
-            drive_labels = ["No eligible drives found"]
+            drive_labels = [_("No eligible drives found")]
         drive_model = Gtk.StringList.new(drive_labels)
         self._drive_dropdown = Gtk.DropDown(model=drive_model)
         self._drive_dropdown.set_hexpand(True)
         card.append(self._drive_dropdown)
 
         # --- Filesystem ---
-        card.append(self._make_label("Filesystem"))
+        card.append(self._make_translated_label("Filesystem"))
         fs_model = Gtk.StringList.new(FILESYSTEMS)
         self._fs_dropdown = Gtk.DropDown(model=fs_model)
         self._fs_dropdown.set_hexpand(True)
@@ -629,8 +660,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._fs_dropdown)
 
         # --- Memory management (moved from System page) ---
-        card.append(self._make_label("Memory management"))
-        swap_model = Gtk.StringList.new(SWAP_STRATEGIES)
+        card.append(self._make_translated_label("Memory management"))
+        swap_model = Gtk.StringList.new([_(s) for s in SWAP_STRATEGIES])
         self._swap_strategy_dropdown = Gtk.DropDown(model=swap_model)
         self._swap_strategy_dropdown.set_hexpand(True)
         self._swap_strategy_dropdown.set_selected(0)
@@ -639,15 +670,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Swap size controls (visible only when zswap selected)
         self._swap_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        self._swap_size_box.append(self._make_label("Disk swap size"))
-        swap_size_model = Gtk.StringList.new(SWAP_SIZES)
+        self._swap_size_box.append(self._make_translated_label("Disk swap size"))
+        swap_size_model = Gtk.StringList.new([_(s) for s in SWAP_SIZES])
         self._swap_size_dropdown = Gtk.DropDown(model=swap_size_model)
         self._swap_size_dropdown.set_hexpand(True)
         self._swap_size_dropdown.set_selected(0)
         self._swap_size_box.append(self._swap_size_dropdown)
 
         self._custom_size_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self._custom_size_box.append(self._make_label("Custom size (GB)"))
+        self._custom_size_box.append(self._make_translated_label("Custom size (GB)"))
         self._custom_size_entry = Gtk.Entry()
         self._custom_size_entry.set_placeholder_text("8")
         self._custom_size_entry.add_css_class("form-entry")
@@ -656,15 +687,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._custom_size_box.set_visible(False)
         self._swap_size_box.append(self._custom_size_box)
 
-        desc = Gtk.Label(
-            label="zswap uses compressed RAM as a cache and spills to a disk swap file when full."
+        self._zswap_desc = Gtk.Label(
+            label=_("zswap uses compressed RAM as a cache and spills to a disk swap file when full.")
         )
-        desc.add_css_class("form-description")
-        desc.set_halign(Gtk.Align.START)
-        desc.set_wrap(True)
-        desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-        desc.set_max_width_chars(50)
-        self._swap_size_box.append(desc)
+        self._zswap_desc.add_css_class("form-description")
+        self._zswap_desc.set_halign(Gtk.Align.START)
+        self._zswap_desc.set_wrap(True)
+        self._zswap_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._zswap_desc.set_max_width_chars(50)
+        self._retranslatable.append((self._zswap_desc.set_label, "zswap uses compressed RAM as a cache and spills to a disk swap file when full."))
+        self._swap_size_box.append(self._zswap_desc)
 
         self._swap_size_box.set_visible(False)
         card.append(self._swap_size_box)
@@ -673,10 +705,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._swap_size_dropdown.connect("notify::selected", self._on_swap_size_changed)
 
         # --- Warning ---
-        warning = Gtk.Label(label="All data on the selected drive will be erased.")
-        warning.add_css_class("warning-label")
-        warning.set_halign(Gtk.Align.CENTER)
-        card.append(warning)
+        self._disk_warning = Gtk.Label(label=_("All data on the selected drive will be erased."))
+        self._disk_warning.add_css_class("warning-label")
+        self._disk_warning.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._disk_warning.set_label, "All data on the selected drive will be erased."))
+        card.append(self._disk_warning)
 
         wrapper.append(card)
         scrolled.set_child(wrapper)
@@ -695,13 +728,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="System Setup")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._system_title = Gtk.Label(label=_("System Setup"))
+        self._system_title.add_css_class("welcome-title")
+        self._system_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._system_title.set_label, "System Setup"))
+        card.append(self._system_title)
 
         # Timezone
-        card.append(self._make_label("Timezone"))
+        card.append(self._make_translated_label("Timezone"))
         tz_model = Gtk.StringList.new(self._timezones)
         self._tz_dropdown = Gtk.DropDown(model=tz_model)
         self._tz_dropdown.set_hexpand(True)
@@ -714,13 +748,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._tz_dropdown)
 
         # Administrator checkbox
-        self._admin_check = Gtk.CheckButton(label="Administrator account (sudo)")
+        self._admin_check = Gtk.CheckButton(label=_("Administrator account (sudo)"))
         self._admin_check.set_active(True)
         self._admin_check.add_css_class("form-label")
+        self._retranslatable.append((self._admin_check.set_label, "Administrator account (sudo)"))
         card.append(self._admin_check)
 
         # Root password
-        card.append(self._make_label("Root Password (optional)"))
+        card.append(self._make_translated_label("Root Password (optional)"))
         self._root_password_entry = Gtk.PasswordEntry()
         self._root_password_entry.set_show_peek_icon(True)
         self._root_password_entry.add_css_class("form-entry")
@@ -745,20 +780,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Install Apps")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._apps_title = Gtk.Label(label=_("Install Apps"))
+        self._apps_title.add_css_class("welcome-title")
+        self._apps_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._apps_title.set_label, "Install Apps"))
+        card.append(self._apps_title)
 
-        subtitle = Gtk.Label(
-            label="These apps are pre-downloaded and will be copied during install. Uncheck any you don't want."
+        self._apps_subtitle = Gtk.Label(
+            label=_("These apps are pre-downloaded and will be copied during install. Uncheck any you don't want.")
         )
-        subtitle.add_css_class("welcome-subtitle")
-        subtitle.set_halign(Gtk.Align.CENTER)
-        subtitle.set_wrap(True)
-        subtitle.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-        subtitle.set_max_width_chars(50)
-        card.append(subtitle)
+        self._apps_subtitle.add_css_class("welcome-subtitle")
+        self._apps_subtitle.set_halign(Gtk.Align.CENTER)
+        self._apps_subtitle.set_wrap(True)
+        self._apps_subtitle.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._apps_subtitle.set_max_width_chars(50)
+        self._retranslatable.append((self._apps_subtitle.set_label, "These apps are pre-downloaded and will be copied during install. Uncheck any you don't want."))
+        card.append(self._apps_subtitle)
 
         self._app_checks: list[tuple[str, str, Gtk.CheckButton]] = []
 
@@ -806,15 +843,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Ready to Install")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._confirm_title = Gtk.Label(label=_("Ready to Install"))
+        self._confirm_title.add_css_class("welcome-title")
+        self._confirm_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._confirm_title.set_label, "Ready to Install"))
+        card.append(self._confirm_title)
 
-        subtitle = Gtk.Label(label="Review your settings and click Install to begin.")
-        subtitle.add_css_class("welcome-subtitle")
-        subtitle.set_halign(Gtk.Align.CENTER)
-        card.append(subtitle)
+        self._confirm_subtitle = Gtk.Label(label=_("Review your settings and click Install to begin."))
+        self._confirm_subtitle.add_css_class("welcome-subtitle")
+        self._confirm_subtitle.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._confirm_subtitle.set_label, "Review your settings and click Install to begin."))
+        card.append(self._confirm_subtitle)
 
         self._summary_network = self._make_summary_row(card, "Network")
         self._summary_drive = self._make_summary_row(card, "Target drive")
@@ -844,11 +883,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Installing...")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
-        self._progress_title = title
+        self._progress_title = Gtk.Label(label=_("Installing..."))
+        self._progress_title.add_css_class("welcome-title")
+        self._progress_title.set_halign(Gtk.Align.CENTER)
+        self._retranslatable.append((self._progress_title.set_label, "Installing..."))
+        card.append(self._progress_title)
 
         # Step labels container
         self._progress_steps_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
@@ -860,28 +899,32 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         btn_box.set_halign(Gtk.Align.CENTER)
         btn_box.set_margin_top(24)
 
-        self._progress_back_btn = Gtk.Button(label="Back")
+        self._progress_back_btn = Gtk.Button(label=_("Back"))
         self._progress_back_btn.add_css_class("back-button")
         self._progress_back_btn.set_visible(False)
         self._progress_back_btn.connect("clicked", lambda _: self._progress_go_back())
+        self._retranslatable.append((self._progress_back_btn.set_label, "Back"))
         btn_box.append(self._progress_back_btn)
 
-        self._progress_skip_btn = Gtk.Button(label="Skip")
+        self._progress_skip_btn = Gtk.Button(label=_("Skip"))
         self._progress_skip_btn.add_css_class("back-button")
         self._progress_skip_btn.set_visible(False)
         self._progress_skip_btn.connect("clicked", lambda _: self._progress_skip())
+        self._retranslatable.append((self._progress_skip_btn.set_label, "Skip"))
         btn_box.append(self._progress_skip_btn)
 
-        self._progress_retry_btn = Gtk.Button(label="Retry")
+        self._progress_retry_btn = Gtk.Button(label=_("Retry"))
         self._progress_retry_btn.add_css_class("create-button")
         self._progress_retry_btn.set_visible(False)
         self._progress_retry_btn.connect("clicked", lambda _: self._progress_retry())
+        self._retranslatable.append((self._progress_retry_btn.set_label, "Retry"))
         btn_box.append(self._progress_retry_btn)
 
-        self._progress_reboot_btn = Gtk.Button(label="Reboot")
+        self._progress_reboot_btn = Gtk.Button(label=_("Reboot"))
         self._progress_reboot_btn.add_css_class("create-button")
         self._progress_reboot_btn.set_visible(False)
         self._progress_reboot_btn.connect("clicked", lambda _: self._do_reboot())
+        self._retranslatable.append((self._progress_reboot_btn.set_label, "Reboot"))
         btn_box.append(self._progress_reboot_btn)
 
         card.append(btn_box)
@@ -950,7 +993,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if self._wifi_device is None:
             return
         self._rescan_button.set_sensitive(False)
-        self._wifi_empty_label.set_text("Scanning for networks...")
+        self._wifi_empty_label.set_text(_("Scanning for networks..."))
         self._wifi_empty_label.set_visible(True)
         self._wifi_device.request_scan_async(None, self._on_scan_done)
 
@@ -990,7 +1033,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 seen[ssid] = ap
 
         if not seen:
-            self._wifi_empty_label.set_text("No networks found.")
+            self._wifi_empty_label.set_text(_("No networks found."))
             self._wifi_empty_label.set_visible(True)
             return
 
@@ -1017,15 +1060,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         strength = ap.get_strength()
         if strength > 70:
-            signal_text = "Strong"
+            signal_text = _("Strong")
         elif strength >= 40:
-            signal_text = "Medium"
+            signal_text = _("Medium")
         else:
-            signal_text = "Weak"
+            signal_text = _("Weak")
 
         flags = ap.get_wpa_flags() | ap.get_rsn_flags()
         secured = flags != NM.AP80211ApSecurityFlags.NONE
-        detail = f"{signal_text} {'Secured' if secured else 'Open'}"
+        detail = "{} {}".format(signal_text, _("Secured") if secured else _("Open"))
 
         detail_label = Gtk.Label(label=detail)
         detail_label.add_css_class("wifi-detail")
@@ -1043,16 +1086,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             pw_entry.set_show_peek_icon(True)
             pw_entry.add_css_class("form-entry")
             pw_entry.set_hexpand(True)
-            pw_entry.set_placeholder_text("Password")
+            pw_entry.set_placeholder_text(_("Password"))
             pw_box.append(pw_entry)
 
-            connect_btn = Gtk.Button(label="Connect")
+            connect_btn = Gtk.Button(label=_("Connect"))
             connect_btn.add_css_class("create-button")
             connect_btn.connect("clicked", lambda _, s=ssid, e=pw_entry: self._connect_to_ap(s, e.get_text(), False))
             pw_entry.connect("activate", lambda _, s=ssid, e=pw_entry: self._connect_to_ap(s, e.get_text(), False))
             pw_box.append(connect_btn)
         else:
-            connect_btn = Gtk.Button(label="Connect")
+            connect_btn = Gtk.Button(label=_("Connect"))
             connect_btn.add_css_class("create-button")
             connect_btn.connect("clicked", lambda _, s=ssid: self._connect_to_ap(s, None, False))
             pw_box.append(connect_btn)
@@ -1076,7 +1119,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if self._nm_client is None or self._wifi_device is None:
             return
 
-        self._net_status_label.set_text(f"Connecting to {ssid}...")
+        self._net_status_label.set_text(_("Connecting to {ssid}...").format(ssid=ssid))
         self._net_status_label.remove_css_class("status-error")
         self._net_status_label.remove_css_class("status-success")
 
@@ -1132,9 +1175,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except Exception as exc:
             err = str(exc)
             if "802-11-wireless-security.psk" in err:
-                msg = "Wrong password."
+                msg = _("Wrong password.")
             else:
-                msg = f"Connection failed: {err}"
+                msg = _("Connection failed: {err}").format(err=err)
             self._net_status_label.set_text(msg)
             self._net_status_label.add_css_class("status-error")
 
@@ -1142,7 +1185,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         ssid = self._hidden_ssid_entry.get_text().strip()
         password = self._hidden_pw_entry.get_text()
         if not ssid:
-            self._net_status_label.set_text("Enter a network name.")
+            self._net_status_label.set_text(_("Enter a network name."))
             self._net_status_label.add_css_class("status-error")
             return
         self._connect_to_ap(ssid, password if password else None, hidden=True)
@@ -1155,9 +1198,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except Exception as exc:
             err = str(exc)
             if "802-11-wireless-security.psk" in err:
-                msg = "Wrong password."
+                msg = _("Wrong password.")
             else:
-                msg = f"Connection failed: {err}"
+                msg = _("Connection failed: {err}").format(err=err)
             self._net_status_label.set_text(msg)
             self._net_status_label.add_css_class("status-error")
 
@@ -1169,11 +1212,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         if connectivity == NM.ConnectivityState.FULL:
             self._connected_ssid = self._detect_current_ssid()
-            self._net_status_label.set_text(f"Connected to {self._connected_ssid or 'network'}!")
+            self._net_status_label.set_text(
+                _("Connected to {ssid}!").format(ssid=self._connected_ssid or "network")
+            )
             self._net_status_label.remove_css_class("status-error")
             self._net_status_label.add_css_class("status-success")
         else:
-            self._net_status_label.set_text("Connected, but no internet access detected.")
+            self._net_status_label.set_text(_("Connected, but no internet access detected."))
             self._net_status_label.remove_css_class("status-error")
 
     # ------------------------------------------------------------------
@@ -1184,25 +1229,37 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         """Return list of (app_id, app_name) for checked apps."""
         return [(aid, name) for aid, name, check in self._app_checks if check.get_active()]
 
-    @staticmethod
-    def _make_label(text: str) -> Gtk.Label:
-        lbl = Gtk.Label(label=text)
-        lbl.add_css_class("form-label")
+    def _make_translated_label(self, text: str, css_class: str = "form-label") -> Gtk.Label:
+        """Create a label that is translated now and registered for retranslation."""
+        lbl = Gtk.Label(label=_(text))
+        lbl.add_css_class(css_class)
         lbl.set_halign(Gtk.Align.START)
+        self._retranslatable.append((lbl.set_label, text))
         return lbl
 
-    @staticmethod
-    def _make_summary_row(parent: Gtk.Box, label_text: str) -> Gtk.Label:
-        lbl = Gtk.Label(label=label_text)
+    def _tr(self, setter: callable, text: str) -> None:
+        """Translate *text* now via setter, and register for future retranslation."""
+        setter(_(text))
+        self._retranslatable.append((setter, text))
+
+    def _make_summary_row(self, parent: Gtk.Box, label_text: str) -> Gtk.Label:
+        lbl = Gtk.Label(label=_(label_text))
         lbl.add_css_class("summary-row")
         lbl.set_halign(Gtk.Align.START)
+        self._retranslatable.append((lbl.set_label, label_text))
         parent.append(lbl)
 
-        value = Gtk.Label(label="—")
+        value = Gtk.Label(label="\u2014")
         value.add_css_class("summary-value")
         value.set_halign(Gtk.Align.START)
         parent.append(value)
         return value
+
+    def _retranslate(self) -> None:
+        """Re-apply _() to every registered widget after a language change."""
+        for setter, english in self._retranslatable:
+            setter(_(english))
+        self._update_navigation()
 
     # ------------------------------------------------------------------
     # Navigation
@@ -1257,7 +1314,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         is_progress = self._current_page == PAGE_PROGRESS
         self._step_label.set_visible(not is_progress)
         if not is_progress:
-            self._step_label.set_text(f"Step {visible_idx + 1} of {total}")
+            self._step_label.set_text(
+                _("Step {n} of {total}").format(n=visible_idx + 1, total=total)
+            )
 
         first = self._get_first_page()
         self._back_button.set_visible(
@@ -1265,7 +1324,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         )
         self._next_button.set_visible(not is_progress)
         self._next_button.set_label(
-            "Install" if self._current_page == PAGE_CONFIRM else "Next"
+            _("Install") if self._current_page == PAGE_CONFIRM else _("Next")
         )
 
         # Focus first input on new page
@@ -1291,12 +1350,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _validate_disk(self) -> bool:
         if not self._drives:
-            self._set_status("No target drives found. Connect a drive and restart the installer.")
+            self._set_status(_("No target drives found. Connect a drive and restart the installer."))
             return False
 
         use_zswap, swap_gb = self._get_swap_config()
         if use_zswap and swap_gb == -1:
-            self._set_status("Custom swap size must be a positive whole number (in GB).")
+            self._set_status(_("Custom swap size must be a positive whole number (in GB)."))
             return False
         return True
 
@@ -1307,25 +1366,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         confirm = self._confirm_entry.get_text()
 
         if not fullname:
-            self._set_status("Full name is required.")
+            self._set_status(_("Full name is required."))
             return False
         if not username:
-            self._set_status("Username is required.")
+            self._set_status(_("Username is required."))
             return False
         if len(username) > 32:
-            self._set_status("Username must be 32 characters or fewer.")
+            self._set_status(_("Username must be 32 characters or fewer."))
             return False
         if not USERNAME_RE.match(username):
             self._set_status(
-                "Username must start with a lowercase letter and contain "
-                "only lowercase letters, numbers, and hyphens."
+                _("Username must start with a lowercase letter and contain "
+                  "only lowercase letters, numbers, and hyphens.")
             )
             return False
         if not password:
-            self._set_status("Password is required.")
+            self._set_status(_("Password is required."))
             return False
         if password != confirm:
-            self._set_status("Passwords do not match.")
+            self._set_status(_("Passwords do not match."))
             return False
         return True
 
@@ -1334,8 +1393,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         root_password = self._root_password_entry.get_text()
         if not is_admin and not root_password:
             self._set_status(
-                "Either enable administrator access or set a root password. "
-                "Without one of these you will be locked out of system management."
+                _("Either enable administrator access or set a root password. "
+                  "Without one of these you will be locked out of system management.")
             )
             return False
         return True
@@ -1347,11 +1406,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _populate_summary(self) -> None:
         # Network
         if self._connected_ssid == "(Wired)":
-            self._summary_network.set_text("Wired connection")
+            self._summary_network.set_text(_("Wired connection"))
         elif self._connected_ssid:
-            self._summary_network.set_text(f"Connected to {self._connected_ssid}")
+            self._summary_network.set_text(
+                _("Connected to {ssid}").format(ssid=self._connected_ssid)
+            )
         else:
-            self._summary_network.set_text("No network (offline install)")
+            self._summary_network.set_text(_("No network (offline install)"))
 
         # Disk
         self._summary_drive.set_text(self._get_selected_drive_display())
@@ -1360,17 +1421,19 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Memory
         use_zswap, swap_gb = self._get_swap_config()
         if use_zswap:
-            self._summary_memory.set_text(f"zswap with {swap_gb} GB disk swap")
+            self._summary_memory.set_text(
+                _("zswap with {swap_gb} GB disk swap").format(swap_gb=swap_gb)
+            )
         else:
-            self._summary_memory.set_text("zram only (compressed RAM)")
+            self._summary_memory.set_text(_("zram only (compressed RAM)"))
 
         # Account
         self._summary_name.set_text(self._fullname_entry.get_text().strip())
         self._summary_username.set_text(self._username_entry.get_text().strip())
         self._summary_timezone.set_text(self._get_selected_timezone())
-        self._summary_admin.set_text("Yes" if self._admin_check.get_active() else "No")
+        self._summary_admin.set_text(_("Yes") if self._admin_check.get_active() else _("No"))
         self._summary_root.set_text(
-            "Set" if self._root_password_entry.get_text() else "Not set"
+            _("Set") if self._root_password_entry.get_text() else _("Not set")
         )
 
         # Apps
@@ -1378,7 +1441,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if selected:
             self._summary_apps.set_text(", ".join(name for _, name in selected))
         else:
-            self._summary_apps.set_text("No apps selected")
+            self._summary_apps.set_text(_("No apps selected"))
 
     # ------------------------------------------------------------------
     # Swap signal handlers
@@ -1819,22 +1882,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Apps
         self._setup_selected_apps = self._get_selected_apps()
 
-        # Build step list: (label, callable, error_behavior)
+        # Build step list: (english_label, callable, error_behavior)
         # error_behavior: "fatal" = Back button, "retry" = Retry button,
         #                 "skippable" = Skip + Retry buttons
         self._steps: list[tuple[str, callable, str]] = [
-            ("Partitioning and installing", self._step_bootc_install, "fatal"),
-            ("Configuring user account", self._step_configure_user, "retry"),
-            ("Copying network configuration", self._step_copy_network, "retry"),
+            (N_("Partitioning and installing"), self._step_bootc_install, "fatal"),
+            (N_("Configuring user account"), self._step_configure_user, "retry"),
+            (N_("Copying network configuration"), self._step_copy_network, "retry"),
         ]
         if self._setup_selected_apps:
             self._steps.append((
-                "Installing selected apps",
+                N_("Installing selected apps"),
                 self._step_copy_flatpaks,
                 "skippable",
             ))
-        self._steps.append(("Configuring memory management", self._step_configure_memory, "retry"))
-        self._steps.append(("Finalizing", self._step_finalize, "retry"))
+        self._steps.append((N_("Configuring memory management"), self._step_configure_memory, "retry"))
+        self._steps.append((N_("Finalizing"), self._step_finalize, "retry"))
 
         # Build progress UI
         while child := self._progress_steps_box.get_first_child():
@@ -1842,7 +1905,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         self._step_labels: list[Gtk.Label] = []
         for label_text, _, _ in self._steps:
-            lbl = Gtk.Label(label=f"  {label_text}")
+            lbl = Gtk.Label(label="  " + _(label_text))
             lbl.add_css_class("progress-step")
             lbl.add_css_class("progress-pending")
             lbl.set_halign(Gtk.Align.START)
@@ -1882,28 +1945,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _update_step_status(self, index: int, status: str) -> None:
         lbl = self._step_labels[index]
-        label_text = self._steps[index][0]
+        label_text = _(self._steps[index][0])
 
         for cls in ("progress-pending", "progress-active", "progress-done",
                     "progress-failed", "progress-skipped"):
             lbl.remove_css_class(cls)
 
         if status == "active":
-            lbl.set_text(f"  {label_text}...")
+            lbl.set_text("  " + label_text + "...")
             lbl.add_css_class("progress-active")
         elif status == "done":
-            lbl.set_text(f"  {label_text}")
+            lbl.set_text("  " + label_text)
             lbl.add_css_class("progress-done")
         elif status == "failed":
             lbl.add_css_class("progress-failed")
         elif status == "skipped":
-            lbl.set_text(f"  {label_text} (skipped)")
+            lbl.set_text("  " + label_text + " " + _("(skipped)"))
             lbl.add_css_class("progress-skipped")
 
     def _on_step_failed(self, index: int, error: str, behavior: str) -> None:
         lbl = self._step_labels[index]
-        label_text = self._steps[index][0]
-        lbl.set_text(f"  {label_text} \u2014 {error}")
+        label_text = _(self._steps[index][0])
+        lbl.set_text("  " + label_text + " \u2014 " + error)
 
         for cls in ("progress-pending", "progress-active", "progress-done"):
             lbl.remove_css_class(cls)
@@ -1923,7 +1986,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._run_from_step = index
 
     def _on_all_steps_done(self) -> None:
-        self._progress_title.set_text("Installation Complete!")
+        self._progress_title.set_text(_("Installation Complete!"))
         self._progress_reboot_btn.set_visible(True)
 
     def _progress_retry(self) -> None:
@@ -1951,7 +2014,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             try:
                 subprocess.run(["/sbin/reboot", "-f"], timeout=5)
             except Exception:
-                self._progress_title.set_text("Reboot failed — please restart manually.")
+                self._progress_title.set_text(_("Reboot failed \u2014 please restart manually."))
 
 
 class SetupWizardApp(Gtk.Application):
