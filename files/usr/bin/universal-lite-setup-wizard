@@ -648,8 +648,35 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._selected_locale = locale
 
     def _switch_language(self, lang_code: str) -> None:
-        """Stub — full implementation in Task 4."""
-        pass
+        """Switch the active translation and re-render all UI text."""
+        global _, _translation
+
+        try:
+            _translation = gettext.translation(
+                TEXTDOMAIN,
+                localedir=LOCALEDIR,
+                languages=[lang_code],
+                fallback=True,
+            )
+        except Exception:
+            _translation = gettext.NullTranslations()
+
+        _ = _translation.gettext
+
+        # Re-render all registered translatable widgets
+        self._retranslate()
+
+        # Update the translated name column in the language list
+        self._update_language_list_translations()
+
+    def _update_language_list_translations(self) -> None:
+        """Update the 'translated name' column in the language list."""
+        lang_names = self._language_names.get(self._selected_lang, {})
+        for row_data in self._lang_rows:
+            code = row_data["code"]
+            translated = lang_names.get(code, "")
+            if translated:
+                row_data["translated_label"].set_text(translated)
 
     def _build_account_page(self) -> Gtk.ScrolledWindow:
         scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
@@ -1461,6 +1488,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         """Re-apply _() to every registered widget after a language change."""
         for setter, english in self._retranslatable:
             setter(_(english))
+
+        # Rebuild swap strategy dropdown model (StringList not updatable in-place)
+        current_swap = self._swap_strategy_dropdown.get_selected()
+        new_model = Gtk.StringList.new([_(s) for s in SWAP_STRATEGIES])
+        self._swap_strategy_dropdown.set_model(new_model)
+        self._swap_strategy_dropdown.set_selected(current_swap)
+
+        # Rebuild swap size dropdown model
+        current_size = self._swap_size_dropdown.get_selected()
+        new_size_model = Gtk.StringList.new(
+            [s if s not in ("Custom",) else _("Custom") for s in SWAP_SIZES]
+        )
+        self._swap_size_dropdown.set_model(new_size_model)
+        self._swap_size_dropdown.set_selected(current_size)
+
+        # Re-apply dynamic texts
         self._update_navigation()
 
     # ------------------------------------------------------------------
