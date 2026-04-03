@@ -54,8 +54,27 @@ msgstr ""
 msgid "Create your account to get started."
 msgstr ""
 
+#: ../files/usr/bin/universal-lite-setup-wizard:706
+msgid "Full Name"
+msgstr ""
+
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Jane Doe"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:714
+#: ../files/usr/bin/universal-lite-setup-wizard:1093
+msgid "Username"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:721
+#: ../files/usr/bin/universal-lite-setup-wizard:798
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
+msgid "Password"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:728
+msgid "Confirm Password"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:753
@@ -73,6 +92,10 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:779
 msgid "Rescan"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:792
+msgid "Network Name (SSID)"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:805
@@ -93,8 +116,30 @@ msgstr ""
 msgid "Select the target drive and installation options."
 msgstr ""
 
+#: ../files/usr/bin/universal-lite-setup-wizard:865
+#: ../files/usr/bin/universal-lite-setup-wizard:1089
+msgid "Target drive"
+msgstr ""
+
 #: ../files/usr/bin/universal-lite-setup-wizard:877
 msgid "No eligible drives found"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:884
+#: ../files/usr/bin/universal-lite-setup-wizard:1090
+msgid "Filesystem"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:892
+msgid "Memory management"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:902
+msgid "Disk swap size"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:910
+msgid "Custom size (GB)"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:920
@@ -111,8 +156,17 @@ msgstr ""
 msgid "System Setup"
 msgstr ""
 
+#: ../files/usr/bin/universal-lite-setup-wizard:967
+#: ../files/usr/bin/universal-lite-setup-wizard:1094
+msgid "Timezone"
+msgstr ""
+
 #: ../files/usr/bin/universal-lite-setup-wizard:980
 msgid "Administrator account (sudo)"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:987
+msgid "Root Password (optional)"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1012
@@ -131,6 +185,34 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1081
 msgid "Review your settings and click Install to begin."
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1087
+msgid "Language"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1088
+msgid "Network"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1091
+msgid "Memory"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1092
+msgid "Name"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1095
+msgid "Administrator"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1096
+msgid "Root password"
+msgstr ""
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1097
+msgid "Apps"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1116
@@ -171,10 +253,6 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Open"
-msgstr ""
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1319
-msgid "Password"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1352

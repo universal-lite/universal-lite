@@ -20,315 +20,406 @@ msgstr ""
 #: ../files/usr/bin/universal-lite-setup-wizard:279
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
+"Chỉ bộ nhớ nén (zram) — nhanh, nhưng ứng dụng có thể bị đóng khi hết bộ nhớ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:280
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
+"Bộ nhớ nén + lưu trữ trên đĩa (zswap) — tràn sang đĩa chậm hơn, nhưng ứng "
+"dụng vẫn mở"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 #: ../files/usr/bin/universal-lite-setup-wizard:1502
 msgid "Custom"
-msgstr ""
+msgstr "Tùy chỉnh"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:440
 #: ../files/usr/bin/universal-lite-setup-wizard:1132
 msgid "Back"
-msgstr ""
+msgstr "Quay lại"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:447
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Next"
-msgstr ""
+msgstr "Tiếp"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:528
 msgid "Select your language."
-msgstr ""
+msgstr "Chọn ngôn ngữ của bạn."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:694
 msgid "Welcome to Universal-Lite"
-msgstr ""
+msgstr "Chào mừng đến với Universal-Lite"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:700
 msgid "Create your account to get started."
-msgstr ""
+msgstr "Tạo tài khoản để bắt đầu."
+
+#: ../files/usr/bin/universal-lite-setup-wizard:706
+msgid "Full Name"
+msgstr "Họ và tên"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Jane Doe"
-msgstr ""
+msgstr "Nguyễn Văn A"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:714
+#: ../files/usr/bin/universal-lite-setup-wizard:1093
+msgid "Username"
+msgstr "Tên người dùng"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:721
+#: ../files/usr/bin/universal-lite-setup-wizard:798
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
+msgid "Password"
+msgstr "Mật khẩu"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:728
+msgid "Confirm Password"
+msgstr "Xác nhận mật khẩu"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:753
 msgid "Connect to Wi-Fi"
-msgstr ""
+msgstr "Kết nối Wi-Fi"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:759
 msgid "Select a network to get online."
-msgstr ""
+msgstr "Chọn một mạng để kết nối Internet."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:772
 #: ../files/usr/bin/universal-lite-setup-wizard:1226
 msgid "Scanning for networks..."
-msgstr ""
+msgstr "Đang quét tìm mạng..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:779
 msgid "Rescan"
-msgstr ""
+msgstr "Quét lại"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:792
+msgid "Network Name (SSID)"
+msgstr "Tên mạng (SSID)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:805
 #: ../files/usr/bin/universal-lite-setup-wizard:1322
 #: ../files/usr/bin/universal-lite-setup-wizard:1328
 msgid "Connect"
-msgstr ""
+msgstr "Kết nối"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:816
 msgid "Join hidden network..."
-msgstr ""
+msgstr "Kết nối mạng ẩn..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:852
 msgid "Choose Installation Disk"
-msgstr ""
+msgstr "Chọn đĩa cài đặt"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:858
 msgid "Select the target drive and installation options."
-msgstr ""
+msgstr "Chọn ổ đĩa đích và các tùy chọn cài đặt."
+
+#: ../files/usr/bin/universal-lite-setup-wizard:865
+#: ../files/usr/bin/universal-lite-setup-wizard:1089
+msgid "Target drive"
+msgstr "Ổ đĩa đích"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:877
 msgid "No eligible drives found"
-msgstr ""
+msgstr "Không tìm thấy ổ đĩa phù hợp"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:884
+#: ../files/usr/bin/universal-lite-setup-wizard:1090
+msgid "Filesystem"
+msgstr "Hệ thống tệp"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:892
+msgid "Memory management"
+msgstr "Quản lý bộ nhớ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:902
+msgid "Disk swap size"
+msgstr "Kích thước hoán đổi đĩa"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:910
+msgid "Custom size (GB)"
+msgstr "Kích thước tùy chỉnh (GB)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:920
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr ""
+"zswap sử dụng bộ nhớ nén làm bộ đệm và chuyển sang tệp hoán đổi trên đĩa khi "
+"đầy."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:937
 msgid "All data on the selected drive will be erased."
-msgstr ""
+msgstr "Tất cả dữ liệu trên ổ đĩa đã chọn sẽ bị xóa."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:960
 msgid "System Setup"
-msgstr ""
+msgstr "Thiết lập hệ thống"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:967
+#: ../files/usr/bin/universal-lite-setup-wizard:1094
+msgid "Timezone"
+msgstr "Múi giờ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:980
 msgid "Administrator account (sudo)"
-msgstr ""
+msgstr "Tài khoản quản trị (sudo)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:987
+msgid "Root Password (optional)"
+msgstr "Mật khẩu root (tùy chọn)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1012
 msgid "Install Apps"
-msgstr ""
+msgstr "Cài đặt ứng dụng"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1019
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
+"Các ứng dụng này đã được tải sẵn và sẽ được sao chép trong quá trình cài "
+"đặt. Bỏ chọn những ứng dụng bạn không muốn."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1075
 msgid "Ready to Install"
-msgstr ""
+msgstr "Sẵn sàng cài đặt"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1081
 msgid "Review your settings and click Install to begin."
-msgstr ""
+msgstr "Xem lại cài đặt và nhấn 'Cài đặt' để bắt đầu."
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1087
+msgid "Language"
+msgstr "Ngôn ngữ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1088
+msgid "Network"
+msgstr "Mạng"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1091
+msgid "Memory"
+msgstr "Bộ nhớ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1092
+msgid "Name"
+msgstr "Tên"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1095
+msgid "Administrator"
+msgstr "Quản trị viên"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1096
+msgid "Root password"
+msgstr "Mật khẩu root"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1097
+msgid "Apps"
+msgstr "Ứng dụng"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Installing..."
-msgstr ""
+msgstr "Đang cài đặt..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1139
 msgid "Skip"
-msgstr ""
+msgstr "Bỏ qua"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1146
 msgid "Retry"
-msgstr ""
+msgstr "Thử lại"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1153
 msgid "Reboot"
-msgstr ""
+msgstr "Khởi động lại"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1266
 msgid "No networks found."
-msgstr ""
+msgstr "Không tìm thấy mạng nào."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1293
 msgid "Strong"
-msgstr ""
+msgstr "Mạnh"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1295
 msgid "Medium"
-msgstr ""
+msgstr "Trung bình"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1297
 msgid "Weak"
-msgstr ""
+msgstr "Yếu"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Secured"
-msgstr ""
+msgstr "Được bảo mật"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Open"
-msgstr ""
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1319
-msgid "Password"
-msgstr ""
+msgstr "Mở"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1352
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr ""
+msgstr "Đang kết nối với {ssid}..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1408
 #: ../files/usr/bin/universal-lite-setup-wizard:1431
 msgid "Wrong password."
-msgstr ""
+msgstr "Sai mật khẩu."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1410
 #: ../files/usr/bin/universal-lite-setup-wizard:1433
 #, python-brace-format
 msgid "Connection failed: {err}"
-msgstr ""
+msgstr "Kết nối thất bại: {err}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1418
 msgid "Enter a network name."
-msgstr ""
+msgstr "Nhập tên mạng."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1446
 #, python-brace-format
 msgid "Connected to {ssid}!"
-msgstr ""
+msgstr "Đã kết nối với {ssid}!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1451
 msgid "Connected, but no internet access detected."
-msgstr ""
+msgstr "Đã kết nối, nhưng không phát hiện truy cập Internet."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1569
 #, python-brace-format
 msgid "Step {n} of {total}"
-msgstr ""
+msgstr "Bước {n} / {total}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Install"
-msgstr ""
+msgstr "Cài đặt"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1604
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
+"Không tìm thấy ổ đĩa đích. Vui lòng kết nối ổ đĩa và khởi động lại trình cài "
+"đặt."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1609
 msgid "Custom swap size must be a positive whole number (in GB)."
-msgstr ""
+msgstr "Kích thước hoán đổi tùy chỉnh phải là số nguyên dương (đơn vị: GB)."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1620
 msgid "Full name is required."
-msgstr ""
+msgstr "Vui lòng nhập họ và tên."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1623
 msgid "Username is required."
-msgstr ""
+msgstr "Vui lòng nhập tên người dùng."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1626
 msgid "Username must be 32 characters or fewer."
-msgstr ""
+msgstr "Tên người dùng không được vượt quá 32 ký tự."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1630
 msgid ""
 "Username must start with a lowercase letter and contain only lowercase "
 "letters, numbers, and hyphens."
 msgstr ""
+"Tên người dùng phải bắt đầu bằng chữ cái thường và chỉ chứa chữ cái thường, "
+"số và dấu gạch ngang."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1635
 msgid "Password is required."
-msgstr ""
+msgstr "Vui lòng nhập mật khẩu."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1638
 msgid "Passwords do not match."
-msgstr ""
+msgstr "Mật khẩu không khớp."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1647
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
 msgstr ""
+"Vui lòng bật quyền quản trị hoặc đặt mật khẩu root. Nếu không thiết lập một "
+"trong hai, bạn sẽ không thể quản lý hệ thống."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1665
 msgid "Wired connection"
-msgstr ""
+msgstr "Kết nối có dây"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1668
 #, python-brace-format
 msgid "Connected to {ssid}"
-msgstr ""
+msgstr "Đã kết nối với {ssid}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1671
 msgid "No network (offline install)"
-msgstr ""
+msgstr "Không có mạng (cài đặt ngoại tuyến)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1681
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr ""
+msgstr "zswap với {swap_gb} GB hoán đổi đĩa"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1684
 msgid "zram only (compressed RAM)"
-msgstr ""
+msgstr "Chỉ zram (bộ nhớ nén)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "Yes"
-msgstr ""
+msgstr "Có"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "No"
-msgstr ""
+msgstr "Không"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Set"
-msgstr ""
+msgstr "Đã đặt"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Not set"
-msgstr ""
+msgstr "Chưa đặt"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1700
 msgid "No apps selected"
-msgstr ""
+msgstr "Chưa chọn ứng dụng nào"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2150
 msgid "Partitioning and installing"
-msgstr ""
+msgstr "Đang phân vùng và cài đặt"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2151
 msgid "Configuring user account"
-msgstr ""
+msgstr "Đang cấu hình tài khoản người dùng"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2152
 msgid "Copying network configuration"
-msgstr ""
+msgstr "Đang sao chép cấu hình mạng"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2156
 msgid "Installing selected apps"
-msgstr ""
+msgstr "Đang cài đặt ứng dụng đã chọn"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2160
 msgid "Configuring memory management"
-msgstr ""
+msgstr "Đang cấu hình quản lý bộ nhớ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2161
 msgid "Finalizing"
-msgstr ""
+msgstr "Đang hoàn tất"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2224
 msgid "(skipped)"
-msgstr ""
+msgstr "(đã bỏ qua)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2250
 msgid "Installation Complete!"
-msgstr ""
+msgstr "Cài đặt hoàn tất!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2278
 msgid "Reboot failed — please restart manually."
-msgstr ""
+msgstr "Khởi động lại thất bại — vui lòng khởi động lại thủ công."

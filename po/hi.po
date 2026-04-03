@@ -18,316 +18,404 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:279
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
-msgstr ""
+msgstr "केवल संपीड़ित मेमोरी (zram) — तेज़, लेकिन मेमोरी भरने पर ऐप्स बंद हो सकते हैं"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:280
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
+"संपीड़ित मेमोरी + डिस्क बैकअप (zswap) — डिस्क पर ओवरफ़्लो धीमा होता है, लेकिन ऐप्स खुले "
+"रहते हैं"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 #: ../files/usr/bin/universal-lite-setup-wizard:1502
 msgid "Custom"
-msgstr ""
+msgstr "कस्टम"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:440
 #: ../files/usr/bin/universal-lite-setup-wizard:1132
 msgid "Back"
-msgstr ""
+msgstr "पीछे"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:447
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Next"
-msgstr ""
+msgstr "आगे"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:528
 msgid "Select your language."
-msgstr ""
+msgstr "अपनी भाषा चुनें।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:694
 msgid "Welcome to Universal-Lite"
-msgstr ""
+msgstr "Universal-Lite में आपका स्वागत है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:700
 msgid "Create your account to get started."
-msgstr ""
+msgstr "शुरू करने के लिए अपना खाता बनाएँ।"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:706
+msgid "Full Name"
+msgstr "पूरा नाम"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Jane Doe"
-msgstr ""
+msgstr "अमित कुमार"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:714
+#: ../files/usr/bin/universal-lite-setup-wizard:1093
+msgid "Username"
+msgstr "उपयोगकर्ता नाम"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:721
+#: ../files/usr/bin/universal-lite-setup-wizard:798
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
+msgid "Password"
+msgstr "पासवर्ड"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:728
+msgid "Confirm Password"
+msgstr "पासवर्ड की पुष्टि करें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:753
 msgid "Connect to Wi-Fi"
-msgstr ""
+msgstr "Wi-Fi से जुड़ें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:759
 msgid "Select a network to get online."
-msgstr ""
+msgstr "ऑनलाइन होने के लिए एक नेटवर्क चुनें।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:772
 #: ../files/usr/bin/universal-lite-setup-wizard:1226
 msgid "Scanning for networks..."
-msgstr ""
+msgstr "नेटवर्क खोजे जा रहे हैं..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:779
 msgid "Rescan"
-msgstr ""
+msgstr "पुनः खोजें"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:792
+msgid "Network Name (SSID)"
+msgstr "नेटवर्क का नाम (SSID)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:805
 #: ../files/usr/bin/universal-lite-setup-wizard:1322
 #: ../files/usr/bin/universal-lite-setup-wizard:1328
 msgid "Connect"
-msgstr ""
+msgstr "जोड़ें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:816
 msgid "Join hidden network..."
-msgstr ""
+msgstr "छिपे नेटवर्क से जुड़ें..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:852
 msgid "Choose Installation Disk"
-msgstr ""
+msgstr "इंस्टॉलेशन डिस्क चुनें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:858
 msgid "Select the target drive and installation options."
-msgstr ""
+msgstr "लक्ष्य ड्राइव और इंस्टॉलेशन विकल्प चुनें।"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:865
+#: ../files/usr/bin/universal-lite-setup-wizard:1089
+msgid "Target drive"
+msgstr "लक्ष्य ड्राइव"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:877
 msgid "No eligible drives found"
-msgstr ""
+msgstr "कोई उपयुक्त ड्राइव नहीं मिली"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:884
+#: ../files/usr/bin/universal-lite-setup-wizard:1090
+msgid "Filesystem"
+msgstr "फ़ाइल सिस्टम"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:892
+msgid "Memory management"
+msgstr "मेमोरी प्रबंधन"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:902
+msgid "Disk swap size"
+msgstr "डिस्क स्वैप आकार"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:910
+msgid "Custom size (GB)"
+msgstr "कस्टम आकार (GB)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:920
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr ""
+"zswap संपीड़ित मेमोरी को कैश के रूप में उपयोग करता है और भर जाने पर डिस्क स्वैप फ़ाइल में "
+"डेटा स्थानांतरित करता है।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:937
 msgid "All data on the selected drive will be erased."
-msgstr ""
+msgstr "चयनित ड्राइव का सारा डेटा मिटा दिया जाएगा।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:960
 msgid "System Setup"
-msgstr ""
+msgstr "सिस्टम सेटअप"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:967
+#: ../files/usr/bin/universal-lite-setup-wizard:1094
+msgid "Timezone"
+msgstr "समय क्षेत्र"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:980
 msgid "Administrator account (sudo)"
-msgstr ""
+msgstr "व्यवस्थापक खाता (sudo)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:987
+msgid "Root Password (optional)"
+msgstr "Root पासवर्ड (वैकल्पिक)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1012
 msgid "Install Apps"
-msgstr ""
+msgstr "ऐप्स इंस्टॉल करें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1019
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
+"ये ऐप्स पहले से डाउनलोड हैं और इंस्टॉल के दौरान कॉपी किए जाएँगे। जो आप नहीं चाहते उनका "
+"चयन हटा दें।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1075
 msgid "Ready to Install"
-msgstr ""
+msgstr "इंस्टॉल के लिए तैयार"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1081
 msgid "Review your settings and click Install to begin."
-msgstr ""
+msgstr "अपनी सेटिंग्स की समीक्षा करें और शुरू करने के लिए 'इंस्टॉल' पर क्लिक करें।"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1087
+msgid "Language"
+msgstr "भाषा"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1088
+msgid "Network"
+msgstr "नेटवर्क"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1091
+msgid "Memory"
+msgstr "मेमोरी"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1092
+msgid "Name"
+msgstr "नाम"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1095
+msgid "Administrator"
+msgstr "व्यवस्थापक"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1096
+msgid "Root password"
+msgstr "Root पासवर्ड"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1097
+msgid "Apps"
+msgstr "ऐप्स"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Installing..."
-msgstr ""
+msgstr "इंस्टॉल हो रहा है..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1139
 msgid "Skip"
-msgstr ""
+msgstr "छोड़ें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1146
 msgid "Retry"
-msgstr ""
+msgstr "पुनः प्रयास"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1153
 msgid "Reboot"
-msgstr ""
+msgstr "रीबूट"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1266
 msgid "No networks found."
-msgstr ""
+msgstr "कोई नेटवर्क नहीं मिला।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1293
 msgid "Strong"
-msgstr ""
+msgstr "मज़बूत"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1295
 msgid "Medium"
-msgstr ""
+msgstr "मध्यम"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1297
 msgid "Weak"
-msgstr ""
+msgstr "कमज़ोर"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Secured"
-msgstr ""
+msgstr "सुरक्षित"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Open"
-msgstr ""
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1319
-msgid "Password"
-msgstr ""
+msgstr "खुला"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1352
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr ""
+msgstr "{ssid} से जुड़ रहे हैं..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1408
 #: ../files/usr/bin/universal-lite-setup-wizard:1431
 msgid "Wrong password."
-msgstr ""
+msgstr "गलत पासवर्ड।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1410
 #: ../files/usr/bin/universal-lite-setup-wizard:1433
 #, python-brace-format
 msgid "Connection failed: {err}"
-msgstr ""
+msgstr "कनेक्शन विफल: {err}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1418
 msgid "Enter a network name."
-msgstr ""
+msgstr "नेटवर्क का नाम दर्ज करें।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1446
 #, python-brace-format
 msgid "Connected to {ssid}!"
-msgstr ""
+msgstr "{ssid} से जुड़ गए!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1451
 msgid "Connected, but no internet access detected."
-msgstr ""
+msgstr "कनेक्ट है, लेकिन इंटरनेट का उपयोग नहीं मिला।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1569
 #, python-brace-format
 msgid "Step {n} of {total}"
-msgstr ""
+msgstr "चरण {n} / {total}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Install"
-msgstr ""
+msgstr "इंस्टॉल"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1604
 msgid "No target drives found. Connect a drive and restart the installer."
-msgstr ""
+msgstr "कोई लक्ष्य ड्राइव नहीं मिली। ड्राइव कनेक्ट करें और इंस्टॉलर पुनः शुरू करें।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1609
 msgid "Custom swap size must be a positive whole number (in GB)."
-msgstr ""
+msgstr "कस्टम स्वैप आकार एक धनात्मक पूर्णांक होना चाहिए (GB में)।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1620
 msgid "Full name is required."
-msgstr ""
+msgstr "पूरा नाम आवश्यक है।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1623
 msgid "Username is required."
-msgstr ""
+msgstr "उपयोगकर्ता नाम आवश्यक है।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1626
 msgid "Username must be 32 characters or fewer."
-msgstr ""
+msgstr "उपयोगकर्ता नाम 32 अक्षर या उससे कम होना चाहिए।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1630
 msgid ""
 "Username must start with a lowercase letter and contain only lowercase "
 "letters, numbers, and hyphens."
 msgstr ""
+"उपयोगकर्ता नाम छोटे अक्षर से शुरू होना चाहिए और इसमें केवल छोटे अक्षर, अंक और हाइफ़न हो "
+"सकते हैं।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1635
 msgid "Password is required."
-msgstr ""
+msgstr "पासवर्ड आवश्यक है।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1638
 msgid "Passwords do not match."
-msgstr ""
+msgstr "पासवर्ड मेल नहीं खाते।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1647
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
 msgstr ""
+"कृपया व्यवस्थापक पहुँच सक्षम करें या root पासवर्ड सेट करें। इनमें से कोई भी नहीं होने पर आप "
+"सिस्टम प्रबंधन से बाहर हो जाएँगे।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1665
 msgid "Wired connection"
-msgstr ""
+msgstr "वायर्ड कनेक्शन"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1668
 #, python-brace-format
 msgid "Connected to {ssid}"
-msgstr ""
+msgstr "{ssid} से जुड़ा हुआ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1671
 msgid "No network (offline install)"
-msgstr ""
+msgstr "कोई नेटवर्क नहीं (ऑफ़लाइन इंस्टॉल)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1681
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr ""
+msgstr "zswap ({swap_gb} GB डिस्क स्वैप के साथ)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1684
 msgid "zram only (compressed RAM)"
-msgstr ""
+msgstr "केवल zram (संपीड़ित मेमोरी)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "Yes"
-msgstr ""
+msgstr "हाँ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "No"
-msgstr ""
+msgstr "नहीं"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Set"
-msgstr ""
+msgstr "सेट है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Not set"
-msgstr ""
+msgstr "सेट नहीं है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1700
 msgid "No apps selected"
-msgstr ""
+msgstr "कोई ऐप चयनित नहीं"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2150
 msgid "Partitioning and installing"
-msgstr ""
+msgstr "पार्टीशन बना रहे हैं और इंस्टॉल कर रहे हैं"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2151
 msgid "Configuring user account"
-msgstr ""
+msgstr "उपयोगकर्ता खाता कॉन्फ़िगर हो रहा है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2152
 msgid "Copying network configuration"
-msgstr ""
+msgstr "नेटवर्क कॉन्फ़िगरेशन कॉपी हो रहा है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2156
 msgid "Installing selected apps"
-msgstr ""
+msgstr "चयनित ऐप्स इंस्टॉल हो रहे हैं"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2160
 msgid "Configuring memory management"
-msgstr ""
+msgstr "मेमोरी प्रबंधन कॉन्फ़िगर हो रहा है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2161
 msgid "Finalizing"
-msgstr ""
+msgstr "अंतिम चरण"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2224
 msgid "(skipped)"
-msgstr ""
+msgstr "(छोड़ दिया गया)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2250
 msgid "Installation Complete!"
-msgstr ""
+msgstr "इंस्टॉलेशन पूर्ण!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2278
 msgid "Reboot failed — please restart manually."
-msgstr ""
+msgstr "रीबूट विफल — कृपया मैन्युअल रूप से पुनः शुरू करें।"

@@ -14,6 +14,8 @@ pot: $(POTFILE)
 
 $(POTFILE): $(SOURCE)
 	xgettext --language=Python --keyword=_ --keyword=N_ \
+	    --keyword=_make_translated_label \
+	    --keyword=_make_summary_row:2 \
 	    --output=$(POTFILE) --from-code=UTF-8 \
 	    --package-name="$(DOMAIN)" \
 	    $(SOURCE)

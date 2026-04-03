@@ -16,318 +16,502 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:279
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
+"RAM iliyobanwa peke yake (zram) — haraka, lakini programu zinaweza kufungwa "
+"kumbukumbu ikijaa"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:280
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
+"RAM iliyobanwa + hifadhi ya diski (zswap) — mfumo wa polepole kwenda diski, "
+"programu zinabaki wazi"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 #: ../files/usr/bin/universal-lite-setup-wizard:1502
 msgid "Custom"
-msgstr ""
+msgstr "Maalum"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:440
 #: ../files/usr/bin/universal-lite-setup-wizard:1132
 msgid "Back"
-msgstr ""
+msgstr "Rudi"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:447
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Next"
-msgstr ""
+msgstr "Endelea"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:528
 msgid "Select your language."
-msgstr ""
+msgstr "Chagua lugha yako."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:694
 msgid "Welcome to Universal-Lite"
-msgstr ""
+msgstr "Karibu kwenye Universal-Lite"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:700
 msgid "Create your account to get started."
-msgstr ""
+msgstr "Fungua akaunti yako ili uanze."
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:706
+msgid "Full Name"
+msgstr "Jina kamili"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Jane Doe"
-msgstr ""
+msgstr "Juma Hassan"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:714
+#: ../files/usr/bin/universal-lite-setup-wizard:1093
+msgid "Username"
+msgstr "Jina la mtumiaji"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:721
+#: ../files/usr/bin/universal-lite-setup-wizard:798
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
+msgid "Password"
+msgstr "Nenosiri"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:728
+msgid "Confirm Password"
+msgstr "Thibitisha nenosiri"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:753
 msgid "Connect to Wi-Fi"
-msgstr ""
+msgstr "Unganisha na Wi-Fi"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:759
 msgid "Select a network to get online."
-msgstr ""
+msgstr "Chagua mtandao ili uingie mtandaoni."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:772
 #: ../files/usr/bin/universal-lite-setup-wizard:1226
 msgid "Scanning for networks..."
-msgstr ""
+msgstr "Inatafuta mitandao..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:779
 msgid "Rescan"
-msgstr ""
+msgstr "Tafuta tena"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:792
+msgid "Network Name (SSID)"
+msgstr "Jina la mtandao (SSID)"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:805
 #: ../files/usr/bin/universal-lite-setup-wizard:1322
 #: ../files/usr/bin/universal-lite-setup-wizard:1328
 msgid "Connect"
-msgstr ""
+msgstr "Unganisha"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:816
 msgid "Join hidden network..."
-msgstr ""
+msgstr "Jiunge na mtandao uliofichwa..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:852
 msgid "Choose Installation Disk"
-msgstr ""
+msgstr "Chagua Diski ya Usakinishaji"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:858
 msgid "Select the target drive and installation options."
-msgstr ""
+msgstr "Chagua hifadhi lengwa na chaguo za usakinishaji."
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:865
+#: ../files/usr/bin/universal-lite-setup-wizard:1089
+msgid "Target drive"
+msgstr "Hifadhi lengwa"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:877
 msgid "No eligible drives found"
-msgstr ""
+msgstr "Hakuna hifadhi zinazofaa zilizopatikana"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:884
+#: ../files/usr/bin/universal-lite-setup-wizard:1090
+msgid "Filesystem"
+msgstr "Mfumo wa faili"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:892
+msgid "Memory management"
+msgstr "Usimamizi wa kumbukumbu"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:902
+msgid "Disk swap size"
+msgstr "Ukubwa wa kubadilishana ya diski"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:910
+msgid "Custom size (GB)"
+msgstr "Ukubwa maalum (GB)"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:920
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr ""
+"zswap hutumia RAM iliyobanwa kama hifadhi ya muda na humwaga kwenye faili ya "
+"kubadilishana ya diski ikijaa."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:937
 msgid "All data on the selected drive will be erased."
-msgstr ""
+msgstr "Data yote kwenye hifadhi iliyochaguliwa itafutwa."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:960
 msgid "System Setup"
-msgstr ""
+msgstr "Mpangilio wa Mfumo"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:967
+#: ../files/usr/bin/universal-lite-setup-wizard:1094
+msgid "Timezone"
+msgstr "Eneo la saa"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:980
 msgid "Administrator account (sudo)"
-msgstr ""
+msgstr "Akaunti ya msimamizi (sudo)"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:987
+msgid "Root Password (optional)"
+msgstr "Nenosiri la root (si lazima)"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1012
 msgid "Install Apps"
-msgstr ""
+msgstr "Sakinisha Programu"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1019
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
+"Programu hizi zimepakuliwa tayari na zitanakiliwa wakati wa usakinishaji. "
+"Ondoa alama kwenye zile usizozihitaji."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1075
 msgid "Ready to Install"
-msgstr ""
+msgstr "Tayari Kusakinisha"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1081
 msgid "Review your settings and click Install to begin."
-msgstr ""
+msgstr "Kagua mipangilio yako na ubofye Sakinisha ili uanze."
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1087
+msgid "Language"
+msgstr "Lugha"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1088
+msgid "Network"
+msgstr "Mtandao"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1091
+msgid "Memory"
+msgstr "Kumbukumbu"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1092
+msgid "Name"
+msgstr "Jina"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1095
+msgid "Administrator"
+msgstr "Msimamizi"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1096
+msgid "Root password"
+msgstr "Nenosiri la root"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1097
+msgid "Apps"
+msgstr "Programu"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Installing..."
-msgstr ""
+msgstr "Inasakinisha..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1139
 msgid "Skip"
-msgstr ""
+msgstr "Ruka"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1146
 msgid "Retry"
-msgstr ""
+msgstr "Jaribu tena"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1153
 msgid "Reboot"
-msgstr ""
+msgstr "Anzisha upya"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1266
 msgid "No networks found."
-msgstr ""
+msgstr "Hakuna mitandao iliyopatikana."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1293
 msgid "Strong"
-msgstr ""
+msgstr "Imara"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1295
 msgid "Medium"
-msgstr ""
+msgstr "Wastani"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1297
 msgid "Weak"
-msgstr ""
+msgstr "Dhaifu"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Secured"
-msgstr ""
+msgstr "Salama"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Open"
-msgstr ""
+msgstr "Wazi"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1319
-msgid "Password"
-msgstr ""
-
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1352
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr ""
+msgstr "Inaunganisha na {ssid}..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1408
 #: ../files/usr/bin/universal-lite-setup-wizard:1431
 msgid "Wrong password."
-msgstr ""
+msgstr "Nenosiri lisilo sahihi."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1410
 #: ../files/usr/bin/universal-lite-setup-wizard:1433
 #, python-brace-format
 msgid "Connection failed: {err}"
-msgstr ""
+msgstr "Muunganisho umeshindwa: {err}"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1418
 msgid "Enter a network name."
-msgstr ""
+msgstr "Ingiza jina la mtandao."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1446
 #, python-brace-format
 msgid "Connected to {ssid}!"
-msgstr ""
+msgstr "Imeunganishwa na {ssid}!"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1451
 msgid "Connected, but no internet access detected."
-msgstr ""
+msgstr "Imeunganishwa, lakini hakuna ufikiaji wa intaneti uliogunduliwa."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1569
 #, python-brace-format
 msgid "Step {n} of {total}"
-msgstr ""
+msgstr "Hatua {n} kati ya {total}"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Install"
-msgstr ""
+msgstr "Sakinisha"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1604
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
+"Hakuna hifadhi lengwa zilizopatikana. Unganisha hifadhi na uanze upya "
+"kisakinishi."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1609
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr ""
+"Ukubwa maalum wa kubadilishana lazima uwe nambari kamili chanya (kwa GB)."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1620
 msgid "Full name is required."
-msgstr ""
+msgstr "Jina kamili linahitajika."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1623
 msgid "Username is required."
-msgstr ""
+msgstr "Jina la mtumiaji linahitajika."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1626
 msgid "Username must be 32 characters or fewer."
-msgstr ""
+msgstr "Jina la mtumiaji lazima liwe herufi 32 au chini ya hapo."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1630
 msgid ""
 "Username must start with a lowercase letter and contain only lowercase "
 "letters, numbers, and hyphens."
 msgstr ""
+"Jina la mtumiaji lazima lianze na herufi ndogo na liwe na herufi ndogo, "
+"nambari, na mikwaju peke yake."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1635
 msgid "Password is required."
-msgstr ""
+msgstr "Nenosiri linahitajika."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1638
 msgid "Passwords do not match."
-msgstr ""
+msgstr "Manenosiri hayalingani."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1647
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
 msgstr ""
+"Wezesha ufikiaji wa msimamizi au weka nenosiri la root. Bila moja ya hivi "
+"utafungiwa nje ya usimamizi wa mfumo."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1665
 msgid "Wired connection"
-msgstr ""
+msgstr "Muunganisho wa waya"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1668
 #, python-brace-format
 msgid "Connected to {ssid}"
-msgstr ""
+msgstr "Imeunganishwa na {ssid}"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1671
 msgid "No network (offline install)"
-msgstr ""
+msgstr "Hakuna mtandao (usakinishaji nje ya mtandao)"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1681
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr ""
+msgstr "zswap na {swap_gb} GB kubadilishana ya diski"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1684
 msgid "zram only (compressed RAM)"
-msgstr ""
+msgstr "zram peke yake (RAM iliyobanwa)"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "Yes"
-msgstr ""
+msgstr "Ndiyo"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "No"
-msgstr ""
+msgstr "Hapana"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Set"
-msgstr ""
+msgstr "Imewekwa"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Not set"
-msgstr ""
+msgstr "Haijawekwa"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1700
 msgid "No apps selected"
-msgstr ""
+msgstr "Hakuna programu zilizochaguliwa"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2150
 msgid "Partitioning and installing"
-msgstr ""
+msgstr "Inagawa sehemu na kusakinisha"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2151
 msgid "Configuring user account"
-msgstr ""
+msgstr "Inasanidi akaunti ya mtumiaji"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2152
 msgid "Copying network configuration"
-msgstr ""
+msgstr "Inanakili usanidi wa mtandao"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2156
 msgid "Installing selected apps"
-msgstr ""
+msgstr "Inasakinisha programu zilizochaguliwa"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2160
 msgid "Configuring memory management"
-msgstr ""
+msgstr "Inasanidi usimamizi wa kumbukumbu"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2161
 msgid "Finalizing"
-msgstr ""
+msgstr "Inakamilisha"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2224
 msgid "(skipped)"
-msgstr ""
+msgstr "(imerukwa)"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2250
 msgid "Installation Complete!"
-msgstr ""
+msgstr "Usakinishaji Umekamilika!"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2278
 msgid "Reboot failed — please restart manually."
-msgstr ""
+msgstr "Kuanzisha upya kumeshindwa — tafadhali anzisha upya kwa mkono."

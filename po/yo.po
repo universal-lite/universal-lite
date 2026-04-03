@@ -16,318 +16,499 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:279
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
+"RAM tí a fún pọ̀ nìkan (zram) — yára, ṣùgbọ́n àwọn app lè pa tí ìrántí bá kún"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:280
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
+"RAM tí a fún pọ̀ + ìpamọ́ disiki (zswap) — ìṣàn lọ́ra sí disiki, àwọn app máa "
+"wà ní ṣíṣí"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 #: ../files/usr/bin/universal-lite-setup-wizard:1502
 msgid "Custom"
-msgstr ""
+msgstr "Àṣàyàn"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:440
 #: ../files/usr/bin/universal-lite-setup-wizard:1132
 msgid "Back"
-msgstr ""
+msgstr "Sẹ́yìn"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:447
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Next"
-msgstr ""
+msgstr "Tẹ̀síwájú"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:528
 msgid "Select your language."
-msgstr ""
+msgstr "Yan èdè rẹ."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:694
 msgid "Welcome to Universal-Lite"
-msgstr ""
+msgstr "Ẹ kú àbọ̀ sí Universal-Lite"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:700
 msgid "Create your account to get started."
-msgstr ""
+msgstr "Ṣẹ̀dá àkọọ́lẹ̀ rẹ láti bẹ̀rẹ̀."
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:706
+msgid "Full Name"
+msgstr "Orúkọ kíkún"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Jane Doe"
-msgstr ""
+msgstr "Adé Olú"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:714
+#: ../files/usr/bin/universal-lite-setup-wizard:1093
+msgid "Username"
+msgstr "Orúkọ olùmúlò"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:721
+#: ../files/usr/bin/universal-lite-setup-wizard:798
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
+msgid "Password"
+msgstr "Ọ̀rọ̀ igbaniwọlé"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:728
+msgid "Confirm Password"
+msgstr "Jẹ́rìísí ọ̀rọ̀ igbaniwọlé"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:753
 msgid "Connect to Wi-Fi"
-msgstr ""
+msgstr "Sopọ̀ mọ́ Wi-Fi"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:759
 msgid "Select a network to get online."
-msgstr ""
+msgstr "Yan nẹ́tíwọ́ọ̀kì kan láti wọlé sórí ayélujára."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:772
 #: ../files/usr/bin/universal-lite-setup-wizard:1226
 msgid "Scanning for networks..."
-msgstr ""
+msgstr "Ń wá àwọn nẹ́tíwọ́ọ̀kì..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:779
 msgid "Rescan"
-msgstr ""
+msgstr "Tún wá"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:792
+msgid "Network Name (SSID)"
+msgstr "Orúkọ nẹ́tíwọ́ọ̀kì (SSID)"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:805
 #: ../files/usr/bin/universal-lite-setup-wizard:1322
 #: ../files/usr/bin/universal-lite-setup-wizard:1328
 msgid "Connect"
-msgstr ""
+msgstr "Sopọ̀"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:816
 msgid "Join hidden network..."
-msgstr ""
+msgstr "Darapọ̀ mọ́ nẹ́tíwọ́ọ̀kì tí a fi pamọ́..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:852
 msgid "Choose Installation Disk"
-msgstr ""
+msgstr "Yan Disiki Fífi Sórí Ẹ̀rọ"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:858
 msgid "Select the target drive and installation options."
-msgstr ""
+msgstr "Yan ibi ìpamọ́ àti àwọn àṣàyàn fífi sórí ẹ̀rọ."
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:865
+#: ../files/usr/bin/universal-lite-setup-wizard:1089
+msgid "Target drive"
+msgstr "Ibi ìpamọ́ tí a fojúsí"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:877
 msgid "No eligible drives found"
-msgstr ""
+msgstr "Kò sí ibi ìpamọ́ tó yẹ tí a rí"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:884
+#: ../files/usr/bin/universal-lite-setup-wizard:1090
+msgid "Filesystem"
+msgstr "Ètò fáìlì"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:892
+msgid "Memory management"
+msgstr "Ìṣàkóso ìrántí"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:902
+msgid "Disk swap size"
+msgstr "Ìwọ̀n ìpààrọ̀ disiki"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:910
+msgid "Custom size (GB)"
+msgstr "Ìwọ̀n àṣàyàn (GB)"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:920
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr ""
+"zswap ń lo RAM tí a fún pọ̀ gẹ́gẹ́ bí ibi ìpamọ́ fún ìgbà díẹ̀ tí ó sì ń dà sínú "
+"fáìlì ìpààrọ̀ disiki nígbà tí ó bá kún."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:937
 msgid "All data on the selected drive will be erased."
-msgstr ""
+msgstr "Gbogbo dátà lórí ibi ìpamọ́ tí a yàn yóò parẹ́."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:960
 msgid "System Setup"
-msgstr ""
+msgstr "Ìtò Ètò"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:967
+#: ../files/usr/bin/universal-lite-setup-wizard:1094
+msgid "Timezone"
+msgstr "Àgbègbè àkókò"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:980
 msgid "Administrator account (sudo)"
-msgstr ""
+msgstr "Àkọọ́lẹ̀ alákòóso (sudo)"
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:987
+msgid "Root Password (optional)"
+msgstr "Ọ̀rọ̀ igbaniwọlé root (àṣàyàn)"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1012
 msgid "Install Apps"
-msgstr ""
+msgstr "Fi Àwọn App Sórí Ẹ̀rọ"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1019
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
+"Àwọn app wọ̀nyí ti gbà lẹ́sẹ̀sẹ̀ tí wọ́n yóò sì dà kọ́pì ní àkókò fífi sórí ẹ̀rọ. "
+"Mú àmì kúrò lórí èyíkéyìí tí o kò fẹ́."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1075
 msgid "Ready to Install"
-msgstr ""
+msgstr "Ṣetán Láti Fi Sórí Ẹ̀rọ"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1081
 msgid "Review your settings and click Install to begin."
-msgstr ""
+msgstr "Ṣàyẹ̀wò àwọn ètò rẹ kí o sì tẹ Fi Sórí Ẹ̀rọ láti bẹ̀rẹ̀."
 
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1087
+msgid "Language"
+msgstr "Èdè"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1088
+msgid "Network"
+msgstr "Nẹ́tíwọ́ọ̀kì"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1091
+msgid "Memory"
+msgstr "Ìrántí"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1092
+msgid "Name"
+msgstr "Orúkọ"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1095
+msgid "Administrator"
+msgstr "Alákòóso"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1096
+msgid "Root password"
+msgstr "Ọ̀rọ̀ igbaniwọlé root"
+
+# NEEDS-REVIEW
+#: ../files/usr/bin/universal-lite-setup-wizard:1097
+msgid "Apps"
+msgstr "Àwọn app"
+
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Installing..."
-msgstr ""
+msgstr "Ń fi sórí ẹ̀rọ..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1139
 msgid "Skip"
-msgstr ""
+msgstr "Fò"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1146
 msgid "Retry"
-msgstr ""
+msgstr "Tún gbìyànjú"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1153
 msgid "Reboot"
-msgstr ""
+msgstr "Tún bẹ̀rẹ̀"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1266
 msgid "No networks found."
-msgstr ""
+msgstr "Kò sí nẹ́tíwọ́ọ̀kì tí a rí."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1293
 msgid "Strong"
-msgstr ""
+msgstr "Lágbára"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1295
 msgid "Medium"
-msgstr ""
+msgstr "Àárín"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1297
 msgid "Weak"
-msgstr ""
+msgstr "Aláìlágbára"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Secured"
-msgstr ""
+msgstr "Aábo"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1301
 msgid "Open"
-msgstr ""
+msgstr "Ṣíṣí"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1319
-msgid "Password"
-msgstr ""
-
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1352
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr ""
+msgstr "Ń sopọ̀ mọ́ {ssid}..."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1408
 #: ../files/usr/bin/universal-lite-setup-wizard:1431
 msgid "Wrong password."
-msgstr ""
+msgstr "Ọ̀rọ̀ igbaniwọlé kò tọ́."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1410
 #: ../files/usr/bin/universal-lite-setup-wizard:1433
 #, python-brace-format
 msgid "Connection failed: {err}"
-msgstr ""
+msgstr "Ìsopọ̀ kùnà: {err}"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1418
 msgid "Enter a network name."
-msgstr ""
+msgstr "Tẹ orúkọ nẹ́tíwọ́ọ̀kì sílẹ̀."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1446
 #, python-brace-format
 msgid "Connected to {ssid}!"
-msgstr ""
+msgstr "Ti sopọ̀ mọ́ {ssid}!"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1451
 msgid "Connected, but no internet access detected."
-msgstr ""
+msgstr "Ti sopọ̀, ṣùgbọ́n kò sí àǹfààní ayélujára tí a rí."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1569
 #, python-brace-format
 msgid "Step {n} of {total}"
-msgstr ""
+msgstr "Ìgbésẹ̀ {n} nínú {total}"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Install"
-msgstr ""
+msgstr "Fi sórí ẹ̀rọ"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1604
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
+"Kò sí ibi ìpamọ́ tí a rí. Sopọ̀ ibi ìpamọ́ kan kí o sì tún olùfisórí bẹ̀rẹ̀."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1609
 msgid "Custom swap size must be a positive whole number (in GB)."
-msgstr ""
+msgstr "Ìwọ̀n ìpààrọ̀ àṣàyàn gbọ́dọ̀ jẹ́ nọ́mbà odidi rere (ní GB)."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1620
 msgid "Full name is required."
-msgstr ""
+msgstr "Orúkọ kíkún ni a nílò."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1623
 msgid "Username is required."
-msgstr ""
+msgstr "Orúkọ olùmúlò ni a nílò."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1626
 msgid "Username must be 32 characters or fewer."
-msgstr ""
+msgstr "Orúkọ olùmúlò gbọ́dọ̀ jẹ́ àmì 32 tàbí kéréjù bẹ́ẹ̀."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1630
 msgid ""
 "Username must start with a lowercase letter and contain only lowercase "
 "letters, numbers, and hyphens."
 msgstr ""
+"Orúkọ olùmúlò gbọ́dọ̀ bẹ̀rẹ̀ pẹ̀lú lẹ́tà kékeré kí ó sì ní àwọn lẹ́tà kékeré, "
+"nọ́mbà, àti àmì ìsopọ̀ nìkan."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1635
 msgid "Password is required."
-msgstr ""
+msgstr "Ọ̀rọ̀ igbaniwọlé ni a nílò."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1638
 msgid "Passwords do not match."
-msgstr ""
+msgstr "Àwọn ọ̀rọ̀ igbaniwọlé kò bára mu."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1647
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
 msgstr ""
+"Mú àǹfààní alákòóso ṣiṣẹ́ tàbí ṣètò ọ̀rọ̀ igbaniwọlé root. Láìsí ọ̀kan nínú àwọn "
+"wọ̀nyí a óò ti ẹ́ lé ọ kúrò nínú ìṣàkóso ètò."
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1665
 msgid "Wired connection"
-msgstr ""
+msgstr "Ìsopọ̀ oníwáyà"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1668
 #, python-brace-format
 msgid "Connected to {ssid}"
-msgstr ""
+msgstr "Ti sopọ̀ mọ́ {ssid}"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1671
 msgid "No network (offline install)"
-msgstr ""
+msgstr "Kò sí nẹ́tíwọ́ọ̀kì (fífi sórí ẹ̀rọ láìsí ayélujára)"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1681
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr ""
+msgstr "zswap pẹ̀lú {swap_gb} GB ìpààrọ̀ disiki"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1684
 msgid "zram only (compressed RAM)"
-msgstr ""
+msgstr "zram nìkan (RAM tí a fún pọ̀)"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "Yes"
-msgstr ""
+msgstr "Bẹ́ẹ̀ni"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "No"
-msgstr ""
+msgstr "Rárá"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Set"
-msgstr ""
+msgstr "Ti ṣètò"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "Not set"
-msgstr ""
+msgstr "Kò tíì ṣètò"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1700
 msgid "No apps selected"
-msgstr ""
+msgstr "Kò sí app tí a yàn"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2150
 msgid "Partitioning and installing"
-msgstr ""
+msgstr "Ń pín apá àti fífi sórí ẹ̀rọ"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2151
 msgid "Configuring user account"
-msgstr ""
+msgstr "Ń ṣètò àkọọ́lẹ̀ olùmúlò"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2152
 msgid "Copying network configuration"
-msgstr ""
+msgstr "Ń dà ètò nẹ́tíwọ́ọ̀kì kọ́pì"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2156
 msgid "Installing selected apps"
-msgstr ""
+msgstr "Ń fi àwọn app tí a yàn sórí ẹ̀rọ"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2160
 msgid "Configuring memory management"
-msgstr ""
+msgstr "Ń ṣètò ìṣàkóso ìrántí"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2161
 msgid "Finalizing"
-msgstr ""
+msgstr "Ń parí"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2224
 msgid "(skipped)"
-msgstr ""
+msgstr "(a ti fò)"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2250
 msgid "Installation Complete!"
-msgstr ""
+msgstr "Fífi Sórí Ẹ̀rọ Ti Parí!"
 
+# NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2278
 msgid "Reboot failed — please restart manually."
-msgstr ""
+msgstr "Àtúnbẹ̀rẹ̀ kùnà — jọ̀wọ́ tún bẹ̀rẹ̀ pẹ̀lú ọwọ́."
