@@ -123,7 +123,7 @@ msgstr "नेटवर्क का नाम (SSID)"
 #: ../files/usr/bin/universal-lite-setup-wizard:1332
 #: ../files/usr/bin/universal-lite-setup-wizard:1338
 msgid "Connect"
-msgstr "जोड़ें"
+msgstr "कनेक्ट करें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:825
 msgid "Join hidden network..."

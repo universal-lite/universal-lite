@@ -26,8 +26,8 @@ msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
-"ذاكرة مضغوطة + نسخ احتياطي على القرص (zswap) — الفيض إلى القرص أبطأ، لكن "
-"التطبيقات تبقى مفتوحة"
+"ذاكرة مضغوطة + مساحة تبديل على القرص (zswap) — فيض أبطأ إلى القرص، التطبيقات "
+"تبقى مفتوحة"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 msgid "Custom"
@@ -399,11 +399,11 @@ msgstr "لا"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1705
 msgid "Set"
-msgstr "تم التعيين"
+msgstr "مُعيَّن"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1705
 msgid "Not set"
-msgstr "لم يتم التعيين"
+msgstr "غير مُعيَّن"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1713
 msgid "No apps selected"

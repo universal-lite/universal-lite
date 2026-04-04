@@ -34,7 +34,7 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 msgid "Custom"
-msgstr "Другой"
+msgstr "Пользовательский"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:297
 msgid "Web browser"
@@ -171,7 +171,7 @@ msgstr "Размер подкачки на диске"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:919
 msgid "Custom size (GB)"
-msgstr "Свой размер (GB)"
+msgstr "Пользовательский размер (GB)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:929
 msgid ""
@@ -260,7 +260,7 @@ msgstr "Повторить"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1163
 msgid "Reboot"
-msgstr "Перезагрузка"
+msgstr "Перезагрузить"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1276
 msgid "No networks found."
