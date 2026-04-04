@@ -1,4 +1,4 @@
-# Portuguese translations for universal-lite-setup-wizard package.
+# Brazilian Portuguese translations for universal-lite-setup-wizard package.
 # Copyright (C) 2026 THE universal-lite-setup-wizard'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the universal-lite-setup-wizard package.
 # Automatically generated, 2026.
@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-04-03 13:32-0400\n"
-"PO-Revision-Date: 2026-04-03 13:32-0400\n"
+"PO-Revision-Date: 2026-04-04 00:00-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
-"Language: pt\n"
+"Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -28,8 +28,8 @@ msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
-"RAM comprimida + backup em disco (zswap) — transbordamento mais lento para o "
-"disco, os aplicativos permanecem abertos"
+"RAM comprimida + backup em disco (zswap) — estouro mais lento para o disco, "
+"os aplicativos permanecem abertos"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:283
 #: ../files/usr/bin/universal-lite-setup-wizard:1502
@@ -44,11 +44,11 @@ msgstr "Voltar"
 #: ../files/usr/bin/universal-lite-setup-wizard:447
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Next"
-msgstr "Seguinte"
+msgstr "Próximo"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:528
 msgid "Select your language."
-msgstr "Selecione o seu idioma."
+msgstr "Selecione seu idioma."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:694
 msgid "Welcome to Universal-Lite"
@@ -56,7 +56,7 @@ msgstr "Bem-vindo ao Universal-Lite"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:700
 msgid "Create your account to get started."
-msgstr "Crie a sua conta para começar."
+msgstr "Crie sua conta para começar."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:706
 msgid "Full Name"
@@ -69,30 +69,30 @@ msgstr "Maria Silva"
 #: ../files/usr/bin/universal-lite-setup-wizard:714
 #: ../files/usr/bin/universal-lite-setup-wizard:1093
 msgid "Username"
-msgstr "Nome de utilizador"
+msgstr "Nome de usuário"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:721
 #: ../files/usr/bin/universal-lite-setup-wizard:798
 #: ../files/usr/bin/universal-lite-setup-wizard:1319
 msgid "Password"
-msgstr "Palavra-passe"
+msgstr "Senha"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:728
 msgid "Confirm Password"
-msgstr "Confirmar palavra-passe"
+msgstr "Confirmar senha"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:753
 msgid "Connect to Wi-Fi"
-msgstr "Ligar ao Wi-Fi"
+msgstr "Conectar ao Wi-Fi"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:759
 msgid "Select a network to get online."
-msgstr "Selecione uma rede para aceder à Internet."
+msgstr "Selecione uma rede para se conectar."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:772
 #: ../files/usr/bin/universal-lite-setup-wizard:1226
 msgid "Scanning for networks..."
-msgstr "A procurar redes..."
+msgstr "Procurando redes..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:779
 msgid "Rescan"
@@ -106,11 +106,11 @@ msgstr "Nome da rede (SSID)"
 #: ../files/usr/bin/universal-lite-setup-wizard:1322
 #: ../files/usr/bin/universal-lite-setup-wizard:1328
 msgid "Connect"
-msgstr "Ligar"
+msgstr "Conectar"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:816
 msgid "Join hidden network..."
-msgstr "Ligar a rede oculta..."
+msgstr "Conectar a rede oculta..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:852
 msgid "Choose Installation Disk"
@@ -127,20 +127,20 @@ msgstr "Unidade de destino"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:877
 msgid "No eligible drives found"
-msgstr "Não foram encontradas unidades compatíveis"
+msgstr "Nenhuma unidade compatível encontrada"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:884
 #: ../files/usr/bin/universal-lite-setup-wizard:1090
 msgid "Filesystem"
-msgstr "Sistema de ficheiros"
+msgstr "Sistema de arquivos"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:892
 msgid "Memory management"
-msgstr "Gestão de memória"
+msgstr "Gerenciamento de memória"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:902
 msgid "Disk swap size"
-msgstr "Tamanho de troca em disco"
+msgstr "Tamanho de swap em disco"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:910
 msgid "Custom size (GB)"
@@ -151,8 +151,8 @@ msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr ""
-"O zswap utiliza RAM comprimida como cache e transfere para um ficheiro de "
-"troca em disco quando está cheio."
+"O zswap usa RAM comprimida como cache e transfere para um arquivo de swap em "
+"disco quando está cheio."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:937
 msgid "All data on the selected drive will be erased."
@@ -173,19 +173,19 @@ msgstr "Conta de administrador (sudo)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:987
 msgid "Root Password (optional)"
-msgstr "Palavra-passe de root (opcional)"
+msgstr "Senha de root (opcional)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1012
 msgid "Install Apps"
-msgstr "Instalar aplicações"
+msgstr "Instalar aplicativos"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1019
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
-"Estas aplicações foram pré-transferidas e serão copiadas durante a "
-"instalação. Desmarque as que não pretender."
+"Estes aplicativos foram pré-baixados e serão copiados durante a instalação. "
+"Desmarque os que você não quiser."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1075
 msgid "Ready to Install"
@@ -193,7 +193,7 @@ msgstr "Pronto para instalar"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1081
 msgid "Review your settings and click Install to begin."
-msgstr "Reveja as suas definições e clique em Instalar para começar."
+msgstr "Revise suas configurações e clique em Instalar para começar."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1087
 msgid "Language"
@@ -217,19 +217,19 @@ msgstr "Administrador"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1096
 msgid "Root password"
-msgstr "Palavra-passe de root"
+msgstr "Senha de root"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1097
 msgid "Apps"
-msgstr "Aplicações"
+msgstr "Aplicativos"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Installing..."
-msgstr "A instalar..."
+msgstr "Instalando..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1139
 msgid "Skip"
-msgstr "Ignorar"
+msgstr "Pular"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1146
 msgid "Retry"
@@ -241,7 +241,7 @@ msgstr "Reiniciar"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1266
 msgid "No networks found."
-msgstr "Não foram encontradas redes."
+msgstr "Nenhuma rede encontrada."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1293
 msgid "Strong"
@@ -266,31 +266,31 @@ msgstr "Aberta"
 #: ../files/usr/bin/universal-lite-setup-wizard:1352
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr "A ligar a {ssid}..."
+msgstr "Conectando a {ssid}..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1408
 #: ../files/usr/bin/universal-lite-setup-wizard:1431
 msgid "Wrong password."
-msgstr "Palavra-passe incorreta."
+msgstr "Senha incorreta."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1410
 #: ../files/usr/bin/universal-lite-setup-wizard:1433
 #, python-brace-format
 msgid "Connection failed: {err}"
-msgstr "Falha na ligação: {err}"
+msgstr "Falha na conexão: {err}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1418
 msgid "Enter a network name."
-msgstr "Introduza um nome de rede."
+msgstr "Digite um nome de rede."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1446
 #, python-brace-format
 msgid "Connected to {ssid}!"
-msgstr "Ligado a {ssid}!"
+msgstr "Conectado a {ssid}!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1451
 msgid "Connected, but no internet access detected."
-msgstr "Ligado, mas sem acesso à Internet detetado."
+msgstr "Conectado, mas sem acesso à internet detectado."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1569
 #, python-brace-format
@@ -304,13 +304,13 @@ msgstr "Instalar"
 #: ../files/usr/bin/universal-lite-setup-wizard:1604
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
-"Não foram encontradas unidades de destino. Ligue uma unidade e reinicie o "
+"Nenhuma unidade de destino encontrada. Conecte uma unidade e reinicie o "
 "instalador."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1609
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr ""
-"O tamanho personalizado de troca deve ser um número inteiro positivo (em GB)."
+"O tamanho personalizado de swap deve ser um número inteiro positivo (em GB)."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1620
 msgid "Full name is required."
@@ -318,44 +318,44 @@ msgstr "O nome completo é obrigatório."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1623
 msgid "Username is required."
-msgstr "O nome de utilizador é obrigatório."
+msgstr "O nome de usuário é obrigatório."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1626
 msgid "Username must be 32 characters or fewer."
-msgstr "O nome de utilizador deve ter 32 caracteres ou menos."
+msgstr "O nome de usuário deve ter 32 caracteres ou menos."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1630
 msgid ""
 "Username must start with a lowercase letter and contain only lowercase "
 "letters, numbers, and hyphens."
 msgstr ""
-"O nome de utilizador deve começar com uma letra minúscula e conter apenas "
+"O nome de usuário deve começar com uma letra minúscula e conter apenas "
 "letras minúsculas, números e hífens."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1635
 msgid "Password is required."
-msgstr "A palavra-passe é obrigatória."
+msgstr "A senha é obrigatória."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1638
 msgid "Passwords do not match."
-msgstr "As palavras-passe não coincidem."
+msgstr "As senhas não coincidem."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1647
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
 msgstr ""
-"Ative o acesso de administrador ou defina uma palavra-passe de root. Sem uma "
-"destas opções, não poderá gerir o sistema."
+"Ative o acesso de administrador ou defina uma senha de root. Sem uma dessas "
+"opções, você não conseguirá gerenciar o sistema."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1665
 msgid "Wired connection"
-msgstr "Ligação por cabo"
+msgstr "Conexão por cabo"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1668
 #, python-brace-format
 msgid "Connected to {ssid}"
-msgstr "Ligado a {ssid}"
+msgstr "Conectado a {ssid}"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1671
 msgid "No network (offline install)"
@@ -364,7 +364,7 @@ msgstr "Sem rede (instalação offline)"
 #: ../files/usr/bin/universal-lite-setup-wizard:1681
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr "zswap com {swap_gb} GB de troca em disco"
+msgstr "zswap com {swap_gb} GB de swap em disco"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1684
 msgid "zram only (compressed RAM)"
@@ -388,31 +388,31 @@ msgstr "Não definida"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1700
 msgid "No apps selected"
-msgstr "Nenhuma aplicação selecionada"
+msgstr "Nenhum aplicativo selecionado"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2150
 msgid "Partitioning and installing"
-msgstr "A particionar e instalar"
+msgstr "Particionando e instalando"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2151
 msgid "Configuring user account"
-msgstr "A configurar conta de utilizador"
+msgstr "Configurando conta de usuário"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2152
 msgid "Copying network configuration"
-msgstr "A copiar configuração de rede"
+msgstr "Copiando configuração de rede"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2156
 msgid "Installing selected apps"
-msgstr "A instalar aplicações selecionadas"
+msgstr "Instalando aplicativos selecionados"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2160
 msgid "Configuring memory management"
-msgstr "A configurar gestão de memória"
+msgstr "Configurando gerenciamento de memória"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2161
 msgid "Finalizing"
-msgstr "A finalizar"
+msgstr "Finalizando"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2224
 msgid "(skipped)"
