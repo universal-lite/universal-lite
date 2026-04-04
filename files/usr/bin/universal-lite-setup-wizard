@@ -383,11 +383,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._selected_lang = "en"
 
         # Load language name matrix
-        _lang_names_path = Path("/usr/share/universal-lite/language-names.json")
-        if not _lang_names_path.exists():
-            _lang_names_path = Path(__file__).resolve().parent / "../../po/language-names.json"
-        with open(_lang_names_path) as f:
-            self._language_names = json.load(f)
+        try:
+            _lang_names_path = Path("/usr/share/universal-lite/language-names.json")
+            if not _lang_names_path.exists():
+                _lang_names_path = Path(__file__).resolve().parent / "../../po/language-names.json"
+            with open(_lang_names_path) as f:
+                self._language_names = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            self._language_names = {}
 
         self._timezones = _load_timezones()
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
@@ -520,10 +523,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        title = Gtk.Label(label="Language")
-        title.add_css_class("welcome-title")
-        title.set_halign(Gtk.Align.CENTER)
-        card.append(title)
+        self._lang_title = Gtk.Label(label=_("Language"))
+        self._lang_title.add_css_class("welcome-title")
+        self._lang_title.set_halign(Gtk.Align.CENTER)
+        card.append(self._lang_title)
+        self._retranslatable.append((self._lang_title.set_label, "Language"))
 
         self._language_subtitle = Gtk.Label(label=_("Select your language."))
         self._language_subtitle.add_css_class("welcome-subtitle")
@@ -546,14 +550,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # Top line: native name (left) + translated name (right)
             top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
 
-            native_name = self._language_names[code][code]
+            native_name = self._language_names.get(code, {}).get(code, code)
             native_label = Gtk.Label(label=native_name)
             native_label.add_css_class("wifi-ssid")
             native_label.set_halign(Gtk.Align.START)
             native_label.set_hexpand(True)
             top.append(native_label)
 
-            translated_name = self._language_names[self._selected_lang][code]
+            translated_name = self._language_names.get(self._selected_lang, {}).get(code, code)
             translated_label = Gtk.Label(label=translated_name)
             translated_label.add_css_class("wifi-detail")
             top.append(translated_label)
@@ -669,6 +673,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Update the translated name column in the language list
         self._update_language_list_translations()
 
+        # Rescan WiFi to rebuild rows in new language
+        if self._wifi_device:
+            self._request_wifi_scan()
+
     def _update_language_list_translations(self) -> None:
         """Update the 'translated name' column in the language list."""
         lang_names = self._language_names.get(self._selected_lang, {})
@@ -773,6 +781,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._wifi_empty_label.add_css_class("wifi-detail")
         self._wifi_empty_label.set_margin_top(16)
         self._wifi_empty_label.set_margin_bottom(8)
+        self._retranslatable.append((self._wifi_empty_label.set_text, "Scanning for networks..."))
         card.append(self._wifi_empty_label)
 
         # Rescan button
@@ -866,7 +875,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._drives = _load_drives()
         drive_labels = []
         for d in self._drives:
-            model = d.get("model") or "Unknown"
+            model = d.get("model") or _("Unknown")
             label = "{name} \u2014 {size} {model}".format(
                 name=d['name'], size=d['size'], model=model)
             tran = d.get("tran")
@@ -1498,11 +1507,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # Rebuild swap size dropdown model
         current_size = self._swap_size_dropdown.get_selected()
-        new_size_model = Gtk.StringList.new(
-            [s if s not in ("Custom",) else _("Custom") for s in SWAP_SIZES]
-        )
+        new_size_model = Gtk.StringList.new([_(s) for s in SWAP_SIZES])
         self._swap_size_dropdown.set_model(new_size_model)
         self._swap_size_dropdown.set_selected(current_size)
+
+        # Rebuild drive dropdown if showing "no drives" placeholder
+        if not self._drives:
+            no_drives_model = Gtk.StringList.new([_("No eligible drives found")])
+            self._drive_dropdown.set_model(no_drives_model)
 
         # Re-apply dynamic texts
         self._update_navigation()
@@ -1656,7 +1668,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _populate_summary(self) -> None:
         # Language
-        native_name = self._language_names[self._selected_lang][self._selected_lang]
+        native_name = self._language_names.get(self._selected_lang, {}).get(self._selected_lang, self._selected_lang)
         locale_display = self._selected_locale.replace(".UTF-8", "")
         self._summary_language.set_text(f"{native_name} ({locale_display})")
 
@@ -1756,12 +1768,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _get_selected_drive_display(self) -> str:
         """Return human-readable description of the selected target drive."""
         if not self._drives:
-            return "None"
+            return _("None")
         idx = self._drive_dropdown.get_selected()
         if idx < 0 or idx >= len(self._drives):
-            return "None"
+            return _("None")
         d = self._drives[idx]
-        model = d.get("model") or "Unknown"
+        model = d.get("model") or _("Unknown")
         return f"{d['name']} \u2014 {d['size']} {model}"
 
     def _get_selected_filesystem(self) -> str:
