@@ -48,7 +48,7 @@ msgstr "Rudi"
 #: ../files/usr/bin/universal-lite-setup-wizard:447
 #: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Next"
-msgstr "Endelea"
+msgstr "Ifuatayo"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:528
