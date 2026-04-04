@@ -165,7 +165,7 @@ msgstr "Quản lý bộ nhớ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:911
 msgid "Disk swap size"
-msgstr "Kích thước hoán đổi đĩa"
+msgstr "Kích thước hoán đổi trên đĩa"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:919
 msgid "Custom size (GB)"
@@ -384,7 +384,7 @@ msgstr "Không có mạng (cài đặt ngoại tuyến)"
 #: ../files/usr/bin/universal-lite-setup-wizard:1694
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr "zswap với {swap_gb} GB hoán đổi đĩa"
+msgstr "zswap với {swap_gb} GB hoán đổi trên đĩa"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1697
 msgid "zram only (compressed RAM)"

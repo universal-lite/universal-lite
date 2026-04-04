@@ -21,7 +21,7 @@ msgstr ""
 #: ../files/usr/bin/universal-lite-setup-wizard:279
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
-"Tylko skompresowana pamięć RAM (zram) — szybkie, ale aplikacje mogą się "
+"Tylko skompresowana pamięć RAM (zram) — szybko, ale aplikacje mogą się "
 "zamknąć przy pełnej pamięci"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:280

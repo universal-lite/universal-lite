@@ -76,7 +76,7 @@ msgstr "Benvenuto in Universal-Lite"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Create your account to get started."
-msgstr "Crei il Suo account per iniziare."
+msgstr "Creare il proprio account per iniziare."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:714
 msgid "Full Name"
@@ -203,7 +203,7 @@ msgstr "Password di root (facoltativa)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1021
 msgid "Install Apps"
-msgstr "Installare le applicazioni"
+msgstr "Installa le applicazioni"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1028
 msgid ""

@@ -32,7 +32,7 @@ msgstr "自定义"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:297
 msgid "Web browser"
-msgstr "网络浏览器"
+msgstr "网页浏览器"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:298
 msgid "Browse and install apps"
@@ -161,7 +161,7 @@ msgstr "内存管理"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:911
 msgid "Disk swap size"
-msgstr "磁盘交换大小"
+msgstr "磁盘交换空间大小"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:919
 msgid "Custom size (GB)"
@@ -210,7 +210,7 @@ msgstr "准备安装"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1091
 msgid "Review your settings and click Install to begin."
-msgstr "请检查您的设置，然后点击「安装」开始。"
+msgstr "请检查您的设置，然后点击“安装”开始。"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1098
 msgid "Network"
@@ -371,7 +371,7 @@ msgstr "无网络（离线安装）"
 #: ../files/usr/bin/universal-lite-setup-wizard:1694
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr "zswap（磁盘交换 {swap_gb} GB）"
+msgstr "zswap（磁盘交换空间 {swap_gb} GB）"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1697
 msgid "zram only (compressed RAM)"

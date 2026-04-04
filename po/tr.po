@@ -41,7 +41,7 @@ msgstr "Web tarayıcı"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:298
 msgid "Browse and install apps"
-msgstr "Uygulamalara göz atın ve kurun"
+msgstr "Uygulama arama ve kurma"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:299
 msgid "Modern styling for classic apps"

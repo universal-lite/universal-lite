@@ -107,7 +107,7 @@ msgstr "Wi-Fi に接続"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:767
 msgid "Select a network to get online."
-msgstr "ネットワークを選択してオンラインに接続します。"
+msgstr "ネットワークを選択してオンラインに接続してください。"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:780
 #: ../files/usr/bin/universal-lite-setup-wizard:1236

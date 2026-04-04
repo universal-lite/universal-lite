@@ -362,7 +362,7 @@ msgid ""
 "these you will be locked out of system management."
 msgstr ""
 "कृपया व्यवस्थापक पहुँच सक्षम करें या root पासवर्ड सेट करें। इनमें से कोई भी नहीं होने पर आप "
-"सिस्टम प्रबंधन से बाहर हो जाएँगे।"
+"सिस्टम को प्रबंधित नहीं कर पाएँगे।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1678
 msgid "Wired connection"

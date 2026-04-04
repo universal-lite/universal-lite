@@ -308,7 +308,7 @@ msgstr "Introduzca un nombre de red."
 #: ../files/usr/bin/universal-lite-setup-wizard:1456
 #, python-brace-format
 msgid "Connected to {ssid}!"
-msgstr "Conectado a {ssid}!"
+msgstr "¡Conectado a {ssid}!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1461
 msgid "Connected, but no internet access detected."
@@ -448,7 +448,7 @@ msgstr "(omitido)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2263
 msgid "Installation Complete!"
-msgstr "Instalación completada!"
+msgstr "¡Instalación completada!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2291
 msgid "Reboot failed — please restart manually."

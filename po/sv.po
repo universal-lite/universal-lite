@@ -210,7 +210,7 @@ msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
-"Dessa appar är förnedladdade och kopieras under installationen. Avmarkera de "
+"Dessa appar är förhandsnedladdade och kopieras under installationen. Avmarkera de "
 "du inte vill ha."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1085
@@ -414,7 +414,7 @@ msgstr "Inga appar valda"
 #: ../files/usr/bin/universal-lite-setup-wizard:1772
 #: ../files/usr/bin/universal-lite-setup-wizard:1775
 msgid "None"
-msgstr "Ingen"
+msgstr "Inga"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2163
 msgid "Partitioning and installing"
@@ -442,7 +442,7 @@ msgstr "Slutför"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2237
 msgid "(skipped)"
-msgstr "(överhoppad)"
+msgstr "(överhoppat)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2263
 msgid "Installation Complete!"
