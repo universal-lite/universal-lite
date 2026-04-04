@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-04 11:42-0400\n"
+"POT-Creation-Date: 2026-04-04 11:59-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -34,18 +34,34 @@ msgstr ""
 msgid "Custom"
 msgstr "سفارشی"
 
+#: ../files/usr/bin/universal-lite-setup-wizard:297
+msgid "Web browser"
+msgstr "مرورگر وب"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:298
+msgid "Browse and install apps"
+msgstr "مرور و نصب برنامه‌ها"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:299
+msgid "Modern styling for classic apps"
+msgstr "ظاهر مدرن برای برنامه‌های کلاسیک"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:300
+msgid "Dark variant for classic apps"
+msgstr "نسخه تیره برای برنامه‌های کلاسیک"
+
 #: ../files/usr/bin/universal-lite-setup-wizard:443
-#: ../files/usr/bin/universal-lite-setup-wizard:1141
+#: ../files/usr/bin/universal-lite-setup-wizard:1142
 msgid "Back"
 msgstr "بازگشت"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:450
-#: ../files/usr/bin/universal-lite-setup-wizard:1590
+#: ../files/usr/bin/universal-lite-setup-wizard:1591
 msgid "Next"
 msgstr "بعدی"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:526
-#: ../files/usr/bin/universal-lite-setup-wizard:1096
+#: ../files/usr/bin/universal-lite-setup-wizard:1097
 msgid "Language"
 msgstr "زبان"
 
@@ -70,13 +86,13 @@ msgid "Jane Doe"
 msgstr "علی محمدی"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:722
-#: ../files/usr/bin/universal-lite-setup-wizard:1102
+#: ../files/usr/bin/universal-lite-setup-wizard:1103
 msgid "Username"
 msgstr "نام کاربری"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:729
 #: ../files/usr/bin/universal-lite-setup-wizard:807
-#: ../files/usr/bin/universal-lite-setup-wizard:1328
+#: ../files/usr/bin/universal-lite-setup-wizard:1329
 msgid "Password"
 msgstr "گذرواژه"
 
@@ -93,7 +109,7 @@ msgid "Select a network to get online."
 msgstr "برای اتصال به اینترنت یک شبکه انتخاب کنید."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:780
-#: ../files/usr/bin/universal-lite-setup-wizard:1235
+#: ../files/usr/bin/universal-lite-setup-wizard:1236
 msgid "Scanning for networks..."
 msgstr "جستجوی شبکه‌ها..."
 
@@ -106,8 +122,8 @@ msgid "Network Name (SSID)"
 msgstr "نام شبکه (SSID)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:814
-#: ../files/usr/bin/universal-lite-setup-wizard:1331
-#: ../files/usr/bin/universal-lite-setup-wizard:1337
+#: ../files/usr/bin/universal-lite-setup-wizard:1332
+#: ../files/usr/bin/universal-lite-setup-wizard:1338
 msgid "Connect"
 msgstr "اتصال"
 
@@ -124,22 +140,22 @@ msgid "Select the target drive and installation options."
 msgstr "درایو مقصد و گزینه‌های نصب را انتخاب کنید."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:874
-#: ../files/usr/bin/universal-lite-setup-wizard:1098
+#: ../files/usr/bin/universal-lite-setup-wizard:1099
 msgid "Target drive"
 msgstr "درایو مقصد"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:878
-#: ../files/usr/bin/universal-lite-setup-wizard:1776
+#: ../files/usr/bin/universal-lite-setup-wizard:1777
 msgid "Unknown"
 msgstr "ناشناخته"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:886
-#: ../files/usr/bin/universal-lite-setup-wizard:1516
+#: ../files/usr/bin/universal-lite-setup-wizard:1517
 msgid "No eligible drives found"
 msgstr "درایو مناسبی یافت نشد"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:893
-#: ../files/usr/bin/universal-lite-setup-wizard:1099
+#: ../files/usr/bin/universal-lite-setup-wizard:1100
 msgid "Filesystem"
 msgstr "سیستم فایل"
 
@@ -172,7 +188,7 @@ msgid "System Setup"
 msgstr "تنظیمات سیستم"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:976
-#: ../files/usr/bin/universal-lite-setup-wizard:1103
+#: ../files/usr/bin/universal-lite-setup-wizard:1104
 msgid "Timezone"
 msgstr "منطقه زمانی"
 
@@ -196,138 +212,138 @@ msgstr ""
 "این برنامه‌ها از قبل دانلود شده‌اند و در حین نصب کپی خواهند شد. برنامه‌هایی که "
 "نمی‌خواهید را از حالت انتخاب خارج کنید."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1084
+#: ../files/usr/bin/universal-lite-setup-wizard:1085
 msgid "Ready to Install"
 msgstr "آماده نصب"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1090
+#: ../files/usr/bin/universal-lite-setup-wizard:1091
 msgid "Review your settings and click Install to begin."
 msgstr "تنظیمات خود را بررسی کنید و برای شروع روی نصب کلیک کنید."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1097
+#: ../files/usr/bin/universal-lite-setup-wizard:1098
 msgid "Network"
 msgstr "شبکه"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1100
+#: ../files/usr/bin/universal-lite-setup-wizard:1101
 msgid "Memory"
 msgstr "حافظه"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1101
+#: ../files/usr/bin/universal-lite-setup-wizard:1102
 msgid "Name"
 msgstr "نام"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1104
+#: ../files/usr/bin/universal-lite-setup-wizard:1105
 msgid "Administrator"
 msgstr "مدیر سیستم"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1105
+#: ../files/usr/bin/universal-lite-setup-wizard:1106
 msgid "Root password"
 msgstr "گذرواژه root"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1106
+#: ../files/usr/bin/universal-lite-setup-wizard:1107
 msgid "Apps"
 msgstr "برنامه‌ها"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1125
+#: ../files/usr/bin/universal-lite-setup-wizard:1126
 msgid "Installing..."
 msgstr "در حال نصب..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1148
+#: ../files/usr/bin/universal-lite-setup-wizard:1149
 msgid "Skip"
 msgstr "رد شدن"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1155
+#: ../files/usr/bin/universal-lite-setup-wizard:1156
 msgid "Retry"
 msgstr "تلاش مجدد"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1162
+#: ../files/usr/bin/universal-lite-setup-wizard:1163
 msgid "Reboot"
 msgstr "راه‌اندازی مجدد"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1275
+#: ../files/usr/bin/universal-lite-setup-wizard:1276
 msgid "No networks found."
 msgstr "شبکه‌ای یافت نشد."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1302
+#: ../files/usr/bin/universal-lite-setup-wizard:1303
 msgid "Strong"
 msgstr "قوی"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1304
+#: ../files/usr/bin/universal-lite-setup-wizard:1305
 msgid "Medium"
 msgstr "متوسط"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1306
+#: ../files/usr/bin/universal-lite-setup-wizard:1307
 msgid "Weak"
 msgstr "ضعیف"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1310
+#: ../files/usr/bin/universal-lite-setup-wizard:1311
 msgid "Secured"
 msgstr "رمزگذاری شده"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1310
+#: ../files/usr/bin/universal-lite-setup-wizard:1311
 msgid "Open"
 msgstr "آزاد"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1361
+#: ../files/usr/bin/universal-lite-setup-wizard:1362
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "در حال اتصال به {ssid}..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1417
-#: ../files/usr/bin/universal-lite-setup-wizard:1440
+#: ../files/usr/bin/universal-lite-setup-wizard:1418
+#: ../files/usr/bin/universal-lite-setup-wizard:1441
 msgid "Wrong password."
 msgstr "گذرواژه اشتباه است."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1419
-#: ../files/usr/bin/universal-lite-setup-wizard:1442
+#: ../files/usr/bin/universal-lite-setup-wizard:1420
+#: ../files/usr/bin/universal-lite-setup-wizard:1443
 #, python-brace-format
 msgid "Connection failed: {err}"
 msgstr "اتصال ناموفق: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1427
+#: ../files/usr/bin/universal-lite-setup-wizard:1428
 msgid "Enter a network name."
 msgstr "نام شبکه را وارد کنید."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1455
+#: ../files/usr/bin/universal-lite-setup-wizard:1456
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "به {ssid} متصل شد!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1460
+#: ../files/usr/bin/universal-lite-setup-wizard:1461
 msgid "Connected, but no internet access detected."
 msgstr "متصل شد، اما دسترسی به اینترنت شناسایی نشد."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1581
+#: ../files/usr/bin/universal-lite-setup-wizard:1582
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "مرحله {n} از {total}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1590
+#: ../files/usr/bin/universal-lite-setup-wizard:1591
 msgid "Install"
 msgstr "نصب"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1616
+#: ../files/usr/bin/universal-lite-setup-wizard:1617
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
 "درایو مقصدی یافت نشد. یک درایو متصل کنید و برنامه نصب را دوباره اجرا کنید."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1621
+#: ../files/usr/bin/universal-lite-setup-wizard:1622
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr "اندازه سفارشی تعویض باید یک عدد صحیح مثبت باشد (بر حسب GB)."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1632
+#: ../files/usr/bin/universal-lite-setup-wizard:1633
 msgid "Full name is required."
 msgstr "نام کامل الزامی است."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1635
+#: ../files/usr/bin/universal-lite-setup-wizard:1636
 msgid "Username is required."
 msgstr "نام کاربری الزامی است."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1638
+#: ../files/usr/bin/universal-lite-setup-wizard:1639
 msgid "Username must be 32 characters or fewer."
 msgstr "نام کاربری باید ۳۲ نویسه یا کمتر باشد."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1642
+#: ../files/usr/bin/universal-lite-setup-wizard:1643
 msgid ""
 "Username must start with a lowercase letter and contain only lowercase "
 "letters, numbers, and hyphens."
@@ -335,15 +351,15 @@ msgstr ""
 "نام کاربری باید با یک حرف کوچک شروع شود و فقط شامل حروف کوچک، اعداد و خط "
 "تیره باشد."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1647
+#: ../files/usr/bin/universal-lite-setup-wizard:1648
 msgid "Password is required."
 msgstr "گذرواژه الزامی است."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1650
+#: ../files/usr/bin/universal-lite-setup-wizard:1651
 msgid "Passwords do not match."
 msgstr "گذرواژه‌ها مطابقت ندارند."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1659
+#: ../files/usr/bin/universal-lite-setup-wizard:1660
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -351,85 +367,85 @@ msgstr ""
 "دسترسی مدیر سیستم را فعال کنید یا یک گذرواژه root تنظیم کنید. بدون یکی از "
 "این گزینه‌ها امکان مدیریت سیستم وجود نخواهد داشت."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1677
+#: ../files/usr/bin/universal-lite-setup-wizard:1678
 msgid "Wired connection"
 msgstr "اتصال سیمی"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1680
+#: ../files/usr/bin/universal-lite-setup-wizard:1681
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "متصل به {ssid}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1683
+#: ../files/usr/bin/universal-lite-setup-wizard:1684
 msgid "No network (offline install)"
 msgstr "بدون شبکه (نصب آفلاین)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1693
+#: ../files/usr/bin/universal-lite-setup-wizard:1694
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap با {swap_gb} GB تعویض دیسک"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1696
+#: ../files/usr/bin/universal-lite-setup-wizard:1697
 msgid "zram only (compressed RAM)"
 msgstr "فقط zram (حافظه فشرده)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1702
+#: ../files/usr/bin/universal-lite-setup-wizard:1703
 msgid "Yes"
 msgstr "بله"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1702
+#: ../files/usr/bin/universal-lite-setup-wizard:1703
 msgid "No"
 msgstr "خیر"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1704
+#: ../files/usr/bin/universal-lite-setup-wizard:1705
 msgid "Set"
 msgstr "تنظیم شده"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1704
+#: ../files/usr/bin/universal-lite-setup-wizard:1705
 msgid "Not set"
 msgstr "تنظیم نشده"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1712
+#: ../files/usr/bin/universal-lite-setup-wizard:1713
 msgid "No apps selected"
 msgstr "برنامه‌ای انتخاب نشده"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1771
-#: ../files/usr/bin/universal-lite-setup-wizard:1774
+#: ../files/usr/bin/universal-lite-setup-wizard:1772
+#: ../files/usr/bin/universal-lite-setup-wizard:1775
 msgid "None"
 msgstr "هیچ‌کدام"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2162
+#: ../files/usr/bin/universal-lite-setup-wizard:2163
 msgid "Partitioning and installing"
 msgstr "پارتیشن‌بندی و نصب"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2163
+#: ../files/usr/bin/universal-lite-setup-wizard:2164
 msgid "Configuring user account"
 msgstr "پیکربندی حساب کاربری"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2164
+#: ../files/usr/bin/universal-lite-setup-wizard:2165
 msgid "Copying network configuration"
 msgstr "کپی تنظیمات شبکه"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2168
+#: ../files/usr/bin/universal-lite-setup-wizard:2169
 msgid "Installing selected apps"
 msgstr "نصب برنامه‌های انتخاب شده"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2172
+#: ../files/usr/bin/universal-lite-setup-wizard:2173
 msgid "Configuring memory management"
 msgstr "پیکربندی مدیریت حافظه"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2173
+#: ../files/usr/bin/universal-lite-setup-wizard:2174
 msgid "Finalizing"
 msgstr "نهایی‌سازی"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2236
+#: ../files/usr/bin/universal-lite-setup-wizard:2237
 msgid "(skipped)"
 msgstr "(رد شده)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2262
+#: ../files/usr/bin/universal-lite-setup-wizard:2263
 msgid "Installation Complete!"
 msgstr "نصب کامل شد!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2290
+#: ../files/usr/bin/universal-lite-setup-wizard:2291
 msgid "Reboot failed — please restart manually."
 msgstr "راه‌اندازی مجدد ناموفق بود — لطفاً به صورت دستی راه‌اندازی مجدد کنید."
