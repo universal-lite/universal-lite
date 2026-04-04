@@ -20,7 +20,7 @@ msgstr ""
 #: ../files/usr/bin/universal-lite-setup-wizard:279
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
-"RAM da aka matsa kawai (zram) — mai sauri, amma manhajar na iya rufewa idan "
+"RAM da aka matsa kawai (zram) — mai sauri, amma manhajoji na iya rufewa idan "
 "ƙwaƙwalwar ta cika"
 
 # NEEDS-REVIEW
@@ -154,7 +154,7 @@ msgstr "Haɗa"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:825
 msgid "Join hidden network..."
-msgstr "Shiga hanyar sadarwa ɓoyayye..."
+msgstr "Shiga hanyar sadarwar da aka ɓoye..."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:861
@@ -164,13 +164,13 @@ msgstr "Zaɓi Diskin Shigarwa"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:867
 msgid "Select the target drive and installation options."
-msgstr "Zaɓi direba da zaɓuɓɓukan shigarwa."
+msgstr "Zaɓi diskin da aka nufa da zaɓukan shigarwa."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:874
 #: ../files/usr/bin/universal-lite-setup-wizard:1099
 msgid "Target drive"
-msgstr "Direbar da aka nufa"
+msgstr "Diskin da aka nufa"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:878
@@ -182,7 +182,7 @@ msgstr "Ba a sani ba"
 #: ../files/usr/bin/universal-lite-setup-wizard:886
 #: ../files/usr/bin/universal-lite-setup-wizard:1517
 msgid "No eligible drives found"
-msgstr "Ba a sami direbobin da suka dace ba"
+msgstr "Ba a sami diskokin da suka dace ba"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:893
@@ -217,7 +217,7 @@ msgstr ""
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:946
 msgid "All data on the selected drive will be erased."
-msgstr "Duk bayanan da ke kan direbar da aka zaɓa za a goge su."
+msgstr "Duk bayanan da ke kan diskin da aka zaɓa za a goge su."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:969
@@ -251,8 +251,8 @@ msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
-"An riga an sauke waɗannan manhajoji kuma za a kwafa su yayin shigarwa. Cire "
-"alamar duk wanda ba ka so."
+"An riga an zazzage waɗannan manhajoji kuma za a kwafa su yayin shigarwa. "
+"Cire alamar duk wanda ba ka so."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1085
@@ -317,7 +317,7 @@ msgstr "Sake kunna"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1276
 msgid "No networks found."
-msgstr "Ba a sami hanyar sadarwa ba."
+msgstr "Ba a sami hanyoyin sadarwa ba."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1303
@@ -393,13 +393,13 @@ msgstr "Shigar da"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1617
 msgid "No target drives found. Connect a drive and restart the installer."
-msgstr "Ba a sami direbobi ba. Haɗa direba sannan ka sake kunna mai shigarwa."
+msgstr "Ba a sami diskoki ba. Haɗa diski sannan ka sake kunna mai shigarwa."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1622
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr ""
-"Girman musanyar na musamman dole ne ya zama adadin lambar da ke da kyau "
+"Girman musanyar na musamman dole ne ya zama cikakkiyar lamba da ta fi sifili "
 "(cikin GB)."
 
 # NEEDS-REVIEW
@@ -424,7 +424,7 @@ msgid ""
 "letters, numbers, and hyphens."
 msgstr ""
 "Sunan mai amfani dole ne ya fara da ƙaramin harafi kuma ya ƙunshi ƙananan "
-"haruffa, lambobi, da saƙon haɗi kawai."
+"haruffa, lambobi, da karan jirge kawai."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1648

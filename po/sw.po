@@ -29,7 +29,7 @@ msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
-"RAM iliyobanwa + hifadhi ya diski (zswap) — mfumo wa polepole kwenda diski, "
+"RAM iliyobanwa + hifadhi ya diski (zswap) — mfuriko wa polepole kwenda diski, "
 "programu zinabaki wazi"
 
 # NEEDS-REVIEW
@@ -88,7 +88,7 @@ msgstr "Karibu kwenye Universal-Lite"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:708
 msgid "Create your account to get started."
-msgstr "Fungua akaunti yako ili uanze."
+msgstr "Tengeneza akaunti yako ili uanze."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:714
@@ -198,7 +198,7 @@ msgstr "Usimamizi wa kumbukumbu"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:911
 msgid "Disk swap size"
-msgstr "Ukubwa wa kubadilishana ya diski"
+msgstr "Ukubwa wa swapu ya diski"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:919
@@ -211,8 +211,8 @@ msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr ""
-"zswap hutumia RAM iliyobanwa kama hifadhi ya muda na humwaga kwenye faili ya "
-"kubadilishana ya diski ikijaa."
+"zswap hutumia RAM iliyobanwa kama hifadhi ya muda na kuhamisha kwenye faili "
+"ya swapu ya diski ikijaa."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:946
@@ -354,7 +354,7 @@ msgstr "Inaunganisha na {ssid}..."
 #: ../files/usr/bin/universal-lite-setup-wizard:1418
 #: ../files/usr/bin/universal-lite-setup-wizard:1441
 msgid "Wrong password."
-msgstr "Nenosiri lisilo sahihi."
+msgstr "Nenosiri si sahihi."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1420
@@ -401,7 +401,7 @@ msgstr ""
 #: ../files/usr/bin/universal-lite-setup-wizard:1622
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr ""
-"Ukubwa maalum wa kubadilishana lazima uwe nambari kamili chanya (kwa GB)."
+"Ukubwa maalum wa swapu lazima uwe nambari kamili chanya (kwa GB)."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1633
@@ -425,7 +425,7 @@ msgid ""
 "letters, numbers, and hyphens."
 msgstr ""
 "Jina la mtumiaji lazima lianze na herufi ndogo na liwe na herufi ndogo, "
-"nambari, na mikwaju peke yake."
+"nambari, na vistari peke yake."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1648
@@ -466,7 +466,7 @@ msgstr "Hakuna mtandao (usakinishaji nje ya mtandao)"
 #: ../files/usr/bin/universal-lite-setup-wizard:1694
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
-msgstr "zswap na {swap_gb} GB kubadilishana ya diski"
+msgstr "zswap na {swap_gb} GB swapu ya diski"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1697
@@ -507,7 +507,7 @@ msgstr "Hakuna"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2163
 msgid "Partitioning and installing"
-msgstr "Inagawa sehemu na kusakinisha"
+msgstr "Inagawanya diski na kusakinisha"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2164

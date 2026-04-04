@@ -79,7 +79,7 @@ msgstr "ቋንቋዎን ይምረጡ።"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:702
 msgid "Welcome to Universal-Lite"
-msgstr "እንኳን ወደ Universal-Lite በደህና መጡ"
+msgstr "ወደ Universal-Lite እንኳን በደህና መጡ"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:708
@@ -112,7 +112,7 @@ msgstr "የይለፍ ቃል"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:736
 msgid "Confirm Password"
-msgstr "የይለፍ ቃል ያረጋግጡ"
+msgstr "የይለፍ ቃል ማረጋገጫ"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:761
@@ -184,7 +184,7 @@ msgstr "ብቁ ድራይቮች አልተገኙም"
 #: ../files/usr/bin/universal-lite-setup-wizard:893
 #: ../files/usr/bin/universal-lite-setup-wizard:1100
 msgid "Filesystem"
-msgstr "ፋይል ሲስተም"
+msgstr "የፋይል ስርዓት"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:901
@@ -422,7 +422,7 @@ msgstr "የይለፍ ቃል ያስፈልጋል።"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1651
 msgid "Passwords do not match."
-msgstr "የይለፍ ቃሎች አይዛመዱም።"
+msgstr "የይለፍ ቃሎች አይገጣጠሙም።"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1660
@@ -494,7 +494,7 @@ msgstr "የለም"
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2163
 msgid "Partitioning and installing"
-msgstr "ክፍልፋይ እና መጫን"
+msgstr "በመከፋፈል እና በመጫን ላይ"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:2164
