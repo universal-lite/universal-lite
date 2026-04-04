@@ -294,10 +294,10 @@ PAGE_CONFIRM = 6
 PAGE_PROGRESS = 7
 
 DEFAULT_FLATPAKS = [
-    ("com.google.Chrome", "Google Chrome", "Web browser"),
-    ("dev.bazaar.app", "Bazaar", "Browse and install apps"),
-    ("org.gtk.Gtk3theme.adw-gtk3", "Adwaita GTK3 Theme", "Modern styling for classic apps"),
-    ("org.gtk.Gtk3theme.adw-gtk3-dark", "Adwaita GTK3 Dark Theme", "Dark variant for classic apps"),
+    ("com.google.Chrome", "Google Chrome", N_("Web browser")),
+    ("dev.bazaar.app", "Bazaar", N_("Browse and install apps")),
+    ("org.gtk.Gtk3theme.adw-gtk3", "Adwaita GTK3 Theme", N_("Modern styling for classic apps")),
+    ("org.gtk.Gtk3theme.adw-gtk3-dark", "Adwaita GTK3 Dark Theme", N_("Dark variant for classic apps")),
 ]
 
 
@@ -1049,10 +1049,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             name_label.set_halign(Gtk.Align.START)
             text_box.append(name_label)
 
-            desc_label = Gtk.Label(label=app_desc)
+            desc_label = Gtk.Label(label=_(app_desc))
             desc_label.add_css_class("app-description")
             desc_label.set_halign(Gtk.Align.START)
             text_box.append(desc_label)
+            self._retranslatable.append((desc_label.set_label, app_desc))
 
             row.append(text_box)
 
