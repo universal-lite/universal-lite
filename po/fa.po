@@ -250,7 +250,7 @@ msgstr "در حال نصب..."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1149
 msgid "Skip"
-msgstr "رد"
+msgstr "پرش"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1156
 msgid "Retry"
@@ -282,7 +282,7 @@ msgstr "رمزگذاری شده"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1311
 msgid "Open"
-msgstr "آزاد"
+msgstr "باز"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1362
 #, python-brace-format

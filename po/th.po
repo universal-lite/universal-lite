@@ -327,7 +327,7 @@ msgstr "ขนาดสวอปที่กำหนดเองต้องเ
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1633
 msgid "Full name is required."
-msgstr "ต้องระบุชื่อเต็ม"
+msgstr "ต้องระบุชื่อ-นามสกุล"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1636
 msgid "Username is required."
