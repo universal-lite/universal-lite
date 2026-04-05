@@ -46,9 +46,16 @@ pgrep -x xfce-polkit >/dev/null 2>&1 || xfce-polkit >/dev/null 2>&1 &
 _lock_timeout=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('lock_timeout', 300))" "$_settings" 2>/dev/null || echo "300")
 _dpms_timeout=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('display_off_timeout', 600))" "$_settings" 2>/dev/null || echo "600")
 
-_idle_args="swayidle -w"
-[ "$_lock_timeout" != "0" ] && _idle_args="$_idle_args timeout $_lock_timeout 'swaylock -f'"
-[ "$_dpms_timeout" != "0" ] && _idle_args="$_idle_args timeout $_dpms_timeout 'wlopm --off \"*\"' resume 'wlopm --on \"*\"'"
-_idle_args="$_idle_args before-sleep 'swaylock -f'"
-eval "$_idle_args" >/dev/null 2>&1 &
+# Sanitize to integers only (strip any non-digit characters)
+_lock_timeout=$(echo "$_lock_timeout" | tr -cd '0-9')
+_dpms_timeout=$(echo "$_dpms_timeout" | tr -cd '0-9')
+_lock_timeout=${_lock_timeout:-300}
+_dpms_timeout=${_dpms_timeout:-600}
+
+# Build swayidle command safely without eval
+set -- swayidle -w
+[ "$_lock_timeout" != "0" ] && set -- "$@" timeout "$_lock_timeout" 'swaylock -f'
+[ "$_dpms_timeout" != "0" ] && set -- "$@" timeout "$_dpms_timeout" 'wlopm --off *' resume 'wlopm --on *'
+set -- "$@" before-sleep 'swaylock -f'
+"$@" >/dev/null 2>&1 &
 pgrep -x Thunar >/dev/null 2>&1 || Thunar --daemon >/dev/null 2>&1 &

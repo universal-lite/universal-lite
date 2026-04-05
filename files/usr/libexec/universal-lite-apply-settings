@@ -92,6 +92,22 @@ ADWAITA_TERMINAL = {
 }
 
 
+def _run_best_effort(cmd: list[str], **kwargs) -> bool:
+    """Run a command, logging failures to stderr. Returns True on success."""
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True, **kwargs)
+        return True
+    except FileNotFoundError:
+        print(f"apply-settings: {cmd[0]} not found, skipping", file=sys.stderr)
+        return False
+    except subprocess.CalledProcessError as exc:
+        print(f"apply-settings: {cmd[0]} failed: {exc.stderr.strip() or exc}", file=sys.stderr)
+        return False
+    except subprocess.TimeoutExpired:
+        print(f"apply-settings: {cmd[0]} timed out", file=sys.stderr)
+        return False
+
+
 def _strip_hash(color: str) -> str:
     """Remove leading '#' from a hex color."""
     return color.lstrip("#")
@@ -662,7 +678,7 @@ def write_gtk_settings(tokens: dict) -> None:
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(tokens["cursor_size"])],
     ]
     for command in gsettings_commands:
-        subprocess.run(command, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        _run_best_effort(command, timeout=5)
 
 
 def write_fuzzel_config(tokens: dict) -> None:
@@ -1020,8 +1036,8 @@ def main() -> int:
     if os.environ.get("WAYLAND_DISPLAY"):
         restart_program("swaybg", ["swaybg", "-i", tokens["wallpaper"], "-m", "fill"])
         restart_program("waybar", ["waybar"])
-        subprocess.run(["makoctl", "reload"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        subprocess.run(["labwc", "--reconfigure"], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        _run_best_effort(["makoctl", "reload"], timeout=5)
+        _run_best_effort(["labwc", "--reconfigure"], timeout=5)
         # Manage gammastep (night light)
         if settings.get("night_light_enabled", False):
             temp = str(settings.get("night_light_temp", 4500))

@@ -3,7 +3,7 @@
 # otherwise falls back to a default set (Bazaar app store).
 # Called by universal-lite-flatpak-setup.service.
 
-set -uo pipefail
+set -euo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
 DEFAULT_APPS="dev.bazaar.app"

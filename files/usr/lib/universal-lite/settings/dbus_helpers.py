@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from dataclasses import dataclass, field
 
 import gi
@@ -60,7 +61,8 @@ class NetworkManagerHelper:
     def _on_client_ready(self, _source: object, result: Gio.AsyncResult) -> None:
         try:
             self._client = NM.Client.new_finish(result)
-        except Exception:
+        except GLib.Error as exc:
+            print(f"dbus_helpers: NetworkManager client init failed: {exc.message}", file=sys.stderr)
             self._publish("nm-unavailable")
             return
         for dev in self._client.get_devices():
@@ -125,8 +127,8 @@ class NetworkManagerHelper:
     def _on_scan_done(self, device: NM.DeviceWifi, result: Gio.AsyncResult) -> None:
         try:
             device.request_scan_finish(result)
-        except Exception:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: WiFi scan failed: {exc.message}", file=sys.stderr)
         self._publish("network-changed")
 
     def get_active_connection_info(self) -> ConnectionInfo | None:
@@ -196,8 +198,9 @@ class NetworkManagerHelper:
         try:
             client.add_and_activate_connection_finish(result)
             self._publish("network-connect-success")
-        except Exception as exc:
-            err = str(exc)
+        except GLib.Error as exc:
+            err = exc.message
+            print(f"dbus_helpers: WiFi connect failed: {err}", file=sys.stderr)
             if "802-11-wireless-security.psk" in err:
                 self._publish("network-connect-error", "Wrong password.")
             else:
@@ -207,8 +210,9 @@ class NetworkManagerHelper:
         try:
             client.activate_connection_finish(result)
             self._publish("network-connect-success")
-        except Exception as exc:
-            err = str(exc)
+        except GLib.Error as exc:
+            err = exc.message
+            print(f"dbus_helpers: WiFi activate failed: {err}", file=sys.stderr)
             if "802-11-wireless-security.psk" in err:
                 self._publish("network-connect-error", "Wrong password.")
             else:
@@ -266,7 +270,8 @@ class BlueZHelper:
         self._adapter_path: str | None = None
         try:
             self._bus = Gio.bus_get_sync(Gio.BusType.SYSTEM)
-        except GLib.Error:
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: failed to connect to system bus: {exc.message}", file=sys.stderr)
             return
         self._find_adapter()
         self._subscribe_signals()
@@ -284,8 +289,8 @@ class BlueZHelper:
                 if "org.bluez.Adapter1" in interfaces:
                     self._adapter_path = path
                     break
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: GetManagedObjects failed (no adapter): {exc.message}", file=sys.stderr)
 
     @property
     def available(self) -> bool:
@@ -303,7 +308,8 @@ class BlueZHelper:
                 Gio.DBusCallFlags.NONE, -1, None,
             )
             return result.unpack()[0]
-        except GLib.Error:
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: get Powered failed: {exc.message}", file=sys.stderr)
             return False
 
     def set_powered(self, enabled: bool) -> None:
@@ -316,8 +322,8 @@ class BlueZHelper:
                 GLib.Variant("(ssv)", ("org.bluez.Adapter1", "Powered", GLib.Variant("b", enabled))),
                 None, Gio.DBusCallFlags.NONE, -1, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: set Powered failed: {exc.message}", file=sys.stderr)
 
     def get_devices(self) -> list[BluetoothDevice]:
         if self._bus is None:
@@ -330,7 +336,8 @@ class BlueZHelper:
                 Gio.DBusCallFlags.NONE, -1, None,
             )
             objects = result.unpack()[0]
-        except GLib.Error:
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: GetManagedObjects (devices) failed: {exc.message}", file=sys.stderr)
             return []
         devices: list[BluetoothDevice] = []
         for path, interfaces in objects.items():
@@ -356,8 +363,8 @@ class BlueZHelper:
                 "org.bluez.Adapter1", "StartDiscovery",
                 None, None, Gio.DBusCallFlags.NONE, -1, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: StartDiscovery failed: {exc.message}", file=sys.stderr)
 
     def stop_discovery(self) -> None:
         if not self.available:
@@ -368,8 +375,8 @@ class BlueZHelper:
                 "org.bluez.Adapter1", "StopDiscovery",
                 None, None, Gio.DBusCallFlags.NONE, -1, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: StopDiscovery failed: {exc.message}", file=sys.stderr)
 
     def pair_device(self, device_path: str) -> None:
         if self._bus is None:
@@ -407,8 +414,8 @@ class BlueZHelper:
                 "org.bluez.Device1", "Disconnect",
                 None, None, Gio.DBusCallFlags.NONE, -1, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: Disconnect failed: {exc.message}", file=sys.stderr)
         self._event_bus.publish("bluetooth-changed")
 
     def remove_device(self, device_path: str) -> None:
@@ -421,15 +428,15 @@ class BlueZHelper:
                 GLib.Variant("(o)", (device_path,)),
                 None, Gio.DBusCallFlags.NONE, -1, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: RemoveDevice failed: {exc.message}", file=sys.stderr)
         self._event_bus.publish("bluetooth-changed")
 
     def _on_generic_done(self, bus: Gio.DBusConnection, result: Gio.AsyncResult) -> None:
         try:
             bus.call_finish(result)
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: BlueZ: async device call failed: {exc.message}", file=sys.stderr)
         self._event_bus.publish("bluetooth-changed")
 
     def _subscribe_signals(self) -> None:
@@ -476,7 +483,8 @@ class PowerProfilesHelper:
         self._bus: Gio.DBusConnection | None = None
         try:
             self._bus = Gio.bus_get_sync(Gio.BusType.SYSTEM)
-        except GLib.Error:
+        except GLib.Error as exc:
+            print(f"dbus_helpers: PowerProfiles: failed to connect to system bus: {exc.message}", file=sys.stderr)
             return
         self._bus.signal_subscribe(
             self.BUS_NAME, "org.freedesktop.DBus.Properties",
@@ -500,7 +508,8 @@ class PowerProfilesHelper:
                 Gio.DBusCallFlags.NONE, -1, None,
             )
             return result.unpack()[0]
-        except GLib.Error:
+        except GLib.Error as exc:
+            print(f"dbus_helpers: PowerProfiles: get ActiveProfile failed: {exc.message}", file=sys.stderr)
             return "balanced"
 
     def set_active_profile(self, profile: str) -> None:
@@ -513,8 +522,8 @@ class PowerProfilesHelper:
                 GLib.Variant("(ssv)", (self.IFACE, "ActiveProfile", GLib.Variant("s", profile))),
                 None, Gio.DBusCallFlags.NONE, -1, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            print(f"dbus_helpers: PowerProfiles: set ActiveProfile failed: {exc.message}", file=sys.stderr)
 
     def _on_props_changed(self, _conn, _sender, _path, _iface, _signal, params, _data) -> None:
         changed = params.unpack()[1]
@@ -561,8 +570,8 @@ class PulseAudioSubscriber:
                             continue
                         if any(kw in line for kw in ("sink", "source", "server")):
                             self._event_bus.publish("audio-changed")
-                except Exception:
-                    pass
+                except Exception as exc:
+                    print(f"dbus_helpers: PulseAudio: pactl subscriber error: {exc}", file=sys.stderr)
                 if not self._stopped:
                     time.sleep(2)
 

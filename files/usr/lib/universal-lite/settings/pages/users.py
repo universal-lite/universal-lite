@@ -10,20 +10,20 @@ from ..base import BasePage
 
 
 def _hash_password(plaintext: str) -> str:
-    """Return a SHA-512 crypt(3) hash suitable for AccountsService.SetPassword."""
-    try:
-        import crypt
-        return crypt.crypt(plaintext, crypt.mksalt(crypt.METHOD_SHA512))
-    except ImportError:
-        # crypt removed in Python 3.13+; fall back to openssl
-        result = subprocess.run(
-            ["openssl", "passwd", "-6", "-stdin"],
-            input=plaintext,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return result.stdout.strip()
+    """Return a SHA-512 crypt(3) hash suitable for AccountsService.SetPassword.
+
+    Uses openssl which produces the $6$salt$hash format required by
+    /etc/shadow.  The stdlib crypt module was removed in Python 3.13.
+    """
+    result = subprocess.run(
+        ["openssl", "passwd", "-6", "-stdin"],
+        input=plaintext,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+    )
+    return result.stdout.strip()
 
 
 class UsersPage(BasePage):
@@ -125,7 +125,7 @@ class UsersPage(BasePage):
                 "org.freedesktop.Accounts", self._user_path,
                 "org.freedesktop.Accounts.User", "SetRealName",
                 GLib.Variant("(s)", (new_name,)),
-                None, Gio.DBusCallFlags.NONE, -1, None,
+                None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
             )
         except GLib.Error:
             pass
@@ -136,7 +136,7 @@ class UsersPage(BasePage):
                 "org.freedesktop.Accounts", self._user_path,
                 "org.freedesktop.Accounts.User", "SetAutomaticLogin",
                 GLib.Variant("(b)", (state,)),
-                None, Gio.DBusCallFlags.NONE, -1, None,
+                None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
             )
         except GLib.Error:
             pass
@@ -199,7 +199,7 @@ class UsersPage(BasePage):
                     "org.freedesktop.Accounts", self._user_path,
                     "org.freedesktop.Accounts.User", "SetPassword",
                     GLib.Variant("(ss)", (hashed, "")),
-                    None, Gio.DBusCallFlags.NONE, -1, None,
+                    None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
                 )
                 dialog.close()
             except (GLib.Error, subprocess.CalledProcessError):

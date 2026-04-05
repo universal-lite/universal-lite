@@ -65,7 +65,17 @@ class DefaultAppsPage(BasePage):
     @staticmethod
     def _set_terminal(app_info):
         cmd = app_info.get_commandline() or app_info.get_executable() or ""
-        name = app_info.get_display_name()
+        name = app_info.get_display_name() or "Terminal"
+
+        # Sanitize: .desktop format uses newlines as field separators
+        # and = as key-value delimiter — strip both from values
+        name = name.replace("\n", " ").replace("\r", " ")
+        cmd = cmd.replace("\n", " ").replace("\r", " ")
+
+        # Reject obviously invalid commands (empty or containing shell operators)
+        if not cmd or not cmd.split()[0].replace("/", "").replace("-", "").replace("_", "").isalnum():
+            return
+
         desktop_dir = Path.home() / ".local/share/applications"
         desktop_dir.mkdir(parents=True, exist_ok=True)
         (desktop_dir / "terminal.desktop").write_text(
