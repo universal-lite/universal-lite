@@ -1,5 +1,6 @@
 import os
 import subprocess
+from gettext import gettext as _
 
 import gi
 
@@ -35,10 +36,10 @@ class UsersPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Users", "Display name"),
-            ("Users", "Password"),
-            ("Users", "Auto-login"),
-            ("Users", "Account"),
+            (_("Users"), _("Display name")),
+            (_("Users"), _("Password")),
+            (_("Users"), _("Auto-login")),
+            (_("Users"), _("Account")),
         ]
 
     _DBUS_TIMEOUT_MS = 5000
@@ -72,13 +73,13 @@ class UsersPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Users"))
+        page.append(self.make_group_label(_("Users")))
 
         try:
             self._ensure_dbus()
         except GLib.Error:
             error_label = Gtk.Label(
-                label="Could not connect to AccountsService",
+                label=_("Could not connect to AccountsService"),
                 xalign=0,
             )
             error_label.add_css_class("setting-subtitle")
@@ -93,15 +94,15 @@ class UsersPage(BasePage):
             pass
         name_entry = Gtk.Entry()
         name_entry.set_text(real_name)
-        name_entry.set_placeholder_text("Display name")
+        name_entry.set_placeholder_text(_("Display name"))
         name_entry.set_size_request(280, -1)
         name_entry.connect("activate", self._on_name_activate)
-        page.append(self.make_setting_row("Display name", "Press Enter to apply", name_entry))
+        page.append(self.make_setting_row(_("Display name"), _("Press Enter to apply"), name_entry))
 
         # Change Password
-        pw_button = Gtk.Button(label="Change Password")
+        pw_button = Gtk.Button(label=_("Change Password"))
         pw_button.connect("clicked", self._on_change_password)
-        page.append(self.make_setting_row("Password", "Set a new password for your account", pw_button))
+        page.append(self.make_setting_row(_("Password"), _("Set a new password for your account"), pw_button))
 
         # Auto-login
         auto_login = False
@@ -112,7 +113,7 @@ class UsersPage(BasePage):
         auto_switch = Gtk.Switch()
         auto_switch.set_active(auto_login)
         auto_switch.connect("state-set", self._on_autologin_set)
-        page.append(self.make_setting_row("Automatic login", "Log in without a password at startup", auto_switch))
+        page.append(self.make_setting_row(_("Automatic login"), _("Log in without a password at startup"), auto_switch))
 
         return page
 
@@ -143,7 +144,7 @@ class UsersPage(BasePage):
         return False
 
     def _on_change_password(self, button):
-        dialog = Gtk.Window(title="Change Password")
+        dialog = Gtk.Window(title=_("Change Password"))
         dialog.set_default_size(400, -1)
         dialog.set_modal(True)
         root = button.get_root()
@@ -156,18 +157,18 @@ class UsersPage(BasePage):
         box.set_margin_start(24)
         box.set_margin_end(24)
 
-        heading = Gtk.Label(label="Change Password")
+        heading = Gtk.Label(label=_("Change Password"))
         heading.add_css_class("group-title")
         box.append(heading)
 
         new_pw = Gtk.PasswordEntry()
         new_pw.set_show_peek_icon(True)
-        new_pw.set_placeholder_text("New password")
+        new_pw.set_placeholder_text(_("New password"))
         box.append(new_pw)
 
         confirm_pw = Gtk.PasswordEntry()
         confirm_pw.set_show_peek_icon(True)
-        confirm_pw.set_placeholder_text("Confirm password")
+        confirm_pw.set_placeholder_text(_("Confirm password"))
         box.append(confirm_pw)
 
         error_label = Gtk.Label(label="")
@@ -177,21 +178,21 @@ class UsersPage(BasePage):
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         button_box.set_halign(Gtk.Align.END)
 
-        cancel_btn = Gtk.Button(label="Cancel")
+        cancel_btn = Gtk.Button(label=_("Cancel"))
         cancel_btn.connect("clicked", lambda _: dialog.close())
         button_box.append(cancel_btn)
 
-        apply_btn = Gtk.Button(label="Apply")
+        apply_btn = Gtk.Button(label=_("Apply"))
         apply_btn.add_css_class("suggested-action")
 
         def _apply(_):
             pw = new_pw.get_text()
             cpw = confirm_pw.get_text()
             if not pw:
-                error_label.set_text("Password cannot be empty")
+                error_label.set_text(_("Password cannot be empty"))
                 return
             if pw != cpw:
-                error_label.set_text("Passwords do not match")
+                error_label.set_text(_("Passwords do not match"))
                 return
             try:
                 hashed = _hash_password(pw)
@@ -203,7 +204,7 @@ class UsersPage(BasePage):
                 )
                 dialog.close()
             except (GLib.Error, subprocess.CalledProcessError):
-                error_label.set_text("Failed to set password")
+                error_label.set_text(_("Failed to set password"))
 
         apply_btn.connect("clicked", _apply)
         button_box.append(apply_btn)

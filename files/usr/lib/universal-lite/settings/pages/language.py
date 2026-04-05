@@ -1,4 +1,5 @@
 import subprocess
+from gettext import gettext as _
 
 import gi
 
@@ -12,18 +13,18 @@ class LanguagePage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Language & Region", "Language"),
-            ("Language & Region", "Locale"),
-            ("Language & Region", "Regional format"),
+            (_("Language & Region"), _("Language")),
+            (_("Language & Region"), _("Locale")),
+            (_("Language & Region"), _("Regional format")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Language & Region"))
+        page.append(self.make_group_label(_("Language & Region")))
 
         # Info banner
         banner = Gtk.Label(
-            label="Changes take effect after logging out",
+            label=_("Changes take effect after logging out"),
             xalign=0,
         )
         banner.add_css_class("setting-subtitle")
@@ -41,7 +42,7 @@ class LanguagePage(BasePage):
         lang_dd.set_size_request(280, -1)
         lang_dd.connect("notify::selected", lambda d, _:
             self._set_locale(locales[d.get_selected()]) if locales else None)
-        page.append(self.make_setting_row("System language", "", lang_dd))
+        page.append(self.make_setting_row(_("System language"), "", lang_dd))
 
         # Regional formats
         fmt_dd = Gtk.DropDown.new_from_strings(locales if locales else ["en_US.UTF-8"])
@@ -53,7 +54,7 @@ class LanguagePage(BasePage):
         fmt_dd.set_size_request(280, -1)
         fmt_dd.connect("notify::selected", lambda d, _:
             self._set_format(locales[d.get_selected()]) if locales else None)
-        page.append(self.make_setting_row("Regional formats", "Date, number, and currency format", fmt_dd))
+        page.append(self.make_setting_row(_("Regional formats"), _("Date, number, and currency format"), fmt_dd))
 
         return page
 

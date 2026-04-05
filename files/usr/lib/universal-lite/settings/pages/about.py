@@ -1,6 +1,7 @@
 import os
 import socket
 import subprocess
+from gettext import gettext as _
 from pathlib import Path
 
 import gi
@@ -19,15 +20,15 @@ class AboutPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("About", "Operating System"), ("About", "Hostname"),
-            ("About", "Processor"), ("About", "Memory"), ("About", "Disk"),
-            ("About", "Desktop"), ("About", "Graphics"), ("About", "GPU"),
-            ("About", "Updates"),
+            (_("About"), _("Operating System")), (_("About"), _("Hostname")),
+            (_("About"), _("Processor")), (_("About"), _("Memory")), (_("About"), _("Disk")),
+            (_("About"), _("Desktop")), (_("About"), _("Graphics")), (_("About"), _("GPU")),
+            (_("About"), _("Updates")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("About"))
+        page.append(self.make_group_label(_("About")))
 
         os_name = "Universal-Lite"
         os_version = ""
@@ -37,8 +38,8 @@ class AboutPage(BasePage):
                     os_version = line.split("=", 1)[1].strip('"')
         except OSError:
             pass
-        page.append(self.make_info_row("Operating System", f"{os_name} {os_version}".strip()))
-        page.append(self.make_info_row("Hostname", socket.gethostname()))
+        page.append(self.make_info_row(_("Operating System"), f"{os_name} {os_version}".strip()))
+        page.append(self.make_info_row(_("Hostname"), socket.gethostname()))
 
         cpu = "Unknown"
         try:
@@ -48,7 +49,7 @@ class AboutPage(BasePage):
                     break
         except OSError:
             pass
-        page.append(self.make_info_row("Processor", cpu))
+        page.append(self.make_info_row(_("Processor"), cpu))
 
         ram = "Unknown"
         try:
@@ -58,13 +59,13 @@ class AboutPage(BasePage):
                     break
         except (OSError, ValueError):
             pass
-        page.append(self.make_info_row("Memory", ram))
+        page.append(self.make_info_row(_("Memory"), ram))
 
         try:
             st = os.statvfs("/")
             total = st.f_blocks * st.f_frsize
             used = (st.f_blocks - st.f_bfree) * st.f_frsize
-            page.append(self.make_info_row("Disk", f"{used / 1073741824:.1f} GB used of {total / 1073741824:.1f} GB"))
+            page.append(self.make_info_row(_("Disk"), f"{used / 1073741824:.1f} GB used of {total / 1073741824:.1f} GB"))
         except OSError:
             pass
 
@@ -77,7 +78,7 @@ class AboutPage(BasePage):
                     break
         except FileNotFoundError:
             pass
-        page.append(self.make_info_row("Graphics", gpu))
+        page.append(self.make_info_row(_("Graphics"), gpu))
 
         labwc_ver = "unknown"
         try:
@@ -85,16 +86,16 @@ class AboutPage(BasePage):
             labwc_ver = (r.stderr.strip() or r.stdout.strip()) or "unknown"
         except FileNotFoundError:
             pass
-        page.append(self.make_info_row("Desktop", f"labwc {labwc_ver}"))
+        page.append(self.make_info_row(_("Desktop"), f"labwc {labwc_ver}"))
 
         # OS Updates
-        page.append(self.make_group_label("Updates"))
+        page.append(self.make_group_label(_("Updates")))
         update_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         update_box.set_valign(Gtk.Align.CENTER)
-        self._update_label = Gtk.Label(label="Click to check for updates", xalign=0)
+        self._update_label = Gtk.Label(label=_("Click to check for updates"), xalign=0)
         self._update_label.set_hexpand(True)
         update_box.append(self._update_label)
-        check_btn = Gtk.Button(label="Check for Updates")
+        check_btn = Gtk.Button(label=_("Check for Updates"))
         check_btn.connect("clicked", lambda _: self._check_updates())
         update_box.append(check_btn)
         page.append(update_box)
@@ -102,7 +103,7 @@ class AboutPage(BasePage):
         return page
 
     def _check_updates(self):
-        self._update_label.set_text("Checking...")
+        self._update_label.set_text(_("Checking..."))
         import threading
         def _check():
             try:
@@ -113,9 +114,9 @@ class AboutPage(BasePage):
                 staged = status.get("status", {}).get("staged", None)
                 if staged:
                     version = staged.get("image", {}).get("version", "unknown")
-                    GLib.idle_add(self._update_label.set_text, f"Update available: {version}")
+                    GLib.idle_add(self._update_label.set_text, _("Update available: {version}").format(version=version))
                 else:
-                    GLib.idle_add(self._update_label.set_text, "System is up to date")
+                    GLib.idle_add(self._update_label.set_text, _("System is up to date"))
             except Exception:
-                GLib.idle_add(self._update_label.set_text, "Could not check for updates")
+                GLib.idle_add(self._update_label.set_text, _("Could not check for updates"))
         threading.Thread(target=_check, daemon=True).start()

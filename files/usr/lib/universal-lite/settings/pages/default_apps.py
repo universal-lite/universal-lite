@@ -1,4 +1,5 @@
 import subprocess
+from gettext import gettext as _
 from pathlib import Path
 
 import gi
@@ -9,29 +10,29 @@ from gi.repository import Gio, Gtk
 from ..base import BasePage
 
 APP_MIME_TYPES = [
-    ("Web Browser", "x-scheme-handler/http"),
-    ("File Manager", "inode/directory"),
-    ("Terminal", None),
-    ("Text Editor", "text/plain"),
-    ("Image Viewer", "image/png"),
-    ("PDF Viewer", "application/pdf"),
-    ("Media Player", "video/x-matroska"),
-    ("Email Client", "x-scheme-handler/mailto"),
+    (_("Web Browser"), "x-scheme-handler/http"),
+    (_("File Manager"), "inode/directory"),
+    (_("Terminal"), None),
+    (_("Text Editor"), "text/plain"),
+    (_("Image Viewer"), "image/png"),
+    (_("PDF Viewer"), "application/pdf"),
+    (_("Media Player"), "video/x-matroska"),
+    (_("Email Client"), "x-scheme-handler/mailto"),
 ]
 
 
 class DefaultAppsPage(BasePage):
     @property
     def search_keywords(self):
-        return [("Default Applications", label) for label, _ in APP_MIME_TYPES] + [
-            ("Default Applications", "Image Viewer"),
-            ("Default Applications", "PDF Viewer"),
-            ("Default Applications", "Email Client"),
+        return [(_("Default Applications"), label) for label, _ in APP_MIME_TYPES] + [
+            (_("Default Applications"), _("Image Viewer")),
+            (_("Default Applications"), _("PDF Viewer")),
+            (_("Default Applications"), _("Email Client")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Default Applications"))
+        page.append(self.make_group_label(_("Default Applications")))
         for label, mime_type in APP_MIME_TYPES:
             apps = self._get_apps_for_mime(mime_type)
             if not apps:

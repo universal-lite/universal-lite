@@ -22,6 +22,11 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gdk, GLib, Gtk, Pango  # noqa: E402
 
+import gettext
+gettext.bindtextdomain("universal-lite-settings", "/usr/share/locale")
+gettext.textdomain("universal-lite-settings")
+_ = gettext.gettext
+
 APP_ID = "org.universallite.Greeter"
 
 LAST_USER_PATH = Path("/var/lib/universal-lite/last-user")
@@ -303,7 +308,7 @@ def _write_last_user(username: str) -> None:
 
 class GreeterWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
-        super().__init__(application=app, title="Login")
+        super().__init__(application=app, title=_("Login"))
         self.set_default_size(800, 600)
 
         try:
@@ -360,7 +365,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         gear_btn = Gtk.Button()
         gear_btn.set_icon_name("emblem-system-symbolic")
         gear_btn.add_css_class("gear-button")
-        gear_btn.set_tooltip_text("Session")
+        gear_btn.set_tooltip_text(_("Session"))
         gear_btn.connect("clicked", self._on_gear_clicked)
         card_header.append(gear_btn)
         card.append(card_header)
@@ -386,7 +391,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
 
         # Username entry (shown in username state)
         self._username_entry = Gtk.Entry()
-        self._username_entry.set_placeholder_text("Username")
+        self._username_entry.set_placeholder_text(_("Username"))
         self._username_entry.add_css_class("form-entry")
         self._username_entry.set_hexpand(True)
         self._username_entry.connect("activate", lambda _: self._on_submit())
@@ -395,7 +400,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         # Password entry (shown in password state)
         self._password_entry = Gtk.PasswordEntry()
         self._password_entry.set_show_peek_icon(True)
-        self._password_entry.set_placeholder_text("Password")
+        self._password_entry.set_placeholder_text(_("Password"))
         self._password_entry.add_css_class("form-entry")
         self._password_entry.set_hexpand(True)
         self._password_entry.connect("activate", lambda _: self._on_submit())
@@ -457,14 +462,14 @@ class GreeterWindow(Gtk.ApplicationWindow):
     def _show_password_state(self, username: str) -> None:
         """Show password field for a known user."""
         self._current_username = username
-        self._greeting.set_text(f"Welcome back, {username}")
+        self._greeting.set_text(_("Welcome back, {username}").format(username=username))
         self._greeting.set_visible(True)
         self._username_entry.set_visible(False)
         self._password_entry.set_visible(True)
         self._password_entry.set_text("")
         self._password_entry.grab_focus()
-        self._submit_btn.set_label("Log In")
-        self._switch_btn.set_label(f"Not {username}?")
+        self._submit_btn.set_label(_("Log In"))
+        self._switch_btn.set_label(_("Not {username}?").format(username=username))
         self._switch_btn.set_visible(True)
         self._error_label.set_visible(False)
 
@@ -480,13 +485,13 @@ class GreeterWindow(Gtk.ApplicationWindow):
                 pass
             self._session_active = False
         self._current_username = None
-        self._greeting.set_text("Log in")
+        self._greeting.set_text(_("Log in"))
         self._greeting.set_visible(True)
         self._username_entry.set_visible(True)
         self._username_entry.set_text("")
         self._username_entry.grab_focus()
         self._password_entry.set_visible(False)
-        self._submit_btn.set_label("Next")
+        self._submit_btn.set_label(_("Next"))
         self._switch_btn.set_visible(False)
         self._error_label.set_visible(False)
 
@@ -499,7 +504,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         try:
             resp = self._greetd.create_session(username)
         except Exception as exc:
-            self._show_error(f"Connection error: {exc}")
+            self._show_error(_("Connection error: {exc}").format(exc=exc))
             return
 
         self._session_active = True
@@ -514,7 +519,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
                 try:
                     follow_up = self._greetd.post_auth_response(None)
                 except Exception as exc:
-                    self._show_error(f"Connection error: {exc}")
+                    self._show_error(_("Connection error: {exc}").format(exc=exc))
                     return
                 # Follow-up is typically the real password prompt
                 if follow_up.get("type") == "auth_message" and follow_up.get("auth_message_type") == "secret":
@@ -523,12 +528,12 @@ class GreeterWindow(Gtk.ApplicationWindow):
                     self._start_session()
                     return
                 elif follow_up.get("type") == "error":
-                    self._show_error(follow_up.get("description", "Authentication error"))
+                    self._show_error(follow_up.get("description", _("Authentication error")))
                     self._session_active = False
                     return
                 return
             elif msg_type == "error":
-                self._show_error(resp.get("auth_message", "Authentication error"))
+                self._show_error(resp.get("auth_message", _("Authentication error")))
                 return
         elif resp.get("type") == "success":
             # No auth needed (unlikely but handle it)
@@ -538,7 +543,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
             # User may no longer exist (stale last-user) — fall back to username entry
             self._session_active = False
             self._show_username_state()
-            self._show_error(resp.get("description", "Unknown error"))
+            self._show_error(resp.get("description", _("Unknown error")))
             return
 
     def _on_submit(self) -> None:
@@ -547,7 +552,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
             # Username state: advance to password
             username = self._username_entry.get_text().strip()
             if not username:
-                self._show_error("Enter a username.")
+                self._show_error(_("Enter a username."))
                 return
             self._show_password_state(username)
             return
@@ -555,7 +560,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         # Password state: authenticate
         password = self._password_entry.get_text()
         if not password:
-            self._show_error("Enter your password.")
+            self._show_error(_("Enter your password."))
             return
 
         self._submit_btn.set_sensitive(False)
@@ -563,7 +568,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         try:
             resp = self._greetd.post_auth_response(password)
         except Exception as exc:
-            self._show_error(f"Connection error: {exc}")
+            self._show_error(_("Connection error: {exc}").format(exc=exc))
             self._submit_btn.set_sensitive(True)
             return
 
@@ -574,7 +579,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
             # Additional PAM prompt (e.g., info message after password)
             msg_type = resp.get("auth_message_type", "")
             if msg_type == "error":
-                self._show_error(resp.get("auth_message", "Authentication failed"))
+                self._show_error(resp.get("auth_message", _("Authentication failed")))
                 self._reset_auth()
             elif msg_type == "info":
                 try:
@@ -585,21 +590,21 @@ class GreeterWindow(Gtk.ApplicationWindow):
                         return
                 except Exception:
                     pass
-                self._show_error("Unexpected authentication response.")
+                self._show_error(_("Unexpected authentication response."))
                 self._reset_auth()
             else:
                 # Another secret prompt — unusual, show error
-                self._show_error("Multi-step auth not supported.")
+                self._show_error(_("Multi-step auth not supported."))
                 self._reset_auth()
         elif resp.get("type") == "error":
             desc = resp.get("description", "")
             if resp.get("error_type") == "auth_error":
-                self._show_error("Incorrect password.")
+                self._show_error(_("Incorrect password."))
             else:
-                self._show_error(desc or "Login failed.")
+                self._show_error(desc or _("Login failed."))
             self._reset_auth()
         else:
-            self._show_error("Unexpected response from login service.")
+            self._show_error(_("Unexpected response from login service."))
             self._reset_auth()
 
     def _start_session(self) -> None:
@@ -608,7 +613,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         try:
             resp = self._greetd.start_session(cmd)
         except Exception as exc:
-            self._show_error(f"Failed to start session: {exc}")
+            self._show_error(_("Failed to start session: {exc}").format(exc=exc))
             self._submit_btn.set_sensitive(True)
             return
 
@@ -616,7 +621,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
             # greetd will launch the session; we exit cleanly
             self.get_application().quit()
         else:
-            self._show_error(resp.get("description", "Failed to start session."))
+            self._show_error(resp.get("description", _("Failed to start session.")))
             self._submit_btn.set_sensitive(True)
 
     def _reset_auth(self) -> None:

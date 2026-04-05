@@ -1,3 +1,5 @@
+from gettext import gettext as _
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -6,9 +8,9 @@ from gi.repository import Gtk
 from ..base import BasePage
 
 CURSOR_SIZES = [
-    ("24", "Default (24px)"),
-    ("32", "Large (32px)"),
-    ("48", "Larger (48px)"),
+    ("24", _("Default (24px)")),
+    ("32", _("Large (32px)")),
+    ("48", _("Larger (48px)")),
 ]
 
 
@@ -16,15 +18,15 @@ class AccessibilityPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Accessibility", "Large text"),
-            ("Accessibility", "Cursor size"),
-            ("Accessibility", "High contrast"),
-            ("Accessibility", "Reduce motion"),
+            (_("Accessibility"), _("Large text")),
+            (_("Accessibility"), _("Cursor size")),
+            (_("Accessibility"), _("High contrast")),
+            (_("Accessibility"), _("Reduce motion")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Accessibility"))
+        page.append(self.make_group_label(_("Accessibility")))
 
         # Large text toggle
         large_text = Gtk.Switch()
@@ -43,7 +45,7 @@ class AccessibilityPage(BasePage):
 
         large_text.connect("state-set", _on_large_text)
         page.append(self.make_setting_row(
-            "Large text", "Increases font size for better readability", large_text))
+            _("Large text"), _("Increases font size for better readability"), large_text))
 
         # Cursor size
         labels = [label for _, label in CURSOR_SIZES]
@@ -56,7 +58,7 @@ class AccessibilityPage(BasePage):
             cursor_dd.set_selected(0)
         cursor_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("cursor_size", int(values[d.get_selected()])))
-        page.append(self.make_setting_row("Cursor size", "", cursor_dd))
+        page.append(self.make_setting_row(_("Cursor size"), "", cursor_dd))
 
         # High contrast
         contrast = Gtk.Switch()
@@ -68,7 +70,7 @@ class AccessibilityPage(BasePage):
 
         contrast.connect("state-set", _on_contrast)
         page.append(self.make_setting_row(
-            "High contrast", "Forces dark theme with stronger borders", contrast))
+            _("High contrast"), _("Forces dark theme with stronger borders"), contrast))
 
         # Reduce motion
         motion = Gtk.Switch()
@@ -80,6 +82,6 @@ class AccessibilityPage(BasePage):
 
         motion.connect("state-set", _on_motion)
         page.append(self.make_setting_row(
-            "Reduce motion", "Disables animations throughout the interface", motion))
+            _("Reduce motion"), _("Disables animations throughout the interface"), motion))
 
         return page

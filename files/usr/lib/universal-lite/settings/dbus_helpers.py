@@ -583,10 +583,11 @@ class PulseAudioSubscriber:
             self._proc.terminate()
             try:
                 self._proc.wait(timeout=2)
-            except Exception:
+            except Exception as exc:
+                print(f"dbus_helpers: PulseAudio: process wait failed, killing: {exc}", file=sys.stderr)
                 self._proc.kill()
             try:
                 self._proc.stdout.close()
-            except Exception:
-                pass
+            except Exception as exc:
+                print(f"dbus_helpers: PulseAudio: stdout close failed: {exc}", file=sys.stderr)
             self._proc = None

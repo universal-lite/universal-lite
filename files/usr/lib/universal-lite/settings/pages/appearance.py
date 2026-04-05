@@ -1,3 +1,4 @@
+from gettext import gettext as _
 from pathlib import Path
 
 import gi
@@ -20,29 +21,29 @@ class AppearancePage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Theme", "Light"), ("Theme", "Dark"),
-            ("Accent color", "Color"),
-            ("Font size", "Font"),
-            ("Wallpaper", "Background"),
+            (_("Theme"), _("Light")), (_("Theme"), _("Dark")),
+            (_("Accent color"), _("Color")),
+            (_("Font size"), _("Font")),
+            (_("Wallpaper"), _("Background")),
         ]
 
     def build(self):
         page = self.make_page_box()
 
         # -- Theme group --
-        page.append(self.make_group_label("Theme"))
+        page.append(self.make_group_label(_("Theme")))
         page.append(self.make_toggle_cards(
-            [("light", "Light"), ("dark", "Dark")],
+            [("light", _("Light")), ("dark", _("Dark"))],
             self.store.get("theme", "light"),
             lambda v: self.store.save_and_apply("theme", v),
         ))
         if self.store.get("high_contrast", False):
-            note = Gtk.Label(label="Theme is set to Dark by High Contrast mode", xalign=0)
+            note = Gtk.Label(label=_("Theme is set to Dark by High Contrast mode"), xalign=0)
             note.add_css_class("setting-subtitle")
             page.append(note)
 
         # -- Accent color group --
-        page.append(self.make_group_label("Accent color"))
+        page.append(self.make_group_label(_("Accent color")))
         accent_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         accent_buttons: list[Gtk.ToggleButton] = []
         current_accent = self.store.get("accent", "blue")
@@ -66,8 +67,8 @@ class AppearancePage(BasePage):
         page.append(accent_box)
 
         # -- Font size group --
-        page.append(self.make_group_label("Font size"))
-        font_sizes = [("10", "Small"), ("11", "Default"), ("13", "Large"), ("15", "Larger")]
+        page.append(self.make_group_label(_("Font size")))
+        font_sizes = [("10", _("Small")), ("11", _("Default")), ("13", _("Large")), ("15", _("Larger"))]
         font_labels = [label for _, label in font_sizes]
         font_values = [val for val, _ in font_sizes]
         font_dd = Gtk.DropDown.new_from_strings(font_labels)
@@ -78,10 +79,10 @@ class AppearancePage(BasePage):
             font_dd.set_selected(1)
         font_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("font_size", int(font_values[d.get_selected()])))
-        page.append(self.make_setting_row("Font size", "Affects all text throughout the interface", font_dd))
+        page.append(self.make_setting_row(_("Font size"), _("Affects all text throughout the interface"), font_dd))
 
         # -- Wallpaper group --
-        page.append(self.make_group_label("Wallpaper"))
+        page.append(self.make_group_label(_("Wallpaper")))
         flow = Gtk.FlowBox()
         flow.set_max_children_per_line(4)
         flow.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -118,9 +119,9 @@ class AppearancePage(BasePage):
 
         def _on_custom_clicked(_btn):
             dialog = Gtk.FileDialog()
-            dialog.set_title("Choose Wallpaper")
+            dialog.set_title(_("Choose Wallpaper"))
             image_filter = Gtk.FileFilter()
-            image_filter.set_name("Images")
+            image_filter.set_name(_("Images"))
             for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp", "*.svg"):
                 image_filter.add_pattern(ext)
             filters = Gio.ListStore.new(Gtk.FileFilter)
@@ -141,7 +142,7 @@ class AppearancePage(BasePage):
 
             dialog.open(self._get_window(page), None, _on_open_finish)
 
-        custom_btn = Gtk.Button(label="Custom...")
+        custom_btn = Gtk.Button(label=_("Custom..."))
         custom_btn.connect("clicked", _on_custom_clicked)
         flow.append(custom_btn)
         page.append(flow)

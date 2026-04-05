@@ -113,6 +113,15 @@ cp -a /ctx/files/. /
 # Install language name matrix for installer wizard locale selection
 install -Dm644 /ctx/po/language-names.json /usr/share/universal-lite/language-names.json
 
+# Compile settings app translations (wizard MOs are pre-compiled in files/)
+for lang in am ar de es fa fr ha hi it ja ko nl pl pt ru sv sw th tr vi yo zh; do
+    po="/ctx/po/settings/${lang}.po"
+    if [ -f "$po" ]; then
+        mkdir -p "/usr/share/locale/${lang}/LC_MESSAGES"
+        msgfmt --output="/usr/share/locale/${lang}/LC_MESSAGES/universal-lite-settings.mo" "$po"
+    fi
+done
+
 # Ensure video group exists for brightnessctl backlight access
 groupadd -f video
 

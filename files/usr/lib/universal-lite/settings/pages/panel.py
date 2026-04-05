@@ -1,4 +1,5 @@
 import copy
+from gettext import gettext as _
 
 import gi
 
@@ -8,17 +9,17 @@ from gi.repository import Gio, Gtk
 from ..base import BasePage
 
 MODULE_NAMES = {
-    "custom/launcher": "Apps", "wlr/taskbar": "Window list",
-    "pulseaudio": "Volume", "backlight": "Brightness", "battery": "Battery",
-    "clock": "Clock", "custom/power": "Power", "tray": "System tray",
+    "custom/launcher": _("Apps"), "wlr/taskbar": _("Window list"),
+    "pulseaudio": _("Volume"), "backlight": _("Brightness"), "battery": _("Battery"),
+    "clock": _("Clock"), "custom/power": _("Power"), "tray": _("System tray"),
 }
 DEFAULT_LAYOUT = {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
     "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
 }
-HORIZONTAL_LABELS = {"start": "Left", "center": "Center", "end": "Right"}
-VERTICAL_LABELS = {"start": "Top", "center": "Center", "end": "Bottom"}
+HORIZONTAL_LABELS = {"start": _("Left"), "center": _("Center"), "end": _("Right")}
+VERTICAL_LABELS = {"start": _("Top"), "center": _("Center"), "end": _("Bottom")}
 SECTION_ORDER = ["start", "center", "end"]
 
 
@@ -33,29 +34,29 @@ class PanelPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Position", "Panel"), ("Density", "Compact"),
-            ("Module Layout", "Modules"), ("Pinned Apps", "Pinned"),
+            (_("Position"), _("Panel")), (_("Density"), _("Compact")),
+            (_("Module Layout"), _("Modules")), (_("Pinned Apps"), _("Pinned")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Position"))
+        page.append(self.make_group_label(_("Position")))
         page.append(self.make_toggle_cards(
-            [("bottom", "Bottom"), ("top", "Top"), ("left", "Left"), ("right", "Right")],
+            [("bottom", _("Bottom")), ("top", _("Top")), ("left", _("Left")), ("right", _("Right"))],
             self.store.get("edge", "bottom"),
             lambda v: self.store.save_and_apply("edge", v),
         ))
-        page.append(self.make_group_label("Density"))
+        page.append(self.make_group_label(_("Density")))
         page.append(self.make_toggle_cards(
-            [("normal", "Normal"), ("compact", "Compact")],
+            [("normal", _("Normal")), ("compact", _("Compact"))],
             self.store.get("density", "normal"),
             lambda v: self.store.save_and_apply("density", v),
         ))
-        page.append(self.make_group_label("Module Layout"))
+        page.append(self.make_group_label(_("Module Layout")))
         page.append(self._build_module_layout())
-        page.append(self.make_group_label("Pinned Apps"))
+        page.append(self.make_group_label(_("Pinned Apps")))
         page.append(self._build_pinned_apps())
-        reset_btn = Gtk.Button(label="Reset layout to defaults")
+        reset_btn = Gtk.Button(label=_("Reset layout to defaults"))
         reset_btn.set_halign(Gtk.Align.START)
         reset_btn.connect("clicked", lambda _: self._reset_layout())
         page.append(reset_btn)
@@ -123,24 +124,24 @@ class PanelPage(BasePage):
 
         if sec_idx > 0:
             btn = Gtk.Button(label=section_prev)
-            btn.set_tooltip_text(f"Move to {SECTION_ORDER[sec_idx - 1]}")
+            btn.set_tooltip_text(_("Move to {section}").format(section=SECTION_ORDER[sec_idx - 1]))
             btn.connect("clicked", lambda _, k=mod_key, s=section: self._move_module(
                 k, s, SECTION_ORDER[SECTION_ORDER.index(s) - 1]))
             box.append(btn)
         if sec_idx < len(SECTION_ORDER) - 1:
             btn = Gtk.Button(label=section_next)
-            btn.set_tooltip_text(f"Move to {SECTION_ORDER[sec_idx + 1]}")
+            btn.set_tooltip_text(_("Move to {section}").format(section=SECTION_ORDER[sec_idx + 1]))
             btn.connect("clicked", lambda _, k=mod_key, s=section: self._move_module(
                 k, s, SECTION_ORDER[SECTION_ORDER.index(s) + 1]))
             box.append(btn)
         if mod_idx > 0:
             btn = Gtk.Button(label=reorder_up)
-            btn.set_tooltip_text("Move up in section")
+            btn.set_tooltip_text(_("Move up in section"))
             btn.connect("clicked", lambda _, k=mod_key, s=section: self._reorder_module(k, s, -1))
             box.append(btn)
         if mod_idx < len(modules) - 1:
             btn = Gtk.Button(label=reorder_down)
-            btn.set_tooltip_text("Move down in section")
+            btn.set_tooltip_text(_("Move down in section"))
             btn.connect("clicked", lambda _, k=mod_key, s=section: self._reorder_module(k, s, 1))
             box.append(btn)
 
@@ -174,7 +175,7 @@ class PanelPage(BasePage):
         self._pinned_list = Gtk.ListBox()
         self._pinned_list.set_selection_mode(Gtk.SelectionMode.NONE)
         vbox.append(self._pinned_list)
-        add_btn = Gtk.Button(label="Add pinned app")
+        add_btn = Gtk.Button(label=_("Add pinned app"))
         add_btn.set_halign(Gtk.Align.START)
         add_btn.set_margin_top(8)
         add_btn.connect("clicked", lambda _: self._show_add_pinned_dialog())
@@ -203,7 +204,7 @@ class PanelPage(BasePage):
         name_label = Gtk.Label(label=app.get("name", app.get("command", "Unknown")), xalign=0)
         name_label.set_hexpand(True)
         box.append(name_label)
-        remove_btn = Gtk.Button(label="Remove")
+        remove_btn = Gtk.Button(label=_("Remove"))
         remove_btn.connect("clicked", lambda _, i=idx: self._remove_pinned(i))
         box.append(remove_btn)
         row.set_child(box)
@@ -216,7 +217,7 @@ class PanelPage(BasePage):
             self.store.save_and_apply("pinned", self._pinned_data)
 
     def _show_add_pinned_dialog(self):
-        dialog = Gtk.Window(title="Add Pinned App", modal=True)
+        dialog = Gtk.Window(title=_("Add Pinned App"), modal=True)
         dialog.set_transient_for(self._pinned_list.get_root())
         dialog.set_default_size(400, 500)
         dialog.set_resizable(True)
@@ -227,7 +228,7 @@ class PanelPage(BasePage):
         outer.set_margin_end(12)
 
         search_entry = Gtk.SearchEntry()
-        search_entry.set_placeholder_text("Search apps\u2026")
+        search_entry.set_placeholder_text(_("Search apps\u2026"))
         outer.append(search_entry)
 
         scrolled = Gtk.ScrolledWindow()
@@ -260,7 +261,7 @@ class PanelPage(BasePage):
             name_label.set_hexpand(True)
             row_box.append(name_label)
 
-            add_btn = Gtk.Button(label="Add")
+            add_btn = Gtk.Button(label=_("Add"))
             add_btn.connect("clicked", lambda _, a=app: self._add_app_from_info(a, dialog))
             row_box.append(add_btn)
 
@@ -280,7 +281,7 @@ class PanelPage(BasePage):
         scrolled.set_child(app_list)
         outer.append(scrolled)
 
-        cancel_btn = Gtk.Button(label="Cancel")
+        cancel_btn = Gtk.Button(label=_("Cancel"))
         cancel_btn.set_halign(Gtk.Align.END)
         cancel_btn.set_margin_top(4)
         cancel_btn.connect("clicked", lambda _: dialog.destroy())

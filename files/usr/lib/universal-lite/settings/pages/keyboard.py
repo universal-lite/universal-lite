@@ -1,6 +1,7 @@
 import json
 import subprocess
 import xml.etree.ElementTree as ET
+from gettext import gettext as _
 from pathlib import Path
 
 import gi
@@ -219,16 +220,16 @@ class KeyboardPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Layout", "Keyboard layout"), ("Layout", "Variant"),
-            ("Repeat", "Repeat delay"), ("Repeat", "Repeat rate"),
-            ("Caps Lock", "Caps Lock behavior"), ("Caps Lock", "Remap"),
-            ("Shortcuts", "Keyboard shortcuts"), ("Shortcuts", "Keybinding"),
-            ("Shortcuts", "Hotkey"), ("Shortcuts", "Key combo"),
+            (_("Layout"), _("Keyboard layout")), (_("Layout"), _("Variant")),
+            (_("Repeat"), _("Repeat delay")), (_("Repeat"), _("Repeat rate")),
+            (_("Caps Lock"), _("Caps Lock behavior")), (_("Caps Lock"), _("Remap")),
+            (_("Shortcuts"), _("Keyboard shortcuts")), (_("Shortcuts"), _("Keybinding")),
+            (_("Shortcuts"), _("Hotkey")), (_("Shortcuts"), _("Key combo")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Layout"))
+        page.append(self.make_group_label(_("Layout")))
 
         layout_codes = self._get_layouts()
         display_names = [LAYOUT_NAMES.get(c, c) for c in layout_codes]
@@ -245,16 +246,16 @@ class KeyboardPage(BasePage):
         current_variant = self.store.get("keyboard_variant", "")
         variant_codes: list[str] = []
 
-        variant_dropdown = Gtk.DropDown.new(Gtk.StringList.new(["(Default)"]), None)
+        variant_dropdown = Gtk.DropDown.new(Gtk.StringList.new([_("(Default)")]), None)
         variant_dropdown.set_size_request(240, -1)
-        variant_row = self.make_setting_row("Variant", "", variant_dropdown)
+        variant_row = self.make_setting_row(_("Variant"), "", variant_dropdown)
 
         def _build_variant_dropdown(layout_code):
             variants = self._get_variants(layout_code)
             variant_codes.clear()
             variant_codes.append("")
             variant_codes.extend(variants)
-            variant_dropdown.set_model(Gtk.StringList.new(["(Default)"] + variants))
+            variant_dropdown.set_model(Gtk.StringList.new([_("(Default)")] + variants))
             variant_row.set_visible(bool(variants))
             try:
                 sel = variant_codes.index(current_variant if layout_code == current_layout else "")
@@ -280,12 +281,12 @@ class KeyboardPage(BasePage):
             _build_variant_dropdown(code)
 
         layout_dropdown.connect("notify::selected", _on_layout_changed)
-        page.append(self.make_setting_row("Keyboard layout", "", layout_dropdown))
+        page.append(self.make_setting_row(_("Keyboard layout"), "", layout_dropdown))
         _build_variant_dropdown(current_layout)
         page.append(variant_row)
 
         # -- Repeat --
-        page.append(self.make_group_label("Repeat"))
+        page.append(self.make_group_label(_("Repeat")))
 
         delay_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 150, 1000, 50)
         delay_scale.set_value(self.store.get("keyboard_repeat_delay", 300))
@@ -294,7 +295,7 @@ class KeyboardPage(BasePage):
         delay_scale.set_format_value_func(lambda _s, v: f"{v:.0f} ms")
         delay_scale.connect("value-changed", lambda s: self.store.save_debounced(
             "keyboard_repeat_delay", int(s.get_value())))
-        page.append(self.make_setting_row("Repeat delay", "", delay_scale))
+        page.append(self.make_setting_row(_("Repeat delay"), "", delay_scale))
 
         rate_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 10, 80, 5)
         rate_scale.set_value(self.store.get("keyboard_repeat_rate", 40))
@@ -303,11 +304,11 @@ class KeyboardPage(BasePage):
         rate_scale.set_format_value_func(lambda _s, v: f"{v:.0f}/s")
         rate_scale.connect("value-changed", lambda s: self.store.save_debounced(
             "keyboard_repeat_rate", int(s.get_value())))
-        page.append(self.make_setting_row("Repeat rate", "", rate_scale))
+        page.append(self.make_setting_row(_("Repeat rate"), "", rate_scale))
 
         # -- Caps Lock --
-        page.append(self.make_group_label("Caps Lock Behavior"))
-        caps_options = ["Default", "Ctrl", "Escape", "Disabled"]
+        page.append(self.make_group_label(_("Caps Lock Behavior")))
+        caps_options = [_("Default"), _("Ctrl"), _("Escape"), _("Disabled")]
         caps_values = ["default", "ctrl", "escape", "disabled"]
         caps_dd = Gtk.DropDown.new_from_strings(caps_options)
         current_caps = self.store.get("capslock_behavior", "default")
@@ -318,10 +319,10 @@ class KeyboardPage(BasePage):
         caps_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("capslock_behavior", caps_values[d.get_selected()]))
         page.append(self.make_setting_row(
-            "Caps Lock key", "Remap Caps Lock to another function", caps_dd))
+            _("Caps Lock key"), _("Remap Caps Lock to another function"), caps_dd))
 
         # -- Keyboard Shortcuts --
-        page.append(self.make_group_label("Keyboard Shortcuts"))
+        page.append(self.make_group_label(_("Keyboard Shortcuts")))
 
         self._shortcut_buttons.clear()
         for i, binding in enumerate(self._bindings):
@@ -329,7 +330,7 @@ class KeyboardPage(BasePage):
             page.append(row)
 
         # Reset All button
-        reset_all_btn = Gtk.Button(label="Reset All Shortcuts")
+        reset_all_btn = Gtk.Button(label=_("Reset All Shortcuts"))
         reset_all_btn.set_halign(Gtk.Align.START)
         reset_all_btn.set_margin_top(8)
         reset_all_btn.connect("clicked", lambda _: self._reset_all_shortcuts())
@@ -353,7 +354,7 @@ class KeyboardPage(BasePage):
         if default_key and default_key != binding["key"]:
             reset_btn = Gtk.Button()
             reset_btn.set_icon_name("edit-undo-symbolic")
-            reset_btn.set_tooltip_text("Reset to default")
+            reset_btn.set_tooltip_text(_("Reset to default"))
             reset_btn.set_valign(Gtk.Align.CENTER)
             reset_btn.connect("clicked", lambda _, idx=index: self._reset_shortcut(idx))
             row.append(reset_btn)
@@ -395,7 +396,7 @@ class KeyboardPage(BasePage):
         btn = self._shortcut_buttons[index]
         self._capture_button = btn
         self._capture_index = index
-        btn.set_label("Press new shortcut...")
+        btn.set_label(_("Press new shortcut..."))
 
         window = btn.get_root()
         if window is None:
@@ -485,13 +486,15 @@ class KeyboardPage(BasePage):
         window = btn.get_root() if btn else None
 
         dialog = Gtk.AlertDialog()
-        dialog.set_message("Shortcut Conflict")
+        dialog.set_message(_("Shortcut Conflict"))
         dialog.set_detail(
-            f'"{_human_key_label(new_key)}" is already assigned to '
-            f'"{conflict_name}".\n\n'
-            f"Reassign it to \"{self._bindings[target_idx]['display_name']}\"?"
+            _('"{key}" is already assigned to "{conflict}".\n\nReassign it to "{target}"?').format(
+                key=_human_key_label(new_key),
+                conflict=conflict_name,
+                target=self._bindings[target_idx]['display_name'],
+            )
         )
-        dialog.set_buttons(["Cancel", "Reassign"])
+        dialog.set_buttons([_("Cancel"), _("Reassign")])
         dialog.set_default_button(1)
         dialog.set_cancel_button(0)
 

@@ -1,4 +1,5 @@
 import subprocess
+from gettext import gettext as _
 
 import gi
 
@@ -22,9 +23,9 @@ class NetworkPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("WiFi", "WiFi"), ("WiFi", "Network"), ("WiFi", "Wireless"),
-            ("WiFi", "Hidden network"), ("WiFi", "Password"),
-            ("Wired", "Ethernet"), ("Connection", "IP address"),
+            (_("WiFi"), _("WiFi")), (_("WiFi"), _("Network")), (_("WiFi"), _("Wireless")),
+            (_("WiFi"), _("Hidden network")), (_("WiFi"), _("Password")),
+            (_("Wired"), _("Ethernet")), (_("Connection"), _("IP address")),
         ]
 
     def build(self):
@@ -35,7 +36,7 @@ class NetworkPage(BasePage):
 
         # -- WiFi header with toggle --
         wifi_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        wifi_header.append(self.make_group_label("WiFi"))
+        wifi_header.append(self.make_group_label(_("WiFi")))
         spacer = Gtk.Box()
         spacer.set_hexpand(True)
         wifi_header.append(spacer)
@@ -58,26 +59,26 @@ class NetworkPage(BasePage):
 
         # Buttons row
         btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        scan_btn = Gtk.Button(label="Scan")
+        scan_btn = Gtk.Button(label=_("Scan"))
         scan_btn.connect("clicked", lambda _: self._nm.request_scan() if self._nm else None)
         btn_row.append(scan_btn)
-        hidden_btn = Gtk.Button(label="Connect to Hidden Network...")
+        hidden_btn = Gtk.Button(label=_("Connect to Hidden Network..."))
         hidden_btn.connect("clicked", lambda _: self._show_hidden_dialog())
         btn_row.append(hidden_btn)
         page.append(btn_row)
 
         # -- Active Connection --
-        page.append(self.make_group_label("Active Connection"))
+        page.append(self.make_group_label(_("Active Connection")))
         self._active_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         page.append(self._active_box)
 
         # -- Wired --
-        page.append(self.make_group_label("Wired"))
-        self._wired_label = Gtk.Label(label="Checking...", xalign=0)
+        page.append(self.make_group_label(_("Wired")))
+        self._wired_label = Gtk.Label(label=_("Checking..."), xalign=0)
         page.append(self._wired_label)
 
         # Advanced button
-        adv_btn = Gtk.Button(label="Advanced...")
+        adv_btn = Gtk.Button(label=_("Advanced..."))
         adv_btn.set_halign(Gtk.Align.START)
         adv_btn.connect("clicked", lambda _: subprocess.Popen(
             ["nm-connection-editor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
@@ -152,14 +153,14 @@ class NetworkPage(BasePage):
         box.append(name)
 
         if ap.active:
-            status = Gtk.Label(label="Connected")
+            status = Gtk.Label(label=_("Connected"))
             status.add_css_class("setting-subtitle")
             box.append(status)
-            forget = Gtk.Button(label="Forget")
+            forget = Gtk.Button(label=_("Forget"))
             forget.connect("clicked", lambda _, s=ap.ssid: self._forget(s))
             box.append(forget)
         else:
-            connect = Gtk.Button(label="Connect")
+            connect = Gtk.Button(label=_("Connect"))
             connect.connect("clicked", lambda _, a=ap: self._connect(a))
             box.append(connect)
 
@@ -170,12 +171,12 @@ class NetworkPage(BasePage):
         if ap.secured:
             self._show_password_dialog(ap)
         else:
-            self._status_label.set_text(f"Connecting to {ap.ssid}...")
+            self._status_label.set_text(_("Connecting to {ssid}...").format(ssid=ap.ssid))
             self._status_label.set_visible(True)
             self._nm.connect_wifi(ap.ssid, None)
 
     def _show_password_dialog(self, ap):
-        dialog = Gtk.Window(title=f"Connect to {ap.ssid}", modal=True)
+        dialog = Gtk.Window(title=_("Connect to {ssid}").format(ssid=ap.ssid), modal=True)
         dialog.set_transient_for(self._wifi_list.get_root())
         dialog.set_default_size(360, 180)
         dialog.set_resizable(False)
@@ -187,22 +188,22 @@ class NetworkPage(BasePage):
 
         pw_entry = Gtk.PasswordEntry()
         pw_entry.set_show_peek_icon(True)
-        pw_entry.set_placeholder_text("Password")
+        pw_entry.set_placeholder_text(_("Password"))
         box.append(pw_entry)
 
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_box.set_halign(Gtk.Align.END)
-        cancel = Gtk.Button(label="Cancel")
+        cancel = Gtk.Button(label=_("Cancel"))
         cancel.connect("clicked", lambda _: dialog.destroy())
         btn_box.append(cancel)
-        connect = Gtk.Button(label="Connect")
+        connect = Gtk.Button(label=_("Connect"))
         connect.add_css_class("suggested-action")
 
         def _do_connect(_btn):
             pw = pw_entry.get_text()
             if not pw:
                 return
-            self._status_label.set_text(f"Connecting to {ap.ssid}...")
+            self._status_label.set_text(_("Connecting to {ssid}...").format(ssid=ap.ssid))
             self._status_label.set_visible(True)
             self._nm.connect_wifi(ap.ssid, pw)
             dialog.destroy()
@@ -215,7 +216,7 @@ class NetworkPage(BasePage):
         dialog.present()
 
     def _show_hidden_dialog(self):
-        dialog = Gtk.Window(title="Connect to Hidden Network", modal=True)
+        dialog = Gtk.Window(title=_("Connect to Hidden Network"), modal=True)
         dialog.set_transient_for(self._wifi_list.get_root())
         dialog.set_default_size(360, 260)
         dialog.set_resizable(False)
@@ -226,23 +227,23 @@ class NetworkPage(BasePage):
         box.set_margin_end(24)
 
         ssid_entry = Gtk.Entry()
-        ssid_entry.set_placeholder_text("Network name (SSID)")
+        ssid_entry.set_placeholder_text(_("Network name (SSID)"))
         box.append(ssid_entry)
 
-        sec_dd = Gtk.DropDown.new_from_strings(["None", "WPA/WPA2", "WPA3"])
-        box.append(self.make_setting_row("Security", "", sec_dd))
+        sec_dd = Gtk.DropDown.new_from_strings([_("None"), _("WPA/WPA2"), _("WPA3")])
+        box.append(self.make_setting_row(_("Security"), "", sec_dd))
 
         pw_entry = Gtk.PasswordEntry()
         pw_entry.set_show_peek_icon(True)
-        pw_entry.set_placeholder_text("Password")
+        pw_entry.set_placeholder_text(_("Password"))
         box.append(pw_entry)
 
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_box.set_halign(Gtk.Align.END)
-        cancel = Gtk.Button(label="Cancel")
+        cancel = Gtk.Button(label=_("Cancel"))
         cancel.connect("clicked", lambda _: dialog.destroy())
         btn_box.append(cancel)
-        connect = Gtk.Button(label="Connect")
+        connect = Gtk.Button(label=_("Connect"))
         connect.add_css_class("suggested-action")
 
         def _do_connect(_btn):
@@ -250,7 +251,7 @@ class NetworkPage(BasePage):
             if not ssid:
                 return
             pw = pw_entry.get_text() if sec_dd.get_selected() > 0 else None
-            self._status_label.set_text(f"Connecting to {ssid}...")
+            self._status_label.set_text(_("Connecting to {ssid}...").format(ssid=ssid))
             self._status_label.set_visible(True)
             self._nm.connect_wifi(ssid, pw, hidden=True)
             dialog.destroy()
@@ -265,7 +266,7 @@ class NetworkPage(BasePage):
         self._nm.forget_connection(ssid)
 
     def _on_connect_success(self, _data):
-        self._status_label.set_text("Connected successfully")
+        self._status_label.set_text(_("Connected successfully"))
         self._status_label.set_visible(True)
         GLib.timeout_add_seconds(3, lambda: self._status_label.set_visible(False) or GLib.SOURCE_REMOVE)
 
@@ -280,20 +281,20 @@ class NetworkPage(BasePage):
             self._active_box.remove(child)
         info = self._nm.get_active_connection_info()
         if info is None:
-            self._active_box.append(Gtk.Label(label="Not connected", xalign=0))
+            self._active_box.append(Gtk.Label(label=_("Not connected"), xalign=0))
             return
-        self._active_box.append(self.make_info_row("Network", info.name))
-        self._active_box.append(self.make_info_row("Type", info.type))
-        self._active_box.append(self.make_info_row("IP Address", info.ip_address))
-        self._active_box.append(self.make_info_row("Gateway", info.gateway))
-        self._active_box.append(self.make_info_row("DNS", info.dns))
+        self._active_box.append(self.make_info_row(_("Network"), info.name))
+        self._active_box.append(self.make_info_row(_("Type"), info.type))
+        self._active_box.append(self.make_info_row(_("IP Address"), info.ip_address))
+        self._active_box.append(self.make_info_row(_("Gateway"), info.gateway))
+        self._active_box.append(self.make_info_row(_("DNS"), info.dns))
 
     def _refresh_wired(self):
         if self._wired_label is None or self._nm is None:
             return
         if not self._nm.has_wired():
-            self._wired_label.set_text("No wired adapter detected")
+            self._wired_label.set_text(_("No wired adapter detected"))
         elif self._nm.is_wired_connected():
-            self._wired_label.set_text("Connected")
+            self._wired_label.set_text(_("Connected"))
         else:
-            self._wired_label.set_text("Disconnected")
+            self._wired_label.set_text(_("Disconnected"))

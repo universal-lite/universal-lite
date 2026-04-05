@@ -1,4 +1,5 @@
 import subprocess
+from gettext import gettext as _
 
 import gi
 
@@ -17,15 +18,15 @@ class DateTimePage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Date & Time", "Timezone"),
-            ("Date & Time", "Automatic time"),
-            ("Date & Time", "NTP"),
-            ("Date & Time", "24-hour clock"),
+            (_("Date & Time"), _("Timezone")),
+            (_("Date & Time"), _("Automatic time")),
+            (_("Date & Time"), _("NTP")),
+            (_("Date & Time"), _("24-hour clock")),
         ]
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label("Date & Time"))
+        page.append(self.make_group_label(_("Date & Time")))
 
         # Current time display (live updating)
         self._time_label = Gtk.Label(xalign=0)
@@ -38,22 +39,22 @@ class DateTimePage(BasePage):
         # Timezone
         tz_entry = Gtk.Entry()
         tz_entry.set_text(self._get_timezone())
-        tz_entry.set_placeholder_text("e.g. America/New_York")
+        tz_entry.set_placeholder_text(_("e.g. America/New_York"))
         tz_entry.set_size_request(280, -1)
         tz_entry.connect("activate", lambda e: self._set_timezone(e.get_text().strip(), e))
-        page.append(self.make_setting_row("Timezone", "Press Enter to apply", tz_entry))
+        page.append(self.make_setting_row(_("Timezone"), _("Press Enter to apply"), tz_entry))
 
         # Automatic time (NTP)
         ntp_switch = Gtk.Switch()
         ntp_switch.set_active(self._get_ntp())
         ntp_switch.connect("state-set", lambda _, s: self._set_ntp(s) or False)
-        page.append(self.make_setting_row("Automatic time", "Sync clock via network (NTP)", ntp_switch))
+        page.append(self.make_setting_row(_("Automatic time"), _("Sync clock via network (NTP)"), ntp_switch))
 
         # 24-hour clock
         clock_switch = Gtk.Switch()
         clock_switch.set_active(self.store.get("clock_24h", False))
         clock_switch.connect("state-set", lambda _, s: self.store.save_and_apply("clock_24h", s) or False)
-        page.append(self.make_setting_row("24-hour clock", "Use 24-hour time format", clock_switch))
+        page.append(self.make_setting_row(_("24-hour clock"), _("Use 24-hour time format"), clock_switch))
 
         return page
 
@@ -92,10 +93,10 @@ class DateTimePage(BasePage):
                 timeout=5,
             )
         except (subprocess.TimeoutExpired, OSError):
-            self.store.show_toast("Failed to set timezone", True)
+            self.store.show_toast(_("Failed to set timezone"), True)
             return
         if result.returncode != 0:
-            self.store.show_toast("Invalid timezone", True)
+            self.store.show_toast(_("Invalid timezone"), True)
             if entry is not None:
                 entry.add_css_class("error")
         elif entry is not None:

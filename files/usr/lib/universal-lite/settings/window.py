@@ -1,4 +1,5 @@
 import sys
+from gettext import gettext as _
 
 import gi
 
@@ -13,7 +14,7 @@ from .toast import ToastWidget
 class SettingsWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application, store: SettingsStore, event_bus: EventBus) -> None:
         super().__init__(application=app)
-        self.set_title("Universal-Lite Settings")
+        self.set_title(_("Universal-Lite Settings"))
         self.set_default_size(900, 600)
         self.set_size_request(700, 500)
 
@@ -42,7 +43,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         sidebar_box.set_size_request(220, -1)
 
         self._search_entry = Gtk.SearchEntry()
-        self._search_entry.set_placeholder_text("Search settings...")
+        self._search_entry.set_placeholder_text(_("Search settings..."))
         self._search_bar = Gtk.SearchBar()
         self._search_bar.set_child(self._search_entry)
         self._search_bar.connect_entry(self._search_entry)
@@ -96,10 +97,10 @@ class SettingsWindow(Gtk.ApplicationWindow):
             except Exception as exc:
                 print(f"Settings: failed to load page {label!r}: {exc!r}", file=sys.stderr)
                 page = None
-                widget = Gtk.Label(label=f"Failed to load {label}", xalign=0)
+                widget = Gtk.Label(label=_("Failed to load {label}").format(label=label), xalign=0)
                 widget.add_css_class("setting-subtitle")
 
-            row = self._build_sidebar_row(icon_name, label)
+            row = self._build_sidebar_row(icon_name, _(label))
             self._sidebar.append(row)
             self._stack.add_named(widget, label)
             self._page_names.append(label)

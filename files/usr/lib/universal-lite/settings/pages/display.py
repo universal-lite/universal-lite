@@ -1,5 +1,6 @@
 import re
 import subprocess
+from gettext import gettext as _
 
 import gi
 
@@ -11,7 +12,7 @@ from ..base import BasePage
 SCALE_OPTIONS = ["75%", "100%", "125%", "150%", "175%", "200%", "225%", "250%"]
 SCALE_VALUES = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5]
 
-SCHEDULE_LABELS = ["Sunset to Sunrise", "Custom"]
+SCHEDULE_LABELS = [_("Sunset to Sunrise"), _("Custom")]
 SCHEDULE_VALUES = ["sunset-sunrise", "custom"]
 
 
@@ -29,20 +30,20 @@ class DisplayPage(BasePage):
     @property
     def search_keywords(self):
         return [
-            ("Display Scale", "Scale"),
-            ("Display Scale", "Resolution"),
-            ("Resolution & Refresh Rate", "Resolution"),
-            ("Resolution & Refresh Rate", "Refresh"),
-            ("Night Light", "Night Light"),
-            ("Night Light", "Temperature"),
-            ("Night Light", "Blue light"),
+            (_("Display Scale"), _("Scale")),
+            (_("Display Scale"), _("Resolution")),
+            (_("Resolution & Refresh Rate"), _("Resolution")),
+            (_("Resolution & Refresh Rate"), _("Refresh")),
+            (_("Night Light"), _("Night Light")),
+            (_("Night Light"), _("Temperature")),
+            (_("Night Light"), _("Blue light")),
         ]
 
     def build(self):
         page = self.make_page_box()
 
         # ── Display Scale (existing) ──
-        page.append(self.make_group_label("Display Scale"))
+        page.append(self.make_group_label(_("Display Scale")))
 
         options = [(str(v), label) for v, label in zip(SCALE_VALUES, SCALE_OPTIONS)]
         active = str(self.store.get("scale", 1.0))
@@ -57,10 +58,10 @@ class DisplayPage(BasePage):
         page.append(cards_box)
 
         # ── Resolution & Refresh Rate ──
-        page.append(self.make_group_label("Resolution & Refresh Rate"))
+        page.append(self.make_group_label(_("Resolution & Refresh Rate")))
         displays = self._get_displays()
         if not displays:
-            no_display = Gtk.Label(label="No displays detected", xalign=0)
+            no_display = Gtk.Label(label=_("No displays detected"), xalign=0)
             no_display.add_css_class("setting-subtitle")
             page.append(no_display)
         else:
@@ -77,10 +78,10 @@ class DisplayPage(BasePage):
                     "notify::selected",
                     self._on_resolution_changed, name, modes, current,
                 )
-                page.append(self.make_setting_row(name, "Resolution and refresh rate", dd))
+                page.append(self.make_setting_row(name, _("Resolution and refresh rate"), dd))
 
         # ── Night Light ──
-        page.append(self.make_group_label("Night Light"))
+        page.append(self.make_group_label(_("Night Light")))
 
         # Enable toggle
         nl_toggle = Gtk.Switch()
@@ -92,7 +93,7 @@ class DisplayPage(BasePage):
 
         nl_toggle.connect("state-set", _on_nl_toggle)
         page.append(self.make_setting_row(
-            "Night Light", "Reduce blue light to help with sleep", nl_toggle))
+            _("Night Light"), _("Reduce blue light to help with sleep"), nl_toggle))
 
         # Temperature slider
         temp_scale = Gtk.Scale.new_with_range(
@@ -106,7 +107,7 @@ class DisplayPage(BasePage):
             "value-changed",
             lambda s: self.store.save_debounced("night_light_temp", int(s.get_value())),
         )
-        page.append(self.make_setting_row("Temperature", "3500K (warm) to 6500K (cool)", temp_scale))
+        page.append(self.make_setting_row(_("Temperature"), _("3500K (warm) to 6500K (cool)"), temp_scale))
 
         # Schedule dropdown
         schedule_dd = Gtk.DropDown.new_from_strings(list(SCHEDULE_LABELS))
@@ -116,7 +117,7 @@ class DisplayPage(BasePage):
         except ValueError:
             schedule_dd.set_selected(0)
         schedule_dd.set_size_request(200, -1)
-        page.append(self.make_setting_row("Schedule", "", schedule_dd))
+        page.append(self.make_setting_row(_("Schedule"), "", schedule_dd))
 
         # Custom time entries (start / end)
         custom_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -133,23 +134,23 @@ class DisplayPage(BasePage):
 
         start_entry = Gtk.Entry()
         start_entry.set_text(self.store.get("night_light_start", "20:00"))
-        start_entry.set_placeholder_text("HH:MM")
+        start_entry.set_placeholder_text(_("HH:MM"))
         start_entry.set_max_width_chars(5)
         start_entry.connect(
             "activate",
             lambda e: _validate_and_save_time(e, "night_light_start"),
         )
-        custom_box.append(self.make_setting_row("Start time", "", start_entry))
+        custom_box.append(self.make_setting_row(_("Start time"), "", start_entry))
 
         end_entry = Gtk.Entry()
         end_entry.set_text(self.store.get("night_light_end", "06:00"))
-        end_entry.set_placeholder_text("HH:MM")
+        end_entry.set_placeholder_text(_("HH:MM"))
         end_entry.set_max_width_chars(5)
         end_entry.connect(
             "activate",
             lambda e: _validate_and_save_time(e, "night_light_end"),
         )
-        custom_box.append(self.make_setting_row("End time", "", end_entry))
+        custom_box.append(self.make_setting_row(_("End time"), "", end_entry))
 
         custom_box.set_visible(current_schedule == "custom")
         page.append(custom_box)
@@ -163,13 +164,13 @@ class DisplayPage(BasePage):
         schedule_dd.connect("notify::selected", _on_schedule_changed)
 
         # ── Advanced ──
-        page.append(self.make_group_label("Advanced"))
-        adv_btn = Gtk.Button(label="Open wdisplays")
+        page.append(self.make_group_label(_("Advanced")))
+        adv_btn = Gtk.Button(label=_("Open wdisplays"))
         adv_btn.set_halign(Gtk.Align.START)
         adv_btn.connect("clicked", lambda _: subprocess.Popen(
             ["wdisplays"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
         page.append(self.make_setting_row(
-            "Advanced display settings", "Arrange and configure displays visually", adv_btn))
+            _("Advanced display settings"), _("Arrange and configure displays visually"), adv_btn))
 
         return page
 
@@ -200,7 +201,7 @@ class DisplayPage(BasePage):
             pass
 
     def _show_revert_dialog(self, old_scale, new_scale):
-        dialog = Gtk.Window(title="Confirm Scale", modal=True)
+        dialog = Gtk.Window(title=_("Confirm Scale"), modal=True)
         if self._scale_buttons:
             dialog.set_transient_for(self._scale_buttons[0].get_root())
         dialog.set_default_size(400, 150)
@@ -211,15 +212,15 @@ class DisplayPage(BasePage):
         box.set_margin_start(24)
         box.set_margin_end(24)
         self._revert_seconds = 15
-        label = Gtk.Label(label=f"Keep this display scale?\nReverting in {self._revert_seconds}s...")
+        label = Gtk.Label(label=_("Keep this display scale?\nReverting in {seconds}s...").format(seconds=self._revert_seconds))
         label.set_wrap(True)
         box.append(label)
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_box.set_halign(Gtk.Align.END)
-        revert_btn = Gtk.Button(label="Revert")
+        revert_btn = Gtk.Button(label=_("Revert"))
         revert_btn.connect("clicked", lambda _: self._revert(dialog, old_scale))
         btn_box.append(revert_btn)
-        keep_btn = Gtk.Button(label="Keep")
+        keep_btn = Gtk.Button(label=_("Keep"))
         keep_btn.add_css_class("suggested-action")
         keep_btn.connect("clicked", lambda _: self._keep(dialog, new_scale))
         btn_box.append(keep_btn)
@@ -237,7 +238,7 @@ class DisplayPage(BasePage):
         if self._revert_seconds <= 0:
             self._revert(dialog, old_scale)
             return GLib.SOURCE_REMOVE
-        label.set_text(f"Keep this display scale?\nReverting in {self._revert_seconds}s...")
+        label.set_text(_("Keep this display scale?\nReverting in {seconds}s...").format(seconds=self._revert_seconds))
         return GLib.SOURCE_CONTINUE
 
     def _revert(self, dialog, old_scale):
@@ -321,7 +322,7 @@ class DisplayPage(BasePage):
         )
 
     def _show_res_revert_dialog(self, dropdown, output_name, modes, old_mode, new_mode):
-        dialog = Gtk.Window(title="Confirm Resolution", modal=True)
+        dialog = Gtk.Window(title=_("Confirm Resolution"), modal=True)
         dialog.set_transient_for(dropdown.get_root())
         dialog.set_default_size(400, 150)
         dialog.set_resizable(False)
@@ -332,19 +333,19 @@ class DisplayPage(BasePage):
         box.set_margin_end(24)
         self._res_revert_seconds = 15
         label = Gtk.Label(
-            label=f"Keep this resolution?\nReverting in {self._res_revert_seconds}s...",
+            label=_("Keep this resolution?\nReverting in {seconds}s...").format(seconds=self._res_revert_seconds),
         )
         label.set_wrap(True)
         box.append(label)
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_box.set_halign(Gtk.Align.END)
-        revert_btn = Gtk.Button(label="Revert")
+        revert_btn = Gtk.Button(label=_("Revert"))
         revert_btn.connect(
             "clicked",
             lambda _: self._res_revert(dialog, dropdown, output_name, modes, old_mode),
         )
         btn_box.append(revert_btn)
-        keep_btn = Gtk.Button(label="Keep")
+        keep_btn = Gtk.Button(label=_("Keep"))
         keep_btn.add_css_class("suggested-action")
         keep_btn.connect("clicked", lambda _: self._res_keep(dialog, output_name, new_mode))
         btn_box.append(keep_btn)
@@ -365,7 +366,7 @@ class DisplayPage(BasePage):
         if self._res_revert_seconds <= 0:
             self._res_revert(dialog, dropdown, output_name, modes, old_mode)
             return GLib.SOURCE_REMOVE
-        label.set_text(f"Keep this resolution?\nReverting in {self._res_revert_seconds}s...")
+        label.set_text(_("Keep this resolution?\nReverting in {seconds}s...").format(seconds=self._res_revert_seconds))
         return GLib.SOURCE_CONTINUE
 
     def _res_revert(self, dialog, dropdown, output_name, modes, old_mode):
