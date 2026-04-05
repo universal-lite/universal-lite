@@ -9,11 +9,13 @@ MAX_FAILURES=3
 # Read current failure count (0 if file doesn't exist)
 failures=0
 [ -f "$FAIL_COUNT_FILE" ] && failures=$(cat "$FAIL_COUNT_FILE")
+failures=${failures:-0}
+failures=$((failures + 0))  # Force to integer (empty/non-numeric → 0)
 
 if [ "$failures" -ge "$MAX_FAILURES" ]; then
     echo "Greeter crashed $failures times. Falling back to TTY login." >&2
     echo "Fix the greeter, then: rm $FAIL_COUNT_FILE && systemctl restart greetd" >&2
-    exec /bin/login -f
+    exec /bin/login
 fi
 
 # Fix wlroots hardware cursor rendering upside-down / misplaced in VMs.

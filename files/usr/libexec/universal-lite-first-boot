@@ -39,6 +39,12 @@ if [ "$strategy" = "zswap" ] && [ -n "$swap_gb" ] && [ "$swap_gb" != "None" ]; t
     # Activate encrypted swap for this boot
     /usr/libexec/universal-lite-encrypted-swap start
 
+    # Activate zswap for this boot (grubby kernel args take effect next boot)
+    modprobe zswap 2>/dev/null || true
+    echo 1 > /sys/module/zswap/parameters/enabled 2>/dev/null || true
+    echo zstd > /sys/module/zswap/parameters/compressor 2>/dev/null || true
+    echo 25 > /sys/module/zswap/parameters/max_pool_percent 2>/dev/null || true
+
     # Mask zram-generator so it doesn't compete with disk swap
     systemctl mask systemd-zram-setup@.service
 

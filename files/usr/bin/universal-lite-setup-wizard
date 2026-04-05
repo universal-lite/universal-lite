@@ -273,7 +273,8 @@ button.back-button:hover label {
 }
 """
 
-USERNAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+USERNAME_RE = re.compile(r"^[a-z_]([a-z0-9_-]*[a-z0-9_])?$")
+HOSTNAME_RE = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$")
 
 SWAP_STRATEGIES = [
     N_("Compressed RAM only (zram) — fast, but apps may close if memory fills"),
@@ -303,21 +304,20 @@ DEFAULT_FLATPAKS = [
 
 
 def _hash_password(plaintext: str) -> str:
-    """Return a SHA-512 crypt(3) hash suitable for useradd --password."""
-    try:
-        import crypt
-        return crypt.crypt(plaintext, crypt.mksalt(crypt.METHOD_SHA512))
-    except ImportError:
-        # crypt removed in Python 3.13+; fall back to openssl
-        result = subprocess.run(
-            ["openssl", "passwd", "-6", "-stdin"],
-            input=plaintext,
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=10,
-        )
-        return result.stdout.strip()
+    """Return a SHA-512 crypt(3) hash suitable for useradd --password.
+
+    Uses openssl which produces the $6$salt$hash format required by
+    /etc/shadow.  The stdlib crypt module was removed in Python 3.13.
+    """
+    result = subprocess.run(
+        ["openssl", "passwd", "-6", "-stdin"],
+        input=plaintext,
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=10,
+    )
+    return result.stdout.strip()
 
 
 def _load_timezones() -> list[str]:
@@ -352,11 +352,20 @@ def _load_drives() -> list[dict]:
     # Identify the disk backing / so we can exclude the boot USB
     boot_disk = ""
     try:
-        root_result = subprocess.run(
-            ["findmnt", "-n", "-o", "SOURCE", "/"],
-            capture_output=True, text=True, timeout=5,
-        )
-        boot_disk = re.sub(r"p?\d+$", "", os.path.basename(root_result.stdout.strip()))
+        # Try /sysroot first (ostree/bootc mounts the real root here)
+        for mount_point in ["/sysroot", "/"]:
+            root_result = subprocess.run(
+                ["findmnt", "-n", "-o", "SOURCE", mount_point],
+                capture_output=True, text=True, timeout=5,
+            )
+            source = root_result.stdout.strip()
+            if not source or source.startswith("overlay"):
+                continue
+            # Strip bracket decorations: /dev/sda3[/ostree/...] → /dev/sda3
+            source = source.split("[")[0]
+            boot_disk = re.sub(r"p?\d+$", "", os.path.basename(source))
+            if boot_disk:
+                break
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         pass
 
@@ -726,6 +735,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._username_entry.set_hexpand(True)
         card.append(self._username_entry)
 
+        card.append(self._make_translated_label("Hostname"))
+        self._hostname_entry = Gtk.Entry()
+        self._hostname_entry.set_placeholder_text("my-computer")
+        self._hostname_entry.add_css_class("form-entry")
+        self._hostname_entry.set_hexpand(True)
+        card.append(self._hostname_entry)
+        _host_desc = Gtk.Label(label=_("Your computer's name on the network. Leave blank to auto-generate."))
+        _host_desc.add_css_class("form-description")
+        _host_desc.set_halign(Gtk.Align.START)
+        _host_desc.set_wrap(True)
+        _host_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        _host_desc.set_max_width_chars(50)
+        self._retranslatable.append((_host_desc.set_label, "Your computer's name on the network. Leave blank to auto-generate."))
+        card.append(_host_desc)
+
         card.append(self._make_translated_label("Password"))
         self._password_entry = Gtk.PasswordEntry()
         self._password_entry.set_show_peek_icon(True)
@@ -977,9 +1001,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         tz_model = Gtk.StringList.new(self._timezones)
         self._tz_dropdown = Gtk.DropDown(model=tz_model)
         self._tz_dropdown.set_hexpand(True)
+        # Try to auto-detect timezone from system
+        default_tz = "America/New_York"
+        try:
+            tz_result = subprocess.run(
+                ["timedatectl", "show", "--property=Timezone", "--value"],
+                capture_output=True, text=True, timeout=5,
+            )
+            detected = tz_result.stdout.strip()
+            if detected and detected in self._timezones:
+                default_tz = detected
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass
+
         default_tz_idx = 0
         for i, tz in enumerate(self._timezones):
-            if tz == "America/New_York":
+            if tz == default_tz:
                 default_tz_idx = i
                 break
         self._tz_dropdown.set_selected(default_tz_idx)
@@ -1101,6 +1138,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_name = self._make_summary_row(card, "Name")
         self._summary_username = self._make_summary_row(card, "Username")
+        self._summary_hostname = self._make_summary_row(card, "Hostname")
         self._summary_timezone = self._make_summary_row(card, "Timezone")
         self._summary_admin = self._make_summary_row(card, "Administrator")
         self._summary_root = self._make_summary_row(card, "Root password")
@@ -1307,8 +1345,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             signal_text = _("Weak")
 
         flags = ap.get_wpa_flags() | ap.get_rsn_flags()
+        rsn = ap.get_rsn_flags()
+        _sae_flag = getattr(NM.AP80211ApSecurityFlags, "KEY_MGMT_SAE", 0)
+        if _sae_flag and (rsn & _sae_flag):
+            security_text = _("WPA3")
+        elif flags != NM.AP80211ApSecurityFlags.NONE:
+            security_text = _("Secured")
+        else:
+            security_text = _("Open")
         secured = flags != NM.AP80211ApSecurityFlags.NONE
-        detail = "{} {}".format(signal_text, _("Secured") if secured else _("Open"))
+        detail = "{} {}".format(signal_text, security_text)
 
         detail_label = Gtk.Label(label=detail)
         detail_label.add_css_class("wifi-detail")
@@ -1331,13 +1377,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
             connect_btn = Gtk.Button(label=_("Connect"))
             connect_btn.add_css_class("create-button")
-            connect_btn.connect("clicked", lambda _, s=ssid, e=pw_entry: self._connect_to_ap(s, e.get_text(), False))
-            pw_entry.connect("activate", lambda _, s=ssid, e=pw_entry: self._connect_to_ap(s, e.get_text(), False))
+            connect_btn.connect("clicked", lambda _, s=ssid, e=pw_entry, a=ap: self._connect_to_ap(s, e.get_text(), False, a))
+            pw_entry.connect("activate", lambda _, s=ssid, e=pw_entry, a=ap: self._connect_to_ap(s, e.get_text(), False, a))
             pw_box.append(connect_btn)
         else:
             connect_btn = Gtk.Button(label=_("Connect"))
             connect_btn.add_css_class("create-button")
-            connect_btn.connect("clicked", lambda _, s=ssid: self._connect_to_ap(s, None, False))
+            connect_btn.connect("clicked", lambda _, s=ssid, a=ap: self._connect_to_ap(s, None, False, a))
             pw_box.append(connect_btn)
 
         row_box.append(pw_box)
@@ -1355,7 +1401,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # WiFi connection
     # ------------------------------------------------------------------
 
-    def _connect_to_ap(self, ssid: str, password: str | None, hidden: bool) -> None:
+    def _connect_to_ap(self, ssid: str, password: str | None, hidden: bool,
+                       ap: "NM.AccessPoint | None" = None) -> None:
         if self._nm_client is None or self._wifi_device is None:
             return
 
@@ -1387,7 +1434,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         if password:
             s_sec = NM.SettingWirelessSecurity.new()
-            s_sec.set_property("key-mgmt", "wpa-psk")
+
+            # Detect WPA3/SAE from the AP's RSN flags
+            key_mgmt = "wpa-psk"
+            if ap is not None:
+                rsn = ap.get_rsn_flags()
+                _sae_flag = getattr(NM.AP80211ApSecurityFlags, "KEY_MGMT_SAE", 0)
+                if _sae_flag and (rsn & _sae_flag):
+                    key_mgmt = "sae"
+
+            s_sec.set_property("key-mgmt", key_mgmt)
             s_sec.set_property("psk", password)
             conn.add_setting(s_sec)
 
@@ -1539,7 +1595,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return
 
         if self._current_page == PAGE_CONFIRM:
-            self._on_setup_clicked()
+            self._show_install_confirmation()
             return
 
         self._current_page += 1
@@ -1621,6 +1677,33 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if use_zswap and swap_gb == -1:
             self._set_status(_("Custom swap size must be a positive whole number (in GB)."))
             return False
+
+        if use_zswap:
+            drive_idx = self._drive_dropdown.get_selected()
+            if 0 <= drive_idx < len(self._drives):
+                size_str = self._drives[drive_idx].get("size", "")
+                try:
+                    if size_str.endswith("G"):
+                        drive_gb = float(size_str[:-1])
+                    elif size_str.endswith("T"):
+                        drive_gb = float(size_str[:-1]) * 1024
+                    elif size_str.endswith("M"):
+                        drive_gb = float(size_str[:-1]) / 1024
+                    else:
+                        drive_gb = None
+                except (ValueError, TypeError):
+                    drive_gb = None
+
+                if drive_gb is not None:
+                    available = drive_gb - 5  # Reserve ~5 GB for OS + boot + overhead
+                    if swap_gb > available:
+                        self._set_status(
+                            _("Swap size ({swap} GB) is too large for this drive. "
+                              "Maximum recommended: {max} GB.").format(
+                                swap=swap_gb, max=max(1, int(available)))
+                        )
+                        return False
+
         return True
 
     def _validate_account(self) -> bool:
@@ -1640,12 +1723,27 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return False
         if not USERNAME_RE.match(username):
             self._set_status(
-                _("Username must start with a lowercase letter and contain "
-                  "only lowercase letters, numbers, and hyphens.")
+                _("Username must start with a lowercase letter or underscore, contain "
+                  "only lowercase letters, numbers, underscores, and hyphens, "
+                  "and cannot end with a hyphen.")
             )
             return False
+        hostname = self._hostname_entry.get_text().strip()
+        if hostname:
+            if len(hostname) > 63:
+                self._set_status(_("Hostname must be 63 characters or fewer."))
+                return False
+            if not HOSTNAME_RE.match(hostname):
+                self._set_status(
+                    _("Hostname must contain only letters, numbers, and hyphens, "
+                      "and cannot start or end with a hyphen.")
+                )
+                return False
         if not password:
             self._set_status(_("Password is required."))
+            return False
+        if len(password) < 6:
+            self._set_status(_("Password must be at least 6 characters."))
             return False
         if password != confirm:
             self._set_status(_("Passwords do not match."))
@@ -1699,6 +1797,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Account
         self._summary_name.set_text(self._fullname_entry.get_text().strip())
         self._summary_username.set_text(self._username_entry.get_text().strip())
+        hostname = self._hostname_entry.get_text().strip() or f"{self._username_entry.get_text().strip()}-desktop"
+        self._summary_hostname.set_text(hostname)
         self._summary_timezone.set_text(self._get_selected_timezone())
         self._summary_admin.set_text(_("Yes") if self._admin_check.get_active() else _("No"))
         self._summary_root.set_text(
@@ -1797,20 +1897,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         target = self._setup_target_drive
         mount_point = "/mnt/sysroot"
 
-        # Find root partition (last partition on the target disk)
+        # Find root partition (largest partition on the target disk)
         try:
             result = subprocess.run(
-                ["lsblk", "-lnpo", "NAME,TYPE", f"/dev/{target}"],
+                ["lsblk", "-lnpbo", "NAME,TYPE,SIZE", f"/dev/{target}"],
                 capture_output=True, text=True, check=True, timeout=10,
             )
-            parts = [
-                line.split()[0]
-                for line in result.stdout.strip().splitlines()
-                if len(line.split()) >= 2 and line.split()[1] == "part"
-            ]
+            parts = []
+            for line in result.stdout.strip().splitlines():
+                fields = line.split()
+                if len(fields) >= 3 and fields[1] == "part":
+                    try:
+                        parts.append((fields[0], int(fields[2])))
+                    except ValueError:
+                        parts.append((fields[0], 0))
             if not parts:
                 return "No partitions found on target disk after install"
-            root_part = parts[-1]
+            root_part = max(parts, key=lambda p: p[1])[0]
         except subprocess.CalledProcessError as exc:
             return f"Failed to list partitions: {exc.stderr.strip() or exc}"
 
@@ -1993,6 +2096,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except OSError as exc:
             return f"Failed to configure timezone/locale: {exc}"
 
+        # Set hostname
+        hostname = self._setup_hostname
+        if not hostname:
+            hostname = f"{username}-desktop"
+        try:
+            (Path(deploy) / "etc" / "hostname").write_text(hostname + "\n")
+        except OSError as exc:
+            return f"Failed to set hostname: {exc}"
+
         return None
 
     def _step_copy_network(self) -> str | None:
@@ -2027,8 +2139,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         Path(dst).mkdir(parents=True, exist_ok=True)
 
-        # Copy shared infrastructure: repo (ostree object store), exports, runtimes
-        for subdir in ["repo", "exports", "runtime", ".changed"]:
+        # Copy shared infrastructure: repo (ostree object store), exports
+        for subdir in ["repo", "exports", ".changed"]:
             src_path = f"{src}/{subdir}"
             if not os.path.exists(src_path):
                 continue
@@ -2039,6 +2151,49 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 )
             except subprocess.CalledProcessError as exc:
                 return f"Failed to copy Flatpak data ({subdir}): {exc.stderr.strip() or exc}"
+
+        # Determine which runtimes are needed by selected apps
+        needed_runtimes: set[str] = set()
+        for app_id in selected_ids:
+            metadata_path = f"{src}/app/{app_id}/current/active/metadata"
+            try:
+                with open(metadata_path) as f:
+                    for line in f:
+                        if line.startswith("runtime="):
+                            runtime_ref = line.strip().split("=", 1)[1]
+                            runtime_name = runtime_ref.split("/")[0]
+                            needed_runtimes.add(runtime_name)
+                            break
+            except OSError:
+                pass  # If metadata unreadable, fallback copies all runtimes
+
+        # Copy only needed runtimes (or all if detection failed)
+        runtime_src = f"{src}/runtime"
+        runtime_dst = f"{dst}/runtime"
+        if os.path.isdir(runtime_src):
+            if needed_runtimes:
+                os.makedirs(runtime_dst, exist_ok=True)
+                for rt_name in os.listdir(runtime_src):
+                    if rt_name in needed_runtimes:
+                        try:
+                            subprocess.run(
+                                ["rsync", "-a",
+                                 f"{runtime_src}/{rt_name}/",
+                                 f"{runtime_dst}/{rt_name}/"],
+                                check=True, capture_output=True, text=True,
+                                timeout=600,
+                            )
+                        except subprocess.CalledProcessError as exc:
+                            return f"Failed to copy runtime {rt_name}: {exc.stderr.strip() or exc}"
+            else:
+                # Fallback: couldn't determine runtimes, copy everything
+                try:
+                    subprocess.run(
+                        ["rsync", "-a", f"{runtime_src}/", f"{runtime_dst}/"],
+                        check=True, capture_output=True, text=True, timeout=600,
+                    )
+                except subprocess.CalledProcessError as exc:
+                    return f"Failed to copy Flatpak runtimes: {exc.stderr.strip() or exc}"
 
         # Copy only selected app directories
         app_src = f"{src}/app"
@@ -2143,6 +2298,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Account page
         self._setup_fullname = self._fullname_entry.get_text().strip()
         self._setup_username = self._username_entry.get_text().strip()
+        self._setup_hostname = self._hostname_entry.get_text().strip()
         self._setup_password = self._password_entry.get_text()
 
         # System page
@@ -2280,12 +2436,37 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._current_page = PAGE_CONFIRM
         self._update_navigation()
 
+    def _show_install_confirmation(self) -> None:
+        """Show a confirmation dialog before starting the destructive install."""
+        dialog = Gtk.AlertDialog()
+        dialog.set_message(_("Erase disk and install?"))
+        dialog.set_detail(
+            _("All data on {drive} will be permanently erased. "
+              "This cannot be undone.").format(
+                drive=self._get_selected_drive_display())
+        )
+        dialog.set_buttons([_("Cancel"), _("Erase and Install")])
+        dialog.set_cancel_button(0)
+        dialog.set_default_button(0)
+        dialog.choose(self, None, self._on_confirm_dialog_response)
+
+    def _on_confirm_dialog_response(self, dialog: Gtk.AlertDialog,
+                                     result: Gio.AsyncResult) -> None:
+        """Handle the confirmation dialog response."""
+        try:
+            response = dialog.choose_finish(result)
+        except Exception:
+            return  # Dialog was dismissed
+        if response == 1:  # "Erase and Install" button
+            self._on_setup_clicked()
+
     def _do_reboot(self) -> None:
         try:
             subprocess.run(["systemctl", "reboot"], timeout=10)
         except (subprocess.TimeoutExpired, OSError):
             # Fallback: direct reboot syscall via /sbin/reboot
             try:
+                os.sync()  # Flush filesystem buffers before forced reboot
                 subprocess.run(["/sbin/reboot", "-f"], timeout=5)
             except Exception:
                 self._progress_title.set_text(_("Reboot failed \u2014 please restart manually."))

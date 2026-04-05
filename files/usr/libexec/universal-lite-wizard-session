@@ -23,4 +23,17 @@ else
     export GSK_RENDERER=gl
 fi
 
+# Provide a debug terminal shortcut (Ctrl+Alt+T) in wizard mode
+mkdir -p /root/.config/labwc
+cat > /root/.config/labwc/rc.xml <<'RCEOF'
+<?xml version="1.0"?>
+<labwc_config>
+  <keyboard>
+    <keybind key="C-A-T">
+      <action name="Execute" command="foot"/>
+    </keybind>
+  </keyboard>
+</labwc_config>
+RCEOF
+
 exec labwc
