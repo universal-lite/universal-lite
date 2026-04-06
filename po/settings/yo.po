@@ -85,7 +85,7 @@ msgstr "Tẹ ọ̀rọ̀ aṣínà rẹ sí."
 
 #: ../files/usr/bin/universal-lite-greeter:582
 msgid "Authentication failed"
-msgstr "Ìfẹ̀rílàtì kùnà"
+msgstr "Ìjẹ́rísí kùnà"
 
 #: ../files/usr/bin/universal-lite-greeter:593
 msgid "Unexpected authentication response."
@@ -93,7 +93,7 @@ msgstr "Ìdáhùn ìfẹ̀rílàtì àìròtẹ́lẹ̀."
 
 #: ../files/usr/bin/universal-lite-greeter:597
 msgid "Multi-step auth not supported."
-msgstr "Ìfẹ̀rílàtì oníìgbésẹ̀ pọ̀ kò ní àtìlẹ́yìn."
+msgstr "Ìjẹ́rísí oníìgbésẹ̀ pọ̀ kò ní àtìlẹ́yìn."
 
 #: ../files/usr/bin/universal-lite-greeter:602
 msgid "Incorrect password."
@@ -336,7 +336,7 @@ msgstr "Pa àwọn eré ìṣípayá tí nínú ojú-ìbáṣepọ̀ náà"
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
 msgid "Theme"
-msgstr "Àkótó ìrísí"
+msgstr "Àkórí"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
@@ -421,7 +421,7 @@ msgstr "Ṣe ìsọpọ̀"
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 msgid "Wireless"
-msgstr "Aláìlówó"
+msgstr "Wáyàlẹ́sì"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 msgid "Device"
@@ -597,13 +597,13 @@ msgstr "Ìwọ̀n"
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 msgid "Resolution"
-msgstr "Ìṣẹ̀dá àwòrán"
+msgstr "Ìpinnu àwòrán"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:61
 msgid "Resolution & Refresh Rate"
-msgstr "Ìṣẹ̀dá àwòrán àti Ìwọ̀n ìmúdójúìwọ̀n"
+msgstr "Ìpinnu àwòrán àti Ìwọ̀n ìmúdójúìwọ̀n"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
 msgid "Refresh"
@@ -632,7 +632,7 @@ msgstr "Kò sí àfihàn tí a rí"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:81
 msgid "Resolution and refresh rate"
-msgstr "Ìṣẹ̀dá àwòrán àti ìwọ̀n ìmúdójúìwọ̀n"
+msgstr "Ìpinnu àwòrán àti ìwọ̀n ìmúdójúìwọ̀n"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Reduce blue light to help with sleep"
@@ -1287,7 +1287,7 @@ msgstr "Nígbà tí a bá ti àgó"
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
 msgid "Output"
-msgstr "Èsì jáde"
+msgstr "Ohun jáde"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
@@ -1303,7 +1303,7 @@ msgstr "Pa ohùn dé"
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
 msgid "Input"
-msgstr "Èsì wọlé"
+msgstr "Ohun wọlé"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
