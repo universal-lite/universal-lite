@@ -1,0 +1,1386 @@
+# Japanese translations for universal-lite-settings package.
+# Copyright (C) 2026 THE universal-lite-settings'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the universal-lite-settings package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: universal-lite-settings\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-05 13:06-0400\n"
+"PO-Revision-Date: 2026-04-05 13:06-0400\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: ../files/usr/bin/universal-lite-greeter:311
+msgid "Login"
+msgstr "ログイン"
+
+#: ../files/usr/bin/universal-lite-greeter:368
+msgid "Session"
+msgstr "セッション"
+
+#: ../files/usr/bin/universal-lite-greeter:394
+msgid "Username"
+msgstr "ユーザー名"
+
+#: ../files/usr/bin/universal-lite-greeter:403
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:191
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:238
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+msgid "Password"
+msgstr "パスワード"
+
+#: ../files/usr/bin/universal-lite-greeter:465
+#, python-brace-format
+msgid "Welcome back, {username}"
+msgstr "おかえりなさい、{username}"
+
+#: ../files/usr/bin/universal-lite-greeter:471
+msgid "Log In"
+msgstr "ログイン"
+
+#: ../files/usr/bin/universal-lite-greeter:472
+#, python-brace-format
+msgid "Not {username}?"
+msgstr "{username} さんではありませんか？"
+
+#: ../files/usr/bin/universal-lite-greeter:488
+msgid "Log in"
+msgstr "ログイン"
+
+#: ../files/usr/bin/universal-lite-greeter:494
+msgid "Next"
+msgstr "次へ"
+
+#: ../files/usr/bin/universal-lite-greeter:507
+#: ../files/usr/bin/universal-lite-greeter:522
+#: ../files/usr/bin/universal-lite-greeter:571
+#, python-brace-format
+msgid "Connection error: {exc}"
+msgstr "接続エラー: {exc}"
+
+#: ../files/usr/bin/universal-lite-greeter:531
+#: ../files/usr/bin/universal-lite-greeter:536
+msgid "Authentication error"
+msgstr "認証エラー"
+
+#: ../files/usr/bin/universal-lite-greeter:546
+msgid "Unknown error"
+msgstr "不明なエラー"
+
+#: ../files/usr/bin/universal-lite-greeter:555
+msgid "Enter a username."
+msgstr "ユーザー名を入力してください。"
+
+#: ../files/usr/bin/universal-lite-greeter:563
+msgid "Enter your password."
+msgstr "パスワードを入力してください。"
+
+#: ../files/usr/bin/universal-lite-greeter:582
+msgid "Authentication failed"
+msgstr "認証に失敗しました"
+
+#: ../files/usr/bin/universal-lite-greeter:593
+msgid "Unexpected authentication response."
+msgstr "予期しない認証応答です。"
+
+#: ../files/usr/bin/universal-lite-greeter:597
+msgid "Multi-step auth not supported."
+msgstr "多段階認証には対応していません。"
+
+#: ../files/usr/bin/universal-lite-greeter:602
+msgid "Incorrect password."
+msgstr "パスワードが正しくありません。"
+
+#: ../files/usr/bin/universal-lite-greeter:604
+msgid "Login failed."
+msgstr "ログインに失敗しました。"
+
+#: ../files/usr/bin/universal-lite-greeter:607
+msgid "Unexpected response from login service."
+msgstr "ログインサービスから予期しない応答がありました。"
+
+#: ../files/usr/bin/universal-lite-greeter:616
+#, python-brace-format
+msgid "Failed to start session: {exc}"
+msgstr "セッションの開始に失敗しました: {exc}"
+
+#: ../files/usr/bin/universal-lite-greeter:624
+msgid "Failed to start session."
+msgstr "セッションの開始に失敗しました。"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:17
+msgid "Universal-Lite Settings"
+msgstr "Universal-Lite 設定"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:46
+msgid "Search settings..."
+msgstr "設定を検索..."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:100
+#, python-brace-format
+msgid "Failed to load {label}"
+msgstr "{label} の読み込みに失敗しました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:26
+msgid "Appearance"
+msgstr "外観"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:27
+msgid "Display"
+msgstr "ディスプレイ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:286
+msgid "Network"
+msgstr "ネットワーク"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:39
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+msgid "Panel"
+msgstr "パネル"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:31
+msgid "Mouse & Touchpad"
+msgstr "マウスとタッチパッド"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:32
+msgid "Keyboard"
+msgstr "キーボード"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:33
+msgid "Sound"
+msgstr "サウンド"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:34
+msgid "Power & Lock"
+msgstr "電源とロック"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
+msgid "Accessibility"
+msgstr "アクセシビリティ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
+msgid "Date & Time"
+msgstr "日付と時刻"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:76
+msgid "Users"
+msgstr "ユーザー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:23
+msgid "Language & Region"
+msgstr "言語と地域"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:39
+msgid "Default Apps"
+msgstr "既定のアプリ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:31
+msgid "About"
+msgstr "このシステムについて"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:41
+msgid "Operating System"
+msgstr "オペレーティングシステム"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:42
+msgid "Hostname"
+msgstr "ホスト名"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:52
+msgid "Processor"
+msgstr "プロセッサー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:62
+msgid "Memory"
+msgstr "メモリ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:68
+msgid "Disk"
+msgstr "ディスク"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:89
+msgid "Desktop"
+msgstr "デスクトップ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:81
+msgid "Graphics"
+msgstr "グラフィックス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+msgid "GPU"
+msgstr "GPU"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:92
+msgid "Updates"
+msgstr "アップデート"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:95
+msgid "Click to check for updates"
+msgstr "クリックしてアップデートを確認"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:98
+msgid "Check for Updates"
+msgstr "アップデートを確認"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:77
+msgid "Checking..."
+msgstr "確認中..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:117
+#, python-brace-format
+msgid "Update available: {version}"
+msgstr "アップデートがあります: {version}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:119
+msgid "System is up to date"
+msgstr "システムは最新です"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:121
+msgid "Could not check for updates"
+msgstr "アップデートを確認できませんでした"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
+msgid "Default (24px)"
+msgstr "既定 (24px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
+msgid "Large (32px)"
+msgstr "大 (32px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
+msgid "Larger (48px)"
+msgstr "特大 (48px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+msgid "Large text"
+msgstr "大きな文字"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
+msgid "Cursor size"
+msgstr "カーソルサイズ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+msgid "High contrast"
+msgstr "ハイコントラスト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+msgid "Reduce motion"
+msgstr "視覚効果を減らす"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+msgid "Increases font size for better readability"
+msgstr "読みやすさのためにフォントサイズを大きくします"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+msgid "Forces dark theme with stronger borders"
+msgstr "強調された境界線でダークテーマを強制します"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+msgid "Disables animations throughout the interface"
+msgstr "インターフェース全体のアニメーションを無効にします"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
+msgid "Theme"
+msgstr "テーマ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+msgid "Light"
+msgstr "ライト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+msgid "Dark"
+msgstr "ダーク"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
+msgid "Accent color"
+msgstr "アクセントカラー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+msgid "Color"
+msgstr "カラー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+msgid "Font size"
+msgstr "フォントサイズ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+msgid "Font"
+msgstr "フォント"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
+msgid "Wallpaper"
+msgstr "壁紙"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+msgid "Background"
+msgstr "背景"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:41
+msgid "Theme is set to Dark by High Contrast mode"
+msgstr "ハイコントラストモードによりテーマはダークに設定されています"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Small"
+msgstr "小"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Default"
+msgstr "既定"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Large"
+msgstr "大"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Larger"
+msgstr "特大"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+msgid "Affects all text throughout the interface"
+msgstr "インターフェース全体の文字サイズに影響します"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:122
+msgid "Choose Wallpaper"
+msgstr "壁紙を選択"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:124
+msgid "Images"
+msgstr "画像"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
+msgid "Custom..."
+msgstr "カスタム..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
+msgid "Pair"
+msgstr "ペアリング"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+msgid "Wireless"
+msgstr "ワイヤレス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+msgid "Device"
+msgstr "デバイス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
+msgid "No Bluetooth adapter found"
+msgstr "Bluetooth アダプターが見つかりません"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:61
+msgid "Paired Devices"
+msgstr "ペアリング済みデバイス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
+msgid "Available Devices"
+msgstr "利用可能なデバイス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
+msgid "Search for devices"
+msgstr "デバイスを検索"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:78
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:81
+msgid "Advanced..."
+msgstr "詳細設定..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
+msgid "Scanning..."
+msgstr "スキャン中..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:156
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+msgid "Connected"
+msgstr "接続済み"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
+msgid "Disconnect"
+msgstr "切断"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:199
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:246
+msgid "Connect"
+msgstr "接続"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:159
+msgid "Forget"
+msgstr "削除"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
+msgid "Pairing..."
+msgstr "ペアリング中..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+msgid "Paired successfully"
+msgstr "ペアリングに成功しました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#, python-brace-format
+msgid "Pairing failed: {message}"
+msgstr "ペアリングに失敗しました: {message}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+msgid "Timezone"
+msgstr "タイムゾーン"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+msgid "Automatic time"
+msgstr "自動時刻設定"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+msgid "NTP"
+msgstr "NTP"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+msgid "24-hour clock"
+msgstr "24時間表示"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
+msgid "e.g. America/New_York"
+msgstr "例: America/New_York"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+msgid "Press Enter to apply"
+msgstr "Enter キーを押して適用"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+msgid "Sync clock via network (NTP)"
+msgstr "ネットワーク経由で時刻を同期 (NTP)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+msgid "Use 24-hour time format"
+msgstr "24時間形式を使用する"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
+msgid "Failed to set timezone"
+msgstr "タイムゾーンの設定に失敗しました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
+msgid "Invalid timezone"
+msgstr "無効なタイムゾーン"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
+msgid "Web Browser"
+msgstr "ウェブブラウザー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
+msgid "File Manager"
+msgstr "ファイルマネージャー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
+msgid "Terminal"
+msgstr "端末"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
+msgid "Text Editor"
+msgstr "テキストエディター"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+msgid "Image Viewer"
+msgstr "画像ビューアー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+msgid "PDF Viewer"
+msgstr "PDF ビューアー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
+msgid "Media Player"
+msgstr "メディアプレーヤー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+msgid "Email Client"
+msgstr "メールクライアント"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:35
+msgid "Default Applications"
+msgstr "既定のアプリケーション"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+msgid "Sunset to Sunrise"
+msgstr "日の入りから日の出まで"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+msgid "Custom"
+msgstr "カスタム"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:46
+msgid "Display Scale"
+msgstr "表示スケール"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+msgid "Scale"
+msgstr "拡大率"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+msgid "Resolution"
+msgstr "解像度"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:61
+msgid "Resolution & Refresh Rate"
+msgstr "解像度とリフレッシュレート"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+msgid "Refresh"
+msgstr "リフレッシュレート"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:84
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+msgid "Night Light"
+msgstr "ナイトライト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+msgid "Temperature"
+msgstr "色温度"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+msgid "Blue light"
+msgstr "ブルーライト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:64
+msgid "No displays detected"
+msgstr "ディスプレイが検出されません"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:81
+msgid "Resolution and refresh rate"
+msgstr "解像度とリフレッシュレート"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+msgid "Reduce blue light to help with sleep"
+msgstr "ブルーライトを軽減して睡眠を助けます"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+msgid "3500K (warm) to 6500K (cool)"
+msgstr "3500K（暖色）～ 6500K（寒色）"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:120
+msgid "Schedule"
+msgstr "スケジュール"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:137
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:147
+msgid "HH:MM"
+msgstr "HH:MM"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:143
+msgid "Start time"
+msgstr "開始時刻"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:153
+msgid "End time"
+msgstr "終了時刻"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:167
+msgid "Advanced"
+msgstr "詳細設定"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:168
+msgid "Open wdisplays"
+msgstr "wdisplays を開く"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+msgid "Advanced display settings"
+msgstr "ディスプレイの詳細設定"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+msgid "Arrange and configure displays visually"
+msgstr "ディスプレイの配置と設定を視覚的に行えます"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:204
+msgid "Confirm Scale"
+msgstr "拡大率の確認"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:215
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:241
+#, python-brace-format
+msgid ""
+"Keep this display scale?\n"
+"Reverting in {seconds}s..."
+msgstr ""
+"この表示スケールを維持しますか？\n"
+"{seconds}秒後に元に戻します..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:342
+msgid "Revert"
+msgstr "元に戻す"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:348
+msgid "Keep"
+msgstr "維持"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:325
+msgid "Confirm Resolution"
+msgstr "解像度の確認"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:336
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:369
+#, python-brace-format
+msgid ""
+"Keep this resolution?\n"
+"Reverting in {seconds}s..."
+msgstr ""
+"この解像度を維持しますか？\n"
+"{seconds}秒後に元に戻します..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:232
+msgid "Layout"
+msgstr "レイアウト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:284
+msgid "Keyboard layout"
+msgstr "キーボードレイアウト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+msgid "Variant"
+msgstr "バリアント"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:289
+msgid "Repeat"
+msgstr "リピート"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:298
+msgid "Repeat delay"
+msgstr "リピート遅延"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:307
+msgid "Repeat rate"
+msgstr "リピート速度"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Caps Lock"
+msgstr "Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Caps Lock behavior"
+msgstr "Caps Lock の動作"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Remap"
+msgstr "キー割り当て"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Shortcuts"
+msgstr "ショートカット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+msgid "Keyboard shortcuts"
+msgstr "キーボードショートカット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+msgid "Keybinding"
+msgstr "キーバインド"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Hotkey"
+msgstr "ホットキー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Key combo"
+msgstr "キーの組み合わせ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:249
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:258
+msgid "(Default)"
+msgstr "(既定)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
+msgid "Caps Lock Behavior"
+msgstr "Caps Lock の動作"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Ctrl"
+msgstr "Ctrl"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Escape"
+msgstr "Escape"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Disabled"
+msgstr "無効"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+msgid "Caps Lock key"
+msgstr "Caps Lock キー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+msgid "Remap Caps Lock to another function"
+msgstr "Caps Lock を別の機能に割り当てます"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
+msgid "Keyboard Shortcuts"
+msgstr "キーボードショートカット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:333
+msgid "Reset All Shortcuts"
+msgstr "すべてのショートカットをリセット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
+msgid "Reset to default"
+msgstr "既定にリセット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+msgid "Press new shortcut..."
+msgstr "新しいショートカットを押してください..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:489
+msgid "Shortcut Conflict"
+msgstr "ショートカットの競合"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:491
+#, python-brace-format
+msgid ""
+"\"{key}\" is already assigned to \"{conflict}\".\n"
+"\n"
+"Reassign it to \"{target}\"?"
+msgstr ""
+"「{key}」は既に「{conflict}」に割り当てられています。\n"
+"\n"
+"「{target}」に再割り当てしますか？"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:196
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+msgid "Reassign"
+msgstr "再割り当て"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+msgid "Language"
+msgstr "言語"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+msgid "Locale"
+msgstr "ロケール"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+msgid "Regional format"
+msgstr "地域の形式"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:27
+msgid "Changes take effect after logging out"
+msgstr "変更はログアウト後に反映されます"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:45
+msgid "System language"
+msgstr "システム言語"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+msgid "Regional formats"
+msgstr "地域の形式"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+msgid "Date, number, and currency format"
+msgstr "日付、数値、通貨の形式"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:25
+msgid "Touchpad"
+msgstr "タッチパッド"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
+msgid "Tap to click"
+msgstr "タップでクリック"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:59
+msgid "Natural scrolling"
+msgstr "ナチュラルスクロール"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
+msgid "Pointer speed"
+msgstr "ポインター速度"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:51
+msgid "Scroll speed"
+msgstr "スクロール速度"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
+msgid "Mouse"
+msgstr "マウス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
+msgid "Acceleration"
+msgstr "加速"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+msgid "Content moves with your fingers"
+msgstr "指の動きに合わせてコンテンツが移動します"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+msgid "Adaptive"
+msgstr "アダプティブ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+msgid "Flat"
+msgstr "フラット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:39
+msgid "WiFi"
+msgstr "WiFi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+msgid "Hidden network"
+msgstr "非公開ネットワーク"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:76
+msgid "Wired"
+msgstr "有線"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "Ethernet"
+msgstr "イーサネット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "Connection"
+msgstr "接続"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "IP address"
+msgstr "IP アドレス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:62
+msgid "Scan"
+msgstr "スキャン"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:65
+msgid "Connect to Hidden Network..."
+msgstr "非公開ネットワークに接続..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:71
+msgid "Active Connection"
+msgstr "アクティブな接続"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:174
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:254
+#, python-brace-format
+msgid "Connecting to {ssid}..."
+msgstr "{ssid} に接続中..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:179
+#, python-brace-format
+msgid "Connect to {ssid}"
+msgstr "{ssid} に接続"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:219
+msgid "Connect to Hidden Network"
+msgstr "非公開ネットワークに接続"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:230
+msgid "Network name (SSID)"
+msgstr "ネットワーク名 (SSID)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "None"
+msgstr "なし"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "WPA/WPA2"
+msgstr "WPA/WPA2"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "WPA3"
+msgstr "WPA3"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:234
+msgid "Security"
+msgstr "セキュリティ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:269
+msgid "Connected successfully"
+msgstr "接続に成功しました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:284
+msgid "Not connected"
+msgstr "未接続"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:287
+msgid "Type"
+msgstr "種類"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:288
+msgid "IP Address"
+msgstr "IP アドレス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
+msgid "Gateway"
+msgstr "ゲートウェイ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:290
+msgid "DNS"
+msgstr "DNS"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+msgid "No wired adapter detected"
+msgstr "有線アダプターが検出されません"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+msgid "Disconnected"
+msgstr "切断済み"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+msgid "Apps"
+msgstr "アプリ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+msgid "Window list"
+msgstr "ウィンドウリスト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
+msgid "Volume"
+msgstr "音量"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+msgid "Brightness"
+msgstr "明るさ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+msgid "Battery"
+msgstr "バッテリー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+msgid "Clock"
+msgstr "時計"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
+msgid "Power"
+msgstr "電源"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+msgid "System tray"
+msgstr "システムトレイ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Left"
+msgstr "左"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+msgid "Center"
+msgstr "中央"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Right"
+msgstr "右"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Top"
+msgstr "上"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Bottom"
+msgstr "下"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
+msgid "Position"
+msgstr "位置"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
+msgid "Density"
+msgstr "密度"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+msgid "Compact"
+msgstr "コンパクト"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
+msgid "Module Layout"
+msgstr "モジュール配置"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+msgid "Modules"
+msgstr "モジュール"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+msgid "Pinned Apps"
+msgstr "ピン留めしたアプリ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+msgid "Pinned"
+msgstr "ピン留め"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+msgid "Normal"
+msgstr "標準"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
+msgid "Reset layout to defaults"
+msgstr "レイアウトを既定にリセット"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
+#, python-brace-format
+msgid "Move to {section}"
+msgstr "{section} に移動"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+msgid "Move up in section"
+msgstr "セクション内で上に移動"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
+msgid "Move down in section"
+msgstr "セクション内で下に移動"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
+msgid "Add pinned app"
+msgstr "ピン留めしたアプリを追加"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
+msgid "Remove"
+msgstr "削除"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
+msgid "Add Pinned App"
+msgstr "ピン留めしたアプリを追加"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+msgid "Search apps…"
+msgstr "アプリを検索…"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
+msgid "Add"
+msgstr "追加"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "1 minute"
+msgstr "1分"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "2 minutes"
+msgstr "2分"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "5 minutes"
+msgstr "5分"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "10 minutes"
+msgstr "10分"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "15 minutes"
+msgstr "15分"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "30 minutes"
+msgstr "30分"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "Never"
+msgstr "なし"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
+msgid "Balanced"
+msgstr "バランス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+msgid "Power Saver"
+msgstr "省電力"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+msgid "Performance"
+msgstr "パフォーマンス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+msgid "Suspend"
+msgstr "サスペンド"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
+msgid "Lock"
+msgstr "ロック"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:26
+msgid "Do Nothing"
+msgstr "何もしない"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:47
+msgid "Lock & Display"
+msgstr "ロックとディスプレイ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+msgid "Lock screen"
+msgstr "ロック画面"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+msgid "Display off"
+msgstr "ディスプレイオフ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
+msgid "Power Profile"
+msgstr "電源プロファイル"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
+msgid "Suspend on Idle"
+msgstr "アイドル時にサスペンド"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+msgid "Idle"
+msgstr "アイドル"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:106
+msgid "Lid Close Behavior"
+msgstr "カバーを閉じたときの動作"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+msgid "Lid"
+msgstr "カバー"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:59
+msgid "Lock screen after"
+msgstr "画面ロックまでの時間"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
+msgid "Turn off display after"
+msgstr "ディスプレイオフまでの時間"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
+msgid "Suspend after"
+msgstr "サスペンドまでの時間"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
+msgid "When lid is closed"
+msgstr "カバーを閉じたとき"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
+msgid "Output"
+msgstr "出力"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
+msgid "Output device"
+msgstr "出力デバイス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
+msgid "Mute"
+msgstr "ミュート"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
+msgid "Input"
+msgstr "入力"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
+msgid "Input device"
+msgstr "入力デバイス"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+msgid "Microphone"
+msgstr "マイク"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
+msgid "(No output devices)"
+msgstr "(出力デバイスがありません)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
+msgid "(No input devices)"
+msgstr "(入力デバイスがありません)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:97
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+msgid "Display name"
+msgstr "表示名"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+msgid "Auto-login"
+msgstr "自動ログイン"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+msgid "Account"
+msgstr "アカウント"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:82
+msgid "Could not connect to AccountsService"
+msgstr "AccountsService に接続できませんでした"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:103
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:147
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:160
+msgid "Change Password"
+msgstr "パスワードを変更"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+msgid "Set a new password for your account"
+msgstr "アカウントの新しいパスワードを設定します"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+msgid "Automatic login"
+msgstr "自動ログイン"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+msgid "Log in without a password at startup"
+msgstr "起動時にパスワードなしでログインします"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:166
+msgid "New password"
+msgstr "新しいパスワード"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:171
+msgid "Confirm password"
+msgstr "パスワードを確認"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:185
+msgid "Apply"
+msgstr "適用"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:192
+msgid "Password cannot be empty"
+msgstr "パスワードを空にすることはできません"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:195
+msgid "Passwords do not match"
+msgstr "パスワードが一致しません"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:207
+msgid "Failed to set password"
+msgstr "パスワードの設定に失敗しました"

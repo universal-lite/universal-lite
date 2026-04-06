@@ -1,0 +1,1385 @@
+# Yoruba translations for universal-lite-settings package.
+# Copyright (C) 2026 THE universal-lite-settings'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the universal-lite-settings package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: universal-lite-settings\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-05 13:06-0400\n"
+"PO-Revision-Date: 2026-04-05 13:06-0400\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: yo\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../files/usr/bin/universal-lite-greeter:311
+msgid "Login"
+msgstr "Wọlé"
+
+#: ../files/usr/bin/universal-lite-greeter:368
+msgid "Session"
+msgstr "Àkókò ìṣàmúlò"
+
+#: ../files/usr/bin/universal-lite-greeter:394
+msgid "Username"
+msgstr "Orúkọ olùmúlò"
+
+#: ../files/usr/bin/universal-lite-greeter:403
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:191
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:238
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+msgid "Password"
+msgstr "Ọ̀rọ̀ aṣínà"
+
+#: ../files/usr/bin/universal-lite-greeter:465
+#, python-brace-format
+msgid "Welcome back, {username}"
+msgstr "Ẹ kú àbọ̀, {username}"
+
+#: ../files/usr/bin/universal-lite-greeter:471
+msgid "Log In"
+msgstr "Wọlé"
+
+#: ../files/usr/bin/universal-lite-greeter:472
+#, python-brace-format
+msgid "Not {username}?"
+msgstr "Kì í ṣe {username}?"
+
+#: ../files/usr/bin/universal-lite-greeter:488
+msgid "Log in"
+msgstr "Wọlé"
+
+#: ../files/usr/bin/universal-lite-greeter:494
+msgid "Next"
+msgstr "Tókàn"
+
+#: ../files/usr/bin/universal-lite-greeter:507
+#: ../files/usr/bin/universal-lite-greeter:522
+#: ../files/usr/bin/universal-lite-greeter:571
+#, python-brace-format
+msgid "Connection error: {exc}"
+msgstr "Àṣìṣe ìsopọ̀: {exc}"
+
+#: ../files/usr/bin/universal-lite-greeter:531
+#: ../files/usr/bin/universal-lite-greeter:536
+msgid "Authentication error"
+msgstr "Àṣìṣe ìfẹ̀rílàtì"
+
+#: ../files/usr/bin/universal-lite-greeter:546
+msgid "Unknown error"
+msgstr "Àṣìṣe àìmọ̀"
+
+#: ../files/usr/bin/universal-lite-greeter:555
+msgid "Enter a username."
+msgstr "Tẹ orúkọ olùmúlò sí."
+
+#: ../files/usr/bin/universal-lite-greeter:563
+msgid "Enter your password."
+msgstr "Tẹ ọ̀rọ̀ aṣínà rẹ sí."
+
+#: ../files/usr/bin/universal-lite-greeter:582
+msgid "Authentication failed"
+msgstr "Ìjẹ́rísí kùnà"
+
+#: ../files/usr/bin/universal-lite-greeter:593
+msgid "Unexpected authentication response."
+msgstr "Ìdáhùn ìfẹ̀rílàtì àìròtẹ́lẹ̀."
+
+#: ../files/usr/bin/universal-lite-greeter:597
+msgid "Multi-step auth not supported."
+msgstr "Ìjẹ́rísí oníìgbésẹ̀ pọ̀ kò ní àtìlẹ́yìn."
+
+#: ../files/usr/bin/universal-lite-greeter:602
+msgid "Incorrect password."
+msgstr "Ọ̀rọ̀ aṣínà kò tọ́."
+
+#: ../files/usr/bin/universal-lite-greeter:604
+msgid "Login failed."
+msgstr "Wíwọlé kùnà."
+
+#: ../files/usr/bin/universal-lite-greeter:607
+msgid "Unexpected response from login service."
+msgstr "Ìdáhùn àìròtẹ́lẹ̀ láti iṣẹ́ ìwọlé."
+
+#: ../files/usr/bin/universal-lite-greeter:616
+#, python-brace-format
+msgid "Failed to start session: {exc}"
+msgstr "Kò le bẹ̀rẹ̀ àkókò ìṣàmúlò: {exc}"
+
+#: ../files/usr/bin/universal-lite-greeter:624
+msgid "Failed to start session."
+msgstr "Kò le bẹ̀rẹ̀ àkókò ìṣàmúlò."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:17
+msgid "Universal-Lite Settings"
+msgstr "Ètò Universal-Lite"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:46
+msgid "Search settings..."
+msgstr "Ṣàwárí ètò..."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:100
+#, python-brace-format
+msgid "Failed to load {label}"
+msgstr "Kò le ṣí {label}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:26
+msgid "Appearance"
+msgstr "Ìrísí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:27
+msgid "Display"
+msgstr "Àfihàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:286
+msgid "Network"
+msgstr "Nẹ́tíwọ̀ọ̀kì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:39
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+msgid "Panel"
+msgstr "Pánẹ́ẹ̀lì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:31
+msgid "Mouse & Touchpad"
+msgstr "Ẹkú àti Pádì ìfọwọ́kàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:32
+msgid "Keyboard"
+msgstr "Bọ́dù pípè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:33
+msgid "Sound"
+msgstr "Ohùn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:34
+msgid "Power & Lock"
+msgstr "Agbára àti Títì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
+msgid "Accessibility"
+msgstr "Ìráyè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
+msgid "Date & Time"
+msgstr "Ọjọ́ àti Àkókò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:76
+msgid "Users"
+msgstr "Àwọn olùmúlò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:23
+msgid "Language & Region"
+msgstr "Èdè àti Àgbègbè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:39
+msgid "Default Apps"
+msgstr "Àwọn ohun èlò ìpilẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:31
+msgid "About"
+msgstr "Nípa"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:41
+msgid "Operating System"
+msgstr "Ètò ìṣiṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:42
+msgid "Hostname"
+msgstr "Orúkọ olùgbàlejò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:52
+msgid "Processor"
+msgstr "Ẹ̀rọ ìṣiṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:62
+msgid "Memory"
+msgstr "Ìrántí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:68
+msgid "Disk"
+msgstr "Díìsì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:89
+msgid "Desktop"
+msgstr "Ojú-iṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:81
+msgid "Graphics"
+msgstr "Àwòrán"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+msgid "GPU"
+msgstr "GPU"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:92
+msgid "Updates"
+msgstr "Ìmúdójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:95
+msgid "Click to check for updates"
+msgstr "Tẹ láti ṣàyẹ̀wò ìmúdójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:98
+msgid "Check for Updates"
+msgstr "Ṣàyẹ̀wò ìmúdójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:77
+msgid "Checking..."
+msgstr "Ń ṣàyẹ̀wò..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:117
+#, python-brace-format
+msgid "Update available: {version}"
+msgstr "Ìmúdójúìwọ̀n wà: {version}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:119
+msgid "System is up to date"
+msgstr "Ètò ti dójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:121
+msgid "Could not check for updates"
+msgstr "Kò le ṣàyẹ̀wò ìmúdójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
+msgid "Default (24px)"
+msgstr "Ìpilẹ̀ (24px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
+msgid "Large (32px)"
+msgstr "Ńlá (32px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
+msgid "Larger (48px)"
+msgstr "Tóbi jù (48px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+msgid "Large text"
+msgstr "Ọ̀rọ̀ ńlá"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
+msgid "Cursor size"
+msgstr "Ìwọ̀n atọ́ka"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+msgid "High contrast"
+msgstr "Ìyàtọ̀ gíga"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+msgid "Reduce motion"
+msgstr "Dín ìṣípò kù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+msgid "Increases font size for better readability"
+msgstr "Mú ìwọ̀n fọ́ǹtì pọ̀ sí i fún kíkà tó dára jù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+msgid "Forces dark theme with stronger borders"
+msgstr "Fi ìpele dúdú lélẹ̀ pẹ̀lú àlà tó lágbára jù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+msgid "Disables animations throughout the interface"
+msgstr "Pa àwọn eré ìṣípayá tí nínú ojú-ìbáṣepọ̀ náà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
+msgid "Theme"
+msgstr "Àkórí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+msgid "Light"
+msgstr "Ìmọ́lẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+msgid "Dark"
+msgstr "Dúdú"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
+msgid "Accent color"
+msgstr "Àwọ̀ àmì ìyàtọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+msgid "Color"
+msgstr "Àwọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+msgid "Font size"
+msgstr "Ìwọ̀n fọ́ǹtì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+msgid "Font"
+msgstr "Fọ́ǹtì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
+msgid "Wallpaper"
+msgstr "Àwòrán ẹ̀yìn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+msgid "Background"
+msgstr "Ẹ̀yìn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:41
+msgid "Theme is set to Dark by High Contrast mode"
+msgstr "A ti ṣètò ìpele sí Dúdú nípasẹ̀ ìpò Ìyàtọ̀ gíga"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Small"
+msgstr "Kékeré"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Default"
+msgstr "Ìpilẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Large"
+msgstr "Ńlá"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Larger"
+msgstr "Tóbi jù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+msgid "Affects all text throughout the interface"
+msgstr "Ó kan gbogbo ọ̀rọ̀ nínú ojú-ìbáṣepọ̀ náà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:122
+msgid "Choose Wallpaper"
+msgstr "Yan àwòrán ẹ̀yìn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:124
+msgid "Images"
+msgstr "Àwọn àwòrán"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
+msgid "Custom..."
+msgstr "Àdàní..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
+msgid "Pair"
+msgstr "Ṣe ìsọpọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+msgid "Wireless"
+msgstr "Wáyàlẹ́sì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+msgid "Device"
+msgstr "Ẹ̀rọ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
+msgid "No Bluetooth adapter found"
+msgstr "Kò sí adáptà Bluetooth tí a rí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:61
+msgid "Paired Devices"
+msgstr "Àwọn ẹ̀rọ tí a ti sopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
+msgid "Available Devices"
+msgstr "Àwọn ẹ̀rọ tó wà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
+msgid "Search for devices"
+msgstr "Ṣàwárí àwọn ẹ̀rọ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:78
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:81
+msgid "Advanced..."
+msgstr "Ní ìjìnlẹ̀..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
+msgid "Scanning..."
+msgstr "Ń ṣàyẹ̀wò..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:156
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+msgid "Connected"
+msgstr "Ti sopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
+msgid "Disconnect"
+msgstr "Yọ ìsopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:199
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:246
+msgid "Connect"
+msgstr "Sopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:159
+msgid "Forget"
+msgstr "Gbàgbé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
+msgid "Pairing..."
+msgstr "Ń ṣe ìsopọ̀..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+msgid "Paired successfully"
+msgstr "Ìsopọ̀ ti ṣàṣeyọrí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#, python-brace-format
+msgid "Pairing failed: {message}"
+msgstr "Ìsopọ̀ kùnà: {message}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+msgid "Timezone"
+msgstr "Àgbègbè àkókò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+msgid "Automatic time"
+msgstr "Àkókò aláìfọwọ́yí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+msgid "NTP"
+msgstr "NTP"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+msgid "24-hour clock"
+msgstr "Àgò wákàtí 24"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
+msgid "e.g. America/New_York"
+msgstr "àpẹẹrẹ America/New_York"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+msgid "Press Enter to apply"
+msgstr "Tẹ Enter láti lò ó"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+msgid "Sync clock via network (NTP)"
+msgstr "Ṣe ìmúdọ́gba àgò nípasẹ̀ nẹ́tíwọ̀ọ̀kì (NTP)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+msgid "Use 24-hour time format"
+msgstr "Lo ọ̀nà àkókò wákàtí 24"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
+msgid "Failed to set timezone"
+msgstr "Kò le ṣètò àgbègbè àkókò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
+msgid "Invalid timezone"
+msgstr "Àgbègbè àkókò tí kò tọ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
+msgid "Web Browser"
+msgstr "Aṣàwákiri ayélujára"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
+msgid "File Manager"
+msgstr "Olùṣàkóso fáìlì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
+msgid "Terminal"
+msgstr "Tẹ́mínàlì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
+msgid "Text Editor"
+msgstr "Olùṣàtúnṣe ọ̀rọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+msgid "Image Viewer"
+msgstr "Olùwòran àwòrán"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+msgid "PDF Viewer"
+msgstr "Olùwòran PDF"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
+msgid "Media Player"
+msgstr "Ẹ̀rọ aṣàmúlò mídíà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+msgid "Email Client"
+msgstr "Ohun èlò ímeèlì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:35
+msgid "Default Applications"
+msgstr "Àwọn ohun èlò ìpilẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+msgid "Sunset to Sunrise"
+msgstr "Ìwọ̀ oòrùn sí ìlà oòrùn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+msgid "Custom"
+msgstr "Àdàní"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:46
+msgid "Display Scale"
+msgstr "Ìwọ̀n àfihàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+msgid "Scale"
+msgstr "Ìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+msgid "Resolution"
+msgstr "Ìpinnu àwòrán"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:61
+msgid "Resolution & Refresh Rate"
+msgstr "Ìpinnu àwòrán àti Ìwọ̀n ìmúdójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+msgid "Refresh"
+msgstr "Mú dójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:84
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+msgid "Night Light"
+msgstr "Ìmọ́lẹ̀ alẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+msgid "Temperature"
+msgstr "Ìwọ̀n ooru"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+msgid "Blue light"
+msgstr "Ìmọ́lẹ̀ búlúù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:64
+msgid "No displays detected"
+msgstr "Kò sí àfihàn tí a rí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:81
+msgid "Resolution and refresh rate"
+msgstr "Ìpinnu àwòrán àti ìwọ̀n ìmúdójúìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+msgid "Reduce blue light to help with sleep"
+msgstr "Dín ìmọ́lẹ̀ búlúù kù láti ran orun lọ́wọ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+msgid "3500K (warm) to 6500K (cool)"
+msgstr "3500K (gbígbóná) sí 6500K (títùtù)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:120
+msgid "Schedule"
+msgstr "Ìṣètò àkókò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:137
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:147
+msgid "HH:MM"
+msgstr "WW:ÌṢ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:143
+msgid "Start time"
+msgstr "Àkókò ìbẹ̀rẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:153
+msgid "End time"
+msgstr "Àkókò ìparí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:167
+msgid "Advanced"
+msgstr "Ní ìjìnlẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:168
+msgid "Open wdisplays"
+msgstr "Ṣí wdisplays"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+msgid "Advanced display settings"
+msgstr "Ètò àfihàn ní ìjìnlẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+msgid "Arrange and configure displays visually"
+msgstr "Ṣètò àti ṣe ìṣètò àwọn àfihàn ní ojú"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:204
+msgid "Confirm Scale"
+msgstr "Jẹ́rísí ìwọ̀n"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:215
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:241
+#, python-brace-format
+msgid ""
+"Keep this display scale?\n"
+"Reverting in {seconds}s..."
+msgstr ""
+"Ṣe pa ìwọ̀n àfihàn yìí mọ́?\n"
+"Yípadà ní {seconds}s..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:342
+msgid "Revert"
+msgstr "Dá padà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:348
+msgid "Keep"
+msgstr "Pa mọ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:325
+msgid "Confirm Resolution"
+msgstr "Jẹ́rísí ìṣẹ̀dá àwòrán"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:336
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:369
+#, python-brace-format
+msgid ""
+"Keep this resolution?\n"
+"Reverting in {seconds}s..."
+msgstr ""
+"Ṣe pa ìṣẹ̀dá àwòrán yìí mọ́?\n"
+"Yípadà ní {seconds}s..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:232
+msgid "Layout"
+msgstr "Ìtòlẹ́sẹẹsẹ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:284
+msgid "Keyboard layout"
+msgstr "Ìtòlẹ́sẹẹsẹ bọ́dù pípè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+msgid "Variant"
+msgstr "Ìyàtọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:289
+msgid "Repeat"
+msgstr "Tún ṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:298
+msgid "Repeat delay"
+msgstr "Ìdádúró àtúnṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:307
+msgid "Repeat rate"
+msgstr "Ìwọ̀n àtúnṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Caps Lock"
+msgstr "Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Caps Lock behavior"
+msgstr "Ìhùwàsí Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Remap"
+msgstr "Tún ṣètò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Shortcuts"
+msgstr "Àwọn ọ̀nà àbáyọrí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+msgid "Keyboard shortcuts"
+msgstr "Àwọn ọ̀nà àbáyọrí bọ́dù pípè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+msgid "Keybinding"
+msgstr "Ìdè bọ́tìnnì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Hotkey"
+msgstr "Bọ́tìnnì ìyára"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Key combo"
+msgstr "Àkópọ̀ bọ́tìnnì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:249
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:258
+msgid "(Default)"
+msgstr "(Ìpilẹ̀)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
+msgid "Caps Lock Behavior"
+msgstr "Ìhùwàsí Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Ctrl"
+msgstr "Ctrl"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Escape"
+msgstr "Escape"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Disabled"
+msgstr "Ti dí lókùn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+msgid "Caps Lock key"
+msgstr "Bọ́tìnnì Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+msgid "Remap Caps Lock to another function"
+msgstr "Tún ṣètò Caps Lock sí iṣẹ́ mìíràn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
+msgid "Keyboard Shortcuts"
+msgstr "Àwọn ọ̀nà àbáyọrí bọ́dù pípè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:333
+msgid "Reset All Shortcuts"
+msgstr "Tún gbogbo ọ̀nà àbáyọrí ṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
+msgid "Reset to default"
+msgstr "Dá padà sí ìpilẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+msgid "Press new shortcut..."
+msgstr "Tẹ ọ̀nà àbáyọrí tuntun..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:489
+msgid "Shortcut Conflict"
+msgstr "Ìjà ọ̀nà àbáyọrí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:491
+#, python-brace-format
+msgid ""
+"\"{key}\" is already assigned to \"{conflict}\".\n"
+"\n"
+"Reassign it to \"{target}\"?"
+msgstr ""
+"A ti fi \"{key}\" fún \"{conflict}\" tẹ́lẹ̀.\n"
+"\n"
+"Ṣe tún fi fún \"{target}\"?"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:196
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+msgid "Cancel"
+msgstr "Fagilé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+msgid "Reassign"
+msgstr "Tún fi lélẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+msgid "Language"
+msgstr "Èdè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+msgid "Locale"
+msgstr "Àgbègbè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+msgid "Regional format"
+msgstr "Ọ̀nà àgbègbè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:27
+msgid "Changes take effect after logging out"
+msgstr "Àwọn àyípadà yóò ṣiṣẹ́ lẹ́yìn tí o bá jáde"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:45
+msgid "System language"
+msgstr "Èdè ètò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+msgid "Regional formats"
+msgstr "Àwọn ọ̀nà àgbègbè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+msgid "Date, number, and currency format"
+msgstr "Ọ̀nà ọjọ́, nọ́mbà, àti owó"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:25
+msgid "Touchpad"
+msgstr "Pádì ìfọwọ́kàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
+msgid "Tap to click"
+msgstr "Tẹ láti tẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:59
+msgid "Natural scrolling"
+msgstr "Yíyí àdádá"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
+msgid "Pointer speed"
+msgstr "Ìyára atọ́ka"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:51
+msgid "Scroll speed"
+msgstr "Ìyára yíyí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
+msgid "Mouse"
+msgstr "Ẹkú"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
+msgid "Acceleration"
+msgstr "Ìmúyára"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+msgid "Content moves with your fingers"
+msgstr "Àkóónú ń ṣípò pẹ̀lú ìka rẹ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+msgid "Adaptive"
+msgstr "Ìbámu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+msgid "Flat"
+msgstr "Pẹ́tẹ́lẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:39
+msgid "WiFi"
+msgstr "WiFi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+msgid "Hidden network"
+msgstr "Nẹ́tíwọ̀ọ̀kì tó pamọ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:76
+msgid "Wired"
+msgstr "Oníwáyà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "Ethernet"
+msgstr "Ethernet"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "Connection"
+msgstr "Ìsopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "IP address"
+msgstr "Àdírẹ́sì IP"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:62
+msgid "Scan"
+msgstr "Ṣàyẹ̀wò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:65
+msgid "Connect to Hidden Network..."
+msgstr "Sopọ̀ sí nẹ́tíwọ̀ọ̀kì tó pamọ́..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:71
+msgid "Active Connection"
+msgstr "Ìsopọ̀ tó ń ṣiṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:174
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:254
+#, python-brace-format
+msgid "Connecting to {ssid}..."
+msgstr "Ń sopọ̀ sí {ssid}..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:179
+#, python-brace-format
+msgid "Connect to {ssid}"
+msgstr "Sopọ̀ sí {ssid}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:219
+msgid "Connect to Hidden Network"
+msgstr "Sopọ̀ sí nẹ́tíwọ̀ọ̀kì tó pamọ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:230
+msgid "Network name (SSID)"
+msgstr "Orúkọ nẹ́tíwọ̀ọ̀kì (SSID)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "None"
+msgstr "Kò sí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "WPA/WPA2"
+msgstr "WPA/WPA2"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "WPA3"
+msgstr "WPA3"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:234
+msgid "Security"
+msgstr "Ààbò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:269
+msgid "Connected successfully"
+msgstr "Ìsopọ̀ ti ṣàṣeyọrí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:284
+msgid "Not connected"
+msgstr "Kò ti sopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:287
+msgid "Type"
+msgstr "Irú"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:288
+msgid "IP Address"
+msgstr "Àdírẹ́sì IP"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
+msgid "Gateway"
+msgstr "Ẹnu-ọ̀nà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:290
+msgid "DNS"
+msgstr "DNS"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+msgid "No wired adapter detected"
+msgstr "Kò sí adáptà oníwáyà tí a rí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+msgid "Disconnected"
+msgstr "Ti yọ ìsopọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+msgid "Apps"
+msgstr "Àwọn ohun èlò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+msgid "Window list"
+msgstr "Àtòjọ fèrèsé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
+msgid "Volume"
+msgstr "Ìwọ̀n ohùn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+msgid "Brightness"
+msgstr "Ìmọ́lẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+msgid "Battery"
+msgstr "Bátìrì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+msgid "Clock"
+msgstr "Àgò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
+msgid "Power"
+msgstr "Agbára"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+msgid "System tray"
+msgstr "Àtẹ ètò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Left"
+msgstr "Òsì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+msgid "Center"
+msgstr "Àárín"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Right"
+msgstr "Ọ̀tún"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Top"
+msgstr "Òkè"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Bottom"
+msgstr "Ìsàlẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
+msgid "Position"
+msgstr "Ipò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
+msgid "Density"
+msgstr "Ìpọ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+msgid "Compact"
+msgstr "Kúkúrú"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
+msgid "Module Layout"
+msgstr "Ìtòlẹ́sẹẹsẹ mójúùlù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+msgid "Modules"
+msgstr "Àwọn mójúùlù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+msgid "Pinned Apps"
+msgstr "Àwọn ohun èlò tí a fi sí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+msgid "Pinned"
+msgstr "Ti fi sí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+msgid "Normal"
+msgstr "Déédé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
+msgid "Reset layout to defaults"
+msgstr "Dá ìtòlẹ́sẹẹsẹ padà sí ìpilẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
+#, python-brace-format
+msgid "Move to {section}"
+msgstr "Gbé lọ sí {section}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+msgid "Move up in section"
+msgstr "Gbé sókè nínú abala"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
+msgid "Move down in section"
+msgstr "Gbé sísàlẹ̀ nínú abala"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
+msgid "Add pinned app"
+msgstr "Fi ohun èlò kun"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
+msgid "Remove"
+msgstr "Yọ kúrò"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
+msgid "Add Pinned App"
+msgstr "Fi ohun èlò kun"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+msgid "Search apps…"
+msgstr "Ṣàwárí àwọn ohun èlò…"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
+msgid "Add"
+msgstr "Fi kún"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "1 minute"
+msgstr "Ìṣẹ́jú kan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "2 minutes"
+msgstr "Ìṣẹ́jú 2"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "5 minutes"
+msgstr "Ìṣẹ́jú 5"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "10 minutes"
+msgstr "Ìṣẹ́jú 10"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "15 minutes"
+msgstr "Ìṣẹ́jú 15"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "30 minutes"
+msgstr "Ìṣẹ́jú 30"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "Never"
+msgstr "Láìlàí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
+msgid "Balanced"
+msgstr "Ìwọ̀ntúnwọ̀nsì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+msgid "Power Saver"
+msgstr "Olùtọ́jú agbára"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+msgid "Performance"
+msgstr "Iṣẹ́-ṣíṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+msgid "Suspend"
+msgstr "Da dúró"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
+msgid "Lock"
+msgstr "Tì í"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:26
+msgid "Do Nothing"
+msgstr "Má ṣe nǹkan kan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:47
+msgid "Lock & Display"
+msgstr "Títì àti Àfihàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+msgid "Lock screen"
+msgstr "Tì ojú-ibojú"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+msgid "Display off"
+msgstr "Pa àfihàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
+msgid "Power Profile"
+msgstr "Ìpele agbára"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
+msgid "Suspend on Idle"
+msgstr "Da dúró nígbà tí kò ṣiṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+msgid "Idle"
+msgstr "Àìṣiṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:106
+msgid "Lid Close Behavior"
+msgstr "Ìhùwàsí títì àgó"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+msgid "Lid"
+msgstr "Àgó"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:59
+msgid "Lock screen after"
+msgstr "Tì ojú-ibojú lẹ́yìn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
+msgid "Turn off display after"
+msgstr "Pa àfihàn lẹ́yìn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
+msgid "Suspend after"
+msgstr "Da dúró lẹ́yìn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
+msgid "When lid is closed"
+msgstr "Nígbà tí a bá ti àgó"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
+msgid "Output"
+msgstr "Ohun jáde"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
+msgid "Output device"
+msgstr "Ẹ̀rọ èsì jáde"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
+msgid "Mute"
+msgstr "Pa ohùn dé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
+msgid "Input"
+msgstr "Ohun wọlé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
+msgid "Input device"
+msgstr "Ẹ̀rọ èsì wọlé"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+msgid "Microphone"
+msgstr "Máìkíròfóònù"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
+msgid "(No output devices)"
+msgstr "(Kò sí ẹ̀rọ èsì jáde)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
+msgid "(No input devices)"
+msgstr "(Kò sí ẹ̀rọ èsì wọlé)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:97
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+msgid "Display name"
+msgstr "Orúkọ àfihàn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+msgid "Auto-login"
+msgstr "Ìwọlé aláìfọwọ́yí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+msgid "Account"
+msgstr "Àkáǹtì"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:82
+msgid "Could not connect to AccountsService"
+msgstr "Kò le sopọ̀ sí AccountsService"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:103
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:147
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:160
+msgid "Change Password"
+msgstr "Yí ọ̀rọ̀ aṣínà padà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+msgid "Set a new password for your account"
+msgstr "Ṣètò ọ̀rọ̀ aṣínà tuntun fún àkáǹtì rẹ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+msgid "Automatic login"
+msgstr "Ìwọlé aláìfọwọ́yí"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+msgid "Log in without a password at startup"
+msgstr "Wọlé láìsí ọ̀rọ̀ aṣínà nígbà ìbẹ̀rẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:166
+msgid "New password"
+msgstr "Ọ̀rọ̀ aṣínà tuntun"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:171
+msgid "Confirm password"
+msgstr "Jẹ́rísí ọ̀rọ̀ aṣínà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:185
+msgid "Apply"
+msgstr "Lo"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:192
+msgid "Password cannot be empty"
+msgstr "Ọ̀rọ̀ aṣínà kò gbọdọ̀ ṣòfo"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:195
+msgid "Passwords do not match"
+msgstr "Àwọn ọ̀rọ̀ aṣínà kò bára mu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:207
+msgid "Failed to set password"
+msgstr "Kò le ṣètò ọ̀rọ̀ aṣínà"

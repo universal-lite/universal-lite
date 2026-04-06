@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-05 13:06-0400\n"
+"POT-Creation-Date: 2026-04-06 05:02-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -876,6 +876,27 @@ msgstr "地域の形式"
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:57
 msgid "Date, number, and currency format"
 msgstr "日付、数値、通貨の形式"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:105
+msgid "Failed to set language"
+msgstr "言語の設定に失敗しました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:107
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:121
+msgid "localectl not found"
+msgstr "localectl が見つかりません"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:109
+msgid "Language change timed out"
+msgstr "言語の変更がタイムアウトしました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:119
+msgid "Failed to set regional format"
+msgstr "地域フォーマットの設定に失敗しました"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:123
+msgid "Format change timed out"
+msgstr "フォーマットの変更がタイムアウトしました"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16

@@ -1,0 +1,1386 @@
+# Turkish translations for universal-lite-settings package.
+# Copyright (C) 2026 THE universal-lite-settings'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the universal-lite-settings package.
+# Automatically generated, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: universal-lite-settings\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-05 13:06-0400\n"
+"PO-Revision-Date: 2026-04-05 13:06-0400\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../files/usr/bin/universal-lite-greeter:311
+msgid "Login"
+msgstr "Giriş"
+
+#: ../files/usr/bin/universal-lite-greeter:368
+msgid "Session"
+msgstr "Oturum"
+
+#: ../files/usr/bin/universal-lite-greeter:394
+msgid "Username"
+msgstr "Kullanıcı adı"
+
+#: ../files/usr/bin/universal-lite-greeter:403
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:191
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:238
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+msgid "Password"
+msgstr "Parola"
+
+#: ../files/usr/bin/universal-lite-greeter:465
+#, python-brace-format
+msgid "Welcome back, {username}"
+msgstr "Tekrar hoş geldiniz, {username}"
+
+#: ../files/usr/bin/universal-lite-greeter:471
+msgid "Log In"
+msgstr "Giriş Yap"
+
+#: ../files/usr/bin/universal-lite-greeter:472
+#, python-brace-format
+msgid "Not {username}?"
+msgstr "{username} değil misiniz?"
+
+#: ../files/usr/bin/universal-lite-greeter:488
+msgid "Log in"
+msgstr "Giriş yap"
+
+#: ../files/usr/bin/universal-lite-greeter:494
+msgid "Next"
+msgstr "İleri"
+
+#: ../files/usr/bin/universal-lite-greeter:507
+#: ../files/usr/bin/universal-lite-greeter:522
+#: ../files/usr/bin/universal-lite-greeter:571
+#, python-brace-format
+msgid "Connection error: {exc}"
+msgstr "Bağlantı hatası: {exc}"
+
+#: ../files/usr/bin/universal-lite-greeter:531
+#: ../files/usr/bin/universal-lite-greeter:536
+msgid "Authentication error"
+msgstr "Kimlik doğrulama hatası"
+
+#: ../files/usr/bin/universal-lite-greeter:546
+msgid "Unknown error"
+msgstr "Bilinmeyen hata"
+
+#: ../files/usr/bin/universal-lite-greeter:555
+msgid "Enter a username."
+msgstr "Bir kullanıcı adı girin."
+
+#: ../files/usr/bin/universal-lite-greeter:563
+msgid "Enter your password."
+msgstr "Parolanızı girin."
+
+#: ../files/usr/bin/universal-lite-greeter:582
+msgid "Authentication failed"
+msgstr "Kimlik doğrulama başarısız"
+
+#: ../files/usr/bin/universal-lite-greeter:593
+msgid "Unexpected authentication response."
+msgstr "Beklenmeyen kimlik doğrulama yanıtı."
+
+#: ../files/usr/bin/universal-lite-greeter:597
+msgid "Multi-step auth not supported."
+msgstr "Çok adımlı kimlik doğrulama desteklenmiyor."
+
+#: ../files/usr/bin/universal-lite-greeter:602
+msgid "Incorrect password."
+msgstr "Yanlış parola."
+
+#: ../files/usr/bin/universal-lite-greeter:604
+msgid "Login failed."
+msgstr "Giriş başarısız."
+
+#: ../files/usr/bin/universal-lite-greeter:607
+msgid "Unexpected response from login service."
+msgstr "Giriş hizmetinden beklenmeyen yanıt."
+
+#: ../files/usr/bin/universal-lite-greeter:616
+#, python-brace-format
+msgid "Failed to start session: {exc}"
+msgstr "Oturum başlatılamadı: {exc}"
+
+#: ../files/usr/bin/universal-lite-greeter:624
+msgid "Failed to start session."
+msgstr "Oturum başlatılamadı."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:17
+msgid "Universal-Lite Settings"
+msgstr "Universal-Lite Ayarları"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:46
+msgid "Search settings..."
+msgstr "Ayarlarda ara..."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:100
+#, python-brace-format
+msgid "Failed to load {label}"
+msgstr "{label} yüklenemedi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:26
+msgid "Appearance"
+msgstr "Görünüm"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:27
+msgid "Display"
+msgstr "Ekran"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:286
+msgid "Network"
+msgstr "Ağ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:39
+msgid "Bluetooth"
+msgstr "Bluetooth"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+msgid "Panel"
+msgstr "Panel"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:31
+msgid "Mouse & Touchpad"
+msgstr "Fare ve Dokunmatik Alan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:32
+msgid "Keyboard"
+msgstr "Klavye"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:33
+msgid "Sound"
+msgstr "Ses"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:34
+msgid "Power & Lock"
+msgstr "Güç ve Kilit"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
+msgid "Accessibility"
+msgstr "Erişilebilirlik"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
+msgid "Date & Time"
+msgstr "Tarih ve Saat"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:76
+msgid "Users"
+msgstr "Kullanıcılar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:23
+msgid "Language & Region"
+msgstr "Dil ve Bölge"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:39
+msgid "Default Apps"
+msgstr "Varsayılan Uygulamalar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:31
+msgid "About"
+msgstr "Hakkında"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:41
+msgid "Operating System"
+msgstr "İşletim Sistemi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:42
+msgid "Hostname"
+msgstr "Ana bilgisayar adı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:52
+msgid "Processor"
+msgstr "İşlemci"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:62
+msgid "Memory"
+msgstr "Bellek"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:68
+msgid "Disk"
+msgstr "Disk"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:89
+msgid "Desktop"
+msgstr "Masaüstü"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:81
+msgid "Graphics"
+msgstr "Grafik"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+msgid "GPU"
+msgstr "GPU"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:92
+msgid "Updates"
+msgstr "Güncellemeler"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:95
+msgid "Click to check for updates"
+msgstr "Güncellemeleri denetlemek için tıklayın"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:98
+msgid "Check for Updates"
+msgstr "Güncellemeleri Denetle"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:77
+msgid "Checking..."
+msgstr "Denetleniyor..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:117
+#, python-brace-format
+msgid "Update available: {version}"
+msgstr "Güncelleme mevcut: {version}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:119
+msgid "System is up to date"
+msgstr "Sistem güncel"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:121
+msgid "Could not check for updates"
+msgstr "Güncellemeler denetlenemedi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
+msgid "Default (24px)"
+msgstr "Varsayılan (24px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
+msgid "Large (32px)"
+msgstr "Büyük (32px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
+msgid "Larger (48px)"
+msgstr "Daha büyük (48px)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+msgid "Large text"
+msgstr "Büyük metin"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
+msgid "Cursor size"
+msgstr "İmleç boyutu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+msgid "High contrast"
+msgstr "Yüksek karşıtlık"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+msgid "Reduce motion"
+msgstr "Hareketi azalt"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+msgid "Increases font size for better readability"
+msgstr "Daha iyi okunabilirlik için yazı tipi boyutunu artırır"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+msgid "Forces dark theme with stronger borders"
+msgstr "Daha belirgin kenarlıklarla koyu temayı zorlar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+msgid "Disables animations throughout the interface"
+msgstr "Arayüz genelinde animasyonları devre dışı bırakır"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
+msgid "Theme"
+msgstr "Tema"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+msgid "Light"
+msgstr "Açık"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+msgid "Dark"
+msgstr "Koyu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
+msgid "Accent color"
+msgstr "Vurgu rengi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+msgid "Color"
+msgstr "Renk"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+msgid "Font size"
+msgstr "Yazı tipi boyutu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+msgid "Font"
+msgstr "Yazı tipi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
+msgid "Wallpaper"
+msgstr "Duvar kağıdı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+msgid "Background"
+msgstr "Arka plan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:41
+msgid "Theme is set to Dark by High Contrast mode"
+msgstr "Tema, Yüksek Karşıtlık kipi tarafından Koyu olarak ayarlandı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Small"
+msgstr "Küçük"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Default"
+msgstr "Varsayılan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Large"
+msgstr "Büyük"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+msgid "Larger"
+msgstr "Daha büyük"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+msgid "Affects all text throughout the interface"
+msgstr "Arayüz genelindeki tüm metni etkiler"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:122
+msgid "Choose Wallpaper"
+msgstr "Duvar Kağıdı Seçin"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:124
+msgid "Images"
+msgstr "Görseller"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
+msgid "Custom..."
+msgstr "Özel..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
+msgid "Pair"
+msgstr "Eşleştir"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+msgid "Wireless"
+msgstr "Kablosuz"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+msgid "Device"
+msgstr "Aygıt"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
+msgid "No Bluetooth adapter found"
+msgstr "Bluetooth adaptörü bulunamadı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:61
+msgid "Paired Devices"
+msgstr "Eşleştirilmiş Aygıtlar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
+msgid "Available Devices"
+msgstr "Kullanılabilir Aygıtlar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
+msgid "Search for devices"
+msgstr "Aygıt ara"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:78
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:81
+msgid "Advanced..."
+msgstr "Gelişmiş..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
+msgid "Scanning..."
+msgstr "Taranıyor..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:156
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+msgid "Connected"
+msgstr "Bağlı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
+msgid "Disconnect"
+msgstr "Bağlantıyı kes"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:199
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:246
+msgid "Connect"
+msgstr "Bağlan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:159
+msgid "Forget"
+msgstr "Unut"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
+msgid "Pairing..."
+msgstr "Eşleştiriliyor..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+msgid "Paired successfully"
+msgstr "Başarıyla eşleştirildi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#, python-brace-format
+msgid "Pairing failed: {message}"
+msgstr "Eşleştirme başarısız: {message}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+msgid "Timezone"
+msgstr "Saat dilimi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+msgid "Automatic time"
+msgstr "Otomatik saat"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+msgid "NTP"
+msgstr "NTP"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+msgid "24-hour clock"
+msgstr "24 saat biçimi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
+msgid "e.g. America/New_York"
+msgstr "ör. America/New_York"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+msgid "Press Enter to apply"
+msgstr "Uygulamak için Enter tuşuna basın"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+msgid "Sync clock via network (NTP)"
+msgstr "Saati ağ üzerinden eşitle (NTP)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+msgid "Use 24-hour time format"
+msgstr "24 saat biçimini kullan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
+msgid "Failed to set timezone"
+msgstr "Saat dilimi ayarlanamadı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
+msgid "Invalid timezone"
+msgstr "Geçersiz saat dilimi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
+msgid "Web Browser"
+msgstr "Web Tarayıcı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
+msgid "File Manager"
+msgstr "Dosya Yöneticisi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
+msgid "Terminal"
+msgstr "Uçbirim"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
+msgid "Text Editor"
+msgstr "Metin Düzenleyici"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+msgid "Image Viewer"
+msgstr "Görsel Görüntüleyici"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+msgid "PDF Viewer"
+msgstr "PDF Görüntüleyici"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
+msgid "Media Player"
+msgstr "Ortam Oynatıcı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+msgid "Email Client"
+msgstr "E-posta İstemcisi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:35
+msgid "Default Applications"
+msgstr "Varsayılan Uygulamalar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+msgid "Sunset to Sunrise"
+msgstr "Gün batımından gün doğumuna"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+msgid "Custom"
+msgstr "Özel"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:46
+msgid "Display Scale"
+msgstr "Ekran Ölçeği"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+msgid "Scale"
+msgstr "Ölçek"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+msgid "Resolution"
+msgstr "Çözünürlük"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:61
+msgid "Resolution & Refresh Rate"
+msgstr "Çözünürlük ve Yenileme Hızı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+msgid "Refresh"
+msgstr "Yenileme hızı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:84
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+msgid "Night Light"
+msgstr "Gece Işığı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+msgid "Temperature"
+msgstr "Sıcaklık"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+msgid "Blue light"
+msgstr "Mavi ışık"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:64
+msgid "No displays detected"
+msgstr "Ekran algılanmadı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:81
+msgid "Resolution and refresh rate"
+msgstr "Çözünürlük ve yenileme hızı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+msgid "Reduce blue light to help with sleep"
+msgstr "Mavi ışığı azaltarak uyku kalitesini artırır"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+msgid "3500K (warm) to 6500K (cool)"
+msgstr "3500K (sıcak) - 6500K (soğuk)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:120
+msgid "Schedule"
+msgstr "Zamanlama"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:137
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:147
+msgid "HH:MM"
+msgstr "SS:DD"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:143
+msgid "Start time"
+msgstr "Başlangıç saati"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:153
+msgid "End time"
+msgstr "Bitiş saati"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:167
+msgid "Advanced"
+msgstr "Gelişmiş"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:168
+msgid "Open wdisplays"
+msgstr "wdisplays uygulamasını aç"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+msgid "Advanced display settings"
+msgstr "Gelişmiş ekran ayarları"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+msgid "Arrange and configure displays visually"
+msgstr "Ekranları görsel olarak düzenleyin ve yapılandırın"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:204
+msgid "Confirm Scale"
+msgstr "Ölçeği Onayla"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:215
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:241
+#, python-brace-format
+msgid ""
+"Keep this display scale?\n"
+"Reverting in {seconds}s..."
+msgstr ""
+"Bu ekran ölçeği korunsun mu?\n"
+"{seconds}s içinde geri alınıyor..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:342
+msgid "Revert"
+msgstr "Geri Al"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:348
+msgid "Keep"
+msgstr "Koru"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:325
+msgid "Confirm Resolution"
+msgstr "Çözünürlüğü Onayla"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:336
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:369
+#, python-brace-format
+msgid ""
+"Keep this resolution?\n"
+"Reverting in {seconds}s..."
+msgstr ""
+"Bu çözünürlük korunsun mu?\n"
+"{seconds}s içinde geri alınıyor..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:232
+msgid "Layout"
+msgstr "Düzen"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:284
+msgid "Keyboard layout"
+msgstr "Klavye düzeni"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+msgid "Variant"
+msgstr "Varyant"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:289
+msgid "Repeat"
+msgstr "Yineleme"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:298
+msgid "Repeat delay"
+msgstr "Yineleme gecikmesi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:307
+msgid "Repeat rate"
+msgstr "Yineleme hızı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Caps Lock"
+msgstr "Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Caps Lock behavior"
+msgstr "Caps Lock davranışı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+msgid "Remap"
+msgstr "Yeniden ata"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Shortcuts"
+msgstr "Kısayollar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+msgid "Keyboard shortcuts"
+msgstr "Klavye kısayolları"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+msgid "Keybinding"
+msgstr "Tuş ataması"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Hotkey"
+msgstr "Kısayol tuşu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+msgid "Key combo"
+msgstr "Tuş kombinasyonu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:249
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:258
+msgid "(Default)"
+msgstr "(Varsayılan)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
+msgid "Caps Lock Behavior"
+msgstr "Caps Lock Davranışı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Ctrl"
+msgstr "Ctrl"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Escape"
+msgstr "Escape"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+msgid "Disabled"
+msgstr "Devre dışı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+msgid "Caps Lock key"
+msgstr "Caps Lock tuşu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+msgid "Remap Caps Lock to another function"
+msgstr "Caps Lock tuşunu başka bir işleve atayın"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
+msgid "Keyboard Shortcuts"
+msgstr "Klavye Kısayolları"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:333
+msgid "Reset All Shortcuts"
+msgstr "Tüm Kısayolları Sıfırla"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
+msgid "Reset to default"
+msgstr "Varsayılana sıfırla"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+msgid "Press new shortcut..."
+msgstr "Yeni kısayola basın..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:489
+msgid "Shortcut Conflict"
+msgstr "Kısayol Çakışması"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:491
+#, python-brace-format
+msgid ""
+"\"{key}\" is already assigned to \"{conflict}\".\n"
+"\n"
+"Reassign it to \"{target}\"?"
+msgstr ""
+"\"{key}\" zaten \"{conflict}\" için atanmış.\n"
+"\n"
+"\"{target}\" için yeniden atansın mı?"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:196
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+msgid "Cancel"
+msgstr "İptal"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+msgid "Reassign"
+msgstr "Yeniden ata"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+msgid "Language"
+msgstr "Dil"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+msgid "Locale"
+msgstr "Yerel ayarlar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+msgid "Regional format"
+msgstr "Bölgesel biçim"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:27
+msgid "Changes take effect after logging out"
+msgstr "Değişiklikler oturumu kapattıktan sonra geçerli olur"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:45
+msgid "System language"
+msgstr "Sistem dili"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+msgid "Regional formats"
+msgstr "Bölgesel biçimler"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+msgid "Date, number, and currency format"
+msgstr "Tarih, sayı ve para birimi biçimi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:25
+msgid "Touchpad"
+msgstr "Dokunmatik Alan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
+msgid "Tap to click"
+msgstr "Tıklamak için dokunun"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:59
+msgid "Natural scrolling"
+msgstr "Doğal kaydırma"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
+msgid "Pointer speed"
+msgstr "İşaretçi hızı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:51
+msgid "Scroll speed"
+msgstr "Kaydırma hızı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
+msgid "Mouse"
+msgstr "Fare"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
+msgid "Acceleration"
+msgstr "Hızlanma"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+msgid "Content moves with your fingers"
+msgstr "İçerik parmaklarınızla birlikte hareket eder"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+msgid "Adaptive"
+msgstr "Uyarlanabilir"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+msgid "Flat"
+msgstr "Düz"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:39
+msgid "WiFi"
+msgstr "WiFi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+msgid "Hidden network"
+msgstr "Gizli ağ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:76
+msgid "Wired"
+msgstr "Kablolu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "Ethernet"
+msgstr "Ethernet"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "Connection"
+msgstr "Bağlantı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+msgid "IP address"
+msgstr "IP adresi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:62
+msgid "Scan"
+msgstr "Tara"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:65
+msgid "Connect to Hidden Network..."
+msgstr "Gizli Ağa Bağlan..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:71
+msgid "Active Connection"
+msgstr "Etkin Bağlantı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:174
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:254
+#, python-brace-format
+msgid "Connecting to {ssid}..."
+msgstr "{ssid} ağına bağlanılıyor..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:179
+#, python-brace-format
+msgid "Connect to {ssid}"
+msgstr "{ssid} ağına bağlan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:219
+msgid "Connect to Hidden Network"
+msgstr "Gizli Ağa Bağlan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:230
+msgid "Network name (SSID)"
+msgstr "Ağ adı (SSID)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "None"
+msgstr "Yok"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "WPA/WPA2"
+msgstr "WPA/WPA2"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+msgid "WPA3"
+msgstr "WPA3"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:234
+msgid "Security"
+msgstr "Güvenlik"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:269
+msgid "Connected successfully"
+msgstr "Başarıyla bağlanıldı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:284
+msgid "Not connected"
+msgstr "Bağlı değil"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:287
+msgid "Type"
+msgstr "Tür"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:288
+msgid "IP Address"
+msgstr "IP Adresi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
+msgid "Gateway"
+msgstr "Ağ geçidi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:290
+msgid "DNS"
+msgstr "DNS"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+msgid "No wired adapter detected"
+msgstr "Kablolu adaptör algılanmadı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+msgid "Disconnected"
+msgstr "Bağlantı kesildi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+msgid "Apps"
+msgstr "Uygulamalar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+msgid "Window list"
+msgstr "Pencere listesi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
+msgid "Volume"
+msgstr "Ses düzeyi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+msgid "Brightness"
+msgstr "Parlaklık"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+msgid "Battery"
+msgstr "Pil"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+msgid "Clock"
+msgstr "Saat"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
+msgid "Power"
+msgstr "Güç"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+msgid "System tray"
+msgstr "Sistem tepsisi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Left"
+msgstr "Sol"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+msgid "Center"
+msgstr "Orta"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Right"
+msgstr "Sağ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Top"
+msgstr "Üst"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+msgid "Bottom"
+msgstr "Alt"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
+msgid "Position"
+msgstr "Konum"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
+msgid "Density"
+msgstr "Yoğunluk"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+msgid "Compact"
+msgstr "Kompakt"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
+msgid "Module Layout"
+msgstr "Modül Düzeni"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+msgid "Modules"
+msgstr "Modüller"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+msgid "Pinned Apps"
+msgstr "Sabitlenmiş Uygulamalar"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+msgid "Pinned"
+msgstr "Sabitlenmiş"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+msgid "Normal"
+msgstr "Normal"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
+msgid "Reset layout to defaults"
+msgstr "Düzeni varsayılana sıfırla"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
+#, python-brace-format
+msgid "Move to {section}"
+msgstr "{section} bölümüne taşı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+msgid "Move up in section"
+msgstr "Bölümde yukarı taşı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
+msgid "Move down in section"
+msgstr "Bölümde aşağı taşı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
+msgid "Add pinned app"
+msgstr "Sabitlenmiş uygulama ekle"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
+msgid "Remove"
+msgstr "Kaldır"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
+msgid "Add Pinned App"
+msgstr "Sabitlenmiş Uygulama Ekle"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+msgid "Search apps…"
+msgstr "Uygulama ara..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
+msgid "Add"
+msgstr "Ekle"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "1 minute"
+msgstr "1 dakika"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "2 minutes"
+msgstr "2 dakika"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+msgid "5 minutes"
+msgstr "5 dakika"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "10 minutes"
+msgstr "10 dakika"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "15 minutes"
+msgstr "15 dakika"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "30 minutes"
+msgstr "30 dakika"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+msgid "Never"
+msgstr "Asla"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
+msgid "Balanced"
+msgstr "Dengeli"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+msgid "Power Saver"
+msgstr "Güç Tasarrufu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+msgid "Performance"
+msgstr "Performans"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+msgid "Suspend"
+msgstr "Askıya Al"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
+msgid "Lock"
+msgstr "Kilitle"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:26
+msgid "Do Nothing"
+msgstr "Hiçbir Şey Yapma"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:47
+msgid "Lock & Display"
+msgstr "Kilit ve Ekran"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+msgid "Lock screen"
+msgstr "Kilit ekranı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+msgid "Display off"
+msgstr "Ekranı kapat"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
+msgid "Power Profile"
+msgstr "Güç Profili"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
+msgid "Suspend on Idle"
+msgstr "Boştayken Askıya Al"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+msgid "Idle"
+msgstr "Boşta"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:106
+msgid "Lid Close Behavior"
+msgstr "Kapak Kapandığında Davranış"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+msgid "Lid"
+msgstr "Kapak"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:59
+msgid "Lock screen after"
+msgstr "Ekranı kilitle:"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
+msgid "Turn off display after"
+msgstr "Ekranı kapat:"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
+msgid "Suspend after"
+msgstr "Askıya al:"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
+msgid "When lid is closed"
+msgstr "Kapak kapatıldığında"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
+msgid "Output"
+msgstr "Çıkış"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
+msgid "Output device"
+msgstr "Çıkış aygıtı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
+msgid "Mute"
+msgstr "Sessiz"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
+msgid "Input"
+msgstr "Giriş"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
+msgid "Input device"
+msgstr "Giriş aygıtı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+msgid "Microphone"
+msgstr "Mikrofon"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
+msgid "(No output devices)"
+msgstr "(Çıkış aygıtı yok)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
+msgid "(No input devices)"
+msgstr "(Giriş aygıtı yok)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:97
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+msgid "Display name"
+msgstr "Görünen ad"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+msgid "Auto-login"
+msgstr "Otomatik giriş"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+msgid "Account"
+msgstr "Hesap"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:82
+msgid "Could not connect to AccountsService"
+msgstr "AccountsService hizmetine bağlanılamadı"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:103
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:147
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:160
+msgid "Change Password"
+msgstr "Parolayı Değiştir"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+msgid "Set a new password for your account"
+msgstr "Hesabınız için yeni bir parola belirleyin"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+msgid "Automatic login"
+msgstr "Otomatik giriş"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+msgid "Log in without a password at startup"
+msgstr "Başlangıçta parolasız giriş yapın"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:166
+msgid "New password"
+msgstr "Yeni parola"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:171
+msgid "Confirm password"
+msgstr "Parolayı onaylayın"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:185
+msgid "Apply"
+msgstr "Uygula"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:192
+msgid "Password cannot be empty"
+msgstr "Parola boş olamaz"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:195
+msgid "Passwords do not match"
+msgstr "Parolalar eşleşmiyor"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:207
+msgid "Failed to set password"
+msgstr "Parola ayarlanamadı"

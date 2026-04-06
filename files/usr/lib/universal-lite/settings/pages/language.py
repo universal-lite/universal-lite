@@ -91,19 +91,33 @@ class LanguagePage(BasePage):
             pass
         return LanguagePage._get_current_locale()
 
-    @staticmethod
-    def _set_locale(locale):
+    def _set_locale(self, locale):
         try:
-            subprocess.run(["localectl", "set-locale", f"LANG={locale}"],
-                           check=False, capture_output=True, timeout=5)
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
+            # localectl talks to systemd-localed via D-Bus, which triggers a
+            # polkit password dialog (xfce-polkit).  Give the user up to 60s
+            # to authenticate — the previous 5s timeout killed the process
+            # before the dialog could be answered.
+            result = subprocess.run(
+                ["localectl", "set-locale", f"LANG={locale}"],
+                capture_output=True, text=True, timeout=60,
+            )
+            if result.returncode != 0:
+                self.store.show_toast(_("Failed to set language"))
+        except FileNotFoundError:
+            self.store.show_toast(_("localectl not found"))
+        except subprocess.TimeoutExpired:
+            self.store.show_toast(_("Language change timed out"))
 
-    @staticmethod
-    def _set_format(locale):
+    def _set_format(self, locale):
         try:
-            subprocess.run(["localectl", "set-locale", f"LC_TIME={locale}",
-                            f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
-                           check=False, capture_output=True, timeout=5)
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
+            result = subprocess.run(
+                ["localectl", "set-locale", f"LC_TIME={locale}",
+                 f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
+                capture_output=True, text=True, timeout=60,
+            )
+            if result.returncode != 0:
+                self.store.show_toast(_("Failed to set regional format"))
+        except FileNotFoundError:
+            self.store.show_toast(_("localectl not found"))
+        except subprocess.TimeoutExpired:
+            self.store.show_toast(_("Format change timed out"))
