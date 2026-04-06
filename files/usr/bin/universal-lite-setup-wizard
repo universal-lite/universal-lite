@@ -1001,6 +1001,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._make_translated_label("Timezone"))
         tz_model = Gtk.StringList.new(self._timezones)
         self._tz_dropdown = Gtk.DropDown(model=tz_model)
+        self._tz_dropdown.set_enable_search(True)
+        self._tz_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self._tz_dropdown.set_hexpand(True)
         # Try to auto-detect timezone from system
         default_tz = "America/New_York"
