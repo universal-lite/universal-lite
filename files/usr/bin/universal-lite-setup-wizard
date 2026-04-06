@@ -782,6 +782,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         kb_labels = [f"{name} ({code})" for code, name in self._keyboard_layouts]
         kb_model = Gtk.StringList.new(kb_labels)
         self._kb_dropdown = Gtk.DropDown(model=kb_model)
+        self._kb_dropdown.set_expression(Gtk.PropertyExpression.new(Gtk.StringObject, None, "string"))
         self._kb_dropdown.set_enable_search(True)
         self._kb_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self._kb_dropdown.set_hexpand(True)
@@ -1202,6 +1203,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._make_translated_label("Timezone"))
         tz_model = Gtk.StringList.new(self._timezones)
         self._tz_dropdown = Gtk.DropDown(model=tz_model)
+        self._tz_dropdown.set_expression(Gtk.PropertyExpression.new(Gtk.StringObject, None, "string"))
         self._tz_dropdown.set_enable_search(True)
         self._tz_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self._tz_dropdown.set_hexpand(True)
