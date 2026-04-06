@@ -578,6 +578,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         lang_list = Gtk.ListBox()
         lang_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        lang_list.add_css_class("navigation-sidebar")
         lang_list.set_vexpand(False)
 
         self._lang_rows: list[dict] = []
@@ -831,6 +832,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # WiFi network list
         self._wifi_list = Gtk.ListBox()
         self._wifi_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        self._wifi_list.add_css_class("navigation-sidebar")
         self._wifi_list.set_vexpand(False)
         card.append(self._wifi_list)
 
