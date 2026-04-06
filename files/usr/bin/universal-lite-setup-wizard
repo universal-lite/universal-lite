@@ -736,21 +736,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._username_entry.set_hexpand(True)
         card.append(self._username_entry)
 
-        card.append(self._make_translated_label("Hostname"))
-        self._hostname_entry = Gtk.Entry()
-        self._hostname_entry.set_placeholder_text("my-computer")
-        self._hostname_entry.add_css_class("form-entry")
-        self._hostname_entry.set_hexpand(True)
-        card.append(self._hostname_entry)
-        _host_desc = Gtk.Label(label=_("Your computer's name on the network. Leave blank to auto-generate."))
-        _host_desc.add_css_class("form-description")
-        _host_desc.set_halign(Gtk.Align.START)
-        _host_desc.set_wrap(True)
-        _host_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
-        _host_desc.set_max_width_chars(50)
-        self._retranslatable.append((_host_desc.set_label, "Your computer's name on the network. Leave blank to auto-generate."))
-        card.append(_host_desc)
-
         card.append(self._make_translated_label("Password"))
         self._password_entry = Gtk.PasswordEntry()
         self._password_entry.set_show_peek_icon(True)
@@ -765,6 +750,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._confirm_entry.set_hexpand(True)
         self._confirm_entry.connect("activate", lambda _: self._go_next())
         card.append(self._confirm_entry)
+
+        # Administrator checkbox
+        self._admin_check = Gtk.CheckButton(label=_("Administrator account (sudo)"))
+        self._admin_check.set_active(True)
+        self._admin_check.add_css_class("form-label")
+        self._admin_check.set_margin_top(12)
+        self._retranslatable.append((self._admin_check.set_label, "Administrator account (sudo)"))
+        card.append(self._admin_check)
+
+        # Root password (shown when admin is unchecked as an alternative)
+        card.append(self._make_translated_label("Root Password (optional)"))
+        self._root_password_entry = Gtk.PasswordEntry()
+        self._root_password_entry.set_show_peek_icon(True)
+        self._root_password_entry.add_css_class("form-entry")
+        self._root_password_entry.set_hexpand(True)
+        self._root_password_entry.connect("activate", lambda _: self._go_next())
+        card.append(self._root_password_entry)
 
         wrapper.append(card)
         scrolled.set_child(wrapper)
@@ -1025,21 +1027,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._tz_dropdown.set_selected(default_tz_idx)
         card.append(self._tz_dropdown)
 
-        # Administrator checkbox
-        self._admin_check = Gtk.CheckButton(label=_("Administrator account (sudo)"))
-        self._admin_check.set_active(True)
-        self._admin_check.add_css_class("form-label")
-        self._retranslatable.append((self._admin_check.set_label, "Administrator account (sudo)"))
-        card.append(self._admin_check)
-
-        # Root password
-        card.append(self._make_translated_label("Root Password (optional)"))
-        self._root_password_entry = Gtk.PasswordEntry()
-        self._root_password_entry.set_show_peek_icon(True)
-        self._root_password_entry.add_css_class("form-entry")
-        self._root_password_entry.set_hexpand(True)
-        self._root_password_entry.connect("activate", lambda _: self._go_next())
-        card.append(self._root_password_entry)
+        # Hostname
+        card.append(self._make_translated_label("Hostname"))
+        self._hostname_entry = Gtk.Entry()
+        self._hostname_entry.set_placeholder_text("my-computer")
+        self._hostname_entry.add_css_class("form-entry")
+        self._hostname_entry.set_hexpand(True)
+        self._hostname_entry.connect("activate", lambda _: self._go_next())
+        card.append(self._hostname_entry)
+        _host_desc = Gtk.Label(label=_("Your computer's name on the network. Leave blank to auto-generate."))
+        _host_desc.add_css_class("form-description")
+        _host_desc.set_halign(Gtk.Align.START)
+        _host_desc.set_wrap(True)
+        _host_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        _host_desc.set_max_width_chars(50)
+        self._retranslatable.append((_host_desc.set_label, "Your computer's name on the network. Leave blank to auto-generate."))
+        card.append(_host_desc)
 
         wrapper.append(card)
         scrolled.set_child(wrapper)
@@ -1141,10 +1144,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_memory = self._make_summary_row(card, "Memory")
         self._summary_name = self._make_summary_row(card, "Name")
         self._summary_username = self._make_summary_row(card, "Username")
-        self._summary_hostname = self._make_summary_row(card, "Hostname")
-        self._summary_timezone = self._make_summary_row(card, "Timezone")
         self._summary_admin = self._make_summary_row(card, "Administrator")
         self._summary_root = self._make_summary_row(card, "Root password")
+        self._summary_timezone = self._make_summary_row(card, "Timezone")
+        self._summary_hostname = self._make_summary_row(card, "Hostname")
         self._summary_apps = self._make_summary_row(card, "Apps")
 
         wrapper.append(card)
@@ -1731,6 +1734,26 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                   "and cannot end with a hyphen.")
             )
             return False
+        if not password:
+            self._set_status(_("Password is required."))
+            return False
+        if len(password) < 6:
+            self._set_status(_("Password must be at least 6 characters."))
+            return False
+        if password != confirm:
+            self._set_status(_("Passwords do not match."))
+            return False
+        is_admin = self._admin_check.get_active()
+        root_password = self._root_password_entry.get_text()
+        if not is_admin and not root_password:
+            self._set_status(
+                _("Either enable administrator access or set a root password. "
+                  "Without one of these you will be locked out of system management.")
+            )
+            return False
+        return True
+
+    def _validate_system(self) -> bool:
         hostname = self._hostname_entry.get_text().strip()
         if hostname:
             if len(hostname) > 63:
@@ -1742,26 +1765,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                       "and cannot start or end with a hyphen.")
                 )
                 return False
-        if not password:
-            self._set_status(_("Password is required."))
-            return False
-        if len(password) < 6:
-            self._set_status(_("Password must be at least 6 characters."))
-            return False
-        if password != confirm:
-            self._set_status(_("Passwords do not match."))
-            return False
-        return True
-
-    def _validate_system(self) -> bool:
-        is_admin = self._admin_check.get_active()
-        root_password = self._root_password_entry.get_text()
-        if not is_admin and not root_password:
-            self._set_status(
-                _("Either enable administrator access or set a root password. "
-                  "Without one of these you will be locked out of system management.")
-            )
-            return False
         return True
 
     # ------------------------------------------------------------------
@@ -1800,13 +1803,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Account
         self._summary_name.set_text(self._fullname_entry.get_text().strip())
         self._summary_username.set_text(self._username_entry.get_text().strip())
-        hostname = self._hostname_entry.get_text().strip() or f"{self._username_entry.get_text().strip()}-desktop"
-        self._summary_hostname.set_text(hostname)
-        self._summary_timezone.set_text(self._get_selected_timezone())
         self._summary_admin.set_text(_("Yes") if self._admin_check.get_active() else _("No"))
         self._summary_root.set_text(
             _("Set") if self._root_password_entry.get_text() else _("Not set")
         )
+
+        # System
+        self._summary_timezone.set_text(self._get_selected_timezone())
+        hostname = self._hostname_entry.get_text().strip() or f"{self._username_entry.get_text().strip()}-desktop"
+        self._summary_hostname.set_text(hostname)
 
         # Apps
         selected = self._get_selected_apps()
