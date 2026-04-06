@@ -141,6 +141,37 @@ button.back-button:hover label {
     color: #dddddd;
 }
 
+.keyboard-toggle {
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+    color: #aaaaaa;
+    margin-top: 12px;
+}
+
+.keyboard-toggle label {
+    color: #aaaaaa;
+}
+
+.keyboard-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.keyboard-toggle:hover label {
+    color: #dddddd;
+}
+
+.keyboard-panel {
+    margin-top: 8px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
 .status-label {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
@@ -361,6 +392,35 @@ def _hash_password(plaintext: str) -> str:
     return result.stdout.strip()
 
 
+def _load_keyboard_layouts() -> list[tuple[str, str]]:
+    """Return list of (code, description) tuples for available XKB layouts."""
+    layout_names: dict[str, str] = {}
+    rules_path = Path("/usr/share/X11/xkb/rules/evdev.lst")
+    try:
+        if rules_path.exists():
+            in_section = False
+            for line in rules_path.read_text().splitlines():
+                if line.strip() == "! layout":
+                    in_section = True
+                    continue
+                if line.strip().startswith("! "):
+                    in_section = False
+                    continue
+                if in_section and line.strip():
+                    parts = line.split(None, 1)
+                    if len(parts) == 2:
+                        layout_names[parts[0]] = parts[1]
+    except OSError:
+        pass
+
+    if not layout_names:
+        # Minimal fallback
+        return [("us", "English (US)"), ("gb", "English (UK)"),
+                ("de", "German"), ("fr", "French"), ("es", "Spanish")]
+
+    return sorted(layout_names.items(), key=lambda x: x[1])
+
+
 def _load_timezones() -> list[str]:
     """Return the list of available timezones from timedatectl."""
     try:
@@ -443,6 +503,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._language_names = {}
 
         self._timezones = _load_timezones()
+        self._keyboard_layouts = _load_keyboard_layouts()  # [(code, name), ...]
+        self._keyboard_user_override = False  # True once user manually picks a layout
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
         self._connected_ssid: str | None = None
         self._current_page = PAGE_LANGUAGE  # Start at Language page
@@ -684,6 +746,49 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     variant_box.set_visible(True)
 
         card.append(lang_list)
+
+        # Keyboard layout disclosure — collapsed by default, sane auto-selection
+        self._kb_toggle = Gtk.Button(label=_("Keyboard layout: {layout}").format(
+            layout=dict(self._keyboard_layouts).get("us", "English (US)")))
+        self._kb_toggle.add_css_class("keyboard-toggle")
+        self._kb_toggle.set_halign(Gtk.Align.START)
+        self._retranslatable.append((lambda t: None, "Keyboard layout: {layout}"))  # placeholder for retranslation
+        self._kb_toggle.connect("clicked", self._on_keyboard_toggle)
+        card.append(self._kb_toggle)
+
+        self._kb_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        self._kb_panel.add_css_class("keyboard-panel")
+        self._kb_panel.set_visible(False)
+
+        kb_desc = Gtk.Label(
+            label=_("Auto-selected from your language. Override if your physical keyboard differs."))
+        kb_desc.add_css_class("form-description")
+        kb_desc.set_halign(Gtk.Align.START)
+        kb_desc.set_wrap(True)
+        kb_desc.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        kb_desc.set_max_width_chars(50)
+        self._retranslatable.append((kb_desc.set_label,
+            "Auto-selected from your language. Override if your physical keyboard differs."))
+        self._kb_panel.append(kb_desc)
+
+        # Searchable dropdown with all layouts
+        kb_labels = [f"{name} ({code})" for code, name in self._keyboard_layouts]
+        kb_model = Gtk.StringList.new(kb_labels)
+        self._kb_dropdown = Gtk.DropDown(model=kb_model)
+        self._kb_dropdown.set_enable_search(True)
+        self._kb_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
+        self._kb_dropdown.set_hexpand(True)
+        # Set initial selection to "us"
+        self._kb_codes = [code for code, _ in self._keyboard_layouts]
+        try:
+            self._kb_dropdown.set_selected(self._kb_codes.index("us"))
+        except ValueError:
+            pass
+        self._kb_dropdown.connect("notify::selected", self._on_keyboard_selected)
+        self._kb_panel.append(self._kb_dropdown)
+
+        card.append(self._kb_panel)
+
         wrapper.append(card)
         scrolled.set_child(wrapper)
         return scrolled
@@ -713,6 +818,36 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._selected_lang = row_data["code"]
         self._selected_locale = row_data["default_locale"]
         self._switch_language(row_data["code"])
+        self._sync_keyboard_to_language()
+
+    def _on_keyboard_toggle(self, _button: Gtk.Button) -> None:
+        """Toggle keyboard layout panel visibility."""
+        self._kb_panel.set_visible(not self._kb_panel.get_visible())
+
+    def _on_keyboard_selected(self, dropdown: Gtk.DropDown, _pspec: object) -> None:
+        """Handle manual keyboard layout selection."""
+        idx = dropdown.get_selected()
+        if 0 <= idx < len(self._kb_codes):
+            code = self._kb_codes[idx]
+            name = self._keyboard_layouts[idx][1]
+            self._keyboard_user_override = True
+            self._kb_toggle.set_label(
+                _("Keyboard layout: {layout}").format(layout=name))
+
+    def _sync_keyboard_to_language(self) -> None:
+        """Auto-select keyboard layout based on current language (unless user overrode)."""
+        if self._keyboard_user_override:
+            return
+        lang_prefix = self._selected_locale.split("_")[0]
+        _, xkb_code = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        try:
+            idx = self._kb_codes.index(xkb_code)
+            self._kb_dropdown.set_selected(idx)
+            name = self._keyboard_layouts[idx][1]
+            self._kb_toggle.set_label(
+                _("Keyboard layout: {layout}").format(layout=name))
+        except ValueError:
+            pass
 
     def _on_variant_toggled(self, check_button: Gtk.CheckButton,
                             lang_code: str, locale: str) -> None:
@@ -1875,9 +2010,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_hostname.set_text(hostname)
 
         # Keyboard layout
-        lang_prefix = self._selected_locale.split("_")[0]
-        _, xkb_layout = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
-        self._summary_keyboard.set_text(xkb_layout)
+        kb_idx = self._kb_dropdown.get_selected()
+        if 0 <= kb_idx < len(self._keyboard_layouts):
+            code, name = self._keyboard_layouts[kb_idx]
+            self._summary_keyboard.set_text(f"{name} ({code})")
+        else:
+            self._summary_keyboard.set_text("us")
 
         # Apps
         selected = self._get_selected_apps()
@@ -2184,12 +2322,19 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Failed to set hostname: {exc}"
 
         # Set keyboard layout for console and graphical sessions
+        xkb_layout = self._setup_xkb_layout
+        # Derive console keymap from XKB layout (best-effort mapping)
         lang_prefix = self._setup_locale.split("_")[0]
-        # Handle pt_PT vs pt_BR distinction
-        if self._setup_locale.startswith("pt_PT"):
-            vconsole_keymap, xkb_layout = "pt-latin1", "pt"
-        else:
-            vconsole_keymap, xkb_layout = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        vconsole_keymap, _ = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        # Override console keymap for specific XKB layouts with known mappings
+        _xkb_to_vconsole = {"de": "de", "fr": "fr", "es": "es", "it": "it",
+                            "pt": "pt-latin1", "br": "br-abnt2", "ru": "ru",
+                            "pl": "pl", "se": "sv-latin1", "jp": "jp106",
+                            "tr": "trq", "gb": "uk"}
+        if xkb_layout in _xkb_to_vconsole:
+            vconsole_keymap = _xkb_to_vconsole[xkb_layout]
+        elif xkb_layout == "us":
+            vconsole_keymap = "us"
         try:
             (Path(deploy) / "etc" / "vconsole.conf").write_text(
                 f"KEYMAP={vconsole_keymap}\n"
@@ -2415,8 +2560,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Apps
         self._setup_selected_apps = self._get_selected_apps()
 
-        # Language
+        # Language + keyboard
         self._setup_locale = self._selected_locale
+        kb_idx = self._kb_dropdown.get_selected()
+        self._setup_xkb_layout = self._kb_codes[kb_idx] if 0 <= kb_idx < len(self._kb_codes) else "us"
 
         # Build step list: (english_label, callable, error_behavior)
         # error_behavior: "fatal" = Back button, "retry" = Retry button,
