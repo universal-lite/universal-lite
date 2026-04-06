@@ -286,6 +286,37 @@ SWAP_SIZES = ["2 GB", "4 GB", "8 GB", N_("Custom")]
 
 FILESYSTEMS = ["ext4", "xfs", "btrfs"]
 
+# Mapping from locale prefix → (console keymap, XKB layout).
+# Console keymap is for /etc/vconsole.conf (TTY recovery).
+# XKB layout is for /etc/X11/xorg.conf.d/00-keyboard.conf (graphical sessions).
+# Languages that use non-Latin scripts on Latin keyboards get "us" for console
+# and a native XKB layout for graphical input method support.
+LOCALE_KEYMAP = {
+    "am": ("us", "us"),       # Amharic — US hardware, Ethiopic via ibus
+    "ar": ("us", "ara"),      # Arabic
+    "de": ("de", "de"),       # German
+    "en": ("us", "us"),       # English
+    "es": ("es", "es"),       # Spanish
+    "fa": ("us", "ir"),       # Persian
+    "fr": ("fr", "fr"),       # French
+    "ha": ("us", "us"),       # Hausa — Latin script, US layout
+    "hi": ("us", "in"),       # Hindi
+    "it": ("it", "it"),       # Italian
+    "ja": ("jp106", "jp"),    # Japanese
+    "ko": ("us", "kr"),       # Korean
+    "nl": ("us", "us"),       # Dutch — typically US layout
+    "pl": ("pl", "pl"),       # Polish
+    "pt": ("br-abnt2", "br"), # Portuguese (Brazilian default)
+    "ru": ("ru", "ru"),       # Russian
+    "sv": ("sv-latin1", "se"),# Swedish
+    "sw": ("us", "us"),       # Swahili — US layout
+    "th": ("us", "th"),       # Thai
+    "tr": ("trq", "tr"),      # Turkish
+    "vi": ("us", "vn"),       # Vietnamese
+    "yo": ("us", "us"),       # Yoruba — US layout
+    "zh": ("us", "cn"),       # Chinese
+}
+
 PAGE_LANGUAGE = 0
 PAGE_NETWORK = 1
 PAGE_DISK = 2
@@ -2116,6 +2147,29 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             )
         except OSError as exc:
             return f"Failed to set hostname: {exc}"
+
+        # Set keyboard layout for console and graphical sessions
+        lang_prefix = self._setup_locale.split("_")[0]
+        # Handle pt_PT vs pt_BR distinction
+        if self._setup_locale.startswith("pt_PT"):
+            vconsole_keymap, xkb_layout = "pt-latin1", "pt"
+        else:
+            vconsole_keymap, xkb_layout = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        try:
+            (Path(deploy) / "etc" / "vconsole.conf").write_text(
+                f"KEYMAP={vconsole_keymap}\n"
+            )
+            xkb_dir = Path(deploy) / "etc" / "X11" / "xorg.conf.d"
+            xkb_dir.mkdir(parents=True, exist_ok=True)
+            (xkb_dir / "00-keyboard.conf").write_text(
+                'Section "InputClass"\n'
+                '    Identifier "system-keyboard"\n'
+                '    MatchIsKeyboard "on"\n'
+                f'    Option "XkbLayout" "{xkb_layout}"\n'
+                'EndSection\n'
+            )
+        except OSError as exc:
+            return f"Failed to configure keyboard layout: {exc}"
 
         return None
 
