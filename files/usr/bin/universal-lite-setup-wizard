@@ -639,29 +639,32 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             ]),
         ]
 
-        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
-        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scrolled.set_propagate_natural_height(True)
+        # Outer container: scrollable language list + fixed keyboard section
+        page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        page_box.set_halign(Gtk.Align.CENTER)
+        page_box.set_size_request(480, -1)
 
-        wrapper = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        wrapper.set_halign(Gtk.Align.CENTER)
-        wrapper.set_valign(Gtk.Align.START)
-
-        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        card.add_css_class("card")
-        card.set_size_request(480, -1)
+        # Card header (fixed, not scrolled)
+        header = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        header.add_css_class("card")
+        header.set_size_request(480, -1)
 
         self._lang_title = Gtk.Label(label=_("Language"))
         self._lang_title.add_css_class("welcome-title")
         self._lang_title.set_halign(Gtk.Align.CENTER)
-        card.append(self._lang_title)
+        header.append(self._lang_title)
         self._retranslatable.append((self._lang_title.set_label, "Language"))
 
         self._language_subtitle = Gtk.Label(label=_("Select your language."))
         self._language_subtitle.add_css_class("welcome-subtitle")
         self._language_subtitle.set_halign(Gtk.Align.CENTER)
         self._retranslatable.append((self._language_subtitle.set_label, "Select your language."))
-        card.append(self._language_subtitle)
+        header.append(self._language_subtitle)
+
+        # Scrollable language list
+        scrolled = Gtk.ScrolledWindow(hexpand=True, vexpand=True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_height(200)
 
         lang_list = Gtk.ListBox()
         lang_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -745,16 +748,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 if variants:
                     variant_box.set_visible(True)
 
-        card.append(lang_list)
+        scrolled.set_child(lang_list)
 
-        # Keyboard layout disclosure — collapsed by default, sane auto-selection
+        # Assemble: header + scrollable list
+        header.append(scrolled)
+        page_box.append(header)
+
+        # Keyboard layout disclosure — pinned below the scroll area, always visible
         self._kb_toggle = Gtk.Button(label=_("Keyboard layout: {layout}").format(
             layout=dict(self._keyboard_layouts).get("us", "English (US)")))
         self._kb_toggle.add_css_class("keyboard-toggle")
         self._kb_toggle.set_halign(Gtk.Align.START)
-        self._retranslatable.append((lambda t: None, "Keyboard layout: {layout}"))  # placeholder for retranslation
+        self._retranslatable.append((lambda t: None, "Keyboard layout: {layout}"))
         self._kb_toggle.connect("clicked", self._on_keyboard_toggle)
-        card.append(self._kb_toggle)
+        page_box.append(self._kb_toggle)
 
         self._kb_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         self._kb_panel.add_css_class("keyboard-panel")
@@ -778,7 +785,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._kb_dropdown.set_enable_search(True)
         self._kb_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self._kb_dropdown.set_hexpand(True)
-        # Set initial selection to "us"
         self._kb_codes = [code for code, _ in self._keyboard_layouts]
         try:
             self._kb_dropdown.set_selected(self._kb_codes.index("us"))
@@ -787,11 +793,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._kb_dropdown.connect("notify::selected", self._on_keyboard_selected)
         self._kb_panel.append(self._kb_dropdown)
 
-        card.append(self._kb_panel)
+        page_box.append(self._kb_panel)
 
-        wrapper.append(card)
-        scrolled.set_child(wrapper)
-        return scrolled
+        return page_box
 
     def _on_lang_row_clicked(self, gesture: Gtk.GestureClick, n_press: int,
                              x: float, y: float, row_data: dict) -> None:
