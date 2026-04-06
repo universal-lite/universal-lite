@@ -2110,6 +2110,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             hostname = f"{username}-desktop"
         try:
             (Path(deploy) / "etc" / "hostname").write_text(hostname + "\n")
+            (Path(deploy) / "etc" / "hosts").write_text(
+                f"127.0.0.1   localhost {hostname}\n"
+                f"::1         localhost {hostname}\n"
+            )
         except OSError as exc:
             return f"Failed to set hostname: {exc}"
 
@@ -2129,6 +2133,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             subprocess.run(
                 ["rsync", "-a", src, dst],
                 check=True, capture_output=True, text=True, timeout=30,
+            )
+            # NM connection files contain WiFi passwords and must be 600
+            subprocess.run(
+                ["chmod", "-R", "600", dst],
+                check=False, capture_output=True, timeout=10,
             )
         except subprocess.CalledProcessError as exc:
             return f"Failed to copy network configuration: {exc.stderr.strip() or exc}"
