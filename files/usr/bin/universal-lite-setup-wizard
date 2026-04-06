@@ -54,6 +54,7 @@ APP_ID = "org.universallite.SetupWizard"
 CSS = """\
 window {
     background-color: #242424;
+    color: #ffffff;
 }
 
 .welcome-title {
