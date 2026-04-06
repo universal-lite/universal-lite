@@ -895,7 +895,7 @@ msgstr "Ìṣètò ọ̀nà àgbègbè kùnà"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:123
 msgid "Format change timed out"
-msgstr "Ìyípadà ọ̀nà ti pẹ́ jù"
+msgstr "Ìyípadà ìpilẹ̀ṣẹ̀ ti pẹ́ jù"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
