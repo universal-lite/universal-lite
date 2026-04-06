@@ -2,7 +2,6 @@
 FROM scratch AS ctx
 COPY build_files /build_files
 COPY files /files
-COPY po /po
 
 # Base Image
 FROM ghcr.io/ublue-os/base-main:latest
