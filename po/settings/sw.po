@@ -597,7 +597,7 @@ msgstr "Kipimo"
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 msgid "Resolution"
-msgstr "Ubainishaji"
+msgstr "Azimio"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36

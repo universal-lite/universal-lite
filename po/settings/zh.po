@@ -927,7 +927,7 @@ msgstr "自适应"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Flat"
-msgstr "平坦"
+msgstr "线性"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
@@ -966,7 +966,7 @@ msgstr "连接到隐藏网络..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:71
 msgid "Active Connection"
-msgstr "当前连接"
+msgstr "活动连接"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:174
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:206

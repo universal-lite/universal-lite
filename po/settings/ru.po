@@ -83,7 +83,7 @@ msgstr "Введите имя пользователя."
 
 #: ../files/usr/bin/universal-lite-greeter:563
 msgid "Enter your password."
-msgstr "Введите ваш пароль."
+msgstr "Введите пароль."
 
 #: ../files/usr/bin/universal-lite-greeter:582
 msgid "Authentication failed"
@@ -413,7 +413,7 @@ msgstr "Изображения"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
 msgid "Custom..."
-msgstr "Другие..."
+msgstr "Пользовательский..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
@@ -817,7 +817,7 @@ msgstr "Сбросить все комбинации"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
 msgid "Reset to default"
-msgstr "Сбросить по умолчанию"
+msgstr "Сбросить к значению по умолчанию"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
 msgid "Press new shortcut..."

@@ -637,7 +637,7 @@ msgstr "Çözünürlük ve yenileme hızı"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Reduce blue light to help with sleep"
-msgstr "Uykuya yardımcı olmak için mavi ışığı azaltın"
+msgstr "Mavi ışığı azaltarak uyku kalitesini artırır"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:110
 msgid "3500K (warm) to 6500K (cool)"

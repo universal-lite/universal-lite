@@ -885,7 +885,7 @@ msgstr "لوحة اللمس"
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
 msgid "Tap to click"
-msgstr "انقر للنقر"
+msgstr "اللمس للنقر"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
@@ -1219,7 +1219,7 @@ msgstr "أداء عالٍ"
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 msgid "Suspend"
-msgstr "إسبات"
+msgstr "تعليق"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
 msgid "Lock"
@@ -1253,7 +1253,7 @@ msgstr "ملف تعريف الطاقة"
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
 msgid "Suspend on Idle"
-msgstr "الإسبات عند الخمول"
+msgstr "التعليق عند الخمول"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 msgid "Idle"
@@ -1278,7 +1278,7 @@ msgstr "إيقاف الشاشة بعد"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
 msgid "Suspend after"
-msgstr "الإسبات بعد"
+msgstr "التعليق بعد"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
 msgid "When lid is closed"

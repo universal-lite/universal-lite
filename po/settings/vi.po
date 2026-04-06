@@ -132,7 +132,7 @@ msgstr "Không thể tải {label}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:26
 msgid "Appearance"
-msgstr "Giao diện"
+msgstr "Diện mạo"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:27
 msgid "Display"

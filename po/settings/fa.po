@@ -40,7 +40,7 @@ msgstr "رمز عبور"
 #: ../files/usr/bin/universal-lite-greeter:465
 #, python-brace-format
 msgid "Welcome back, {username}"
-msgstr "خوش آمدید، {username}"
+msgstr "خوش برگشتید، {username}"
 
 #: ../files/usr/bin/universal-lite-greeter:471
 msgid "Log In"
@@ -178,7 +178,7 @@ msgstr "برق و قفل"
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
 msgid "Accessibility"
-msgstr "دسترس‌پذیری"
+msgstr "دسترسی‌پذیری"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
@@ -1219,7 +1219,7 @@ msgstr "کارایی"
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 msgid "Suspend"
-msgstr "خواب"
+msgstr "تعلیق"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
 msgid "Lock"
@@ -1253,7 +1253,7 @@ msgstr "نمایه برق"
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
 msgid "Suspend on Idle"
-msgstr "خواب هنگام بیکاری"
+msgstr "تعلیق هنگام بیکاری"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 msgid "Idle"
@@ -1278,7 +1278,7 @@ msgstr "خاموش‌کردن نمایشگر پس از"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
 msgid "Suspend after"
-msgstr "خواب پس از"
+msgstr "تعلیق پس از"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
 msgid "When lid is closed"

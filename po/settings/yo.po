@@ -336,7 +336,7 @@ msgstr "Pa àwọn eré ìṣípayá tí nínú ojú-ìbáṣepọ̀ náà"
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
 msgid "Theme"
-msgstr "Ìpele"
+msgstr "Àkótó ìrísí"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36

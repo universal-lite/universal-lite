@@ -227,7 +227,7 @@ msgstr "Tsarin aiki"
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:42
 msgid "Hostname"
-msgstr "Sunan mai watsa shiri"
+msgstr "Sunan kwamfuta"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:52
@@ -309,7 +309,7 @@ msgstr "Babban rubutu"
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
 msgid "Cursor size"
-msgstr "Girman mawallafi"
+msgstr "Girman mai nuni"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73

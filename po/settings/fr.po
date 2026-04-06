@@ -154,7 +154,7 @@ msgstr "Bluetooth"
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 msgid "Panel"
-msgstr "Tableau de bord"
+msgstr "Panneau"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:31
 msgid "Mouse & Touchpad"
@@ -532,7 +532,7 @@ msgstr "Impossible de définir le fuseau horaire"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
 msgid "Invalid timezone"
-msgstr "Fuseau horaire invalide"
+msgstr "Fuseau horaire non valide"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
 msgid "Web Browser"
@@ -1248,7 +1248,7 @@ msgstr "Extinction de l'écran"
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
 msgid "Power Profile"
-msgstr "Profil d'énergie"
+msgstr "Profil d'alimentation"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39

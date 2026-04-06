@@ -352,7 +352,7 @@ msgstr "Scuro"
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
 msgid "Accent color"
-msgstr "Colore di accento"
+msgstr "Colore d'accento"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
 msgid "Color"

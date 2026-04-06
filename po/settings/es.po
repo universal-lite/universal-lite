@@ -86,7 +86,7 @@ msgstr "Introduzca su contraseña."
 
 #: ../files/usr/bin/universal-lite-greeter:582
 msgid "Authentication failed"
-msgstr "Error de autenticación"
+msgstr "Autenticación fallida"
 
 #: ../files/usr/bin/universal-lite-greeter:593
 msgid "Unexpected authentication response."
@@ -924,7 +924,7 @@ msgstr "El contenido se mueve con sus dedos"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Adaptive"
-msgstr "Adaptable"
+msgstr "Adaptativo"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Flat"

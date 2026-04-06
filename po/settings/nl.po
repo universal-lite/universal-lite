@@ -1035,7 +1035,7 @@ msgstr "Geen bedrade adapter gedetecteerd"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:300
 msgid "Disconnected"
-msgstr "Niet verbonden"
+msgstr "Verbinding verbroken"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
 msgid "Apps"

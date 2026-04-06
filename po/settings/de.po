@@ -562,7 +562,7 @@ msgstr "PDF-Betrachter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
 msgid "Media Player"
-msgstr "Medienwiedergabe"
+msgstr "Medienplayer"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30

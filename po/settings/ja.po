@@ -916,7 +916,7 @@ msgstr "マウス"
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
 msgid "Acceleration"
-msgstr "加速度"
+msgstr "加速"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
 msgid "Content moves with your fingers"

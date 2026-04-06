@@ -755,7 +755,7 @@ msgstr "Zachowanie Caps Lock"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Remap"
-msgstr "Przemapuj"
+msgstr "Zmień przypisanie"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
@@ -1012,7 +1012,7 @@ msgstr "Połączono pomyślnie"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:284
 msgid "Not connected"
-msgstr "Niepołączono"
+msgstr "Brak połączenia"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:287
 msgid "Type"

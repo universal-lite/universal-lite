@@ -178,7 +178,7 @@ msgstr "पावर और लॉक"
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
 msgid "Accessibility"
-msgstr "सुलभता"
+msgstr "अभिगम्यता"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
@@ -217,7 +217,7 @@ msgstr "डिफ़ॉल्ट ऐप्स"
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:31
 msgid "About"
-msgstr "बारे में"
+msgstr "परिचय"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:41
@@ -299,7 +299,7 @@ msgstr "बड़ा (32px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
 msgid "Larger (48px)"
-msgstr "सबसे बड़ा (48px)"
+msgstr "और बड़ा (48px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
@@ -395,7 +395,7 @@ msgstr "बड़ा"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Larger"
-msgstr "सबसे बड़ा"
+msgstr "और बड़ा"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
 msgid "Affects all text throughout the interface"
@@ -615,7 +615,7 @@ msgstr "रिफ़्रेश"
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:84
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Night Light"
-msgstr "नाइट लाइट"
+msgstr "रात्रि प्रकाश"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:110
