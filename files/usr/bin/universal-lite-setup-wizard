@@ -11,8 +11,8 @@ Eight-page flow:
   Page 0 — Language (locale selection)
   Page 1 — Network (WiFi scan-and-connect, auto-skipped if online)
   Page 2 — Disk (target drive, filesystem, memory management)
-  Page 3 — Account (name, username, password)
-  Page 4 — System setup (timezone, admin/root)
+  Page 3 — Account (name, username, password, admin, root password)
+  Page 4 — System setup (timezone, hostname)
   Page 5 — Apps (Flatpak app selection — rsync from USB)
   Page 6 — Summary and confirmation
   Page 7 — Progress (real-time install execution)
@@ -231,7 +231,7 @@ button.back-button:hover label {
 .app-row {
     padding: 12px 16px;
     border-radius: 8px;
-    background-color: #363636;
+    background-color: rgba(255, 255, 255, 0.04);
     margin-bottom: 4px;
 }
 
@@ -680,6 +680,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             if code == "en":
                 row_box.add_css_class("wifi-connected")
                 self._lang_selected_row_box = row_box
+                if variants:
+                    variant_box.set_visible(True)
 
         card.append(lang_list)
         wrapper.append(card)
@@ -1206,6 +1208,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_root = self._make_summary_row(card, "Root password")
         self._summary_timezone = self._make_summary_row(card, "Timezone")
         self._summary_hostname = self._make_summary_row(card, "Hostname")
+        self._summary_keyboard = self._make_summary_row(card, "Keyboard layout")
         self._summary_apps = self._make_summary_row(card, "Apps")
 
         wrapper.append(card)
@@ -1870,6 +1873,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._summary_timezone.set_text(self._get_selected_timezone())
         hostname = self._hostname_entry.get_text().strip() or f"{self._username_entry.get_text().strip()}-desktop"
         self._summary_hostname.set_text(hostname)
+
+        # Keyboard layout
+        lang_prefix = self._selected_locale.split("_")[0]
+        _, xkb_layout = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        self._summary_keyboard.set_text(xkb_layout)
 
         # Apps
         selected = self._get_selected_apps()
