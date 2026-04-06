@@ -1803,7 +1803,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return
 
         if self._current_page == PAGE_CONFIRM:
-            self._show_install_confirmation()
+            self._on_setup_clicked()
             return
 
         self._current_page += 1
@@ -2694,30 +2694,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         """Return to confirm page on fatal error for correction."""
         self._current_page = PAGE_CONFIRM
         self._update_navigation()
-
-    def _show_install_confirmation(self) -> None:
-        """Show a confirmation dialog before starting the destructive install."""
-        dialog = Gtk.AlertDialog()
-        dialog.set_message(_("Erase disk and install?"))
-        dialog.set_detail(
-            _("All data on {drive} will be permanently erased. "
-              "This cannot be undone.").format(
-                drive=self._get_selected_drive_display())
-        )
-        dialog.set_buttons([_("Cancel"), _("Erase and Install")])
-        dialog.set_cancel_button(0)
-        dialog.set_default_button(0)
-        dialog.choose(self, None, self._on_confirm_dialog_response)
-
-    def _on_confirm_dialog_response(self, dialog: Gtk.AlertDialog,
-                                     result: Gio.AsyncResult) -> None:
-        """Handle the confirmation dialog response."""
-        try:
-            response = dialog.choose_finish(result)
-        except Exception:
-            return  # Dialog was dismissed
-        if response == 1:  # "Erase and Install" button
-            self._on_setup_clicked()
 
     def _do_reboot(self) -> None:
         try:
