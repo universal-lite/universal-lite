@@ -18,15 +18,15 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-greeter:311
 msgid "Login"
-msgstr ""
+msgstr "ግባ"
 
 #: ../files/usr/bin/universal-lite-greeter:368
 msgid "Session"
-msgstr ""
+msgstr "ክፍለ ጊዜ"
 
 #: ../files/usr/bin/universal-lite-greeter:394
 msgid "Username"
-msgstr ""
+msgstr "የተጠቃሚ ስም"
 
 #: ../files/usr/bin/universal-lite-greeter:403
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
@@ -35,141 +35,141 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Password"
-msgstr ""
+msgstr "የይለፍ ቃል"
 
 #: ../files/usr/bin/universal-lite-greeter:465
 #, python-brace-format
 msgid "Welcome back, {username}"
-msgstr ""
+msgstr "እንኳን ደህና መጡ፣ {username}"
 
 #: ../files/usr/bin/universal-lite-greeter:471
 msgid "Log In"
-msgstr ""
+msgstr "ግባ"
 
 #: ../files/usr/bin/universal-lite-greeter:472
 #, python-brace-format
 msgid "Not {username}?"
-msgstr ""
+msgstr "{username} አይደሉም?"
 
 #: ../files/usr/bin/universal-lite-greeter:488
 msgid "Log in"
-msgstr ""
+msgstr "ግባ"
 
 #: ../files/usr/bin/universal-lite-greeter:494
 msgid "Next"
-msgstr ""
+msgstr "ቀጣይ"
 
 #: ../files/usr/bin/universal-lite-greeter:507
 #: ../files/usr/bin/universal-lite-greeter:522
 #: ../files/usr/bin/universal-lite-greeter:571
 #, python-brace-format
 msgid "Connection error: {exc}"
-msgstr ""
+msgstr "የግንኙነት ስህተት: {exc}"
 
 #: ../files/usr/bin/universal-lite-greeter:531
 #: ../files/usr/bin/universal-lite-greeter:536
 msgid "Authentication error"
-msgstr ""
+msgstr "የማረጋገጫ ስህተት"
 
 #: ../files/usr/bin/universal-lite-greeter:546
 msgid "Unknown error"
-msgstr ""
+msgstr "ያልታወቀ ስህተት"
 
 #: ../files/usr/bin/universal-lite-greeter:555
 msgid "Enter a username."
-msgstr ""
+msgstr "የተጠቃሚ ስም ያስገቡ።"
 
 #: ../files/usr/bin/universal-lite-greeter:563
 msgid "Enter your password."
-msgstr ""
+msgstr "የይለፍ ቃልዎን ያስገቡ።"
 
 #: ../files/usr/bin/universal-lite-greeter:582
 msgid "Authentication failed"
-msgstr ""
+msgstr "ማረጋገጥ አልተሳካም"
 
 #: ../files/usr/bin/universal-lite-greeter:593
 msgid "Unexpected authentication response."
-msgstr ""
+msgstr "ያልተጠበቀ የማረጋገጫ ምላሽ።"
 
 #: ../files/usr/bin/universal-lite-greeter:597
 msgid "Multi-step auth not supported."
-msgstr ""
+msgstr "ባለብዙ ደረጃ ማረጋገጫ አይደገፍም።"
 
 #: ../files/usr/bin/universal-lite-greeter:602
 msgid "Incorrect password."
-msgstr ""
+msgstr "የተሳሳተ የይለፍ ቃል።"
 
 #: ../files/usr/bin/universal-lite-greeter:604
 msgid "Login failed."
-msgstr ""
+msgstr "መግባት አልተሳካም።"
 
 #: ../files/usr/bin/universal-lite-greeter:607
 msgid "Unexpected response from login service."
-msgstr ""
+msgstr "ከመግቢያ አገልግሎት ያልተጠበቀ ምላሽ።"
 
 #: ../files/usr/bin/universal-lite-greeter:616
 #, python-brace-format
 msgid "Failed to start session: {exc}"
-msgstr ""
+msgstr "ክፍለ ጊዜ ለመጀመር አልተሳካም: {exc}"
 
 #: ../files/usr/bin/universal-lite-greeter:624
 msgid "Failed to start session."
-msgstr ""
+msgstr "ክፍለ ጊዜ ለመጀመር አልተሳካም።"
 
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Universal-Lite Settings"
-msgstr ""
+msgstr "የUniversal-Lite ቅንብሮች"
 
 #: ../files/usr/lib/universal-lite/settings/window.py:46
 msgid "Search settings..."
-msgstr ""
+msgstr "ቅንብሮችን ይፈልጉ..."
 
 #: ../files/usr/lib/universal-lite/settings/window.py:100
 #, python-brace-format
 msgid "Failed to load {label}"
-msgstr ""
+msgstr "{label} ለመጫን አልተሳካም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:26
 msgid "Appearance"
-msgstr ""
+msgstr "መልክ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:27
 msgid "Display"
-msgstr ""
+msgstr "ማሳያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:286
 msgid "Network"
-msgstr ""
+msgstr "አውታረ መረብ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:29
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:39
 msgid "Bluetooth"
-msgstr ""
+msgstr "ብሉቱዝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 msgid "Panel"
-msgstr ""
+msgstr "ፓነል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:31
 msgid "Mouse & Touchpad"
-msgstr ""
+msgstr "አይጥ እና ተች ፓድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:32
 msgid "Keyboard"
-msgstr ""
+msgstr "የቁልፍ ሰሌዳ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:33
 msgid "Sound"
-msgstr ""
+msgstr "ድምጽ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:34
 msgid "Power & Lock"
-msgstr ""
+msgstr "ኃይል እና መቆለፊያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
@@ -178,7 +178,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
 msgid "Accessibility"
-msgstr ""
+msgstr "ተደራሽነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
@@ -187,7 +187,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
 msgid "Date & Time"
-msgstr ""
+msgstr "ቀን እና ሰዓት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:39
@@ -196,7 +196,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:42
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:76
 msgid "Users"
-msgstr ""
+msgstr "ተጠቃሚዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:16
@@ -204,11 +204,11 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:23
 msgid "Language & Region"
-msgstr ""
+msgstr "ቋንቋ እና ክልል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:39
 msgid "Default Apps"
-msgstr ""
+msgstr "ነባሪ መተግበሪያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
@@ -217,356 +217,356 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:31
 msgid "About"
-msgstr ""
+msgstr "ስለ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:41
 msgid "Operating System"
-msgstr ""
+msgstr "ስርዓተ ክወና"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:42
 msgid "Hostname"
-msgstr ""
+msgstr "የአስተናጋጅ ስም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:52
 msgid "Processor"
-msgstr ""
+msgstr "ፕሮሰሰር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:62
 msgid "Memory"
-msgstr ""
+msgstr "ማህደረ ትውስታ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:68
 msgid "Disk"
-msgstr ""
+msgstr "ዲስክ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:89
 msgid "Desktop"
-msgstr ""
+msgstr "ዴስክቶፕ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:81
 msgid "Graphics"
-msgstr ""
+msgstr "ግራፊክስ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:25
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:92
 msgid "Updates"
-msgstr ""
+msgstr "ማሻሻያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:95
 msgid "Click to check for updates"
-msgstr ""
+msgstr "ማሻሻያዎችን ለመፈለግ ጠቅ ያድርጉ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:98
 msgid "Check for Updates"
-msgstr ""
+msgstr "ማሻሻያዎችን ፈልግ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:106
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:77
 msgid "Checking..."
-msgstr ""
+msgstr "በመፈተሽ ላይ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:117
 #, python-brace-format
 msgid "Update available: {version}"
-msgstr ""
+msgstr "ማሻሻያ አለ: {version}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:119
 msgid "System is up to date"
-msgstr ""
+msgstr "ስርዓቱ ወቅታዊ ነው"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:121
 msgid "Could not check for updates"
-msgstr ""
+msgstr "ማሻሻያዎችን ለመፈለግ አልተቻለም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
 msgid "Default (24px)"
-msgstr ""
+msgstr "ነባሪ (24px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
 msgid "Large (32px)"
-msgstr ""
+msgstr "ትልቅ (32px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
 msgid "Larger (48px)"
-msgstr ""
+msgstr "ይበልጥ ትልቅ (48px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
 msgid "Large text"
-msgstr ""
+msgstr "ትልቅ ጽሑፍ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
 msgid "Cursor size"
-msgstr ""
+msgstr "የጠቋሚ መጠን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
 msgid "High contrast"
-msgstr ""
+msgstr "ከፍተኛ ንፅፅር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
 msgid "Reduce motion"
-msgstr ""
+msgstr "እንቅስቃሴ ቀንስ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
 msgid "Increases font size for better readability"
-msgstr ""
+msgstr "ለተሻለ ንባብ የቅርጸ-ቁምፊ መጠን ይጨምራል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
 msgid "Forces dark theme with stronger borders"
-msgstr ""
+msgstr "ጠንካራ ድንበሮች ያለው ጨለማ ገጽታ ያስገድዳል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
 msgid "Disables animations throughout the interface"
-msgstr ""
+msgstr "በመላው በይነገጽ ላይ እነማዎችን ያሰናክላል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
 msgid "Theme"
-msgstr ""
+msgstr "ገጽታ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
 msgid "Light"
-msgstr ""
+msgstr "ብርሃን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
 msgid "Dark"
-msgstr ""
+msgstr "ጨለማ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
 msgid "Accent color"
-msgstr ""
+msgstr "አጽንዖት ቀለም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
 msgid "Color"
-msgstr ""
+msgstr "ቀለም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:70
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
 msgid "Font size"
-msgstr ""
+msgstr "የቅርጸ-ቁምፊ መጠን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
 msgid "Font"
-msgstr ""
+msgstr "ቅርጸ-ቁምፊ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
 msgid "Wallpaper"
-msgstr ""
+msgstr "ልጣፍ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
 msgid "Background"
-msgstr ""
+msgstr "ዳራ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:41
 msgid "Theme is set to Dark by High Contrast mode"
-msgstr ""
+msgstr "ገጽታው በከፍተኛ ንፅፅር ሁነታ ጨለማ ተደርጓል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Small"
-msgstr ""
+msgstr "ትንሽ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Default"
-msgstr ""
+msgstr "ነባሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Large"
-msgstr ""
+msgstr "ትልቅ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Larger"
-msgstr ""
+msgstr "ይበልጥ ትልቅ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
 msgid "Affects all text throughout the interface"
-msgstr ""
+msgstr "በመላው በይነገጽ ላይ ያለውን ጽሑፍ ሁሉ ይነካል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:122
 msgid "Choose Wallpaper"
-msgstr ""
+msgstr "ልጣፍ ይምረጡ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:124
 msgid "Images"
-msgstr ""
+msgstr "ምስሎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
 msgid "Custom..."
-msgstr ""
+msgstr "ብጁ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
 msgid "Pair"
-msgstr ""
+msgstr "አጣምር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 msgid "Wireless"
-msgstr ""
+msgstr "ገመድ-አልባ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 msgid "Device"
-msgstr ""
+msgstr "መሣሪያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
 msgid "No Bluetooth adapter found"
-msgstr ""
+msgstr "የብሉቱዝ አስማሚ አልተገኘም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:61
 msgid "Paired Devices"
-msgstr ""
+msgstr "የተጣመሩ መሣሪያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
 msgid "Available Devices"
-msgstr ""
+msgstr "ያሉ መሣሪያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
 msgid "Search for devices"
-msgstr ""
+msgstr "መሣሪያዎችን ፈልግ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:78
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:81
 msgid "Advanced..."
-msgstr ""
+msgstr "ከፍተኛ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
 msgid "Scanning..."
-msgstr ""
+msgstr "በመቃኘት ላይ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:156
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:298
 msgid "Connected"
-msgstr ""
+msgstr "ተገናኝቷል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
 msgid "Disconnect"
-msgstr ""
+msgstr "አቋርጥ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:163
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:199
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:246
 msgid "Connect"
-msgstr ""
+msgstr "አገናኝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:159
 msgid "Forget"
-msgstr ""
+msgstr "ረሳ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
 msgid "Pairing..."
-msgstr ""
+msgstr "በማጣመር ላይ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
 msgid "Paired successfully"
-msgstr ""
+msgstr "በተሳካ ሁኔታ ተጣምሯል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
 #, python-brace-format
 msgid "Pairing failed: {message}"
-msgstr ""
+msgstr "ማጣመር አልተሳካም: {message}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 msgid "Timezone"
-msgstr ""
+msgstr "የሰዓት ክልል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
 msgid "Automatic time"
-msgstr ""
+msgstr "ራስ-ሰር ሰዓት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
 msgid "NTP"
-msgstr ""
+msgstr "NTP"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
 msgid "24-hour clock"
-msgstr ""
+msgstr "የ24 ሰዓት ቅርጸት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
 msgid "e.g. America/New_York"
-msgstr ""
+msgstr "ለምሳሌ America/New_York"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Press Enter to apply"
-msgstr ""
+msgstr "ለመተግበር Enter ይጫኑ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
 msgid "Sync clock via network (NTP)"
-msgstr ""
+msgstr "ሰዓትን በአውታረ መረብ (NTP) ያመሳስሉ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
 msgid "Use 24-hour time format"
-msgstr ""
+msgstr "የ24 ሰዓት ቅርጸት ይጠቀሙ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
 msgid "Failed to set timezone"
-msgstr ""
+msgstr "የሰዓት ክልል ለማዘጋጀት አልተሳካም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
 msgid "Invalid timezone"
-msgstr ""
+msgstr "ልክ ያልሆነ የሰዓት ክልል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
 msgid "Web Browser"
-msgstr ""
+msgstr "የድር አሳሽ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
 msgid "File Manager"
-msgstr ""
+msgstr "የፋይል አስተዳዳሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
 msgid "Terminal"
-msgstr ""
+msgstr "ተርሚናል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
 msgid "Text Editor"
-msgstr ""
+msgstr "የጽሑፍ አርታኢ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
 msgid "Image Viewer"
-msgstr ""
+msgstr "የምስል መመልከቻ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
 msgid "PDF Viewer"
-msgstr ""
+msgstr "የPDF መመልከቻ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
 msgid "Media Player"
-msgstr ""
+msgstr "የሚዲያ ማጫወቻ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
 msgid "Email Client"
-msgstr ""
+msgstr "የኢሜይል ደንበኛ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
@@ -574,40 +574,40 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:35
 msgid "Default Applications"
-msgstr ""
+msgstr "ነባሪ መተግበሪያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:15
 msgid "Sunset to Sunrise"
-msgstr ""
+msgstr "ከፀሐይ ስትጠልቅ እስከ ፀሐይ ስትወጣ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:15
 msgid "Custom"
-msgstr ""
+msgstr "ብጁ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:46
 msgid "Display Scale"
-msgstr ""
+msgstr "የማሳያ ልኬት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:33
 msgid "Scale"
-msgstr ""
+msgstr "ልኬት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 msgid "Resolution"
-msgstr ""
+msgstr "ጥራት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:61
 msgid "Resolution & Refresh Rate"
-msgstr ""
+msgstr "ጥራት እና የማደስ ፍጥነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
 msgid "Refresh"
-msgstr ""
+msgstr "አድስ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
@@ -615,69 +615,69 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:84
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Night Light"
-msgstr ""
+msgstr "የሌሊት ብርሃን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:110
 msgid "Temperature"
-msgstr ""
+msgstr "ሙቀት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:39
 msgid "Blue light"
-msgstr ""
+msgstr "ሰማያዊ ብርሃን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:64
 msgid "No displays detected"
-msgstr ""
+msgstr "ማሳያዎች አልተገኙም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:81
 msgid "Resolution and refresh rate"
-msgstr ""
+msgstr "ጥራት እና የማደስ ፍጥነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Reduce blue light to help with sleep"
-msgstr ""
+msgstr "ለእንቅልፍ ለመርዳት ሰማያዊ ብርሃን ይቀንሱ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:110
 msgid "3500K (warm) to 6500K (cool)"
-msgstr ""
+msgstr "3500K (ሞቃት) እስከ 6500K (ቀዝቃዛ)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:120
 msgid "Schedule"
-msgstr ""
+msgstr "መርሐ ግብር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:137
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:147
 msgid "HH:MM"
-msgstr ""
+msgstr "ሰ:ደ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:143
 msgid "Start time"
-msgstr ""
+msgstr "የመጀመሪያ ሰዓት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:153
 msgid "End time"
-msgstr ""
+msgstr "የመጨረሻ ሰዓት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:167
 msgid "Advanced"
-msgstr ""
+msgstr "ከፍተኛ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:168
 msgid "Open wdisplays"
-msgstr ""
+msgstr "wdisplays ክፈት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:173
 msgid "Advanced display settings"
-msgstr ""
+msgstr "ከፍተኛ የማሳያ ቅንብሮች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:173
 msgid "Arrange and configure displays visually"
-msgstr ""
+msgstr "ማሳያዎችን በእይታ ያስተካክሉ እና ያዋቅሩ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:204
 msgid "Confirm Scale"
-msgstr ""
+msgstr "ልኬት ያረጋግጡ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:215
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:241
@@ -686,20 +686,22 @@ msgid ""
 "Keep this display scale?\n"
 "Reverting in {seconds}s..."
 msgstr ""
+"ይህን የማሳያ ልኬት ይቀጥሉ?\n"
+"በ{seconds} ሰከንድ ይመለሳል..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:220
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:342
 msgid "Revert"
-msgstr ""
+msgstr "መልስ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:348
 msgid "Keep"
-msgstr ""
+msgstr "ቀጥል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:325
 msgid "Confirm Resolution"
-msgstr ""
+msgstr "ጥራት ያረጋግጡ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:336
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:369
@@ -708,118 +710,120 @@ msgid ""
 "Keep this resolution?\n"
 "Reverting in {seconds}s..."
 msgstr ""
+"ይህን ጥራት ይቀጥሉ?\n"
+"በ{seconds} ሰከንድ ይመለሳል..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:232
 msgid "Layout"
-msgstr ""
+msgstr "አቀማመጥ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:284
 msgid "Keyboard layout"
-msgstr ""
+msgstr "የቁልፍ ሰሌዳ አቀማመጥ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
 msgid "Variant"
-msgstr ""
+msgstr "ልዩነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:289
 msgid "Repeat"
-msgstr ""
+msgstr "ድግም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:298
 msgid "Repeat delay"
-msgstr ""
+msgstr "የመድገም ዘግይት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:307
 msgid "Repeat rate"
-msgstr ""
+msgstr "የመድገም ፍጥነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Caps Lock"
-msgstr ""
+msgstr "Caps Lock"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Caps Lock behavior"
-msgstr ""
+msgstr "የCaps Lock ባህሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Remap"
-msgstr ""
+msgstr "ዳግም ካርታ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
 msgid "Shortcuts"
-msgstr ""
+msgstr "አቋራጮች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "የቁልፍ ሰሌዳ አቋራጮች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 msgid "Keybinding"
-msgstr ""
+msgstr "የቁልፍ ማያያዣ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
 msgid "Hotkey"
-msgstr ""
+msgstr "ፈጣን ቁልፍ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
 msgid "Key combo"
-msgstr ""
+msgstr "የቁልፍ ውህድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:249
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:258
 msgid "(Default)"
-msgstr ""
+msgstr "(ነባሪ)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
 msgid "Caps Lock Behavior"
-msgstr ""
+msgstr "የCaps Lock ባህሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Ctrl"
-msgstr ""
+msgstr "Ctrl"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Escape"
-msgstr ""
+msgstr "Escape"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Disabled"
-msgstr ""
+msgstr "ተሰናክሏል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
 msgid "Caps Lock key"
-msgstr ""
+msgstr "የCaps Lock ቁልፍ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
 msgid "Remap Caps Lock to another function"
-msgstr ""
+msgstr "Caps Lockን ወደ ሌላ ተግባር ዳግም ካርታ ያድርጉ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "የቁልፍ ሰሌዳ አቋራጮች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:333
 msgid "Reset All Shortcuts"
-msgstr ""
+msgstr "ሁሉንም አቋራጮች ዳግም አስጀምር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
 msgid "Reset to default"
-msgstr ""
+msgstr "ወደ ነባሪ መልስ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
 msgid "Press new shortcut..."
-msgstr ""
+msgstr "አዲስ አቋራጭ ይጫኑ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:489
 msgid "Shortcut Conflict"
-msgstr ""
+msgstr "የአቋራጭ ግጭት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:491
 #, python-brace-format
@@ -828,6 +832,9 @@ msgid ""
 "\n"
 "Reassign it to \"{target}\"?"
 msgstr ""
+"\"{key}\" ቀድሞ ለ\"{conflict}\" ተመድቧል።\n"
+"\n"
+"ለ\"{target}\" ዳግም ይመደብ?"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:196
@@ -835,544 +842,544 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
 msgid "Cancel"
-msgstr ""
+msgstr "ሰርዝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 msgid "Reassign"
-msgstr ""
+msgstr "ዳግም መድብ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:16
 msgid "Language"
-msgstr ""
+msgstr "ቋንቋ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:17
 msgid "Locale"
-msgstr ""
+msgstr "የአካባቢ ቅንብር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:18
 msgid "Regional format"
-msgstr ""
+msgstr "የክልል ቅርጸት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:27
 msgid "Changes take effect after logging out"
-msgstr ""
+msgstr "ለውጦች ከወጡ በኋላ ተግባራዊ ይሆናሉ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:45
 msgid "System language"
-msgstr ""
+msgstr "የስርዓት ቋንቋ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:57
 msgid "Regional formats"
-msgstr ""
+msgstr "የክልል ቅርጸቶች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:57
 msgid "Date, number, and currency format"
-msgstr ""
+msgstr "የቀን፣ ቁጥር እና ምንዛሬ ቅርጸት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:25
 msgid "Touchpad"
-msgstr ""
+msgstr "ተች ፓድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
 msgid "Tap to click"
-msgstr ""
+msgstr "ለመጫን ይንኩ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:59
 msgid "Natural scrolling"
-msgstr ""
+msgstr "ተፈጥሮአዊ ማሸብለል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:43
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
 msgid "Pointer speed"
-msgstr ""
+msgstr "የጠቋሚ ፍጥነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:51
 msgid "Scroll speed"
-msgstr ""
+msgstr "የማሸብለል ፍጥነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
 msgid "Mouse"
-msgstr ""
+msgstr "አይጥ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
 msgid "Acceleration"
-msgstr ""
+msgstr "ማፋጠን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
 msgid "Content moves with your fingers"
-msgstr ""
+msgstr "ይዘት ከጣቶችዎ ጋር ይንቀሳቀሳል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Adaptive"
-msgstr ""
+msgstr "ተስማሚ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Flat"
-msgstr ""
+msgstr "ጠፍጣፋ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:39
 msgid "WiFi"
-msgstr ""
+msgstr "WiFi"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
 msgid "Hidden network"
-msgstr ""
+msgstr "የተደበቀ አውታረ መረብ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:76
 msgid "Wired"
-msgstr ""
+msgstr "ባለ ሽቦ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 msgid "Ethernet"
-msgstr ""
+msgstr "ኤተርኔት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 msgid "Connection"
-msgstr ""
+msgstr "ግንኙነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 msgid "IP address"
-msgstr ""
+msgstr "የIP አድራሻ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:62
 msgid "Scan"
-msgstr ""
+msgstr "ቃኝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:65
 msgid "Connect to Hidden Network..."
-msgstr ""
+msgstr "ከተደበቀ አውታረ መረብ ጋር ተገናኝ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:71
 msgid "Active Connection"
-msgstr ""
+msgstr "ንቁ ግንኙነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:174
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:206
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:254
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr ""
+msgstr "ከ{ssid} ጋር በመገናኘት ላይ..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:179
 #, python-brace-format
 msgid "Connect to {ssid}"
-msgstr ""
+msgstr "ከ{ssid} ጋር ተገናኝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:219
 msgid "Connect to Hidden Network"
-msgstr ""
+msgstr "ከተደበቀ አውታረ መረብ ጋር ተገናኝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:230
 msgid "Network name (SSID)"
-msgstr ""
+msgstr "የአውታረ መረብ ስም (SSID)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:233
 msgid "None"
-msgstr ""
+msgstr "ምንም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:233
 msgid "WPA/WPA2"
-msgstr ""
+msgstr "WPA/WPA2"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:233
 msgid "WPA3"
-msgstr ""
+msgstr "WPA3"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:234
 msgid "Security"
-msgstr ""
+msgstr "ደህንነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:269
 msgid "Connected successfully"
-msgstr ""
+msgstr "በተሳካ ሁኔታ ተገናኝቷል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:284
 msgid "Not connected"
-msgstr ""
+msgstr "አልተገናኘም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:287
 msgid "Type"
-msgstr ""
+msgstr "ዓይነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:288
 msgid "IP Address"
-msgstr ""
+msgstr "የIP አድራሻ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:289
 msgid "Gateway"
-msgstr ""
+msgstr "ጌትዌይ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:290
 msgid "DNS"
-msgstr ""
+msgstr "DNS"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:296
 msgid "No wired adapter detected"
-msgstr ""
+msgstr "የሽቦ አስማሚ አልተገኘም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:300
 msgid "Disconnected"
-msgstr ""
+msgstr "ተቋርጧል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
 msgid "Apps"
-msgstr ""
+msgstr "መተግበሪያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
 msgid "Window list"
-msgstr ""
+msgstr "የመስኮት ዝርዝር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
 msgid "Volume"
-msgstr ""
+msgstr "ድምጽ መጠን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
 msgid "Brightness"
-msgstr ""
+msgstr "ብሩህነት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 msgid "Battery"
-msgstr ""
+msgstr "ባትሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
 msgid "Clock"
-msgstr ""
+msgstr "ሰዓት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 msgid "Power"
-msgstr ""
+msgstr "ኃይል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
 msgid "System tray"
-msgstr ""
+msgstr "የስርዓት ትሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Left"
-msgstr ""
+msgstr "ግራ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
 msgid "Center"
-msgstr ""
+msgstr "መሃል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Right"
-msgstr ""
+msgstr "ቀኝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Top"
-msgstr ""
+msgstr "ላይ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Bottom"
-msgstr ""
+msgstr "ታች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
 msgid "Position"
-msgstr ""
+msgstr "አቀማመጥ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
 msgid "Density"
-msgstr ""
+msgstr "ጥግግት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
 msgid "Compact"
-msgstr ""
+msgstr "ጥቅጥቅ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
 msgid "Module Layout"
-msgstr ""
+msgstr "የሞጁል አቀማመጥ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 msgid "Modules"
-msgstr ""
+msgstr "ሞጁሎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
 msgid "Pinned Apps"
-msgstr ""
+msgstr "የተሰኩ መተግበሪያዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 msgid "Pinned"
-msgstr ""
+msgstr "ተሰክቷል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
 msgid "Normal"
-msgstr ""
+msgstr "ተራ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
 msgid "Reset layout to defaults"
-msgstr ""
+msgstr "አቀማመጥን ወደ ነባሪ መልስ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
 #, python-brace-format
 msgid "Move to {section}"
-msgstr ""
+msgstr "ወደ {section} ውሰድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
 msgid "Move up in section"
-msgstr ""
+msgstr "በክፍል ውስጥ ወደ ላይ ውሰድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
 msgid "Move down in section"
-msgstr ""
+msgstr "በክፍል ውስጥ ወደ ታች ውሰድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
 msgid "Add pinned app"
-msgstr ""
+msgstr "የተሰካ መተግበሪያ ጨምር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
 msgid "Remove"
-msgstr ""
+msgstr "አስወግድ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
 msgid "Add Pinned App"
-msgstr ""
+msgstr "የተሰካ መተግበሪያ ጨምር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
 msgid "Search apps…"
-msgstr ""
+msgstr "መተግበሪያዎችን ፈልግ…"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
 msgid "Add"
-msgstr ""
+msgstr "ጨምር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "1 minute"
-msgstr ""
+msgstr "1 ደቂቃ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "2 minutes"
-msgstr ""
+msgstr "2 ደቂቃዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "5 minutes"
-msgstr ""
+msgstr "5 ደቂቃዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "10 minutes"
-msgstr ""
+msgstr "10 ደቂቃዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "15 minutes"
-msgstr ""
+msgstr "15 ደቂቃዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "30 minutes"
-msgstr ""
+msgstr "30 ደቂቃዎች"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "Never"
-msgstr ""
+msgstr "በፍጹም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
 msgid "Balanced"
-msgstr ""
+msgstr "ሚዛናዊ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
 msgid "Power Saver"
-msgstr ""
+msgstr "ኃይል ቆጣቢ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
 msgid "Performance"
-msgstr ""
+msgstr "አፈጻጸም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 msgid "Suspend"
-msgstr ""
+msgstr "አቁም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
 msgid "Lock"
-msgstr ""
+msgstr "ቆልፍ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:26
 msgid "Do Nothing"
-msgstr ""
+msgstr "ምንም አታድርግ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:47
 msgid "Lock & Display"
-msgstr ""
+msgstr "መቆለፊያ እና ማሳያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
 msgid "Lock screen"
-msgstr ""
+msgstr "ማያ ገጽ ቆልፍ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
 msgid "Display off"
-msgstr ""
+msgstr "ማሳያ አጥፋ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
 msgid "Power Profile"
-msgstr ""
+msgstr "የኃይል መገለጫ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
 msgid "Suspend on Idle"
-msgstr ""
+msgstr "ስራ-ፈት ሲሆን አቁም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 msgid "Idle"
-msgstr ""
+msgstr "ስራ-ፈት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:106
 msgid "Lid Close Behavior"
-msgstr ""
+msgstr "ክዳን ሲዘጋ ባህሪ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
 msgid "Lid"
-msgstr ""
+msgstr "ክዳን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:59
 msgid "Lock screen after"
-msgstr ""
+msgstr "ማያ ገጽ ቆልፍ ከ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
 msgid "Turn off display after"
-msgstr ""
+msgstr "ማሳያ አጥፋ ከ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
 msgid "Suspend after"
-msgstr ""
+msgstr "አቁም ከ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
 msgid "When lid is closed"
-msgstr ""
+msgstr "ክዳን ሲዘጋ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
 msgid "Output"
-msgstr ""
+msgstr "ውጤት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
 msgid "Output device"
-msgstr ""
+msgstr "የውጤት መሣሪያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
 msgid "Mute"
-msgstr ""
+msgstr "ዝም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
 msgid "Input"
-msgstr ""
+msgstr "ግብዓት"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
 msgid "Input device"
-msgstr ""
+msgstr "የግብዓት መሣሪያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 msgid "Microphone"
-msgstr ""
+msgstr "ማይክሮፎን"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
 msgid "(No output devices)"
-msgstr ""
+msgstr "(የውጤት መሣሪያዎች የሉም)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
 msgid "(No input devices)"
-msgstr ""
+msgstr "(የግብዓት መሣሪያዎች የሉም)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:97
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Display name"
-msgstr ""
+msgstr "የማሳያ ስም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:41
 msgid "Auto-login"
-msgstr ""
+msgstr "ራስ-ሰር መግቢያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:42
 msgid "Account"
-msgstr ""
+msgstr "መለያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:82
 msgid "Could not connect to AccountsService"
-msgstr ""
+msgstr "ከAccountsService ጋር መገናኘት አልተቻለም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:103
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:147
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:160
 msgid "Change Password"
-msgstr ""
+msgstr "የይለፍ ቃል ቀይር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Set a new password for your account"
-msgstr ""
+msgstr "ለመለያዎ አዲስ የይለፍ ቃል ያዘጋጁ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:116
 msgid "Automatic login"
-msgstr ""
+msgstr "ራስ-ሰር መግቢያ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:116
 msgid "Log in without a password at startup"
-msgstr ""
+msgstr "ሲጀምር ያለ የይለፍ ቃል ግባ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:166
 msgid "New password"
-msgstr ""
+msgstr "አዲስ የይለፍ ቃል"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:171
 msgid "Confirm password"
-msgstr ""
+msgstr "የይለፍ ቃል ያረጋግጡ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:185
 msgid "Apply"
-msgstr ""
+msgstr "ተግብር"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:192
 msgid "Password cannot be empty"
-msgstr ""
+msgstr "የይለፍ ቃል ባዶ ሊሆን አይችልም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:195
 msgid "Passwords do not match"
-msgstr ""
+msgstr "የይለፍ ቃሎች አይዛመዱም"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
-msgstr ""
+msgstr "የይለፍ ቃል ለማዘጋጀት አልተሳካም"

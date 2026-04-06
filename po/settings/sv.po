@@ -19,15 +19,15 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-greeter:311
 msgid "Login"
-msgstr ""
+msgstr "Logga in"
 
 #: ../files/usr/bin/universal-lite-greeter:368
 msgid "Session"
-msgstr ""
+msgstr "Session"
 
 #: ../files/usr/bin/universal-lite-greeter:394
 msgid "Username"
-msgstr ""
+msgstr "Användarnamn"
 
 #: ../files/usr/bin/universal-lite-greeter:403
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
@@ -36,141 +36,141 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Password"
-msgstr ""
+msgstr "Lösenord"
 
 #: ../files/usr/bin/universal-lite-greeter:465
 #, python-brace-format
 msgid "Welcome back, {username}"
-msgstr ""
+msgstr "Välkommen tillbaka, {username}"
 
 #: ../files/usr/bin/universal-lite-greeter:471
 msgid "Log In"
-msgstr ""
+msgstr "Logga in"
 
 #: ../files/usr/bin/universal-lite-greeter:472
 #, python-brace-format
 msgid "Not {username}?"
-msgstr ""
+msgstr "Inte {username}?"
 
 #: ../files/usr/bin/universal-lite-greeter:488
 msgid "Log in"
-msgstr ""
+msgstr "Logga in"
 
 #: ../files/usr/bin/universal-lite-greeter:494
 msgid "Next"
-msgstr ""
+msgstr "Nästa"
 
 #: ../files/usr/bin/universal-lite-greeter:507
 #: ../files/usr/bin/universal-lite-greeter:522
 #: ../files/usr/bin/universal-lite-greeter:571
 #, python-brace-format
 msgid "Connection error: {exc}"
-msgstr ""
+msgstr "Anslutningsfel: {exc}"
 
 #: ../files/usr/bin/universal-lite-greeter:531
 #: ../files/usr/bin/universal-lite-greeter:536
 msgid "Authentication error"
-msgstr ""
+msgstr "Autentiseringsfel"
 
 #: ../files/usr/bin/universal-lite-greeter:546
 msgid "Unknown error"
-msgstr ""
+msgstr "Okänt fel"
 
 #: ../files/usr/bin/universal-lite-greeter:555
 msgid "Enter a username."
-msgstr ""
+msgstr "Ange ett användarnamn."
 
 #: ../files/usr/bin/universal-lite-greeter:563
 msgid "Enter your password."
-msgstr ""
+msgstr "Ange ditt lösenord."
 
 #: ../files/usr/bin/universal-lite-greeter:582
 msgid "Authentication failed"
-msgstr ""
+msgstr "Autentisering misslyckades"
 
 #: ../files/usr/bin/universal-lite-greeter:593
 msgid "Unexpected authentication response."
-msgstr ""
+msgstr "Oväntat autentiseringssvar."
 
 #: ../files/usr/bin/universal-lite-greeter:597
 msgid "Multi-step auth not supported."
-msgstr ""
+msgstr "Flerstegsinloggning stöds inte."
 
 #: ../files/usr/bin/universal-lite-greeter:602
 msgid "Incorrect password."
-msgstr ""
+msgstr "Felaktigt lösenord."
 
 #: ../files/usr/bin/universal-lite-greeter:604
 msgid "Login failed."
-msgstr ""
+msgstr "Inloggning misslyckades."
 
 #: ../files/usr/bin/universal-lite-greeter:607
 msgid "Unexpected response from login service."
-msgstr ""
+msgstr "Oväntat svar från inloggningstjänsten."
 
 #: ../files/usr/bin/universal-lite-greeter:616
 #, python-brace-format
 msgid "Failed to start session: {exc}"
-msgstr ""
+msgstr "Kunde inte starta session: {exc}"
 
 #: ../files/usr/bin/universal-lite-greeter:624
 msgid "Failed to start session."
-msgstr ""
+msgstr "Kunde inte starta session."
 
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Universal-Lite Settings"
-msgstr ""
+msgstr "Universal-Lite Inställningar"
 
 #: ../files/usr/lib/universal-lite/settings/window.py:46
 msgid "Search settings..."
-msgstr ""
+msgstr "Sök inställningar..."
 
 #: ../files/usr/lib/universal-lite/settings/window.py:100
 #, python-brace-format
 msgid "Failed to load {label}"
-msgstr ""
+msgstr "Kunde inte läsa in {label}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:26
 msgid "Appearance"
-msgstr ""
+msgstr "Utseende"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:27
 msgid "Display"
-msgstr ""
+msgstr "Bildskärm"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:286
 msgid "Network"
-msgstr ""
+msgstr "Nätverk"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:29
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:39
 msgid "Bluetooth"
-msgstr ""
+msgstr "Bluetooth"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 msgid "Panel"
-msgstr ""
+msgstr "Panel"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:31
 msgid "Mouse & Touchpad"
-msgstr ""
+msgstr "Mus och pekplatta"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:32
 msgid "Keyboard"
-msgstr ""
+msgstr "Tangentbord"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:33
 msgid "Sound"
-msgstr ""
+msgstr "Ljud"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:34
 msgid "Power & Lock"
-msgstr ""
+msgstr "Ström och lås"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
@@ -179,7 +179,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
 msgid "Accessibility"
-msgstr ""
+msgstr "Tillgänglighet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
@@ -188,7 +188,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
 msgid "Date & Time"
-msgstr ""
+msgstr "Datum och tid"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:39
@@ -197,7 +197,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:42
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:76
 msgid "Users"
-msgstr ""
+msgstr "Användare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:16
@@ -205,11 +205,11 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:23
 msgid "Language & Region"
-msgstr ""
+msgstr "Språk och region"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:39
 msgid "Default Apps"
-msgstr ""
+msgstr "Standardappar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
@@ -218,356 +218,356 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:31
 msgid "About"
-msgstr ""
+msgstr "Om"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:41
 msgid "Operating System"
-msgstr ""
+msgstr "Operativsystem"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:42
 msgid "Hostname"
-msgstr ""
+msgstr "Värdnamn"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:52
 msgid "Processor"
-msgstr ""
+msgstr "Processor"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:62
 msgid "Memory"
-msgstr ""
+msgstr "Minne"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:68
 msgid "Disk"
-msgstr ""
+msgstr "Disk"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:89
 msgid "Desktop"
-msgstr ""
+msgstr "Skrivbord"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:81
 msgid "Graphics"
-msgstr ""
+msgstr "Grafik"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:25
 msgid "GPU"
-msgstr ""
+msgstr "GPU"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:92
 msgid "Updates"
-msgstr ""
+msgstr "Uppdateringar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:95
 msgid "Click to check for updates"
-msgstr ""
+msgstr "Klicka för att söka efter uppdateringar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:98
 msgid "Check for Updates"
-msgstr ""
+msgstr "Sök efter uppdateringar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:106
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:77
 msgid "Checking..."
-msgstr ""
+msgstr "Kontrollerar..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:117
 #, python-brace-format
 msgid "Update available: {version}"
-msgstr ""
+msgstr "Uppdatering tillgänglig: {version}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:119
 msgid "System is up to date"
-msgstr ""
+msgstr "Systemet är uppdaterat"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:121
 msgid "Could not check for updates"
-msgstr ""
+msgstr "Kunde inte söka efter uppdateringar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
 msgid "Default (24px)"
-msgstr ""
+msgstr "Standard (24px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
 msgid "Large (32px)"
-msgstr ""
+msgstr "Stor (32px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
 msgid "Larger (48px)"
-msgstr ""
+msgstr "Större (48px)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
 msgid "Large text"
-msgstr ""
+msgstr "Stor text"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
 msgid "Cursor size"
-msgstr ""
+msgstr "Markörstorlek"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
 msgid "High contrast"
-msgstr ""
+msgstr "Hög kontrast"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
 msgid "Reduce motion"
-msgstr ""
+msgstr "Minska rörelse"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
 msgid "Increases font size for better readability"
-msgstr ""
+msgstr "Ökar teckenstorleken för bättre läsbarhet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
 msgid "Forces dark theme with stronger borders"
-msgstr ""
+msgstr "Tvingar mörkt tema med starkare kanter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
 msgid "Disables animations throughout the interface"
-msgstr ""
+msgstr "Inaktiverar animeringar i hela gränssnittet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
 msgid "Theme"
-msgstr ""
+msgstr "Tema"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
 msgid "Light"
-msgstr ""
+msgstr "Ljust"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
 msgid "Dark"
-msgstr ""
+msgstr "Mörkt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
 msgid "Accent color"
-msgstr ""
+msgstr "Accentfärg"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
 msgid "Color"
-msgstr ""
+msgstr "Färg"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:70
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
 msgid "Font size"
-msgstr ""
+msgstr "Teckenstorlek"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
 msgid "Font"
-msgstr ""
+msgstr "Teckensnitt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
 msgid "Wallpaper"
-msgstr ""
+msgstr "Skrivbordsbakgrund"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
 msgid "Background"
-msgstr ""
+msgstr "Bakgrund"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:41
 msgid "Theme is set to Dark by High Contrast mode"
-msgstr ""
+msgstr "Temat är satt till Mörkt av läget Hög kontrast"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Small"
-msgstr ""
+msgstr "Liten"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Large"
-msgstr ""
+msgstr "Stor"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Larger"
-msgstr ""
+msgstr "Större"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
 msgid "Affects all text throughout the interface"
-msgstr ""
+msgstr "Påverkar all text i hela gränssnittet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:122
 msgid "Choose Wallpaper"
-msgstr ""
+msgstr "Välj skrivbordsbakgrund"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:124
 msgid "Images"
-msgstr ""
+msgstr "Bilder"
 
 #: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
 msgid "Custom..."
-msgstr ""
+msgstr "Anpassad..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
 msgid "Pair"
-msgstr ""
+msgstr "Parkoppla"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 msgid "Wireless"
-msgstr ""
+msgstr "Trådlöst"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
 msgid "Device"
-msgstr ""
+msgstr "Enhet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
 msgid "No Bluetooth adapter found"
-msgstr ""
+msgstr "Ingen Bluetooth-adapter hittades"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:61
 msgid "Paired Devices"
-msgstr ""
+msgstr "Parkopplade enheter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
 msgid "Available Devices"
-msgstr ""
+msgstr "Tillgängliga enheter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
 msgid "Search for devices"
-msgstr ""
+msgstr "Sök efter enheter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:78
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:81
 msgid "Advanced..."
-msgstr ""
+msgstr "Avancerat..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
 msgid "Scanning..."
-msgstr ""
+msgstr "Söker..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:156
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:298
 msgid "Connected"
-msgstr ""
+msgstr "Ansluten"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
 msgid "Disconnect"
-msgstr ""
+msgstr "Koppla från"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:163
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:199
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:246
 msgid "Connect"
-msgstr ""
+msgstr "Anslut"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:159
 msgid "Forget"
-msgstr ""
+msgstr "Glöm"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
 msgid "Pairing..."
-msgstr ""
+msgstr "Parkopplar..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
 msgid "Paired successfully"
-msgstr ""
+msgstr "Parkoppling lyckades"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
 #, python-brace-format
 msgid "Pairing failed: {message}"
-msgstr ""
+msgstr "Parkoppling misslyckades: {message}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 msgid "Timezone"
-msgstr ""
+msgstr "Tidszon"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
 msgid "Automatic time"
-msgstr ""
+msgstr "Automatisk tid"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
 msgid "NTP"
-msgstr ""
+msgstr "NTP"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
 msgid "24-hour clock"
-msgstr ""
+msgstr "24-timmarsklocka"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
 msgid "e.g. America/New_York"
-msgstr ""
+msgstr "t.ex. America/New_York"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Press Enter to apply"
-msgstr ""
+msgstr "Tryck Enter för att tillämpa"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
 msgid "Sync clock via network (NTP)"
-msgstr ""
+msgstr "Synkronisera klockan via nätverk (NTP)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
 msgid "Use 24-hour time format"
-msgstr ""
+msgstr "Använd 24-timmarsformat"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
 msgid "Failed to set timezone"
-msgstr ""
+msgstr "Kunde inte ställa in tidszon"
 
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
 msgid "Invalid timezone"
-msgstr ""
+msgstr "Ogiltig tidszon"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
 msgid "Web Browser"
-msgstr ""
+msgstr "Webbläsare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
 msgid "File Manager"
-msgstr ""
+msgstr "Filhanterare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
 msgid "Terminal"
-msgstr ""
+msgstr "Terminal"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
 msgid "Text Editor"
-msgstr ""
+msgstr "Textredigerare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
 msgid "Image Viewer"
-msgstr ""
+msgstr "Bildvisare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
 msgid "PDF Viewer"
-msgstr ""
+msgstr "PDF-visare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
 msgid "Media Player"
-msgstr ""
+msgstr "Mediaspelare"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
 msgid "Email Client"
-msgstr ""
+msgstr "E-postklient"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
@@ -575,40 +575,40 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:35
 msgid "Default Applications"
-msgstr ""
+msgstr "Standardprogram"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:15
 msgid "Sunset to Sunrise"
-msgstr ""
+msgstr "Solnedgång till soluppgång"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:15
 msgid "Custom"
-msgstr ""
+msgstr "Anpassad"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:46
 msgid "Display Scale"
-msgstr ""
+msgstr "Skärmskalning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:33
 msgid "Scale"
-msgstr ""
+msgstr "Skalning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 msgid "Resolution"
-msgstr ""
+msgstr "Upplösning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:61
 msgid "Resolution & Refresh Rate"
-msgstr ""
+msgstr "Upplösning och uppdateringsfrekvens"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
 msgid "Refresh"
-msgstr ""
+msgstr "Uppdateringsfrekvens"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
@@ -616,69 +616,69 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:84
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Night Light"
-msgstr ""
+msgstr "Nattljus"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:110
 msgid "Temperature"
-msgstr ""
+msgstr "Temperatur"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:39
 msgid "Blue light"
-msgstr ""
+msgstr "Blått ljus"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:64
 msgid "No displays detected"
-msgstr ""
+msgstr "Inga bildskärmar upptäckta"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:81
 msgid "Resolution and refresh rate"
-msgstr ""
+msgstr "Upplösning och uppdateringsfrekvens"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:96
 msgid "Reduce blue light to help with sleep"
-msgstr ""
+msgstr "Minska blått ljus för bättre sömn"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:110
 msgid "3500K (warm) to 6500K (cool)"
-msgstr ""
+msgstr "3500K (varmt) till 6500K (kallt)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:120
 msgid "Schedule"
-msgstr ""
+msgstr "Schema"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:137
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:147
 msgid "HH:MM"
-msgstr ""
+msgstr "TT:MM"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:143
 msgid "Start time"
-msgstr ""
+msgstr "Starttid"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:153
 msgid "End time"
-msgstr ""
+msgstr "Sluttid"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:167
 msgid "Advanced"
-msgstr ""
+msgstr "Avancerat"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:168
 msgid "Open wdisplays"
-msgstr ""
+msgstr "Öppna wdisplays"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:173
 msgid "Advanced display settings"
-msgstr ""
+msgstr "Avancerade skärminställningar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:173
 msgid "Arrange and configure displays visually"
-msgstr ""
+msgstr "Ordna och konfigurera bildskärmar visuellt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:204
 msgid "Confirm Scale"
-msgstr ""
+msgstr "Bekräfta skalning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:215
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:241
@@ -687,20 +687,22 @@ msgid ""
 "Keep this display scale?\n"
 "Reverting in {seconds}s..."
 msgstr ""
+"Behålla denna skärmskalning?\n"
+"Återställer om {seconds}s..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:220
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:342
 msgid "Revert"
-msgstr ""
+msgstr "Återställ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:348
 msgid "Keep"
-msgstr ""
+msgstr "Behåll"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:325
 msgid "Confirm Resolution"
-msgstr ""
+msgstr "Bekräfta upplösning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:336
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:369
@@ -709,118 +711,120 @@ msgid ""
 "Keep this resolution?\n"
 "Reverting in {seconds}s..."
 msgstr ""
+"Behålla denna upplösning?\n"
+"Återställer om {seconds}s..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:232
 msgid "Layout"
-msgstr ""
+msgstr "Layout"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:284
 msgid "Keyboard layout"
-msgstr ""
+msgstr "Tangentbordslayout"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
 msgid "Variant"
-msgstr ""
+msgstr "Variant"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:289
 msgid "Repeat"
-msgstr ""
+msgstr "Upprepning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:298
 msgid "Repeat delay"
-msgstr ""
+msgstr "Upprepningsfördröjning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:307
 msgid "Repeat rate"
-msgstr ""
+msgstr "Upprepningshastighet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Caps Lock"
-msgstr ""
+msgstr "Caps Lock"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Caps Lock behavior"
-msgstr ""
+msgstr "Caps Lock-beteende"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
 msgid "Remap"
-msgstr ""
+msgstr "Omtilldela"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
 msgid "Shortcuts"
-msgstr ""
+msgstr "Genvägar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 msgid "Keyboard shortcuts"
-msgstr ""
+msgstr "Tangentbordsgenvägar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
 msgid "Keybinding"
-msgstr ""
+msgstr "Tangentbindning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
 msgid "Hotkey"
-msgstr ""
+msgstr "Snabbtangent"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
 msgid "Key combo"
-msgstr ""
+msgstr "Tangentkombination"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:249
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:258
 msgid "(Default)"
-msgstr ""
+msgstr "(Standard)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
 msgid "Caps Lock Behavior"
-msgstr ""
+msgstr "Caps Lock-beteende"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Ctrl"
-msgstr ""
+msgstr "Ctrl"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Escape"
-msgstr ""
+msgstr "Escape"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
 msgid "Disabled"
-msgstr ""
+msgstr "Inaktiverad"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
 msgid "Caps Lock key"
-msgstr ""
+msgstr "Caps Lock-tangent"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
 msgid "Remap Caps Lock to another function"
-msgstr ""
+msgstr "Omtilldela Caps Lock till en annan funktion"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
 msgid "Keyboard Shortcuts"
-msgstr ""
+msgstr "Tangentbordsgenvägar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:333
 msgid "Reset All Shortcuts"
-msgstr ""
+msgstr "Återställ alla genvägar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
 msgid "Reset to default"
-msgstr ""
+msgstr "Återställ till standard"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
 msgid "Press new shortcut..."
-msgstr ""
+msgstr "Tryck ny genväg..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:489
 msgid "Shortcut Conflict"
-msgstr ""
+msgstr "Genvägskonflikt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:491
 #, python-brace-format
@@ -829,6 +833,9 @@ msgid ""
 "\n"
 "Reassign it to \"{target}\"?"
 msgstr ""
+"\"{key}\" är redan tilldelad till \"{conflict}\".\n"
+"\n"
+"Tilldela om till \"{target}\"?"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:196
@@ -836,544 +843,544 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
 msgid "Cancel"
-msgstr ""
+msgstr "Avbryt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 msgid "Reassign"
-msgstr ""
+msgstr "Tilldela om"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:16
 msgid "Language"
-msgstr ""
+msgstr "Språk"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:17
 msgid "Locale"
-msgstr ""
+msgstr "Språkinställning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:18
 msgid "Regional format"
-msgstr ""
+msgstr "Regionalt format"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:27
 msgid "Changes take effect after logging out"
-msgstr ""
+msgstr "Ändringar träder i kraft efter utloggning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:45
 msgid "System language"
-msgstr ""
+msgstr "Systemspråk"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:57
 msgid "Regional formats"
-msgstr ""
+msgstr "Regionala format"
 
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:57
 msgid "Date, number, and currency format"
-msgstr ""
+msgstr "Datum-, tal- och valutaformat"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:25
 msgid "Touchpad"
-msgstr ""
+msgstr "Pekplatta"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
 msgid "Tap to click"
-msgstr ""
+msgstr "Tryck för att klicka"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:59
 msgid "Natural scrolling"
-msgstr ""
+msgstr "Naturlig rullning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:43
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
 msgid "Pointer speed"
-msgstr ""
+msgstr "Pekarhastighet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:51
 msgid "Scroll speed"
-msgstr ""
+msgstr "Rullningshastighet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
 msgid "Mouse"
-msgstr ""
+msgstr "Mus"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
 msgid "Acceleration"
-msgstr ""
+msgstr "Acceleration"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
 msgid "Content moves with your fingers"
-msgstr ""
+msgstr "Innehållet rör sig med dina fingrar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Adaptive"
-msgstr ""
+msgstr "Adaptiv"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
 msgid "Flat"
-msgstr ""
+msgstr "Platt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:39
 msgid "WiFi"
-msgstr ""
+msgstr "WiFi"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
 msgid "Hidden network"
-msgstr ""
+msgstr "Dolt nätverk"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:76
 msgid "Wired"
-msgstr ""
+msgstr "Trådbunden"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 msgid "Ethernet"
-msgstr ""
+msgstr "Ethernet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 msgid "Connection"
-msgstr ""
+msgstr "Anslutning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
 msgid "IP address"
-msgstr ""
+msgstr "IP-adress"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:62
 msgid "Scan"
-msgstr ""
+msgstr "Sök"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:65
 msgid "Connect to Hidden Network..."
-msgstr ""
+msgstr "Anslut till dolt nätverk..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:71
 msgid "Active Connection"
-msgstr ""
+msgstr "Aktiv anslutning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:174
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:206
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:254
 #, python-brace-format
 msgid "Connecting to {ssid}..."
-msgstr ""
+msgstr "Ansluter till {ssid}..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:179
 #, python-brace-format
 msgid "Connect to {ssid}"
-msgstr ""
+msgstr "Anslut till {ssid}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:219
 msgid "Connect to Hidden Network"
-msgstr ""
+msgstr "Anslut till dolt nätverk"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:230
 msgid "Network name (SSID)"
-msgstr ""
+msgstr "Nätverksnamn (SSID)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:233
 msgid "None"
-msgstr ""
+msgstr "Ingen"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:233
 msgid "WPA/WPA2"
-msgstr ""
+msgstr "WPA/WPA2"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:233
 msgid "WPA3"
-msgstr ""
+msgstr "WPA3"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:234
 msgid "Security"
-msgstr ""
+msgstr "Säkerhet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:269
 msgid "Connected successfully"
-msgstr ""
+msgstr "Ansluten"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:284
 msgid "Not connected"
-msgstr ""
+msgstr "Inte ansluten"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:287
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:288
 msgid "IP Address"
-msgstr ""
+msgstr "IP-adress"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:289
 msgid "Gateway"
-msgstr ""
+msgstr "Gateway"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:290
 msgid "DNS"
-msgstr ""
+msgstr "DNS"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:296
 msgid "No wired adapter detected"
-msgstr ""
+msgstr "Ingen trådbunden adapter upptäckt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:300
 msgid "Disconnected"
-msgstr ""
+msgstr "Frånkopplad"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
 msgid "Apps"
-msgstr ""
+msgstr "Appar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
 msgid "Window list"
-msgstr ""
+msgstr "Fönsterlista"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
 msgid "Volume"
-msgstr ""
+msgstr "Volym"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
 msgid "Brightness"
-msgstr ""
+msgstr "Ljusstyrka"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 msgid "Battery"
-msgstr ""
+msgstr "Batteri"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
 msgid "Clock"
-msgstr ""
+msgstr "Klocka"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 msgid "Power"
-msgstr ""
+msgstr "Ström"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
 msgid "System tray"
-msgstr ""
+msgstr "Systemfält"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Left"
-msgstr ""
+msgstr "Vänster"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
 msgid "Center"
-msgstr ""
+msgstr "Mitten"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Right"
-msgstr ""
+msgstr "Höger"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Top"
-msgstr ""
+msgstr "Överst"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Bottom"
-msgstr ""
+msgstr "Nederst"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
 msgid "Position"
-msgstr ""
+msgstr "Position"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
 msgid "Density"
-msgstr ""
+msgstr "Densitet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
 msgid "Compact"
-msgstr ""
+msgstr "Kompakt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
 msgid "Module Layout"
-msgstr ""
+msgstr "Modullayout"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 msgid "Modules"
-msgstr ""
+msgstr "Moduler"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
 msgid "Pinned Apps"
-msgstr ""
+msgstr "Fästa appar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
 msgid "Pinned"
-msgstr ""
+msgstr "Fästa"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
 msgid "Normal"
-msgstr ""
+msgstr "Normal"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
 msgid "Reset layout to defaults"
-msgstr ""
+msgstr "Återställ layout till standard"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
 #, python-brace-format
 msgid "Move to {section}"
-msgstr ""
+msgstr "Flytta till {section}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
 msgid "Move up in section"
-msgstr ""
+msgstr "Flytta upp i sektionen"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
 msgid "Move down in section"
-msgstr ""
+msgstr "Flytta ner i sektionen"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
 msgid "Add pinned app"
-msgstr ""
+msgstr "Lägg till fäst app"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
 msgid "Remove"
-msgstr ""
+msgstr "Ta bort"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
 msgid "Add Pinned App"
-msgstr ""
+msgstr "Lägg till fäst app"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
 msgid "Search apps…"
-msgstr ""
+msgstr "Sök appar..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
 msgid "Add"
-msgstr ""
+msgstr "Lägg till"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "1 minute"
-msgstr ""
+msgstr "1 minut"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "2 minutes"
-msgstr ""
+msgstr "2 minuter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "5 minutes"
-msgstr ""
+msgstr "5 minuter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "10 minutes"
-msgstr ""
+msgstr "10 minuter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "15 minutes"
-msgstr ""
+msgstr "15 minuter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "30 minutes"
-msgstr ""
+msgstr "30 minuter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
 msgid "Never"
-msgstr ""
+msgstr "Aldrig"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
 msgid "Balanced"
-msgstr ""
+msgstr "Balanserad"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
 msgid "Power Saver"
-msgstr ""
+msgstr "Energispar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
 msgid "Performance"
-msgstr ""
+msgstr "Prestanda"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 msgid "Suspend"
-msgstr ""
+msgstr "Viloläge"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
 msgid "Lock"
-msgstr ""
+msgstr "Lås"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:26
 msgid "Do Nothing"
-msgstr ""
+msgstr "Gör ingenting"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:47
 msgid "Lock & Display"
-msgstr ""
+msgstr "Lås och skärm"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
 msgid "Lock screen"
-msgstr ""
+msgstr "Låsskärm"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
 msgid "Display off"
-msgstr ""
+msgstr "Stäng av skärm"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
 msgid "Power Profile"
-msgstr ""
+msgstr "Energiprofil"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
 msgid "Suspend on Idle"
-msgstr ""
+msgstr "Viloläge vid inaktivitet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
 msgid "Idle"
-msgstr ""
+msgstr "Inaktiv"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:106
 msgid "Lid Close Behavior"
-msgstr ""
+msgstr "Beteende vid stängning av lock"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
 msgid "Lid"
-msgstr ""
+msgstr "Lock"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:59
 msgid "Lock screen after"
-msgstr ""
+msgstr "Lås skärmen efter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
 msgid "Turn off display after"
-msgstr ""
+msgstr "Stäng av skärmen efter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
 msgid "Suspend after"
-msgstr ""
+msgstr "Viloläge efter"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
 msgid "When lid is closed"
-msgstr ""
+msgstr "När locket stängs"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
 msgid "Output"
-msgstr ""
+msgstr "Utgång"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
 msgid "Output device"
-msgstr ""
+msgstr "Utgångsenhet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
 msgid "Mute"
-msgstr ""
+msgstr "Ljud av"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
 msgid "Input"
-msgstr ""
+msgstr "Ingång"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
 msgid "Input device"
-msgstr ""
+msgstr "Ingångsenhet"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
 msgid "Microphone"
-msgstr ""
+msgstr "Mikrofon"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
 msgid "(No output devices)"
-msgstr ""
+msgstr "(Inga utgångsenheter)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
 msgid "(No input devices)"
-msgstr ""
+msgstr "(Inga ingångsenheter)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:97
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Display name"
-msgstr ""
+msgstr "Visningsnamn"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:41
 msgid "Auto-login"
-msgstr ""
+msgstr "Automatisk inloggning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:42
 msgid "Account"
-msgstr ""
+msgstr "Konto"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:82
 msgid "Could not connect to AccountsService"
-msgstr ""
+msgstr "Kunde inte ansluta till AccountsService"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:103
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:147
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:160
 msgid "Change Password"
-msgstr ""
+msgstr "Ändra lösenord"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Set a new password for your account"
-msgstr ""
+msgstr "Ange ett nytt lösenord för ditt konto"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:116
 msgid "Automatic login"
-msgstr ""
+msgstr "Automatisk inloggning"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:116
 msgid "Log in without a password at startup"
-msgstr ""
+msgstr "Logga in utan lösenord vid start"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:166
 msgid "New password"
-msgstr ""
+msgstr "Nytt lösenord"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:171
 msgid "Confirm password"
-msgstr ""
+msgstr "Bekräfta lösenord"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:185
 msgid "Apply"
-msgstr ""
+msgstr "Tillämpa"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:192
 msgid "Password cannot be empty"
-msgstr ""
+msgstr "Lösenordet kan inte vara tomt"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:195
 msgid "Passwords do not match"
-msgstr ""
+msgstr "Lösenorden matchar inte"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
-msgstr ""
+msgstr "Kunde inte ange lösenord"
