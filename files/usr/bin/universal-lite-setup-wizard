@@ -519,23 +519,30 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         LANGUAGE_ENTRIES = [
             ("am", "am_ET.UTF-8", []),
             ("ar", "ar_EG.UTF-8", [
+                ("ar_EG.UTF-8", "العربية (مصر)"),
                 ("ar_SA.UTF-8", "العربية (السعودية)"), ("ar_MA.UTF-8", "العربية (المغرب)"),
                 ("ar_DZ.UTF-8", "العربية (الجزائر)"), ("ar_TN.UTF-8", "العربية (تونس)"),
                 ("ar_IQ.UTF-8", "العربية (العراق)"), ("ar_JO.UTF-8", "العربية (الأردن)"),
                 ("ar_LB.UTF-8", "العربية (لبنان)"), ("ar_SY.UTF-8", "العربية (سوريا)"),
             ]),
-            ("de", "de_DE.UTF-8", [("de_AT.UTF-8", "Deutsch (Österreich)"), ("de_CH.UTF-8", "Deutsch (Schweiz)")]),
+            ("de", "de_DE.UTF-8", [
+                ("de_DE.UTF-8", "Deutsch (Deutschland)"),
+                ("de_AT.UTF-8", "Deutsch (Österreich)"), ("de_CH.UTF-8", "Deutsch (Schweiz)"),
+            ]),
             ("en", "en_US.UTF-8", [
+                ("en_US.UTF-8", "English (United States)"),
                 ("en_GB.UTF-8", "English (United Kingdom)"), ("en_AU.UTF-8", "English (Australia)"),
                 ("en_CA.UTF-8", "English (Canada)"),
             ]),
             ("es", "es_ES.UTF-8", [
+                ("es_ES.UTF-8", "Español (España)"),
                 ("es_MX.UTF-8", "Español (México)"), ("es_AR.UTF-8", "Español (Argentina)"),
                 ("es_CO.UTF-8", "Español (Colombia)"), ("es_CL.UTF-8", "Español (Chile)"),
                 ("es_PE.UTF-8", "Español (Perú)"),
             ]),
             ("fa", "fa_IR.UTF-8", []),
             ("fr", "fr_FR.UTF-8", [
+                ("fr_FR.UTF-8", "Français (France)"),
                 ("fr_CA.UTF-8", "Français (Canada)"), ("fr_BE.UTF-8", "Français (Belgique)"),
                 ("fr_CH.UTF-8", "Français (Suisse)"),
             ]),
@@ -544,12 +551,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             ("it", "it_IT.UTF-8", []),
             ("ja", "ja_JP.UTF-8", []),
             ("ko", "ko_KR.UTF-8", []),
-            ("nl", "nl_NL.UTF-8", [("nl_BE.UTF-8", "Nederlands (België)")]),
+            ("nl", "nl_NL.UTF-8", [
+                ("nl_NL.UTF-8", "Nederlands (Nederland)"),
+                ("nl_BE.UTF-8", "Nederlands (België)"),
+            ]),
             ("pl", "pl_PL.UTF-8", []),
-            ("pt", "pt_BR.UTF-8", [("pt_PT.UTF-8", "Português (Portugal)")]),
+            ("pt", "pt_BR.UTF-8", [
+                ("pt_BR.UTF-8", "Português (Brasil)"),
+                ("pt_PT.UTF-8", "Português (Portugal)"),
+            ]),
             ("ru", "ru_RU.UTF-8", []),
             ("sv", "sv_SE.UTF-8", []),
-            ("sw", "sw_KE.UTF-8", [("sw_TZ.UTF-8", "Kiswahili (Tanzania)")]),
+            ("sw", "sw_KE.UTF-8", [
+                ("sw_KE.UTF-8", "Kiswahili (Kenya)"),
+                ("sw_TZ.UTF-8", "Kiswahili (Tanzania)"),
+            ]),
             ("th", "th_TH.UTF-8", []),
             ("tr", "tr_TR.UTF-8", []),
             ("vi", "vi_VN.UTF-8", []),
