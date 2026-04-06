@@ -35,7 +35,7 @@ jobs:
   build:
     name: Build disk images
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubicloud-premium-8-ubuntu-2404
+    runs-on: ubicloud-premium-4-ubuntu-2404
     strategy:
       fail-fast: false
       matrix:

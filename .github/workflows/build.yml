@@ -28,7 +28,7 @@ concurrency:
 jobs:
   build_push:
     name: Build and push image
-    runs-on: ubicloud-premium-4-ubuntu-2404
+    runs-on: ubicloud-premium-8-ubuntu-2404
 
     permissions:
       contents: read
