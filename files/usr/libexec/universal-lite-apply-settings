@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 SCRIPT_ROOT = Path(__file__).resolve()
@@ -33,13 +34,15 @@ VALID_THEME = {"light", "dark"}
 VALID_ACCENT = {"blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"}
 VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 
+# Validation fallback — canonical source is defaults/settings.json
 DEFAULT_LAYOUT = {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
     "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
 }
 
-ALL_MODULES = {"custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"}
+ALL_MODULES_ORDER = ["custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"]
+ALL_MODULES = set(ALL_MODULES_ORDER)
 
 _PALETTE_PATH = SHARE_ROOT / "universal-lite/palette.json"
 _palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
@@ -261,7 +264,7 @@ def ensure_settings() -> dict:
             cmd = str(entry.get("command", "")).strip()
             if not cmd:
                 continue
-            name = str(entry.get("name", "")).strip() or cmd.split()[-1]
+            name = str(entry.get("name", "")).strip() or os.path.basename(cmd.split()[0])
             icon = str(entry.get("icon", "")).strip() or "application-x-executable"
             pinned.append({"name": name, "command": cmd, "icon": icon})
 
@@ -282,9 +285,10 @@ def ensure_settings() -> dict:
                 if mod in ALL_MODULES and mod not in seen:
                     layout[section].append(mod)
                     seen.add(mod)
-        # Add any missing modules to end
-        for mod in ALL_MODULES - seen:
-            layout["end"].append(mod)
+        # Add any missing modules to end in canonical order
+        for mod in ALL_MODULES_ORDER:
+            if mod not in seen:
+                layout["end"].append(mod)
 
     # Validate accessibility settings
     font_size = data.get("font_size", 11)
@@ -457,6 +461,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     pt = tokens["panel_pad_tray"]
     pp = tokens["panel_pad_pin"]
     pinned = tokens.get("pinned", [])
+    active_border = "border-right" if tokens["edge"] == "left" else "border-left"
 
     pin_css = ""
     if pinned:
@@ -488,7 +493,7 @@ window#waybar {{ min-width: {w}px; }}
 }}
 #taskbar button.active {{
     background: {tokens["accent_rgba_15"]};
-    border-bottom: 3px solid {tokens["accent_hex"]};
+    {active_border}: 3px solid {tokens["accent_hex"]};
 }}
 #taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
 {pin_css}
@@ -503,8 +508,18 @@ window#waybar {{ min-width: {w}px; }}
 """
 
 
-def write_waybar_config(tokens: dict) -> None:
+def _read_if_exists(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        return ""
+
+
+def write_waybar_config(tokens: dict) -> bool:
+    """Write waybar config and CSS. Returns True if either file changed."""
     WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
+    old_config = _read_if_exists(WAYBAR_DIR / "config.jsonc")
+    old_css = _read_if_exists(WAYBAR_DIR / "style.css")
 
     layout = tokens["layout"]
     pinned = tokens.get("pinned", [])
@@ -512,23 +527,30 @@ def write_waybar_config(tokens: dict) -> None:
     icon_size = tokens["panel_icon_size"]
     spacing = tokens["panel_spacing"]
 
-    # Build modules-left: inject pin-N modules after the launcher
     modules_left = list(layout["start"])
+    modules_center = list(layout["center"])
+    modules_right = list(layout["end"])
+
+    # Inject pin-N modules after custom/launcher in whichever section contains it
     pin_ids = [f"custom/pin-{i}" for i in range(len(pinned))]
     if pin_ids:
-        try:
-            idx = modules_left.index("custom/launcher")
-            modules_left = modules_left[:idx + 1] + pin_ids + modules_left[idx + 1:]
-        except ValueError:
-            modules_left = pin_ids + modules_left
+        injected = False
+        for mlist in (modules_left, modules_center, modules_right):
+            if "custom/launcher" in mlist:
+                idx = mlist.index("custom/launcher")
+                mlist[idx + 1:idx + 1] = pin_ids
+                injected = True
+                break
+        if not injected:
+            modules_left[:0] = pin_ids
 
     config: dict = {
         "layer": "top",
         "position": tokens["edge"],
         "spacing": spacing,
         "modules-left": modules_left,
-        "modules-center": layout["center"],
-        "modules-right": layout["end"],
+        "modules-center": modules_center,
+        "modules-right": modules_right,
     }
 
     if is_vertical:
@@ -631,9 +653,9 @@ def write_waybar_config(tokens: dict) -> None:
             "format": "{icon}",
         }
 
+    new_config = json.dumps(config, indent=2) + "\n"
     with (WAYBAR_DIR / "config.jsonc").open("w", encoding="utf-8") as handle:
-        json.dump(config, handle, indent=2)
-        handle.write("\n")
+        handle.write(new_config)
 
     css = _waybar_css_common(tokens)
     if is_vertical:
@@ -643,6 +665,8 @@ def write_waybar_config(tokens: dict) -> None:
 
     with (WAYBAR_DIR / "style.css").open("w", encoding="utf-8") as handle:
         handle.write(css)
+
+    return new_config != old_config or css != old_css
 
 
 def write_gtk_settings(tokens: dict) -> None:
@@ -1018,13 +1042,14 @@ def restart_program(name: str, command: list[str]) -> None:
     if shutil.which(command[0]) is None:
         return
     subprocess.run(["pkill", "-x", name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(0.15)  # Let old process exit before spawning replacement
     subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def main() -> int:
     settings = ensure_settings()
     tokens = _build_tokens(settings)
-    write_waybar_config(tokens)
+    waybar_changed = write_waybar_config(tokens)
     write_gtk_settings(tokens)
     write_fuzzel_config(tokens)
     write_mako_config(tokens)
@@ -1035,7 +1060,8 @@ def main() -> int:
 
     if os.environ.get("WAYLAND_DISPLAY"):
         restart_program("swaybg", ["swaybg", "-i", tokens["wallpaper"], "-m", "fill"])
-        restart_program("waybar", ["waybar"])
+        if waybar_changed:
+            restart_program("waybar", ["waybar"])
         _run_best_effort(["makoctl", "reload"], timeout=5)
         _run_best_effort(["labwc", "--reconfigure"], timeout=5)
         # Manage gammastep (night light)

@@ -1,5 +1,8 @@
 import copy
+import json
+import re
 from gettext import gettext as _
+from pathlib import Path
 
 import gi
 
@@ -13,11 +16,26 @@ MODULE_NAMES = {
     "pulseaudio": _("Volume"), "backlight": _("Brightness"), "battery": _("Battery"),
     "clock": _("Clock"), "custom/power": _("Power"), "tray": _("System tray"),
 }
-DEFAULT_LAYOUT = {
-    "start": ["custom/launcher"],
-    "center": ["wlr/taskbar"],
-    "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
-}
+
+_DEFAULTS_PATH = Path("/usr/share/universal-lite/defaults/settings.json")
+
+def _load_default_layout():
+    try:
+        data = json.loads(_DEFAULTS_PATH.read_text(encoding="utf-8"))
+        layout = data.get("layout")
+        if isinstance(layout, dict) and all(
+            k in layout and isinstance(layout[k], list) for k in ("start", "center", "end")
+        ):
+            return layout
+    except (OSError, json.JSONDecodeError, KeyError):
+        pass
+    return {
+        "start": ["custom/launcher"],
+        "center": ["wlr/taskbar"],
+        "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
+    }
+
+DEFAULT_LAYOUT = _load_default_layout()
 HORIZONTAL_LABELS = {"start": _("Left"), "center": _("Center"), "end": _("Right")}
 VERTICAL_LABELS = {"start": _("Top"), "center": _("Center"), "end": _("Bottom")}
 SECTION_ORDER = ["start", "center", "end"]
@@ -28,6 +46,7 @@ class PanelPage(BasePage):
         super().__init__(store, event_bus)
         self._layout_data: dict = {}
         self._section_boxes: dict = {}
+        self._section_labels: dict = {}
         self._pinned_data: list = []
         self._pinned_list: Gtk.ListBox | None = None
 
@@ -44,7 +63,7 @@ class PanelPage(BasePage):
         page.append(self.make_toggle_cards(
             [("bottom", _("Bottom")), ("top", _("Top")), ("left", _("Left")), ("right", _("Right"))],
             self.store.get("edge", "bottom"),
-            lambda v: self.store.save_and_apply("edge", v),
+            self._on_edge_changed,
         ))
         page.append(self.make_group_label(_("Density")))
         page.append(self.make_toggle_cards(
@@ -64,10 +83,22 @@ class PanelPage(BasePage):
 
     # -- Module layout --
 
+    def _on_edge_changed(self, edge):
+        self.store.save_and_apply("edge", edge)
+        self._update_section_labels()
+        self._refresh_module_lists()
+
+    def _update_section_labels(self):
+        edge = self.store.get("edge", "bottom")
+        labels = HORIZONTAL_LABELS if edge in ("top", "bottom") else VERTICAL_LABELS
+        for section, widget in self._section_labels.items():
+            widget.set_label(labels[section])
+
     def _build_module_layout(self):
         self._layout_data = self._load_layout()
-        container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
+        inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
         self._section_boxes = {}
+        self._section_labels = {}
         edge = self.store.get("edge", "bottom")
         labels = HORIZONTAL_LABELS if edge in ("top", "bottom") else VERTICAL_LABELS
         for section in SECTION_ORDER:
@@ -75,18 +106,25 @@ class PanelPage(BasePage):
             section_box.set_hexpand(True)
             header = Gtk.Label(label=labels[section], xalign=0)
             header.add_css_class("group-title")
+            self._section_labels[section] = header
             section_box.append(header)
             listbox = Gtk.ListBox()
             listbox.set_selection_mode(Gtk.SelectionMode.NONE)
             self._section_boxes[section] = listbox
             section_box.append(listbox)
-            container.append(section_box)
+            inner.append(section_box)
         self._refresh_module_lists()
-        return container
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+        scrolled.set_child(inner)
+        return scrolled
 
     def _load_layout(self):
         saved = self.store.get("layout")
-        if isinstance(saved, dict) and all(k in saved for k in SECTION_ORDER):
+        if (
+            isinstance(saved, dict)
+            and all(k in saved and isinstance(saved[k], list) for k in SECTION_ORDER)
+        ):
             return {k: list(saved[k]) for k in SECTION_ORDER}
         return copy.deepcopy(DEFAULT_LAYOUT)
 
@@ -292,7 +330,7 @@ class PanelPage(BasePage):
 
     def _add_app_from_info(self, app_info, dialog):
         name = app_info.get_display_name()
-        cmd = app_info.get_commandline() or ""
+        cmd = re.sub(r'\s*%[uUfFdDnNickvm]', '', app_info.get_commandline() or "").strip()
         icon_gicon = app_info.get_icon()
         icon = icon_gicon.to_string() if icon_gicon else "application-x-executable-symbolic"
         self._pinned_data.append({"name": name, "command": cmd, "icon": icon})
@@ -304,6 +342,4 @@ class PanelPage(BasePage):
         self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
         self._refresh_module_lists()
         self.store.save_and_apply("layout", self._layout_data)
-        raw = self.store.get("pinned", [])
-        self._pinned_data = list(raw) if isinstance(raw, list) else []
-        self._refresh_pinned_list()
+        # Pinned apps are not affected by layout reset
