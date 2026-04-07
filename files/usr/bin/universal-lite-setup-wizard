@@ -732,6 +732,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             variant_box.set_margin_top(8)
 
             first_radio: Gtk.CheckButton | None = None
+            variant_radios: list[tuple[Gtk.CheckButton, str, str]] = []
             if variants:
                 for v_locale, v_label_text in variants:
                     radio = Gtk.CheckButton(label=v_label_text)
@@ -739,15 +740,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         first_radio = radio
                     else:
                         radio.set_group(first_radio)
+                    variant_radios.append((radio, code, v_locale))
+                    variant_box.append(radio)
+                # Set default BEFORE connecting signals so construction
+                # doesn't fire _on_variant_toggled for every language
+                if first_radio is not None:
+                    first_radio.set_active(True)
+                for radio, rcode, rlocale in variant_radios:
                     radio.connect(
                         "toggled",
                         self._on_variant_toggled,
-                        code, v_locale,
+                        rcode, rlocale,
                     )
-                    variant_box.append(radio)
-                # Default: first variant selected
-                if first_radio is not None:
-                    first_radio.set_active(True)
 
             row_box.append(variant_box)
 
