@@ -310,6 +310,28 @@ button.back-button:hover label {
     font-style: italic;
 }
 
+.log-view {
+    background-color: #1a1a1a;
+    color: #cccccc;
+    font-family: "Roboto Mono", monospace;
+    font-size: 12px;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.details-toggle {
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: #888888;
+    padding: 4px 12px;
+    background: none;
+    border: none;
+}
+
+.details-toggle:hover {
+    color: #bbbbbb;
+}
+
 .warning-label {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
@@ -1388,6 +1410,44 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._progress_steps_box.set_margin_top(24)
         card.append(self._progress_steps_box)
 
+        # Details toggle + terminal log
+        details_btn = Gtk.Button(label=_("Show details \u25bc"))
+        details_btn.add_css_class("details-toggle")
+        details_btn.set_halign(Gtk.Align.CENTER)
+        details_btn.set_margin_top(12)
+        self._retranslatable.append((details_btn.set_label, "Show details \u25bc"))
+
+        self._log_revealer = Gtk.Revealer()
+        self._log_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self._log_revealer.set_transition_duration(300)
+
+        log_scroll = Gtk.ScrolledWindow()
+        log_scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        log_scroll.set_min_content_height(200)
+        log_scroll.set_max_content_height(300)
+
+        self._log_buffer = Gtk.TextBuffer()
+        self._log_textview = Gtk.TextView(buffer=self._log_buffer)
+        self._log_textview.set_editable(False)
+        self._log_textview.set_cursor_visible(False)
+        self._log_textview.set_wrap_mode(Gtk.WrapMode.CHAR)
+        self._log_textview.add_css_class("log-view")
+        log_scroll.set_child(self._log_textview)
+        self._log_scroll = log_scroll
+
+        self._log_revealer.set_child(log_scroll)
+
+        def _toggle_details(btn):
+            revealed = self._log_revealer.get_reveal_child()
+            self._log_revealer.set_reveal_child(not revealed)
+            btn.set_label(
+                _("Hide details \u25b2") if not revealed else _("Show details \u25bc")
+            )
+
+        details_btn.connect("clicked", _toggle_details)
+        card.append(details_btn)
+        card.append(self._log_revealer)
+
         # Action buttons (reboot, retry, skip, back) — hidden by default
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_box.set_halign(Gtk.Align.CENTER)
@@ -2269,12 +2329,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                "--filesystem", fs, f"/dev/{target}"]
 
         try:
-            subprocess.run(
-                cmd,
-                check=True, capture_output=True, text=True, timeout=900,
-            )
+            self._run_logged(cmd, check=True, timeout=900)
         except subprocess.CalledProcessError as exc:
-            return f"Installation failed: {exc.stderr.strip() or exc}"
+            return f"Installation failed: {exc.output.strip() or exc}"
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
 
@@ -2505,12 +2562,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             if not os.path.exists(src_path):
                 continue
             try:
-                subprocess.run(
-                    ["rsync", "-a", f"{src_path}/", f"{dst}/{subdir}/"],
-                    check=True, capture_output=True, text=True, timeout=600,
+                self._run_logged(
+                    ["rsync", "-a", "--info=progress2", f"{src_path}/", f"{dst}/{subdir}/"],
+                    check=True, timeout=600,
                 )
             except subprocess.CalledProcessError as exc:
-                return f"Failed to copy Flatpak data ({subdir}): {exc.stderr.strip() or exc}"
+                return f"Failed to copy Flatpak data ({subdir}): {exc.output.strip() or exc}"
 
         # Determine which runtimes are needed by selected apps
         needed_runtimes: set[str] = set()
@@ -2536,24 +2593,24 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 for rt_name in os.listdir(runtime_src):
                     if rt_name in needed_runtimes:
                         try:
-                            subprocess.run(
-                                ["rsync", "-a",
+                            self._run_logged(
+                                ["rsync", "-a", "--info=progress2",
                                  f"{runtime_src}/{rt_name}/",
                                  f"{runtime_dst}/{rt_name}/"],
-                                check=True, capture_output=True, text=True,
-                                timeout=600,
+                                check=True, timeout=600,
                             )
                         except subprocess.CalledProcessError as exc:
-                            return f"Failed to copy runtime {rt_name}: {exc.stderr.strip() or exc}"
+                            return f"Failed to copy runtime {rt_name}: {exc.output.strip() or exc}"
             else:
                 # Fallback: couldn't determine runtimes, copy everything
                 try:
-                    subprocess.run(
-                        ["rsync", "-a", f"{runtime_src}/", f"{runtime_dst}/"],
-                        check=True, capture_output=True, text=True, timeout=600,
+                    self._run_logged(
+                        ["rsync", "-a", "--info=progress2",
+                         f"{runtime_src}/", f"{runtime_dst}/"],
+                        check=True, timeout=600,
                     )
                 except subprocess.CalledProcessError as exc:
-                    return f"Failed to copy Flatpak runtimes: {exc.stderr.strip() or exc}"
+                    return f"Failed to copy Flatpak runtimes: {exc.output.strip() or exc}"
 
         # Copy only selected app directories
         app_src = f"{src}/app"
@@ -2567,9 +2624,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 failed.append(app_id)
                 continue
             try:
-                subprocess.run(
-                    ["rsync", "-a", f"{src_app}/", f"{app_dst}/{app_id}/"],
-                    check=True, capture_output=True, text=True, timeout=300,
+                self._run_logged(
+                    ["rsync", "-a", "--info=progress2",
+                     f"{src_app}/", f"{app_dst}/{app_id}/"],
+                    check=True, timeout=300,
                 )
             except subprocess.CalledProcessError:
                 failed.append(app_id)
@@ -2640,12 +2698,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Restore SELinux labels on all files we created or modified.
         # Without this, passwd/shadow/group/hostname/NM configs/home dirs
         # get unlabeled_t and SELinux-enforcing systems deny access.
-        subprocess.run(
+        self._run_logged(
             ["restorecon", "-ir",
              f"{deploy}/etc",
              f"{var_dir}/home",
              f"{var_dir}/lib"],
-            check=False, capture_output=True, timeout=120,
+            check=False, timeout=120,
         )
 
         # Flush writes before unmounting
@@ -2661,6 +2719,57 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
     # Step runner
     # ------------------------------------------------------------------
+
+    def _log(self, text: str) -> None:
+        """Append text to the progress log (thread-safe)."""
+        def _append():
+            end = self._log_buffer.get_end_iter()
+            self._log_buffer.insert(end, text)
+            # Auto-scroll to bottom
+            end = self._log_buffer.get_end_iter()
+            self._log_textview.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
+        GLib.idle_add(_append)
+
+    def _run_logged(self, cmd, **kwargs) -> subprocess.CompletedProcess:
+        """Run a subprocess, streaming stdout/stderr to the log view.
+
+        Accepts the same keyword arguments as subprocess.run, but
+        replaces capture_output with real-time line streaming.
+        """
+        kwargs.pop("capture_output", None)
+        kwargs.pop("stdout", None)
+        kwargs.pop("stderr", None)
+        timeout = kwargs.pop("timeout", None)
+        check = kwargs.pop("check", False)
+
+        self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
+
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            **kwargs,
+        )
+
+        output_lines = []
+        try:
+            for raw_line in iter(proc.stdout.readline, b""):
+                line = raw_line.decode("utf-8", errors="replace")
+                output_lines.append(line)
+                self._log(line)
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            raise
+
+        stdout_text = "".join(output_lines)
+        result = subprocess.CompletedProcess(
+            cmd, proc.returncode, stdout=stdout_text, stderr="",
+        )
+        if check and proc.returncode != 0:
+            raise subprocess.CalledProcessError(
+                proc.returncode, cmd, output=stdout_text, stderr="",
+            )
+        return result
 
     def _on_setup_clicked(self) -> None:
         # Capture all form values for thread-safe access
@@ -2733,6 +2842,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._progress_skip_btn.set_visible(False)
         self._progress_retry_btn.set_visible(False)
         self._progress_reboot_btn.set_visible(False)
+        self._log_buffer.set_text("")
 
         start = self._run_from_step
 
