@@ -2267,39 +2267,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # Install pipeline steps
     # ------------------------------------------------------------------
 
-    def _get_booted_imgref(self) -> str | None:
-        """Get the booted image as a transport-qualified reference for bootc.
-
-        bootc install to-disk requires --source-imgref when run from a
-        booted system (not a container).  We read bootc status JSON and
-        build the containers-transport URI (e.g. "docker://ghcr.io/…").
-        """
+    def _get_booted_image_name(self) -> str | None:
+        """Get the booted image name (e.g. 'ghcr.io/org/image:tag') from bootc status."""
         try:
             result = subprocess.run(
                 ["bootc", "status", "--format=json"],
                 check=True, capture_output=True, text=True, timeout=30,
             )
             status = json.loads(result.stdout)
-            image_ref = status["status"]["booted"]["image"]["image"]
-            image = image_ref["image"]
-            transport = image_ref.get("transport", "registry")
+            return status["status"]["booted"]["image"]["image"]["image"]
         except Exception:
             return None
-
-        transport_map = {
-            "registry": f"docker://{image}",
-            "containers-storage": f"containers-storage:{image}",
-            "oci": f"oci:{image}",
-        }
-        return transport_map.get(transport, image)
 
     def _step_bootc_install(self) -> str | None:
         """Partition disk and install OS image via bootc, then mount sysroot."""
         target = self._setup_target_drive
         fs = self._setup_filesystem
 
-        source = self._get_booted_imgref()
-        if not source:
+        image_name = self._get_booted_image_name()
+        if not image_name:
             return ("Could not determine the booted image reference. "
                     "Is this system booted from a bootc image?")
 
@@ -2324,8 +2310,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except Exception:
             pass  # Best-effort; bootc install will give a clear error if it still fails
 
+        # Export the booted image from the local ostree repo to an OCI
+        # directory.  Using docker:// as --source-imgref would force bootc
+        # to fetch from the registry, which hangs offline.  The local OCI
+        # export gives bootc the image data without any network access.
+        oci_dir = "/var/tmp/bootc-source"
+        import shutil
+        shutil.rmtree(oci_dir, ignore_errors=True)
+
+        self._log(_("Exporting local image for install...\n"))
+        try:
+            self._run_logged(
+                ["ostree", "container", "image", "export",
+                 "--repo=/ostree/repo", f"registry:{image_name}",
+                 f"oci:{oci_dir}"],
+                check=True, timeout=300,
+            )
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+            return f"Failed to export local image: {exc}"
+
         cmd = ["bootc", "install", "to-disk", "--wipe",
-               "--source-imgref", source,
+               "--source-imgref", f"oci:{oci_dir}",
+               "--target-imgref", image_name,
                "--filesystem", fs, f"/dev/{target}"]
 
         try:
@@ -2334,6 +2340,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Installation failed: {exc.output.strip() or exc}"
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
+        finally:
+            shutil.rmtree(oci_dir, ignore_errors=True)
 
         # Mount sysroot for post-install configuration
         err = self._mount_sysroot()
