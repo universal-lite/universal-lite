@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-04 11:59-0400\n"
+"POT-Creation-Date: 2026-04-07 12:33-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,13 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:279
+#: files/usr/bin/universal-lite-setup-wizard:364
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
 "Yalnızca sıkıştırılmış RAM (zram) — hızlı, ancak bellek dolarsa uygulamalar "
 "kapanabilir"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:280
+#: files/usr/bin/universal-lite-setup-wizard:365
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
@@ -31,148 +31,118 @@ msgstr ""
 "Sıkıştırılmış RAM + disk yedekleme (zswap) — diske daha yavaş taşma, "
 "uygulamalar açık kalır"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:283
+#: files/usr/bin/universal-lite-setup-wizard:368
 msgid "Custom"
 msgstr "Özel"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:297
+#: files/usr/bin/universal-lite-setup-wizard:413
 msgid "Web browser"
 msgstr "Web tarayıcı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:298
+#: files/usr/bin/universal-lite-setup-wizard:414
 msgid "Browse and install apps"
 msgstr "Uygulama arama ve kurma"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:299
+#: files/usr/bin/universal-lite-setup-wizard:415
 msgid "Modern styling for classic apps"
 msgstr "Klasik uygulamalar için modern görünüm"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:300
+#: files/usr/bin/universal-lite-setup-wizard:416
 msgid "Dark variant for classic apps"
 msgstr "Klasik uygulamalar için koyu tema"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:443
-#: ../files/usr/bin/universal-lite-setup-wizard:1142
+#: files/usr/bin/universal-lite-setup-wizard:600
+#: files/usr/bin/universal-lite-setup-wizard:1479
 msgid "Back"
 msgstr "Geri"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:450
-#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: files/usr/bin/universal-lite-setup-wizard:607
+#: files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Next"
 msgstr "İleri"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:526
-#: ../files/usr/bin/universal-lite-setup-wizard:1097
+#: files/usr/bin/universal-lite-setup-wizard:698
 msgid "Language"
 msgstr "Dil"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:532
+#: files/usr/bin/universal-lite-setup-wizard:704
 msgid "Select your language."
 msgstr "Dilinizi seçin."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:702
+#: files/usr/bin/universal-lite-setup-wizard:808
+#: files/usr/bin/universal-lite-setup-wizard:890
+#: files/usr/bin/universal-lite-setup-wizard:903
+#, python-brace-format
+msgid "Keyboard layout: {layout}"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:821
+msgid ""
+"Auto-selected from your language. Override if your physical keyboard differs."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:961
 msgid "Welcome to Universal-Lite"
 msgstr "Universal-Lite'a hoş geldiniz"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:708
+#: files/usr/bin/universal-lite-setup-wizard:967
 msgid "Create your account to get started."
 msgstr "Başlamak için hesabınızı oluşturun."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:714
-msgid "Full Name"
-msgstr "Ad Soyad"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:716
+#: files/usr/bin/universal-lite-setup-wizard:975
 msgid "Jane Doe"
 msgstr "Ayşe Yılmaz"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:722
-#: ../files/usr/bin/universal-lite-setup-wizard:1103
-msgid "Username"
-msgstr "Kullanıcı adı"
+#: files/usr/bin/universal-lite-setup-wizard:1007
+msgid "Administrator account (sudo)"
+msgstr "Yönetici hesabı (sudo)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:729
-#: ../files/usr/bin/universal-lite-setup-wizard:807
-#: ../files/usr/bin/universal-lite-setup-wizard:1329
-msgid "Password"
-msgstr "Parola"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:736
-msgid "Confirm Password"
-msgstr "Parolayı onayla"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:761
+#: files/usr/bin/universal-lite-setup-wizard:1040
 msgid "Connect to Wi-Fi"
 msgstr "Wi-Fi'ye bağlan"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:767
+#: files/usr/bin/universal-lite-setup-wizard:1046
 msgid "Select a network to get online."
 msgstr "İnternete bağlanmak için bir ağ seçin."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:780
-#: ../files/usr/bin/universal-lite-setup-wizard:1236
+#: files/usr/bin/universal-lite-setup-wizard:1060
+#: files/usr/bin/universal-lite-setup-wizard:1573
 msgid "Scanning for networks..."
 msgstr "Ağlar taranıyor..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:788
+#: files/usr/bin/universal-lite-setup-wizard:1068
 msgid "Rescan"
 msgstr "Yeniden tara"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:801
-msgid "Network Name (SSID)"
-msgstr "Ağ adı (SSID)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:814
-#: ../files/usr/bin/universal-lite-setup-wizard:1332
-#: ../files/usr/bin/universal-lite-setup-wizard:1338
+#: files/usr/bin/universal-lite-setup-wizard:1094
+#: files/usr/bin/universal-lite-setup-wizard:1677
+#: files/usr/bin/universal-lite-setup-wizard:1683
 msgid "Connect"
 msgstr "Bağlan"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:825
+#: files/usr/bin/universal-lite-setup-wizard:1105
 msgid "Join hidden network..."
 msgstr "Gizli ağa bağlan..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:861
+#: files/usr/bin/universal-lite-setup-wizard:1141
 msgid "Choose Installation Disk"
 msgstr "Kurulum diskini seçin"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:867
+#: files/usr/bin/universal-lite-setup-wizard:1147
 msgid "Select the target drive and installation options."
 msgstr "Hedef sürücüyü ve kurulum seçeneklerini belirleyin."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:874
-#: ../files/usr/bin/universal-lite-setup-wizard:1099
-msgid "Target drive"
-msgstr "Hedef sürücü"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:878
-#: ../files/usr/bin/universal-lite-setup-wizard:1777
+#: files/usr/bin/universal-lite-setup-wizard:1158
+#: files/usr/bin/universal-lite-setup-wizard:2200
 msgid "Unknown"
 msgstr "Bilinmiyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:886
-#: ../files/usr/bin/universal-lite-setup-wizard:1517
+#: files/usr/bin/universal-lite-setup-wizard:1166
+#: files/usr/bin/universal-lite-setup-wizard:1872
 msgid "No eligible drives found"
 msgstr "Uygun sürücü bulunamadı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:893
-#: ../files/usr/bin/universal-lite-setup-wizard:1100
-msgid "Filesystem"
-msgstr "Dosya sistemi"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:901
-msgid "Memory management"
-msgstr "Bellek yönetimi"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:911
-msgid "Disk swap size"
-msgstr "Disk takas boyutu"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:919
-msgid "Custom size (GB)"
-msgstr "Özel boyut (GB)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:929
+#: files/usr/bin/universal-lite-setup-wizard:1209
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
@@ -180,32 +150,23 @@ msgstr ""
 "zswap, sıkıştırılmış RAM'i önbellek olarak kullanır ve dolduğunda verileri "
 "diskteki takas dosyasına aktarır."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:946
+#: files/usr/bin/universal-lite-setup-wizard:1226
 msgid "All data on the selected drive will be erased."
 msgstr "Seçilen sürücüdeki tüm veriler silinecektir."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:969
+#: files/usr/bin/universal-lite-setup-wizard:1249
 msgid "System Setup"
 msgstr "Sistem kurulumu"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:976
-#: ../files/usr/bin/universal-lite-setup-wizard:1104
-msgid "Timezone"
-msgstr "Saat dilimi"
+#: files/usr/bin/universal-lite-setup-wizard:1292
+msgid "Your computer's name on the network. Leave blank to auto-generate."
+msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:989
-msgid "Administrator account (sudo)"
-msgstr "Yönetici hesabı (sudo)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:996
-msgid "Root Password (optional)"
-msgstr "Root parolası (isteğe bağlı)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1021
+#: files/usr/bin/universal-lite-setup-wizard:1318
 msgid "Install Apps"
 msgstr "Uygulama yükle"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1028
+#: files/usr/bin/universal-lite-setup-wizard:1325
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
@@ -213,155 +174,161 @@ msgstr ""
 "Bu uygulamalar önceden indirilmiştir ve kurulum sırasında kopyalanacaktır. "
 "İstemediğiniz uygulamaların işaretini kaldırın."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1085
+#: files/usr/bin/universal-lite-setup-wizard:1382
 msgid "Ready to Install"
 msgstr "Kuruluma hazır"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1091
+#: files/usr/bin/universal-lite-setup-wizard:1388
 msgid "Review your settings and click Install to begin."
 msgstr "Ayarlarınızı gözden geçirin ve başlamak için Kur'a tıklayın."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1098
-msgid "Network"
-msgstr "Ağ"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1101
-msgid "Memory"
-msgstr "Bellek"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1102
-msgid "Name"
-msgstr "Ad"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1105
-msgid "Administrator"
-msgstr "Yönetici"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1106
-msgid "Root password"
-msgstr "Root parolası"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1107
-msgid "Apps"
-msgstr "Uygulamalar"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1126
+#: files/usr/bin/universal-lite-setup-wizard:1425
 msgid "Installing..."
 msgstr "Kuruluyor..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1149
+#: files/usr/bin/universal-lite-setup-wizard:1437
+#: files/usr/bin/universal-lite-setup-wizard:1467
+msgid "Show details ▼"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1467
+msgid "Hide details ▲"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"
 msgstr "Atla"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1156
+#: files/usr/bin/universal-lite-setup-wizard:1493
 msgid "Retry"
 msgstr "Yeniden dene"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1163
+#: files/usr/bin/universal-lite-setup-wizard:1500
 msgid "Reboot"
 msgstr "Yeniden başlat"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1276
+#: files/usr/bin/universal-lite-setup-wizard:1613
 msgid "No networks found."
 msgstr "Ağ bulunamadı."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1303
+#: files/usr/bin/universal-lite-setup-wizard:1640
 msgid "Strong"
 msgstr "Güçlü"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1305
+#: files/usr/bin/universal-lite-setup-wizard:1642
 msgid "Medium"
 msgstr "Orta"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1307
+#: files/usr/bin/universal-lite-setup-wizard:1644
 msgid "Weak"
 msgstr "Zayıf"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1311
+#: files/usr/bin/universal-lite-setup-wizard:1650
+msgid "WPA3"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1652
 msgid "Secured"
 msgstr "Korumalı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1311
+#: files/usr/bin/universal-lite-setup-wizard:1654
 msgid "Open"
 msgstr "Açık"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1362
+#: files/usr/bin/universal-lite-setup-wizard:1674
+msgid "Password"
+msgstr "Parola"
+
+#: files/usr/bin/universal-lite-setup-wizard:1708
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "{ssid} ağına bağlanılıyor..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1418
-#: ../files/usr/bin/universal-lite-setup-wizard:1441
+#: files/usr/bin/universal-lite-setup-wizard:1773
+#: files/usr/bin/universal-lite-setup-wizard:1796
 msgid "Wrong password."
 msgstr "Yanlış parola."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1420
-#: ../files/usr/bin/universal-lite-setup-wizard:1443
+#: files/usr/bin/universal-lite-setup-wizard:1775
+#: files/usr/bin/universal-lite-setup-wizard:1798
 #, python-brace-format
 msgid "Connection failed: {err}"
 msgstr "Bağlantı başarısız: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1428
+#: files/usr/bin/universal-lite-setup-wizard:1783
 msgid "Enter a network name."
 msgstr "Bir ağ adı girin."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1456
+#: files/usr/bin/universal-lite-setup-wizard:1811
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "{ssid} ağına bağlandı!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1461
+#: files/usr/bin/universal-lite-setup-wizard:1816
 msgid "Connected, but no internet access detected."
 msgstr "Bağlandı, ancak internet erişimi algılanamadı."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1582
+#: files/usr/bin/universal-lite-setup-wizard:1937
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "Adım {n} / {total}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Install"
 msgstr "Kur"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1617
+#: files/usr/bin/universal-lite-setup-wizard:1972
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
 "Hedef sürücü bulunamadı. Bir sürücü bağlayın ve kurulum programını yeniden "
 "başlatın."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1622
+#: files/usr/bin/universal-lite-setup-wizard:1977
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr "Özel takas boyutu pozitif bir tam sayı olmalıdır (GB cinsinden)."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1633
+#: files/usr/bin/universal-lite-setup-wizard:2000
+#, python-brace-format
+msgid ""
+"Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
+"{max} GB."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:2029
 msgid "Full name is required."
 msgstr "Ad ve soyad gereklidir."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1636
+#: files/usr/bin/universal-lite-setup-wizard:2032
 msgid "Username is required."
 msgstr "Kullanıcı adı gereklidir."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1639
+#: files/usr/bin/universal-lite-setup-wizard:2035
 msgid "Username must be 32 characters or fewer."
 msgstr "Kullanıcı adı en fazla 32 karakter olmalıdır."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1643
+#: files/usr/bin/universal-lite-setup-wizard:2039
+#, fuzzy
 msgid ""
-"Username must start with a lowercase letter and contain only lowercase "
-"letters, numbers, and hyphens."
+"Username must start with a lowercase letter or underscore, contain only "
+"lowercase letters, numbers, underscores, and hyphens, and cannot end with a "
+"hyphen."
 msgstr ""
 "Kullanıcı adı küçük harfle başlamalı ve yalnızca küçük harf, rakam ve tire "
 "içermelidir."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1648
+#: files/usr/bin/universal-lite-setup-wizard:2045
 msgid "Password is required."
 msgstr "Parola gereklidir."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1651
+#: files/usr/bin/universal-lite-setup-wizard:2048
+msgid "Password must be at least 6 characters."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:2051
 msgid "Passwords do not match."
 msgstr "Parolalar eşleşmiyor."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1660
+#: files/usr/bin/universal-lite-setup-wizard:2057
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -369,85 +336,151 @@ msgstr ""
 "Yönetici erişimini etkinleştirin veya bir root parolası belirleyin. "
 "Bunlardan biri olmadan sistem yönetiminden kilitlenirsiniz."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1678
+#: files/usr/bin/universal-lite-setup-wizard:2067
+#, fuzzy
+msgid "Hostname must be 63 characters or fewer."
+msgstr "Kullanıcı adı en fazla 32 karakter olmalıdır."
+
+#: files/usr/bin/universal-lite-setup-wizard:2071
+msgid ""
+"Hostname must contain only letters, numbers, and hyphens, and cannot start "
+"or end with a hyphen."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:2089
 msgid "Wired connection"
 msgstr "Kablolu bağlantı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1681
+#: files/usr/bin/universal-lite-setup-wizard:2092
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "{ssid} ağına bağlı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1684
+#: files/usr/bin/universal-lite-setup-wizard:2095
 msgid "No network (offline install)"
 msgstr "Ağ yok (çevrimdışı kurulum)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1694
+#: files/usr/bin/universal-lite-setup-wizard:2105
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap ile {swap_gb} GB disk takası"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1697
+#: files/usr/bin/universal-lite-setup-wizard:2108
 msgid "zram only (compressed RAM)"
 msgstr "Yalnızca zram (sıkıştırılmış RAM)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1703
+#: files/usr/bin/universal-lite-setup-wizard:2113
 msgid "Yes"
 msgstr "Evet"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1703
+#: files/usr/bin/universal-lite-setup-wizard:2113
 msgid "No"
 msgstr "Hayır"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1705
+#: files/usr/bin/universal-lite-setup-wizard:2115
 msgid "Set"
 msgstr "Ayarlandı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1705
+#: files/usr/bin/universal-lite-setup-wizard:2115
 msgid "Not set"
 msgstr "Ayarlanmadı"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1713
+#: files/usr/bin/universal-lite-setup-wizard:2136
 msgid "No apps selected"
 msgstr "Uygulama seçilmedi"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1772
-#: ../files/usr/bin/universal-lite-setup-wizard:1775
+#: files/usr/bin/universal-lite-setup-wizard:2195
+#: files/usr/bin/universal-lite-setup-wizard:2198
 msgid "None"
 msgstr "Yok"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2163
-msgid "Partitioning and installing"
-msgstr "Bölümleme ve kurulum"
+#: files/usr/bin/universal-lite-setup-wizard:2918
+msgid "Partitioning disk"
+msgstr "Disk bölümleniyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2164
+#: files/usr/bin/universal-lite-setup-wizard:2919
+msgid "Installing system"
+msgstr "Sistem kuruluyor"
+
+#: files/usr/bin/universal-lite-setup-wizard:2920
 msgid "Configuring user account"
 msgstr "Kullanıcı hesabı yapılandırılıyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2165
+#: files/usr/bin/universal-lite-setup-wizard:2921
 msgid "Copying network configuration"
 msgstr "Ağ yapılandırması kopyalanıyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2169
+#: files/usr/bin/universal-lite-setup-wizard:2925
 msgid "Installing selected apps"
 msgstr "Seçilen uygulamalar yükleniyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2173
+#: files/usr/bin/universal-lite-setup-wizard:2929
 msgid "Configuring memory management"
 msgstr "Bellek yönetimi yapılandırılıyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2174
+#: files/usr/bin/universal-lite-setup-wizard:2930
 msgid "Finalizing"
 msgstr "Tamamlanıyor"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2237
+#: files/usr/bin/universal-lite-setup-wizard:2996
 msgid "(skipped)"
 msgstr "(atlandı)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2263
+#: files/usr/bin/universal-lite-setup-wizard:3027
 msgid "Installation Complete!"
 msgstr "Kurulum tamamlandı!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2291
+#: files/usr/bin/universal-lite-setup-wizard:3056
 msgid "Reboot failed — please restart manually."
 msgstr "Yeniden başlatma başarısız — lütfen elle yeniden başlatın."
+
+#~ msgid "Full Name"
+#~ msgstr "Ad Soyad"
+
+#~ msgid "Username"
+#~ msgstr "Kullanıcı adı"
+
+#~ msgid "Confirm Password"
+#~ msgstr "Parolayı onayla"
+
+#~ msgid "Network Name (SSID)"
+#~ msgstr "Ağ adı (SSID)"
+
+#~ msgid "Target drive"
+#~ msgstr "Hedef sürücü"
+
+#~ msgid "Filesystem"
+#~ msgstr "Dosya sistemi"
+
+#~ msgid "Memory management"
+#~ msgstr "Bellek yönetimi"
+
+#~ msgid "Disk swap size"
+#~ msgstr "Disk takas boyutu"
+
+#~ msgid "Custom size (GB)"
+#~ msgstr "Özel boyut (GB)"
+
+#~ msgid "Timezone"
+#~ msgstr "Saat dilimi"
+
+#~ msgid "Root Password (optional)"
+#~ msgstr "Root parolası (isteğe bağlı)"
+
+#~ msgid "Network"
+#~ msgstr "Ağ"
+
+#~ msgid "Memory"
+#~ msgstr "Bellek"
+
+#~ msgid "Name"
+#~ msgstr "Ad"
+
+#~ msgid "Administrator"
+#~ msgstr "Yönetici"
+
+#~ msgid "Root password"
+#~ msgstr "Root parolası"
+
+#~ msgid "Apps"
+#~ msgstr "Uygulamalar"

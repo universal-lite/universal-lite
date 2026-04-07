@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-04 11:59-0400\n"
+"POT-Creation-Date: 2026-04-07 12:33-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,13 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:279
+#: files/usr/bin/universal-lite-setup-wizard:364
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
 "Endast komprimerat RAM (zram) — snabbt, men appar kan stängas om minnet blir "
 "fullt"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:280
+#: files/usr/bin/universal-lite-setup-wizard:365
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
@@ -31,148 +31,118 @@ msgstr ""
 "Komprimerat RAM + diskbackup (zswap) — långsammare överflöde till disk, "
 "appar förblir öppna"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:283
+#: files/usr/bin/universal-lite-setup-wizard:368
 msgid "Custom"
 msgstr "Anpassad"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:297
+#: files/usr/bin/universal-lite-setup-wizard:413
 msgid "Web browser"
 msgstr "Webbläsare"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:298
+#: files/usr/bin/universal-lite-setup-wizard:414
 msgid "Browse and install apps"
 msgstr "Bläddra bland och installera appar"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:299
+#: files/usr/bin/universal-lite-setup-wizard:415
 msgid "Modern styling for classic apps"
 msgstr "Modernt utseende för klassiska appar"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:300
+#: files/usr/bin/universal-lite-setup-wizard:416
 msgid "Dark variant for classic apps"
 msgstr "Mörk variant för klassiska appar"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:443
-#: ../files/usr/bin/universal-lite-setup-wizard:1142
+#: files/usr/bin/universal-lite-setup-wizard:600
+#: files/usr/bin/universal-lite-setup-wizard:1479
 msgid "Back"
 msgstr "Tillbaka"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:450
-#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: files/usr/bin/universal-lite-setup-wizard:607
+#: files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Next"
 msgstr "Nästa"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:526
-#: ../files/usr/bin/universal-lite-setup-wizard:1097
+#: files/usr/bin/universal-lite-setup-wizard:698
 msgid "Language"
 msgstr "Språk"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:532
+#: files/usr/bin/universal-lite-setup-wizard:704
 msgid "Select your language."
 msgstr "Välj ditt språk."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:702
+#: files/usr/bin/universal-lite-setup-wizard:808
+#: files/usr/bin/universal-lite-setup-wizard:890
+#: files/usr/bin/universal-lite-setup-wizard:903
+#, python-brace-format
+msgid "Keyboard layout: {layout}"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:821
+msgid ""
+"Auto-selected from your language. Override if your physical keyboard differs."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:961
 msgid "Welcome to Universal-Lite"
 msgstr "Välkommen till Universal-Lite"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:708
+#: files/usr/bin/universal-lite-setup-wizard:967
 msgid "Create your account to get started."
 msgstr "Skapa ditt konto för att komma igång."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:714
-msgid "Full Name"
-msgstr "Fullständigt namn"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:716
+#: files/usr/bin/universal-lite-setup-wizard:975
 msgid "Jane Doe"
 msgstr "Anna Andersson"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:722
-#: ../files/usr/bin/universal-lite-setup-wizard:1103
-msgid "Username"
-msgstr "Användarnamn"
+#: files/usr/bin/universal-lite-setup-wizard:1007
+msgid "Administrator account (sudo)"
+msgstr "Administratörskonto (sudo)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:729
-#: ../files/usr/bin/universal-lite-setup-wizard:807
-#: ../files/usr/bin/universal-lite-setup-wizard:1329
-msgid "Password"
-msgstr "Lösenord"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:736
-msgid "Confirm Password"
-msgstr "Bekräfta lösenord"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:761
+#: files/usr/bin/universal-lite-setup-wizard:1040
 msgid "Connect to Wi-Fi"
 msgstr "Anslut till Wi-Fi"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:767
+#: files/usr/bin/universal-lite-setup-wizard:1046
 msgid "Select a network to get online."
 msgstr "Välj ett nätverk för att ansluta till Internet."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:780
-#: ../files/usr/bin/universal-lite-setup-wizard:1236
+#: files/usr/bin/universal-lite-setup-wizard:1060
+#: files/usr/bin/universal-lite-setup-wizard:1573
 msgid "Scanning for networks..."
 msgstr "Söker efter nätverk..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:788
+#: files/usr/bin/universal-lite-setup-wizard:1068
 msgid "Rescan"
 msgstr "Sök igen"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:801
-msgid "Network Name (SSID)"
-msgstr "Nätverksnamn (SSID)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:814
-#: ../files/usr/bin/universal-lite-setup-wizard:1332
-#: ../files/usr/bin/universal-lite-setup-wizard:1338
+#: files/usr/bin/universal-lite-setup-wizard:1094
+#: files/usr/bin/universal-lite-setup-wizard:1677
+#: files/usr/bin/universal-lite-setup-wizard:1683
 msgid "Connect"
 msgstr "Anslut"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:825
+#: files/usr/bin/universal-lite-setup-wizard:1105
 msgid "Join hidden network..."
 msgstr "Anslut till dolt nätverk..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:861
+#: files/usr/bin/universal-lite-setup-wizard:1141
 msgid "Choose Installation Disk"
 msgstr "Välj installationsdisk"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:867
+#: files/usr/bin/universal-lite-setup-wizard:1147
 msgid "Select the target drive and installation options."
 msgstr "Välj målenhet och installationsalternativ."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:874
-#: ../files/usr/bin/universal-lite-setup-wizard:1099
-msgid "Target drive"
-msgstr "Målenhet"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:878
-#: ../files/usr/bin/universal-lite-setup-wizard:1777
+#: files/usr/bin/universal-lite-setup-wizard:1158
+#: files/usr/bin/universal-lite-setup-wizard:2200
 msgid "Unknown"
 msgstr "Okänd"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:886
-#: ../files/usr/bin/universal-lite-setup-wizard:1517
+#: files/usr/bin/universal-lite-setup-wizard:1166
+#: files/usr/bin/universal-lite-setup-wizard:1872
 msgid "No eligible drives found"
 msgstr "Inga lämpliga enheter hittades"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:893
-#: ../files/usr/bin/universal-lite-setup-wizard:1100
-msgid "Filesystem"
-msgstr "Filsystem"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:901
-msgid "Memory management"
-msgstr "Minneshantering"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:911
-msgid "Disk swap size"
-msgstr "Diskväxlingsstorlek"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:919
-msgid "Custom size (GB)"
-msgstr "Anpassad storlek (GB)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:929
+#: files/usr/bin/universal-lite-setup-wizard:1209
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
@@ -180,188 +150,185 @@ msgstr ""
 "zswap använder komprimerat RAM som cache och svämmar över till en "
 "växlingsfil på disk när det blir fullt."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:946
+#: files/usr/bin/universal-lite-setup-wizard:1226
 msgid "All data on the selected drive will be erased."
 msgstr "All data på den valda enheten kommer att raderas."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:969
+#: files/usr/bin/universal-lite-setup-wizard:1249
 msgid "System Setup"
 msgstr "Systeminställningar"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:976
-#: ../files/usr/bin/universal-lite-setup-wizard:1104
-msgid "Timezone"
-msgstr "Tidszon"
+#: files/usr/bin/universal-lite-setup-wizard:1292
+msgid "Your computer's name on the network. Leave blank to auto-generate."
+msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:989
-msgid "Administrator account (sudo)"
-msgstr "Administratörskonto (sudo)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:996
-msgid "Root Password (optional)"
-msgstr "Root-lösenord (valfritt)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1021
+#: files/usr/bin/universal-lite-setup-wizard:1318
 msgid "Install Apps"
 msgstr "Installera appar"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1028
+#: files/usr/bin/universal-lite-setup-wizard:1325
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr ""
-"Dessa appar är förhandsnedladdade och kopieras under installationen. Avmarkera de "
-"du inte vill ha."
+"Dessa appar är förhandsnedladdade och kopieras under installationen. "
+"Avmarkera de du inte vill ha."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1085
+#: files/usr/bin/universal-lite-setup-wizard:1382
 msgid "Ready to Install"
 msgstr "Redo att installera"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1091
+#: files/usr/bin/universal-lite-setup-wizard:1388
 msgid "Review your settings and click Install to begin."
 msgstr "Granska dina inställningar och klicka på Installera för att börja."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1098
-msgid "Network"
-msgstr "Nätverk"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1101
-msgid "Memory"
-msgstr "Minne"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1102
-msgid "Name"
-msgstr "Namn"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1105
-msgid "Administrator"
-msgstr "Administratör"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1106
-msgid "Root password"
-msgstr "Root-lösenord"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1107
-msgid "Apps"
-msgstr "Appar"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1126
+#: files/usr/bin/universal-lite-setup-wizard:1425
 msgid "Installing..."
 msgstr "Installerar..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1149
+#: files/usr/bin/universal-lite-setup-wizard:1437
+#: files/usr/bin/universal-lite-setup-wizard:1467
+msgid "Show details ▼"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1467
+msgid "Hide details ▲"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"
 msgstr "Hoppa över"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1156
+#: files/usr/bin/universal-lite-setup-wizard:1493
 msgid "Retry"
 msgstr "Försök igen"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1163
+#: files/usr/bin/universal-lite-setup-wizard:1500
 msgid "Reboot"
 msgstr "Starta om"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1276
+#: files/usr/bin/universal-lite-setup-wizard:1613
 msgid "No networks found."
 msgstr "Inga nätverk hittades."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1303
+#: files/usr/bin/universal-lite-setup-wizard:1640
 msgid "Strong"
 msgstr "Stark"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1305
+#: files/usr/bin/universal-lite-setup-wizard:1642
 msgid "Medium"
 msgstr "Medel"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1307
+#: files/usr/bin/universal-lite-setup-wizard:1644
 msgid "Weak"
 msgstr "Svag"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1311
+#: files/usr/bin/universal-lite-setup-wizard:1650
+msgid "WPA3"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1652
 msgid "Secured"
 msgstr "Skyddad"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1311
+#: files/usr/bin/universal-lite-setup-wizard:1654
 msgid "Open"
 msgstr "Öppet"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1362
+#: files/usr/bin/universal-lite-setup-wizard:1674
+msgid "Password"
+msgstr "Lösenord"
+
+#: files/usr/bin/universal-lite-setup-wizard:1708
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "Ansluter till {ssid}..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1418
-#: ../files/usr/bin/universal-lite-setup-wizard:1441
+#: files/usr/bin/universal-lite-setup-wizard:1773
+#: files/usr/bin/universal-lite-setup-wizard:1796
 msgid "Wrong password."
 msgstr "Fel lösenord."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1420
-#: ../files/usr/bin/universal-lite-setup-wizard:1443
+#: files/usr/bin/universal-lite-setup-wizard:1775
+#: files/usr/bin/universal-lite-setup-wizard:1798
 #, python-brace-format
 msgid "Connection failed: {err}"
 msgstr "Anslutningen misslyckades: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1428
+#: files/usr/bin/universal-lite-setup-wizard:1783
 msgid "Enter a network name."
 msgstr "Ange ett nätverksnamn."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1456
+#: files/usr/bin/universal-lite-setup-wizard:1811
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "Ansluten till {ssid}!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1461
+#: files/usr/bin/universal-lite-setup-wizard:1816
 msgid "Connected, but no internet access detected."
 msgstr "Ansluten, men ingen internetåtkomst upptäckt."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1582
+#: files/usr/bin/universal-lite-setup-wizard:1937
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "Steg {n} av {total}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Install"
 msgstr "Installera"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1617
+#: files/usr/bin/universal-lite-setup-wizard:1972
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
 "Inga målenheter hittades. Anslut en enhet och starta om "
 "installationsprogrammet."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1622
+#: files/usr/bin/universal-lite-setup-wizard:1977
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr "Den anpassade växlingsstorleken måste vara ett positivt heltal (i GB)."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1633
+#: files/usr/bin/universal-lite-setup-wizard:2000
+#, python-brace-format
+msgid ""
+"Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
+"{max} GB."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:2029
 msgid "Full name is required."
 msgstr "Fullständigt namn krävs."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1636
+#: files/usr/bin/universal-lite-setup-wizard:2032
 msgid "Username is required."
 msgstr "Användarnamn krävs."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1639
+#: files/usr/bin/universal-lite-setup-wizard:2035
 msgid "Username must be 32 characters or fewer."
 msgstr "Användarnamnet får vara högst 32 tecken."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1643
+#: files/usr/bin/universal-lite-setup-wizard:2039
+#, fuzzy
 msgid ""
-"Username must start with a lowercase letter and contain only lowercase "
-"letters, numbers, and hyphens."
+"Username must start with a lowercase letter or underscore, contain only "
+"lowercase letters, numbers, underscores, and hyphens, and cannot end with a "
+"hyphen."
 msgstr ""
 "Användarnamnet måste börja med en liten bokstav och får bara innehålla små "
 "bokstäver, siffror och bindestreck."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1648
+#: files/usr/bin/universal-lite-setup-wizard:2045
 msgid "Password is required."
 msgstr "Lösenord krävs."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1651
+#: files/usr/bin/universal-lite-setup-wizard:2048
+msgid "Password must be at least 6 characters."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:2051
 msgid "Passwords do not match."
 msgstr "Lösenorden stämmer inte överens."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1660
+#: files/usr/bin/universal-lite-setup-wizard:2057
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -369,85 +336,151 @@ msgstr ""
 "Aktivera administratörsåtkomst eller ange ett root-lösenord. Utan ett av "
 "dessa alternativ kommer du inte att kunna hantera systemet."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1678
+#: files/usr/bin/universal-lite-setup-wizard:2067
+#, fuzzy
+msgid "Hostname must be 63 characters or fewer."
+msgstr "Användarnamnet får vara högst 32 tecken."
+
+#: files/usr/bin/universal-lite-setup-wizard:2071
+msgid ""
+"Hostname must contain only letters, numbers, and hyphens, and cannot start "
+"or end with a hyphen."
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:2089
 msgid "Wired connection"
 msgstr "Kabelanslutning"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1681
+#: files/usr/bin/universal-lite-setup-wizard:2092
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "Ansluten till {ssid}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1684
+#: files/usr/bin/universal-lite-setup-wizard:2095
 msgid "No network (offline install)"
 msgstr "Inget nätverk (offlineinstallation)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1694
+#: files/usr/bin/universal-lite-setup-wizard:2105
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap med {swap_gb} GB diskväxling"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1697
+#: files/usr/bin/universal-lite-setup-wizard:2108
 msgid "zram only (compressed RAM)"
 msgstr "Endast zram (komprimerat RAM)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1703
+#: files/usr/bin/universal-lite-setup-wizard:2113
 msgid "Yes"
 msgstr "Ja"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1703
+#: files/usr/bin/universal-lite-setup-wizard:2113
 msgid "No"
 msgstr "Nej"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1705
+#: files/usr/bin/universal-lite-setup-wizard:2115
 msgid "Set"
 msgstr "Angivet"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1705
+#: files/usr/bin/universal-lite-setup-wizard:2115
 msgid "Not set"
 msgstr "Ej angivet"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1713
+#: files/usr/bin/universal-lite-setup-wizard:2136
 msgid "No apps selected"
 msgstr "Inga appar valda"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1772
-#: ../files/usr/bin/universal-lite-setup-wizard:1775
+#: files/usr/bin/universal-lite-setup-wizard:2195
+#: files/usr/bin/universal-lite-setup-wizard:2198
 msgid "None"
 msgstr "Inga"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2163
-msgid "Partitioning and installing"
-msgstr "Partitionerar och installerar"
+#: files/usr/bin/universal-lite-setup-wizard:2918
+msgid "Partitioning disk"
+msgstr "Partitionerar disk"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2164
+#: files/usr/bin/universal-lite-setup-wizard:2919
+msgid "Installing system"
+msgstr "Installerar system"
+
+#: files/usr/bin/universal-lite-setup-wizard:2920
 msgid "Configuring user account"
 msgstr "Konfigurerar användarkonto"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2165
+#: files/usr/bin/universal-lite-setup-wizard:2921
 msgid "Copying network configuration"
 msgstr "Kopierar nätverkskonfiguration"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2169
+#: files/usr/bin/universal-lite-setup-wizard:2925
 msgid "Installing selected apps"
 msgstr "Installerar valda appar"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2173
+#: files/usr/bin/universal-lite-setup-wizard:2929
 msgid "Configuring memory management"
 msgstr "Konfigurerar minneshantering"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2174
+#: files/usr/bin/universal-lite-setup-wizard:2930
 msgid "Finalizing"
 msgstr "Slutför"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2237
+#: files/usr/bin/universal-lite-setup-wizard:2996
 msgid "(skipped)"
 msgstr "(överhoppat)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2263
+#: files/usr/bin/universal-lite-setup-wizard:3027
 msgid "Installation Complete!"
 msgstr "Installationen är klar!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2291
+#: files/usr/bin/universal-lite-setup-wizard:3056
 msgid "Reboot failed — please restart manually."
 msgstr "Omstart misslyckades — starta om manuellt."
+
+#~ msgid "Full Name"
+#~ msgstr "Fullständigt namn"
+
+#~ msgid "Username"
+#~ msgstr "Användarnamn"
+
+#~ msgid "Confirm Password"
+#~ msgstr "Bekräfta lösenord"
+
+#~ msgid "Network Name (SSID)"
+#~ msgstr "Nätverksnamn (SSID)"
+
+#~ msgid "Target drive"
+#~ msgstr "Målenhet"
+
+#~ msgid "Filesystem"
+#~ msgstr "Filsystem"
+
+#~ msgid "Memory management"
+#~ msgstr "Minneshantering"
+
+#~ msgid "Disk swap size"
+#~ msgstr "Diskväxlingsstorlek"
+
+#~ msgid "Custom size (GB)"
+#~ msgstr "Anpassad storlek (GB)"
+
+#~ msgid "Timezone"
+#~ msgstr "Tidszon"
+
+#~ msgid "Root Password (optional)"
+#~ msgstr "Root-lösenord (valfritt)"
+
+#~ msgid "Network"
+#~ msgstr "Nätverk"
+
+#~ msgid "Memory"
+#~ msgstr "Minne"
+
+#~ msgid "Name"
+#~ msgstr "Namn"
+
+#~ msgid "Administrator"
+#~ msgstr "Administratör"
+
+#~ msgid "Root password"
+#~ msgstr "Root-lösenord"
+
+#~ msgid "Apps"
+#~ msgstr "Appar"

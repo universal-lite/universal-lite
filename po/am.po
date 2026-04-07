@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-04 11:59-0400\n"
+"POT-Creation-Date: 2026-04-07 12:33-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,415 +17,365 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:279
+#: files/usr/bin/universal-lite-setup-wizard:364
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr "የተጨመቀ RAM ብቻ (zram) — ፈጣን፣ ግን ማህደረ ትውስታ ሲሞላ መተግበሪያዎች ሊዘጉ ይችላሉ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:280
+#: files/usr/bin/universal-lite-setup-wizard:365
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr "የተጨመቀ RAM + የዲስክ ምትኬ (zswap) — ወደ ዲስክ ቀርፋፋ ፍሰት፣ መተግበሪያዎች ክፍት ይቆያሉ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:283
+#: files/usr/bin/universal-lite-setup-wizard:368
 msgid "Custom"
 msgstr "ብጁ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:297
 # NEEDS-REVIEW
+#: files/usr/bin/universal-lite-setup-wizard:413
 msgid "Web browser"
 msgstr "የድር አሳሽ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:298
 # NEEDS-REVIEW
+#: files/usr/bin/universal-lite-setup-wizard:414
 msgid "Browse and install apps"
 msgstr "መተግበሪያዎችን ያስሱ እና ይጫኑ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:299
 # NEEDS-REVIEW
+#: files/usr/bin/universal-lite-setup-wizard:415
 msgid "Modern styling for classic apps"
 msgstr "ለክላሲክ መተግበሪያዎች ዘመናዊ ቅጥ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:300
 # NEEDS-REVIEW
+#: files/usr/bin/universal-lite-setup-wizard:416
 msgid "Dark variant for classic apps"
 msgstr "ለክላሲክ መተግበሪያዎች ጨለማ ቅጥ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:443
-#: ../files/usr/bin/universal-lite-setup-wizard:1142
+#: files/usr/bin/universal-lite-setup-wizard:600
+#: files/usr/bin/universal-lite-setup-wizard:1479
 msgid "Back"
 msgstr "ተመለስ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:450
-#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: files/usr/bin/universal-lite-setup-wizard:607
+#: files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Next"
 msgstr "ቀጣይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:526
-#: ../files/usr/bin/universal-lite-setup-wizard:1097
+#: files/usr/bin/universal-lite-setup-wizard:698
 msgid "Language"
 msgstr "ቋንቋ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:532
+#: files/usr/bin/universal-lite-setup-wizard:704
 msgid "Select your language."
 msgstr "ቋንቋዎን ይምረጡ።"
 
+#: files/usr/bin/universal-lite-setup-wizard:808
+#: files/usr/bin/universal-lite-setup-wizard:890
+#: files/usr/bin/universal-lite-setup-wizard:903
+#, python-brace-format
+msgid "Keyboard layout: {layout}"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:821
+msgid ""
+"Auto-selected from your language. Override if your physical keyboard differs."
+msgstr ""
+
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:702
+#: files/usr/bin/universal-lite-setup-wizard:961
 msgid "Welcome to Universal-Lite"
 msgstr "ወደ Universal-Lite እንኳን በደህና መጡ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:708
+#: files/usr/bin/universal-lite-setup-wizard:967
 msgid "Create your account to get started."
 msgstr "ለመጀመር መለያዎን ይፍጠሩ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:714
-msgid "Full Name"
-msgstr "ሙሉ ስም"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:716
+#: files/usr/bin/universal-lite-setup-wizard:975
 msgid "Jane Doe"
 msgstr "አበበ ተስፋ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:722
-#: ../files/usr/bin/universal-lite-setup-wizard:1103
-msgid "Username"
-msgstr "የተጠቃሚ ስም"
+#: files/usr/bin/universal-lite-setup-wizard:1007
+msgid "Administrator account (sudo)"
+msgstr "የአስተዳዳሪ መለያ (sudo)"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:729
-#: ../files/usr/bin/universal-lite-setup-wizard:807
-#: ../files/usr/bin/universal-lite-setup-wizard:1329
-msgid "Password"
-msgstr "የይለፍ ቃል"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:736
-msgid "Confirm Password"
-msgstr "የይለፍ ቃል ማረጋገጫ"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:761
+#: files/usr/bin/universal-lite-setup-wizard:1040
 msgid "Connect to Wi-Fi"
 msgstr "ከ Wi-Fi ጋር ይገናኙ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:767
+#: files/usr/bin/universal-lite-setup-wizard:1046
 msgid "Select a network to get online."
 msgstr "በመስመር ላይ ለመሆን አውታረ መረብ ይምረጡ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:780
-#: ../files/usr/bin/universal-lite-setup-wizard:1236
+#: files/usr/bin/universal-lite-setup-wizard:1060
+#: files/usr/bin/universal-lite-setup-wizard:1573
 msgid "Scanning for networks..."
 msgstr "አውታረ መረቦችን በመፈለግ ላይ..."
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:788
+#: files/usr/bin/universal-lite-setup-wizard:1068
 msgid "Rescan"
 msgstr "እንደገና ፈልግ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:801
-msgid "Network Name (SSID)"
-msgstr "የአውታረ መረብ ስም (SSID)"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:814
-#: ../files/usr/bin/universal-lite-setup-wizard:1332
-#: ../files/usr/bin/universal-lite-setup-wizard:1338
+#: files/usr/bin/universal-lite-setup-wizard:1094
+#: files/usr/bin/universal-lite-setup-wizard:1677
+#: files/usr/bin/universal-lite-setup-wizard:1683
 msgid "Connect"
 msgstr "ተገናኝ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:825
+#: files/usr/bin/universal-lite-setup-wizard:1105
 msgid "Join hidden network..."
 msgstr "የተደበቀ አውታረ መረብ ይቀላቀሉ..."
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:861
+#: files/usr/bin/universal-lite-setup-wizard:1141
 msgid "Choose Installation Disk"
 msgstr "የመጫኛ ዲስክ ይምረጡ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:867
+#: files/usr/bin/universal-lite-setup-wizard:1147
 msgid "Select the target drive and installation options."
 msgstr "የታለመውን ድራይቭ እና የመጫኛ አማራጮችን ይምረጡ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:874
-#: ../files/usr/bin/universal-lite-setup-wizard:1099
-msgid "Target drive"
-msgstr "የታለመ ድራይቭ"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:878
-#: ../files/usr/bin/universal-lite-setup-wizard:1777
+#: files/usr/bin/universal-lite-setup-wizard:1158
+#: files/usr/bin/universal-lite-setup-wizard:2200
 msgid "Unknown"
 msgstr "ያልታወቀ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:886
-#: ../files/usr/bin/universal-lite-setup-wizard:1517
+#: files/usr/bin/universal-lite-setup-wizard:1166
+#: files/usr/bin/universal-lite-setup-wizard:1872
 msgid "No eligible drives found"
 msgstr "ብቁ ድራይቮች አልተገኙም"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:893
-#: ../files/usr/bin/universal-lite-setup-wizard:1100
-msgid "Filesystem"
-msgstr "የፋይል ስርዓት"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:901
-msgid "Memory management"
-msgstr "የማህደረ ትውስታ አስተዳደር"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:911
-msgid "Disk swap size"
-msgstr "የዲስክ ስዋፕ መጠን"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:919
-msgid "Custom size (GB)"
-msgstr "ብጁ መጠን (GB)"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:929
+#: files/usr/bin/universal-lite-setup-wizard:1209
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr "zswap የተጨመቀ RAM እንደ መሸጎጫ ይጠቀማል፣ ሲሞላ ወደ ዲስክ ስዋፕ ፋይል ይፈስሳል።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:946
+#: files/usr/bin/universal-lite-setup-wizard:1226
 msgid "All data on the selected drive will be erased."
 msgstr "በተመረጠው ድራይቭ ላይ ያለው ሁሉም ውሂብ ይጠፋል።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:969
+#: files/usr/bin/universal-lite-setup-wizard:1249
 msgid "System Setup"
 msgstr "የስርዓት ማዋቀር"
 
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:976
-#: ../files/usr/bin/universal-lite-setup-wizard:1104
-msgid "Timezone"
-msgstr "የሰዓት ክልል"
+#: files/usr/bin/universal-lite-setup-wizard:1292
+msgid "Your computer's name on the network. Leave blank to auto-generate."
+msgstr ""
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:989
-msgid "Administrator account (sudo)"
-msgstr "የአስተዳዳሪ መለያ (sudo)"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:996
-msgid "Root Password (optional)"
-msgstr "የ Root የይለፍ ቃል (አማራጭ)"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1021
+#: files/usr/bin/universal-lite-setup-wizard:1318
 msgid "Install Apps"
 msgstr "መተግበሪያዎችን ጫን"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1028
+#: files/usr/bin/universal-lite-setup-wizard:1325
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
 msgstr "እነዚህ መተግበሪያዎች አስቀድመው ተወርደዋል፣ በመጫን ጊዜ ይገለበጣሉ። የማይፈልጓቸውን ምልክት ያንሱ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1085
+#: files/usr/bin/universal-lite-setup-wizard:1382
 msgid "Ready to Install"
 msgstr "ለመጫን ዝግጁ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1091
+#: files/usr/bin/universal-lite-setup-wizard:1388
 msgid "Review your settings and click Install to begin."
 msgstr "ቅንብሮችዎን ይገምግሙ እና ለመጀመር ጫን ላይ ጠቅ ያድርጉ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1098
-msgid "Network"
-msgstr "አውታረ መረብ"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1101
-msgid "Memory"
-msgstr "ማህደረ ትውስታ"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1102
-msgid "Name"
-msgstr "ስም"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1105
-msgid "Administrator"
-msgstr "አስተዳዳሪ"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1106
-msgid "Root password"
-msgstr "የ Root የይለፍ ቃል"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1107
-msgid "Apps"
-msgstr "መተግበሪያዎች"
-
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1126
+#: files/usr/bin/universal-lite-setup-wizard:1425
 msgid "Installing..."
 msgstr "በመጫን ላይ..."
 
+#: files/usr/bin/universal-lite-setup-wizard:1437
+#: files/usr/bin/universal-lite-setup-wizard:1467
+msgid "Show details ▼"
+msgstr ""
+
+#: files/usr/bin/universal-lite-setup-wizard:1467
+msgid "Hide details ▲"
+msgstr ""
+
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1149
+#: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"
 msgstr "ዝለል"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1156
+#: files/usr/bin/universal-lite-setup-wizard:1493
 msgid "Retry"
 msgstr "እንደገና ሞክር"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1163
+#: files/usr/bin/universal-lite-setup-wizard:1500
 msgid "Reboot"
 msgstr "ዳግም አስነሳ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1276
+#: files/usr/bin/universal-lite-setup-wizard:1613
 msgid "No networks found."
 msgstr "ምንም አውታረ መረብ አልተገኘም።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1303
+#: files/usr/bin/universal-lite-setup-wizard:1640
 msgid "Strong"
 msgstr "ጠንካራ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1305
+#: files/usr/bin/universal-lite-setup-wizard:1642
 msgid "Medium"
 msgstr "መካከለኛ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1307
+#: files/usr/bin/universal-lite-setup-wizard:1644
 msgid "Weak"
 msgstr "ደካማ"
 
+#: files/usr/bin/universal-lite-setup-wizard:1650
+msgid "WPA3"
+msgstr ""
+
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1311
+#: files/usr/bin/universal-lite-setup-wizard:1652
 msgid "Secured"
 msgstr "የተጠበቀ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1311
+#: files/usr/bin/universal-lite-setup-wizard:1654
 msgid "Open"
 msgstr "ክፍት"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1362
+#: files/usr/bin/universal-lite-setup-wizard:1674
+msgid "Password"
+msgstr "የይለፍ ቃል"
+
+# NEEDS-REVIEW
+#: files/usr/bin/universal-lite-setup-wizard:1708
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "ከ {ssid} ጋር በመገናኘት ላይ..."
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1418
-#: ../files/usr/bin/universal-lite-setup-wizard:1441
+#: files/usr/bin/universal-lite-setup-wizard:1773
+#: files/usr/bin/universal-lite-setup-wizard:1796
 msgid "Wrong password."
 msgstr "የተሳሳተ የይለፍ ቃል።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1420
-#: ../files/usr/bin/universal-lite-setup-wizard:1443
+#: files/usr/bin/universal-lite-setup-wizard:1775
+#: files/usr/bin/universal-lite-setup-wizard:1798
 #, python-brace-format
 msgid "Connection failed: {err}"
 msgstr "ግንኙነት አልተሳካም: {err}"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1428
+#: files/usr/bin/universal-lite-setup-wizard:1783
 msgid "Enter a network name."
 msgstr "የአውታረ መረብ ስም ያስገቡ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1456
+#: files/usr/bin/universal-lite-setup-wizard:1811
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "ከ {ssid} ጋር ተገናኝቷል!"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1461
+#: files/usr/bin/universal-lite-setup-wizard:1816
 msgid "Connected, but no internet access detected."
 msgstr "ተገናኝቷል፣ ግን የበይነመረብ ተደራሽነት አልተገኘም።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1582
+#: files/usr/bin/universal-lite-setup-wizard:1937
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "ደረጃ {n} ከ {total}"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Install"
 msgstr "ጫን"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1617
+#: files/usr/bin/universal-lite-setup-wizard:1972
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr "ምንም የታለሙ ድራይቮች አልተገኙም። ድራይቭ ያገናኙ እና መጫኛውን እንደገና ያስጀምሩ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1622
+#: files/usr/bin/universal-lite-setup-wizard:1977
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr "ብጁ የስዋፕ መጠን አዎንታዊ ሙሉ ቁጥር መሆን አለበት (በ GB)።"
 
+#: files/usr/bin/universal-lite-setup-wizard:2000
+#, python-brace-format
+msgid ""
+"Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
+"{max} GB."
+msgstr ""
+
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1633
+#: files/usr/bin/universal-lite-setup-wizard:2029
 msgid "Full name is required."
 msgstr "ሙሉ ስም ያስፈልጋል።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1636
+#: files/usr/bin/universal-lite-setup-wizard:2032
 msgid "Username is required."
 msgstr "የተጠቃሚ ስም ያስፈልጋል።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1639
+#: files/usr/bin/universal-lite-setup-wizard:2035
 msgid "Username must be 32 characters or fewer."
 msgstr "የተጠቃሚ ስም 32 ቁምፊዎች ወይም ከዚያ ያነሰ መሆን አለበት።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1643
+#: files/usr/bin/universal-lite-setup-wizard:2039
+#, fuzzy
 msgid ""
-"Username must start with a lowercase letter and contain only lowercase "
-"letters, numbers, and hyphens."
+"Username must start with a lowercase letter or underscore, contain only "
+"lowercase letters, numbers, underscores, and hyphens, and cannot end with a "
+"hyphen."
 msgstr "የተጠቃሚ ስም በትንሽ ፊደል መጀመር አለበት እና ትንሽ ፊደሎች፣ ቁጥሮች እና ሰረዞች ብቻ መያዝ አለበት።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1648
+#: files/usr/bin/universal-lite-setup-wizard:2045
 msgid "Password is required."
 msgstr "የይለፍ ቃል ያስፈልጋል።"
 
+#: files/usr/bin/universal-lite-setup-wizard:2048
+msgid "Password must be at least 6 characters."
+msgstr ""
+
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1651
+#: files/usr/bin/universal-lite-setup-wizard:2051
 msgid "Passwords do not match."
 msgstr "የይለፍ ቃሎች አይገጣጠሙም።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1660
+#: files/usr/bin/universal-lite-setup-wizard:2057
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -434,104 +384,187 @@ msgstr ""
 "ይቆለፋሉ።"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1678
+#: files/usr/bin/universal-lite-setup-wizard:2067
+#, fuzzy
+msgid "Hostname must be 63 characters or fewer."
+msgstr "የተጠቃሚ ስም 32 ቁምፊዎች ወይም ከዚያ ያነሰ መሆን አለበት።"
+
+#: files/usr/bin/universal-lite-setup-wizard:2071
+msgid ""
+"Hostname must contain only letters, numbers, and hyphens, and cannot start "
+"or end with a hyphen."
+msgstr ""
+
+# NEEDS-REVIEW
+#: files/usr/bin/universal-lite-setup-wizard:2089
 msgid "Wired connection"
 msgstr "ባለሽቦ ግንኙነት"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1681
+#: files/usr/bin/universal-lite-setup-wizard:2092
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "ከ {ssid} ጋር ተገናኝቷል"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1684
+#: files/usr/bin/universal-lite-setup-wizard:2095
 msgid "No network (offline install)"
 msgstr "ምንም አውታረ መረብ የለም (ከመስመር ውጭ መጫን)"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1694
+#: files/usr/bin/universal-lite-setup-wizard:2105
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap ከ {swap_gb} GB ዲስክ ስዋፕ ጋር"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1697
+#: files/usr/bin/universal-lite-setup-wizard:2108
 msgid "zram only (compressed RAM)"
 msgstr "zram ብቻ (የተጨመቀ RAM)"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1703
+#: files/usr/bin/universal-lite-setup-wizard:2113
 msgid "Yes"
 msgstr "አዎ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1703
+#: files/usr/bin/universal-lite-setup-wizard:2113
 msgid "No"
 msgstr "አይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1705
+#: files/usr/bin/universal-lite-setup-wizard:2115
 msgid "Set"
 msgstr "ተቀምጧል"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1705
+#: files/usr/bin/universal-lite-setup-wizard:2115
 msgid "Not set"
 msgstr "አልተቀመጠም"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1713
+#: files/usr/bin/universal-lite-setup-wizard:2136
 msgid "No apps selected"
 msgstr "ምንም መተግበሪያ አልተመረጠም"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:1772
-#: ../files/usr/bin/universal-lite-setup-wizard:1775
+#: files/usr/bin/universal-lite-setup-wizard:2195
+#: files/usr/bin/universal-lite-setup-wizard:2198
 msgid "None"
 msgstr "የለም"
 
-# NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2163
-msgid "Partitioning and installing"
-msgstr "በመከፋፈል እና በመጫን ላይ"
+#: files/usr/bin/universal-lite-setup-wizard:2918
+msgid "Partitioning disk"
+msgstr "ዲስክን በመከፋፈል ላይ"
+
+#: files/usr/bin/universal-lite-setup-wizard:2919
+msgid "Installing system"
+msgstr "ስርዓትን በመጫን ላይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2164
+#: files/usr/bin/universal-lite-setup-wizard:2920
 msgid "Configuring user account"
 msgstr "የተጠቃሚ መለያን በማዋቀር ላይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2165
+#: files/usr/bin/universal-lite-setup-wizard:2921
 msgid "Copying network configuration"
 msgstr "የአውታረ መረብ ውቅረት በመገልበጥ ላይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2169
+#: files/usr/bin/universal-lite-setup-wizard:2925
 msgid "Installing selected apps"
 msgstr "የተመረጡ መተግበሪያዎችን በመጫን ላይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2173
+#: files/usr/bin/universal-lite-setup-wizard:2929
 msgid "Configuring memory management"
 msgstr "የማህደረ ትውስታ አስተዳደርን በማዋቀር ላይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2174
+#: files/usr/bin/universal-lite-setup-wizard:2930
 msgid "Finalizing"
 msgstr "በማጠናቀቅ ላይ"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2237
+#: files/usr/bin/universal-lite-setup-wizard:2996
 msgid "(skipped)"
 msgstr "(ተዘልሏል)"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2263
+#: files/usr/bin/universal-lite-setup-wizard:3027
 msgid "Installation Complete!"
 msgstr "መጫን ተጠናቅቋል!"
 
 # NEEDS-REVIEW
-#: ../files/usr/bin/universal-lite-setup-wizard:2291
+#: files/usr/bin/universal-lite-setup-wizard:3056
 msgid "Reboot failed — please restart manually."
 msgstr "ዳግም ማስነሳት አልተሳካም — እባክዎ በእጅ እንደገና ያስጀምሩ።"
+
+# NEEDS-REVIEW
+#~ msgid "Full Name"
+#~ msgstr "ሙሉ ስም"
+
+# NEEDS-REVIEW
+#~ msgid "Username"
+#~ msgstr "የተጠቃሚ ስም"
+
+# NEEDS-REVIEW
+#~ msgid "Confirm Password"
+#~ msgstr "የይለፍ ቃል ማረጋገጫ"
+
+# NEEDS-REVIEW
+#~ msgid "Network Name (SSID)"
+#~ msgstr "የአውታረ መረብ ስም (SSID)"
+
+# NEEDS-REVIEW
+#~ msgid "Target drive"
+#~ msgstr "የታለመ ድራይቭ"
+
+# NEEDS-REVIEW
+#~ msgid "Filesystem"
+#~ msgstr "የፋይል ስርዓት"
+
+# NEEDS-REVIEW
+#~ msgid "Memory management"
+#~ msgstr "የማህደረ ትውስታ አስተዳደር"
+
+# NEEDS-REVIEW
+#~ msgid "Disk swap size"
+#~ msgstr "የዲስክ ስዋፕ መጠን"
+
+# NEEDS-REVIEW
+#~ msgid "Custom size (GB)"
+#~ msgstr "ብጁ መጠን (GB)"
+
+# NEEDS-REVIEW
+#~ msgid "Timezone"
+#~ msgstr "የሰዓት ክልል"
+
+# NEEDS-REVIEW
+#~ msgid "Root Password (optional)"
+#~ msgstr "የ Root የይለፍ ቃል (አማራጭ)"
+
+# NEEDS-REVIEW
+#~ msgid "Network"
+#~ msgstr "አውታረ መረብ"
+
+# NEEDS-REVIEW
+#~ msgid "Memory"
+#~ msgstr "ማህደረ ትውስታ"
+
+# NEEDS-REVIEW
+#~ msgid "Name"
+#~ msgstr "ስም"
+
+# NEEDS-REVIEW
+#~ msgid "Administrator"
+#~ msgstr "አስተዳዳሪ"
+
+# NEEDS-REVIEW
+#~ msgid "Root password"
+#~ msgstr "የ Root የይለፍ ቃል"
+
+# NEEDS-REVIEW
+#~ msgid "Apps"
+#~ msgstr "መተግበሪያዎች"
