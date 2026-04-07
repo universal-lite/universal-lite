@@ -2254,7 +2254,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 check=True, timeout=30,
             )
         except subprocess.CalledProcessError as exc:
-            return f"Partitioning failed: {(exc.output or '').strip().splitlines()[-1:] or exc}"
+            lines = (exc.output or "").strip().splitlines()
+            return f"Partitioning failed: {lines[-1] if lines else exc}"
         except subprocess.TimeoutExpired:
             return "Partitioning timed out"
 
@@ -2296,7 +2297,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             try:
                 self._run_logged(cmd, check=True, timeout=60)
             except subprocess.CalledProcessError as exc:
-                return f"Failed to format {label} partition: {(exc.output or '').strip().splitlines()[-1:] or exc}"
+                lines = (exc.output or "").strip().splitlines()
+                return f"Failed to format {label} partition: {lines[-1] if lines else exc}"
             except subprocess.TimeoutExpired:
                 return f"Formatting {label} partition timed out"
 
@@ -2331,7 +2333,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 # Clean up any already-mounted paths
                 subprocess.run(["umount", "-R", mount_point],
                                capture_output=True, timeout=10)
-                return f"Failed to mount {mnt}: {(exc.output or '').strip().splitlines()[-1:] or exc}"
+                lines = (exc.output or "").strip().splitlines()
+                return f"Failed to mount {mnt}: {lines[-1] if lines else exc}"
 
         self._mount_point = mount_point
         return None
@@ -2773,8 +2776,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 ["umount", "-R", self._mount_point],
                 check=True, capture_output=True, text=True, timeout=30,
             )
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to unmount target: {exc.stderr.strip() or exc}"
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+            return f"Failed to unmount target: {getattr(exc, 'stderr', '').strip() or exc}"
 
         return None
 
