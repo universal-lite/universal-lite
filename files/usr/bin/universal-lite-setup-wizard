@@ -2216,6 +2216,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return ("Could not determine the booted image reference. "
                     "Is this system booted from a bootc image?")
 
+        # Workaround for bootc bug #1343: bootc install with --source-imgref
+        # runs `ostree rev-parse --single` against /ostree/repo, which fails
+        # if the repo has more than one commit (normal on booted systems).
+        # Prune to a single commit before installing.
+        subprocess.run(
+            ["ostree", "prune", "--repo=/ostree/repo", "--refs-only", "--depth=0"],
+            capture_output=True, timeout=30,
+        )
+
         cmd = ["bootc", "install", "to-disk", "--wipe",
                "--source-imgref", source,
                "--filesystem", fs, f"/dev/{target}"]
