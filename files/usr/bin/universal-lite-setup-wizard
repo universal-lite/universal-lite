@@ -2152,11 +2152,30 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"Failed to mount sysroot: {exc.stderr.strip() or exc}"
 
-        # Locate ostree deployment
-        deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
-        if not deploy_dirs:
-            return "No ostree deployment found on installed system"
-        self._sysroot_deploy = str(deploy_dirs[-1])
+        # Locate ostree deployment via OSTree API (returns deployments in
+        # priority order, so [0] is always the active one — unlike a glob
+        # which can pick the wrong deployment if multiple exist).
+        deploy_path = None
+        try:
+            gi.require_version("OSTree", "1.0")
+            from gi.repository import OSTree
+            sysroot = OSTree.Sysroot.new(Gio.File.new_for_path(mount_point))
+            sysroot.load(None)
+            deployments = sysroot.get_deployments()
+            if deployments:
+                deploy_dir = sysroot.get_deployment_directory(deployments[0])
+                deploy_path = deploy_dir.get_path()
+        except Exception:
+            pass
+
+        if not deploy_path:
+            # Fallback: glob for deployment dirs (pick highest serial)
+            deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
+            if not deploy_dirs:
+                return "No ostree deployment found on installed system"
+            deploy_path = str(deploy_dirs[-1])
+
+        self._sysroot_deploy = deploy_path
 
         var_dirs = list(Path(mount_point).glob("ostree/deploy/*/var"))
         if not var_dirs:
@@ -2164,6 +2183,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._sysroot_var = str(var_dirs[0])
 
         self._sysroot_mount = mount_point
+
+        # Initialize standard /var subdirectories that ostree expects
+        # (on ostree systems, /home, /root, /srv, etc. are symlinks into /var)
+        for subdir in ["home", "roothome", "opt", "srv", "usrlocal",
+                        "mnt", "media", "spool/mail"]:
+            Path(self._sysroot_var, subdir).mkdir(parents=True, exist_ok=True)
+
         return None
 
     def _unmount_sysroot(self) -> str | None:
@@ -2382,7 +2408,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             tz = self._setup_timezone
             localtime = Path(deploy) / "etc" / "localtime"
             localtime.unlink(missing_ok=True)
-            localtime.symlink_to(f"/usr/share/zoneinfo/{tz}")
+            localtime.symlink_to(f"../usr/share/zoneinfo/{tz}")
             (Path(deploy) / "etc" / "locale.conf").write_text(
                 f"LANG={self._setup_locale}\n"
             )
