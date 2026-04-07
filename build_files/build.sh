@@ -25,6 +25,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     cage \
     cups \
     cryptsetup \
+    dosfstools \
     evince \
     fastfetch \
     ffmpegthumbnailer \
@@ -75,6 +76,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     mpv \
     network-manager-applet \
     nm-connection-editor \
+    parted \
     pavucontrol \
     pipewire \
     power-profiles-daemon \
@@ -104,7 +106,9 @@ dnf5 install -y --setopt=install_weak_deps=False \
     xdg-desktop-portal-gtk \
     xdg-desktop-portal-wlr \
     xdg-user-dirs \
-    xdg-user-dirs-gtk
+    xdg-user-dirs-gtk \
+    xfsprogs \
+    btrfs-progs
 
 dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 

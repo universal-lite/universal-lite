@@ -2239,6 +2239,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         dev = f"/dev/{target}"
         mount_point = "/mnt/target"
 
+        # Clean up mounts from any previous attempt (no-op if nothing mounted)
+        subprocess.run(["umount", "-R", mount_point],
+                       capture_output=True, timeout=10)
+
         # --- Wipe and partition with sfdisk ---
         sfdisk_script = (
             "label: gpt\n"
@@ -2830,6 +2834,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             try:
                 proc.stdin.write(stdin_data if isinstance(stdin_data, bytes)
                                  else stdin_data.encode())
+            except BrokenPipeError:
+                pass  # Process exited early — proc.wait() will catch the error
             finally:
                 proc.stdin.close()
 
