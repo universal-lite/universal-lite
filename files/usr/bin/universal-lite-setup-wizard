@@ -2475,7 +2475,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             localtime.unlink(missing_ok=True)
             localtime.symlink_to(f"../usr/share/zoneinfo/{tz}")
             (Path(deploy) / "etc" / "locale.conf").write_text(
-                f"LANG={self._setup_locale}\n"
+                f'LANG="{self._setup_locale}"\n'
             )
         except OSError as exc:
             return f"Failed to configure timezone/locale: {exc}"
@@ -2702,6 +2702,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         (state_dir / "install-config.json").write_text(
             json.dumps(config, indent=2) + "\n"
         )
+
+        # Ensure machine-id is empty so systemd generates a unique one on
+        # first boot.  If the container image baked in a populated ID, every
+        # install from that image would share it (breaks journal, DHCP, D-Bus).
+        machine_id = Path(deploy) / "etc" / "machine-id"
+        if machine_id.exists():
+            content = machine_id.read_text().strip()
+            if len(content) == 32:
+                machine_id.write_text("")
+
+        # Ensure graphical.target is the default so greetd starts on boot,
+        # even if the base image defaults to multi-user.target.
+        default_target = Path(deploy) / "etc" / "systemd" / "system" / "default.target"
+        if not default_target.exists():
+            default_target.parent.mkdir(parents=True, exist_ok=True)
+            default_target.symlink_to("/usr/lib/systemd/system/graphical.target")
 
         # Restore SELinux labels on all files we created or modified.
         # Without this, passwd/shadow/group/hostname/NM configs/home dirs
