@@ -2757,32 +2757,32 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             **kwargs,
         )
 
-        # Kill the process if it exceeds the timeout.  readline() blocks
-        # with no way to interrupt, so we use a timer that kills the
-        # process — which closes the pipe and unblocks readline.
-        timer = None
-        timed_out = False
-        if timeout:
-            def _kill():
-                nonlocal timed_out
-                timed_out = True
-                proc.kill()
-            timer = threading.Timer(timeout, _kill)
-            timer.start()
+        # Read output in a background thread.  bootc spawns child processes
+        # that can inherit the pipe fd — keeping it open after bootc exits.
+        # The reader thread drains what it can, then we stop once the main
+        # process has exited rather than waiting for the pipe to close.
+        output_lines: list[str] = []
 
-        output_lines = []
-        try:
+        def _reader():
             for raw_line in iter(proc.stdout.readline, b""):
                 line = raw_line.decode("utf-8", errors="replace")
                 output_lines.append(line)
                 self._log(line)
-            proc.wait()
-        finally:
-            if timer:
-                timer.cancel()
 
-        if timed_out:
-            raise subprocess.TimeoutExpired(cmd, timeout)
+        reader = threading.Thread(target=_reader, daemon=True)
+        reader.start()
+
+        try:
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            raise
+
+        # Give the reader a moment to drain any remaining buffered output,
+        # then move on even if a child process is keeping the pipe open.
+        reader.join(timeout=2)
+        proc.stdout.close()
 
         stdout_text = "".join(output_lines)
         result = subprocess.CompletedProcess(
