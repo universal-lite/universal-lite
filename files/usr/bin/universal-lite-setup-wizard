@@ -2314,28 +2314,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except Exception:
             pass  # Best-effort; bootc install will give a clear error if it still fails
 
-        # Export the booted image from the local ostree repo to an OCI
-        # directory.  Using docker:// as --source-imgref would force bootc
-        # to fetch from the registry, which hangs offline.  The local OCI
-        # export gives bootc the image data without any network access.
-        oci_dir = "/var/tmp/bootc-source"
-        import shutil
-        shutil.rmtree(oci_dir, ignore_errors=True)
-
-        self._log(_("Exporting local image for install...\n"))
-        try:
-            self._run_logged(
-                ["ostree-ext-cli", "container", "image", "reexport",
-                 "--repo=/ostree/repo", f"registry:{image_name}",
-                 f"oci:{oci_dir}"],
-                check=True, timeout=300,
-            )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to export local image: {exc}"
-
         cmd = ["bootc", "install", "to-disk", "--wipe",
-               "--source-imgref", f"oci:{oci_dir}",
-               "--target-imgref", image_name,
+               "--source-imgref", f"docker://{image_name}",
                "--filesystem", fs, f"/dev/{target}"]
 
         try:
@@ -2344,8 +2324,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Installation failed: {exc.output.strip() or exc}"
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
-        finally:
-            shutil.rmtree(oci_dir, ignore_errors=True)
 
         # Mount sysroot for post-install configuration
         err = self._mount_sysroot()
