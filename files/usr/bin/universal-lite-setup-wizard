@@ -2270,65 +2270,98 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
             return f"Failed to hash password: {exc}"
 
-        # Create user in sysroot's /etc/passwd
-        groups = "video"
-        if self._setup_is_admin:
-            groups = "wheel,video"
+        # Write user account directly into sysroot files — useradd cannot
+        # lock /etc/group inside an ostree deployment (read-only checkout).
+        etc = Path(deploy) / "etc"
+        uid = gid = 1000
+
+        # Find next free UID/GID (start at 1000)
+        try:
+            for line in (etc / "passwd").read_text().splitlines():
+                parts = line.split(":")
+                if len(parts) > 2:
+                    try:
+                        existing = int(parts[2])
+                        if existing >= uid:
+                            uid = existing + 1
+                    except ValueError:
+                        pass
+            for line in (etc / "group").read_text().splitlines():
+                parts = line.split(":")
+                if len(parts) > 2:
+                    try:
+                        existing = int(parts[2])
+                        if existing >= gid:
+                            gid = existing + 1
+                    except ValueError:
+                        pass
+        except OSError:
+            pass
 
         try:
-            subprocess.run(
-                ["chroot", deploy,
-                 "useradd",
-                 "--home-dir", f"/var/home/{username}",
-                 "--shell", "/bin/bash",
-                 "--groups", groups,
-                 "--password", hashed_pw,
-                 "--comment", fullname,
-                 username],
-                check=True, capture_output=True, text=True, timeout=15,
-            )
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to create user: {exc.stderr.strip() or exc}"
+            # Append user's primary group
+            with open(etc / "group", "a") as f:
+                f.write(f"{username}:x:{gid}:\n")
+
+            # Add user to supplementary groups
+            sup_groups = ["video"]
+            if self._setup_is_admin:
+                sup_groups.insert(0, "wheel")
+            group_lines = (etc / "group").read_text().splitlines()
+            with open(etc / "group", "w") as f:
+                for line in group_lines:
+                    parts = line.split(":")
+                    if len(parts) >= 4 and parts[0] in sup_groups:
+                        members = parts[3].split(",") if parts[3] else []
+                        if username not in members:
+                            members.append(username)
+                        parts[3] = ",".join(members)
+                        line = ":".join(parts)
+                    f.write(line + "\n")
+
+            # Append to passwd
+            with open(etc / "passwd", "a") as f:
+                f.write(f"{username}:x:{uid}:{gid}:{fullname}:/var/home/{username}:/bin/bash\n")
+
+            # Append to shadow
+            with open(etc / "shadow", "a") as f:
+                f.write(f"{username}:{hashed_pw}:19700:0:99999:7:::\n")
+
+        except OSError as exc:
+            return f"Failed to create user: {exc}"
 
         # Create home directory in the var partition (ostree keeps /home in /var/home)
         home = Path(var_dir) / "home" / username
         home.mkdir(parents=True, exist_ok=True)
 
         # Copy skeleton files
-        skel = Path(deploy) / "etc" / "skel"
+        skel = etc / "skel"
         if skel.is_dir():
             subprocess.run(
                 ["cp", "-a", f"{skel}/.", str(home)],
                 check=False, capture_output=True, timeout=10,
             )
 
-        # Read the UID/GID assigned by useradd for correct ownership
-        uid = gid = "1000"
-        try:
-            with open(Path(deploy) / "etc" / "passwd") as f:
-                for line in f:
-                    parts = line.strip().split(":")
-                    if parts[0] == username:
-                        uid, gid = parts[2], parts[3]
-                        break
-        except (OSError, IndexError):
-            pass
-
         subprocess.run(
             ["chown", "-R", f"{uid}:{gid}", str(home)],
             check=False, capture_output=True, timeout=10,
         )
 
-        # Set root password if provided
+        # Set root password if provided — edit shadow directly (chpasswd
+        # has the same locking issue as useradd inside ostree deployments)
         if self._setup_root_password:
             try:
                 root_hash = _hash_password(self._setup_root_password)
-                subprocess.run(
-                    ["chroot", deploy, "chpasswd", "-e"],
-                    input=f"root:{root_hash}\n",
-                    check=True, capture_output=True, text=True, timeout=10,
-                )
-            except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+                shadow_path = etc / "shadow"
+                lines = shadow_path.read_text().splitlines()
+                with open(shadow_path, "w") as f:
+                    for line in lines:
+                        if line.startswith("root:"):
+                            parts = line.split(":")
+                            parts[1] = root_hash
+                            line = ":".join(parts)
+                        f.write(line + "\n")
+            except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
                 return f"Failed to set root password: {exc}"
 
         # Set timezone and locale
