@@ -2219,11 +2219,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Workaround for bootc bug #1343: bootc install with --source-imgref
         # runs `ostree rev-parse --single` against /ostree/repo, which fails
         # if the repo has more than one commit (normal on booted systems).
-        # Prune to a single commit before installing.
-        subprocess.run(
-            ["ostree", "prune", "--repo=/ostree/repo", "--refs-only", "--depth=0"],
-            capture_output=True, timeout=30,
-        )
+        # Delete all refs except the first, then prune orphaned commits.
+        try:
+            refs = subprocess.run(
+                ["ostree", "refs", "--repo=/ostree/repo"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout.strip().splitlines()
+            for ref in refs[1:]:
+                subprocess.run(
+                    ["ostree", "refs", "--repo=/ostree/repo", "--delete", ref],
+                    capture_output=True, timeout=10,
+                )
+            subprocess.run(
+                ["ostree", "prune", "--repo=/ostree/repo", "--refs-only", "--depth=0"],
+                capture_output=True, timeout=30,
+            )
+        except Exception:
+            pass  # Best-effort; bootc install will give a clear error if it still fails
 
         cmd = ["bootc", "install", "to-disk", "--wipe",
                "--source-imgref", source,
