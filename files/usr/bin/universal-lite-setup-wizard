@@ -23,6 +23,7 @@ import json
 import os
 
 import re
+import signal
 import subprocess
 import sys
 import threading
@@ -51,6 +52,21 @@ def N_(s):
 
 
 APP_ID = "org.universallite.SetupWizard"
+
+
+def _reset_child_signals():
+    """Reset inherited SIG_IGN signals to SIG_DFL in child processes.
+
+    GTK sets several signals to SIG_IGN.  If bootc's cleanup helpers
+    inherit this, they can hang waiting for signals that never arrive.
+    Matches Anaconda's preexec_fn pattern (pyanaconda/core/util.py).
+    """
+    for signum in range(1, signal.NSIG):
+        try:
+            if signal.getsignal(signum) == signal.SIG_IGN:
+                signal.signal(signum, signal.SIG_DFL)
+        except (OSError, ValueError):
+            pass
 
 CSS = """\
 window {
@@ -2325,6 +2341,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
 
+        self._log("bootc exited, mounting sysroot...\n")
+
         # Mount sysroot for post-install configuration
         err = self._mount_sysroot()
         if err:
@@ -2741,6 +2759,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
+            close_fds=True, start_new_session=True,
+            preexec_fn=_reset_child_signals,
             **kwargs,
         )
         os.close(log_fd)  # Parent doesn't need the write end
