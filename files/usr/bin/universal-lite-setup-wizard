@@ -57,6 +57,10 @@ window {
     color: #ffffff;
 }
 
+checkbutton label {
+    color: #ffffff;
+}
+
 .welcome-title {
     font-family: "Roboto", sans-serif;
     font-size: 32px;
