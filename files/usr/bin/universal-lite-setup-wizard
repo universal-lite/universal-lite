@@ -2336,6 +2336,54 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._mount_point = mount_point
         return None
 
+    def _step_install_system(self) -> str | None:
+        """Install OS image into the mounted target via bootc to-filesystem."""
+        image_name = self._get_booted_image_name()
+        if not image_name:
+            return ("Could not determine the booted image reference. "
+                    "Is this system booted from a bootc image?")
+
+        mount_point = self._mount_point
+
+        cmd = [
+            "bootc", "install", "to-filesystem",
+            "--source-imgref", f"docker://{image_name}",
+            "--bootloader", "grub",
+            "--root-mount-spec", f"UUID={self._root_uuid}",
+            mount_point,
+        ]
+
+        try:
+            self._run_logged(cmd, check=True, timeout=900)
+        except subprocess.CalledProcessError as exc:
+            lines = (exc.output or "").strip().splitlines()
+            tail = "\n".join(lines[-5:]) if lines else str(exc)
+            return f"Installation failed: {tail}"
+        except subprocess.TimeoutExpired:
+            return "Installation timed out after 15 minutes"
+
+        # Locate the ostree deployment directory for post-install steps.
+        # bootc to-filesystem creates the standard ostree layout under our
+        # mount point.  We glob for it (same approach Anaconda uses) —
+        # sorted so [-1] picks the highest-serial deployment.
+        deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
+        if not deploy_dirs:
+            return "No ostree deployment found after install"
+        self._sysroot_deploy = str(deploy_dirs[-1])
+
+        var_dirs = list(Path(mount_point).glob("ostree/deploy/*/var"))
+        if not var_dirs:
+            return "No var directory found after install"
+        self._sysroot_var = str(var_dirs[0])
+
+        # Initialize standard /var subdirectories that ostree expects
+        # (on ostree systems /home, /root, /srv etc. are symlinks into /var)
+        for subdir in ["home", "roothome", "opt", "srv", "usrlocal",
+                        "mnt", "media", "spool/mail"]:
+            Path(self._sysroot_var, subdir).mkdir(parents=True, exist_ok=True)
+
+        return None
+
     def _step_configure_user(self) -> str | None:
         """Create user account, set root password, timezone, and locale on sysroot."""
         deploy = self._sysroot_deploy
