@@ -2277,7 +2277,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         try:
             subprocess.run(
-                ["useradd", "--root", deploy,
+                ["chroot", deploy,
+                 "useradd",
                  "--home-dir", f"/var/home/{username}",
                  "--shell", "/bin/bash",
                  "--groups", groups,
@@ -2323,7 +2324,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             try:
                 root_hash = _hash_password(self._setup_root_password)
                 subprocess.run(
-                    ["chpasswd", "--root", deploy, "-e"],
+                    ["chroot", deploy, "chpasswd", "-e"],
                     input=f"root:{root_hash}\n",
                     check=True, capture_output=True, text=True, timeout=10,
                 )
