@@ -2243,6 +2243,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         subprocess.run(["umount", "-R", mount_point],
                        capture_output=True, timeout=10)
 
+        # Wipe all filesystem/RAID/partition-table signatures so sfdisk
+        # starts from a clean slate (previous installs leave signatures
+        # that can confuse sfdisk even with --wipe).
+        self._run_logged(["wipefs", "-af", dev], check=False, timeout=15)
+
         # --- Wipe and partition with sfdisk ---
         sfdisk_script = (
             "label: gpt\n"
@@ -2259,7 +2264,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             )
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
-            return f"Partitioning failed: {lines[-1] if lines else exc}"
+            # Show last 3 lines — sfdisk's actual error precedes "Leaving."
+            tail = "\n".join(lines[-3:]) if lines else str(exc)
+            return f"Partitioning failed: {tail}"
         except subprocess.TimeoutExpired:
             return "Partitioning timed out"
 
