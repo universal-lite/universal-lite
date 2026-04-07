@@ -565,6 +565,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         self._next_button = Gtk.Button(label=_("Next"))
         self._next_button.add_css_class("create-button")
+        self._next_button.set_size_request(140, -1)
         self._next_button.connect("clicked", lambda _: self._go_next())
         btn_row.append(self._next_button)
 
