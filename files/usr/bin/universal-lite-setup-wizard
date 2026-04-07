@@ -976,6 +976,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._retranslatable.append((self._fullname_entry.set_placeholder_text, "Jane Doe"))
         self._fullname_entry.add_css_class("form-entry")
         self._fullname_entry.set_hexpand(True)
+        self._username_manually_edited = False
+        self._fullname_entry.connect("changed", self._on_fullname_changed)
         card.append(self._fullname_entry)
 
         card.append(self._make_translated_label("Username"))
@@ -983,6 +985,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._username_entry.set_placeholder_text("janedoe")
         self._username_entry.add_css_class("form-entry")
         self._username_entry.set_hexpand(True)
+        self._username_entry.connect("changed", self._on_username_edited)
         card.append(self._username_entry)
 
         card.append(self._make_translated_label("Password"))
@@ -2001,6 +2004,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         return False
 
         return True
+
+    def _on_fullname_changed(self, entry: Gtk.Entry) -> None:
+        """Auto-fill username from full name (lowercase, no spaces) until the user edits it."""
+        if self._username_manually_edited:
+            return
+        name = entry.get_text().strip().lower()
+        name = re.sub(r"[^a-z0-9_-]", "", name.replace(" ", ""))
+        self._username_entry.handler_block_by_func(self._on_username_edited)
+        self._username_entry.set_text(name)
+        self._username_entry.handler_unblock_by_func(self._on_username_edited)
+
+    def _on_username_edited(self, entry: Gtk.Entry) -> None:
+        """Mark username as manually edited so auto-fill stops."""
+        self._username_manually_edited = True
 
     def _validate_account(self) -> bool:
         fullname = self._fullname_entry.get_text().strip()
