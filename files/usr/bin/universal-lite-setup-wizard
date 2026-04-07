@@ -2764,7 +2764,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Give the reader a moment to drain any remaining buffered output,
         # then move on even if a child process is keeping the pipe open.
         reader.join(timeout=2)
-        proc.stdout.close()
+        # Close the raw fd directly — proc.stdout.close() would deadlock
+        # on BufferedReader's internal lock while the reader thread holds it.
+        try:
+            os.close(proc.stdout.fileno())
+        except OSError:
+            pass
 
         stdout_text = "".join(output_lines)
         result = subprocess.CompletedProcess(
