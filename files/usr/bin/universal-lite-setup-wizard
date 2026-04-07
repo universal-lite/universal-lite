@@ -2325,7 +2325,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._log(_("Exporting local image for install...\n"))
         try:
             self._run_logged(
-                ["ostree", "container", "image", "export",
+                ["ostree-ext-cli", "container", "image", "reexport",
                  "--repo=/ostree/repo", f"registry:{image_name}",
                  f"oci:{oci_dir}"],
                 check=True, timeout=300,
