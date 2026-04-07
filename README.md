@@ -1,4 +1,4 @@
-# Universal-Lite
+# Universal-Lite (Pre-release)
 
 A lightweight, auto-updating Linux desktop for old x86_64 Chromebooks and low-end laptops.
 Built on [Universal Blue](https://universal-blue.org/) — the image updates itself daily and
