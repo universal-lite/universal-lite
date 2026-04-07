@@ -478,6 +478,8 @@ def _load_drives() -> list[dict]:
     for dev in data.get("blockdevices", []):
         if dev.get("type") != "disk":
             continue
+        if dev.get("name", "").startswith("zram"):
+            continue
         if dev.get("name") == boot_disk:
             continue
         drives.append(dev)
