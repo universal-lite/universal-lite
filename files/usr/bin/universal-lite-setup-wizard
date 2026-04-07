@@ -26,6 +26,7 @@ import re
 import subprocess
 import sys
 import threading
+import traceback
 from pathlib import Path
 
 import gi
@@ -2549,11 +2550,24 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _on_setup_clicked(self) -> None:
+        try:
+            self._do_setup()
+        except Exception:
+            self._set_status(traceback.format_exc())
+
+    def _do_setup(self) -> None:
         # Capture all form values for thread-safe access
         # Disk page
         drive_idx = self._drive_dropdown.get_selected()
+        if drive_idx < 0 or drive_idx >= len(self._drives):
+            self._set_status(_("No drive selected."))
+            return
         self._setup_target_drive = self._drives[drive_idx]["name"]
-        self._setup_filesystem = FILESYSTEMS[self._fs_dropdown.get_selected()]
+        fs_idx = self._fs_dropdown.get_selected()
+        if fs_idx < 0 or fs_idx >= len(FILESYSTEMS):
+            self._set_status(_("No filesystem selected."))
+            return
+        self._setup_filesystem = FILESYSTEMS[fs_idx]
         self._setup_use_zswap, self._setup_swap_gb = self._get_swap_config()
 
         # Account page
