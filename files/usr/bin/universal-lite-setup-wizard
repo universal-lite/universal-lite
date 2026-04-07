@@ -2723,8 +2723,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _run_logged(self, cmd, **kwargs) -> subprocess.CompletedProcess:
         """Run a subprocess, streaming stdout/stderr to the log view.
 
-        Accepts the same keyword arguments as subprocess.run, but
-        replaces capture_output with real-time line streaming.
+        Output is redirected to a temp file and tailed by a reader thread.
+        This avoids pipe-fd-inheritance and BufferedReader-lock issues that
+        cause hangs when subprocesses outlive their parent.
         """
         kwargs.pop("capture_output", None)
         kwargs.pop("stdout", None)
@@ -2734,22 +2735,33 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
+        import tempfile
+        log_path = tempfile.mktemp(suffix=".log")
+        log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+
         proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            cmd, stdout=log_fd, stderr=subprocess.STDOUT,
             **kwargs,
         )
+        os.close(log_fd)  # Parent doesn't need the write end
 
-        # Read output in a background thread.  bootc spawns child processes
-        # that can inherit the pipe fd — keeping it open after bootc exits.
-        # The reader thread drains what it can, then we stop once the main
-        # process has exited rather than waiting for the pipe to close.
+        # Tail the log file in a background thread
         output_lines: list[str] = []
+        stop_event = threading.Event()
 
         def _reader():
-            for raw_line in iter(proc.stdout.readline, b""):
-                line = raw_line.decode("utf-8", errors="replace")
-                output_lines.append(line)
-                self._log(line)
+            with open(log_path, errors="replace") as f:
+                while not stop_event.is_set():
+                    line = f.readline()
+                    if line:
+                        output_lines.append(line)
+                        self._log(line)
+                    else:
+                        stop_event.wait(0.1)
+                # Drain remaining lines after process exits
+                for line in f:
+                    output_lines.append(line)
+                    self._log(line)
 
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
@@ -2760,16 +2772,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             proc.kill()
             proc.wait()
             raise
-
-        # Give the reader a moment to drain any remaining buffered output,
-        # then move on even if a child process is keeping the pipe open.
-        reader.join(timeout=2)
-        # Close the raw fd directly — proc.stdout.close() would deadlock
-        # on BufferedReader's internal lock while the reader thread holds it.
-        try:
-            os.close(proc.stdout.fileno())
-        except OSError:
-            pass
+        finally:
+            stop_event.set()
+            reader.join(timeout=3)
+            try:
+                os.unlink(log_path)
+            except OSError:
+                pass
 
         stdout_text = "".join(output_lines)
         result = subprocess.CompletedProcess(
