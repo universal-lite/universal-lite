@@ -27,7 +27,7 @@ Apps beyond what's built in install from Flathub.
 The recommended path for Chromebooks and low-end laptops. You need:
 
 - A second Linux machine to prepare the USB
-- A USB drive — **8 GB minimum** (holds the live environment and pre-downloaded apps)
+- A USB drive — **16 GB minimum** (holds the live environment and pre-downloaded apps)
 - A target drive in the machine — eMMC, SD card, second USB, etc. — **16 GB minimum** (32+ GB recommended)
 
 **Step 1 — Get the image.** Build locally or download the latest from
