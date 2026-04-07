@@ -2767,10 +2767,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Flush writes before unmounting
         os.sync()
 
-        # Unmount sysroot
-        err = self._unmount_sysroot()
-        if err:
-            return err
+        # Unmount all target filesystems (root, /boot, /boot/efi)
+        try:
+            subprocess.run(
+                ["umount", "-R", self._mount_point],
+                check=True, capture_output=True, text=True, timeout=30,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to unmount target: {exc.stderr.strip() or exc}"
 
         return None
 
@@ -2902,7 +2906,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # error_behavior: "fatal" = Back button, "retry" = Retry button,
         #                 "skippable" = Skip + Retry buttons
         self._steps: list[tuple[str, callable, str]] = [
-            (N_("Partitioning and installing"), self._step_bootc_install, "fatal"),
+            (N_("Partitioning disk"), self._step_partition_disk, "fatal"),
+            (N_("Installing system"), self._step_install_system, "fatal"),
             (N_("Configuring user account"), self._step_configure_user, "retry"),
             (N_("Copying network configuration"), self._step_copy_network, "retry"),
         ]
