@@ -187,11 +187,11 @@ msgstr "جارٍ التثبيت..."
 #: files/usr/bin/universal-lite-setup-wizard:1437
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Show details ▼"
-msgstr ""
+msgstr "إظهار التفاصيل ▼"
 
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Hide details ▲"
-msgstr ""
+msgstr "إخفاء التفاصيل ▲"
 
 #: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"

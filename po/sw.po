@@ -221,11 +221,11 @@ msgstr "Inasakinisha..."
 #: files/usr/bin/universal-lite-setup-wizard:1437
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Show details ▼"
-msgstr ""
+msgstr "Onyesha maelezo ▼"
 
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Hide details ▲"
-msgstr ""
+msgstr "Ficha maelezo ▲"
 
 # NEEDS-REVIEW
 #: files/usr/bin/universal-lite-setup-wizard:1486

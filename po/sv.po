@@ -189,11 +189,11 @@ msgstr "Installerar..."
 #: files/usr/bin/universal-lite-setup-wizard:1437
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Show details ▼"
-msgstr ""
+msgstr "Visa detaljer ▼"
 
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Hide details ▲"
-msgstr ""
+msgstr "Dölj detaljer ▲"
 
 #: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"

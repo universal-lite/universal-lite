@@ -187,11 +187,11 @@ msgstr "Ń fi sórí ẹ̀rọ..."
 #: files/usr/bin/universal-lite-setup-wizard:1437
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Show details ▼"
-msgstr ""
+msgstr "Ṣàfihàn àlàyé ▼"
 
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Hide details ▲"
-msgstr ""
+msgstr "Ìbòmọ́lẹ̀ àlàyé ▲"
 
 #: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"

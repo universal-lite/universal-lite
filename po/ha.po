@@ -221,11 +221,11 @@ msgstr "Ana shigarwa..."
 #: files/usr/bin/universal-lite-setup-wizard:1437
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Show details ▼"
-msgstr ""
+msgstr "Nuna cikakkun bayanai ▼"
 
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Hide details ▲"
-msgstr ""
+msgstr "Ɓoye cikakkun bayanai ▲"
 
 # NEEDS-REVIEW
 #: files/usr/bin/universal-lite-setup-wizard:1486

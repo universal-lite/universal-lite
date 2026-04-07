@@ -188,11 +188,11 @@ msgstr "설치 중..."
 #: files/usr/bin/universal-lite-setup-wizard:1437
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Show details ▼"
-msgstr ""
+msgstr "세부 정보 표시 ▼"
 
 #: files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Hide details ▲"
-msgstr ""
+msgstr "세부 정보 숨기기 ▲"
 
 #: files/usr/bin/universal-lite-setup-wizard:1486
 msgid "Skip"
