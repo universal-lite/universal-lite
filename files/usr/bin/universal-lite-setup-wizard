@@ -2326,6 +2326,29 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return ("Could not determine the booted image reference. "
                     "Is this system booted from a bootc image?")
 
+        # Workaround for bootc bug #1343: `ostree rev-parse --single` fails
+        # if the repo has multiple commit objects.  Only delete extra DEPLOYMENT
+        # refs (ostree/0/*, ostree/1/*) — container image/blob refs must stay
+        # intact or bootc can't find the image data to install.
+        try:
+            refs = subprocess.run(
+                ["ostree", "refs", "--repo=/ostree/repo"],
+                capture_output=True, text=True, timeout=10,
+            ).stdout.strip().splitlines()
+            deploy_refs = [r for r in refs if re.match(r"^ostree/[0-9]+/", r)]
+            for ref in deploy_refs[1:]:
+                subprocess.run(
+                    ["ostree", "refs", "--repo=/ostree/repo", "--delete", ref],
+                    capture_output=True, timeout=10,
+                )
+            if deploy_refs[1:]:
+                subprocess.run(
+                    ["ostree", "prune", "--repo=/ostree/repo", "--refs-only", "--depth=0"],
+                    capture_output=True, timeout=30,
+                )
+        except Exception:
+            pass
+
         cmd = ["bootc", "install", "to-disk", "--wipe",
                "--source-imgref", f"docker://{image_name}",
                "--filesystem", fs, f"/dev/{target}"]
