@@ -2403,9 +2403,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 ["rsync", "-a", src, dst],
                 check=True, capture_output=True, text=True, timeout=30,
             )
-            # NM connection files contain WiFi passwords and must be 600
+            # NM connection files contain WiFi passwords and must be 600;
+            # the directory itself needs 700 to remain traversable.
             subprocess.run(
-                ["chmod", "-R", "600", dst],
+                ["chmod", "700", dst],
+                check=False, capture_output=True, timeout=10,
+            )
+            subprocess.run(
+                ["find", dst, "-type", "f", "-exec", "chmod", "600", "{}", "+"],
                 check=False, capture_output=True, timeout=10,
             )
         except subprocess.CalledProcessError as exc:
