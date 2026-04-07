@@ -26,6 +26,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 from pathlib import Path
 
 import gi
@@ -2298,10 +2299,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except OSError:
             pass
 
+        shadow_date = int(time.time() / 86400)
+
         try:
             # Append user's primary group
             with open(etc / "group", "a") as f:
                 f.write(f"{username}:x:{gid}:\n")
+
+            # Append matching gshadow entry
+            with open(etc / "gshadow", "a") as f:
+                f.write(f"{username}:!::\n")
 
             # Add user to supplementary groups
             sup_groups = ["video"]
@@ -2325,7 +2332,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
             # Append to shadow
             with open(etc / "shadow", "a") as f:
-                f.write(f"{username}:{hashed_pw}:19700:0:99999:7:::\n")
+                f.write(f"{username}:{hashed_pw}:{shadow_date}:0:99999:7:::\n")
+
+            # Allocate subordinate UID/GID ranges for rootless containers
+            with open(etc / "subuid", "a") as f:
+                f.write(f"{username}:{uid + 100000}:65536\n")
+            with open(etc / "subgid", "a") as f:
+                f.write(f"{username}:{gid + 100000}:65536\n")
 
         except OSError as exc:
             return f"Failed to create user: {exc}"
@@ -2376,16 +2389,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except OSError as exc:
             return f"Failed to configure timezone/locale: {exc}"
 
-        # Set hostname
+        # Set hostname (don't touch /etc/hosts — preserve base image entries)
         hostname = self._setup_hostname
         if not hostname:
             hostname = f"{username}-desktop"
         try:
             (Path(deploy) / "etc" / "hostname").write_text(hostname + "\n")
-            (Path(deploy) / "etc" / "hosts").write_text(
-                f"127.0.0.1   localhost {hostname}\n"
-                f"::1         localhost {hostname}\n"
-            )
         except OSError as exc:
             return f"Failed to set hostname: {exc}"
 
@@ -2405,7 +2414,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             vconsole_keymap = "us"
         try:
             (Path(deploy) / "etc" / "vconsole.conf").write_text(
-                f"KEYMAP={vconsole_keymap}\n"
+                f'KEYMAP="{vconsole_keymap}"\n'
+                f'FONT="eurlatgr"\n'
             )
             xkb_dir = Path(deploy) / "etc" / "X11" / "xorg.conf.d"
             xkb_dir.mkdir(parents=True, exist_ok=True)
@@ -2584,7 +2594,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_finalize(self) -> str | None:
-        """Write first-boot config JSON and unmount the sysroot."""
+        """Write first-boot config JSON, relabel SELinux, and unmount."""
+        deploy = self._sysroot_deploy
         var_dir = self._sysroot_var
 
         # Write install config for first-boot service
@@ -2599,6 +2610,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         (state_dir / "install-config.json").write_text(
             json.dumps(config, indent=2) + "\n"
         )
+
+        # Restore SELinux labels on all files we created or modified.
+        # Without this, passwd/shadow/group/hostname/NM configs/home dirs
+        # get unlabeled_t and SELinux-enforcing systems deny access.
+        subprocess.run(
+            ["restorecon", "-ir",
+             f"{deploy}/etc",
+             f"{var_dir}/home",
+             f"{var_dir}/lib"],
+            check=False, capture_output=True, timeout=120,
+        )
+
+        # Flush writes before unmounting
+        os.sync()
 
         # Unmount sysroot
         err = self._unmount_sysroot()
