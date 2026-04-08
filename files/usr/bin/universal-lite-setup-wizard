@@ -2401,8 +2401,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         log_path = tempfile.mktemp(suffix=".log")
         log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
 
+        # Use stdbuf to force line-buffered stdout — without this,
+        # bootc's output is block-buffered (it's writing to a file, not
+        # a terminal) and "Installation complete!" stays in the buffer
+        # unflushed when bootc hangs.
         proc = subprocess.Popen(
-            cmd, stdout=log_fd, stderr=subprocess.STDOUT,
+            ["stdbuf", "-oL"] + cmd, stdout=log_fd, stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             close_fds=True, start_new_session=True,
             preexec_fn=_reset_child_signals,
