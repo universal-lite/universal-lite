@@ -2378,7 +2378,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._run_logged(
                 ["bootc", "image", "copy-to-storage"],
                 env=storage_env,
-                check=True, timeout=1800,
+                check=True, timeout=3600,
             )
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
