@@ -20,6 +20,7 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Gdk", "4.0")
 from gi.repository import Gdk, GLib, Gtk, Pango  # noqa: E402
 
 import gettext
@@ -320,7 +321,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._sessions = _discover_sessions()
         self._selected_session = 0
         # Pick Universal-Lite as default
-        for i, (name, _) in enumerate(self._sessions):
+        for i, (name, _cmd) in enumerate(self._sessions):
             if "Universal-Lite" in name:
                 self._selected_session = i
                 break
@@ -375,7 +376,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._session_box.set_visible(False)
         self._session_box.set_margin_bottom(12)
 
-        session_names = [name for name, _ in self._sessions]
+        session_names = [name for name, _cmd in self._sessions]
         self._session_dd = Gtk.DropDown.new_from_strings(session_names)
         self._session_dd.set_selected(self._selected_session)
         self._session_dd.add_css_class("session-dropdown")
