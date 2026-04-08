@@ -2211,18 +2211,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # Install pipeline steps
     # ------------------------------------------------------------------
 
-    def _get_booted_image_name(self) -> str | None:
-        """Get the booted image name (e.g. 'ghcr.io/org/image:tag') from bootc status."""
-        try:
-            result = subprocess.run(
-                ["bootc", "status", "--format=json"],
-                check=True, capture_output=True, text=True, timeout=30,
-            )
-            status = json.loads(result.stdout)
-            return status["status"]["booted"]["image"]["image"]["image"]
-        except Exception:
-            return None
-
     def _step_partition_disk(self) -> str | None:
         """Create GPT partition table, format, and mount target disk.
 
@@ -2353,16 +2341,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _step_install_system(self) -> str | None:
         """Install OS image into the mounted target via bootc to-filesystem."""
-        image_name = self._get_booted_image_name()
-        if not image_name:
-            return ("Could not determine the booted image reference. "
-                    "Is this system booted from a bootc image?")
-
         mount_point = self._mount_point
 
+        # Omit --source-imgref so bootc uses the currently booted image
+        # directly.  Specifying docker:// goes through the local ostree
+        # repo which triggers bug #1343 ("Multiple commit objects found").
         cmd = [
             "bootc", "install", "to-filesystem",
-            "--source-imgref", f"docker://{image_name}",
             "--bootloader", "grub",
             "--root-mount-spec", f"UUID={self._root_uuid}",
             mount_point,
