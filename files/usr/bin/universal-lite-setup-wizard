@@ -2435,8 +2435,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         while time.time() < deadline:
             if proc.poll() is not None:
                 break  # Process exited on its own
-            # Check if bootc has created the deployment
-            if list(Path(mount_point).glob("ostree/deploy/*/deploy/*/")):
+            # Check if bootc has finished: boot loader entries are one of
+            # the last things written, so their presence means grub config,
+            # fstab, and the ostree deployment are all on disk.
+            if list(Path(mount_point).glob("boot/loader/entries/*.conf")):
                 # Deployment exists — wait up to 120s for bootc to
                 # finish writing grub/fstab and exit on its own.
                 # If it hangs (child process issue), kill the group.
