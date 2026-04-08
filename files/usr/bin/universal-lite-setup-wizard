@@ -2362,26 +2362,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # Workaround for ostree bug #1343: bootc checks the local ostree
         # repo even when pulling from a registry, and fails if multiple
-        # commit objects exist.  The live USB's repo has deployment commits
-        # alongside the container image commit.  Delete ALL refs and prune
-        # to empty the repo — bootc will pull fresh from the registry.
+        # commit objects exist.  The live USB's repo has deployment +
+        # container image commits.  Hide it by bind-mounting a fresh
+        # empty repo over /ostree/repo — makes our environment look like
+        # Anaconda's (no local ostree state to trip over).
+        empty_repo = f"{mount_point}/.bootc-empty-repo"
+        subprocess.run(
+            ["ostree", "init", f"--repo={empty_repo}", "--mode=bare"],
+            capture_output=True, timeout=10,
+        )
         try:
-            refs_result = subprocess.run(
-                ["ostree", "refs", "--repo=/ostree/repo"],
-                capture_output=True, text=True, timeout=10,
-            )
-            for ref in refs_result.stdout.strip().splitlines():
-                subprocess.run(
-                    ["ostree", "refs", "--repo=/ostree/repo", "--delete", ref],
-                    capture_output=True, timeout=10,
-                )
             subprocess.run(
-                ["ostree", "prune", "--repo=/ostree/repo",
-                 "--refs-only", "--depth=-1"],
-                capture_output=True, timeout=60,
+                ["mount", "--bind", empty_repo, "/ostree/repo"],
+                check=True, capture_output=True, timeout=10,
             )
-        except Exception:
-            pass  # Best-effort; the running system is already in memory
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to prepare ostree repo: {exc.stderr.strip() or exc}"
 
         cmd = [
             "bootc", "install", "to-filesystem",
@@ -2399,6 +2395,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Installation failed: {tail}"
         except subprocess.TimeoutExpired:
             return "Installation timed out"
+
+        # Restore the real ostree repo and clean up
+        subprocess.run(["umount", "/ostree/repo"],
+                       capture_output=True, timeout=10)
+        import shutil
+        shutil.rmtree(empty_repo, ignore_errors=True)
 
         # Locate the ostree deployment directory for post-install steps.
         # bootc to-filesystem creates the standard ostree layout under our
