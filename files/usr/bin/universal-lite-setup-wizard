@@ -2391,7 +2391,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         ]
 
         try:
-            self._run_logged(cmd, check=True, timeout=3600)
+            self._run_logged(cmd, check=True, timeout=3600,
+                             done_pattern="Installation complete!")
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
             tail = "\n".join(lines[-5:]) if lines else str(exc)
@@ -2839,12 +2840,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         Output is redirected to a temp file and tailed by a reader thread.
         This avoids pipe-fd-inheritance and BufferedReader-lock issues that
         cause hangs when subprocesses outlive their parent.
+
+        If done_pattern is set, the reader thread watches for that string
+        in the output.  Once seen, the process gets a short grace period
+        to exit, then is killed.  This handles bootc's post-install hang
+        where child processes keep the parent alive after completion.
         """
         kwargs.pop("capture_output", None)
         kwargs.pop("stdout", None)
         kwargs.pop("stderr", None)
         timeout = kwargs.pop("timeout", None)
         check = kwargs.pop("check", False)
+        done_pattern = kwargs.pop("done_pattern", None)
 
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
@@ -2876,6 +2883,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Tail the log file in a background thread
         output_lines: list[str] = []
         stop_event = threading.Event()
+        done_event = threading.Event()
 
         def _reader():
             with open(log_path, errors="replace") as f:
@@ -2884,6 +2892,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     if line:
                         output_lines.append(line)
                         self._log(line)
+                        if done_pattern and done_pattern in line:
+                            done_event.set()
                     else:
                         stop_event.wait(0.1)
                 # Drain remaining lines after process exits
@@ -2895,7 +2905,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader.start()
 
         try:
-            proc.wait(timeout=timeout)
+            if done_pattern:
+                # Poll: wait for process exit OR done_pattern in output
+                deadline = time.time() + (timeout or 3600)
+                while time.time() < deadline:
+                    retcode = proc.poll()
+                    if retcode is not None:
+                        break  # Process exited
+                    if done_event.is_set():
+                        # Pattern seen — grace period then kill
+                        try:
+                            proc.wait(timeout=10)
+                        except subprocess.TimeoutExpired:
+                            proc.kill()
+                            proc.wait()
+                        break
+                    time.sleep(0.5)
+                else:
+                    proc.kill()
+                    proc.wait()
+                    raise subprocess.TimeoutExpired(cmd, timeout)
+            else:
+                proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.wait()
