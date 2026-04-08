@@ -2355,46 +2355,58 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return ("Could not determine the booted image reference. "
                     "Is this system booted from a bootc image?")
 
-        # Workaround for ostree bug #1343: the live USB's ostree repo has
-        # multiple commit objects (deployment commits + container image
-        # commit).  bootc's docker:// transport calls ostree rev-parse
-        # --single which fails on multiple commits.  Delete ALL deployment
-        # refs and prune so only the container image commit remains.
+        # Copy the booted image into a clean container storage on the
+        # target disk.  The live USB's ostree repo has multiple commit
+        # objects which triggers bug #1343 ("Multiple commit objects
+        # found") when bootc uses docker:// transport.  Anaconda avoids
+        # this by pulling into fresh container storage; we replicate that
+        # with bootc image copy-to-storage, using the target disk for
+        # temp storage so we don't eat RAM on low-memory devices.
+        tmp_storage = f"{mount_point}/.bootc-tmp-storage"
+        tmp_conf = f"{tmp_storage}/storage.conf"
+        Path(tmp_storage).mkdir(parents=True, exist_ok=True)
+        Path(f"{tmp_storage}/run").mkdir(parents=True, exist_ok=True)
+        Path(tmp_conf).write_text(
+            "[storage]\n"
+            'driver = "overlay"\n'
+            f'graphroot = "{tmp_storage}"\n'
+            f'runroot = "{tmp_storage}/run"\n'
+        )
+        storage_env = {**os.environ, "CONTAINERS_STORAGE_CONF": tmp_conf}
+
         try:
-            refs_result = subprocess.run(
-                ["ostree", "refs", "--repo=/ostree/repo"],
-                capture_output=True, text=True, timeout=10,
+            self._run_logged(
+                ["bootc", "image", "copy-to-storage"],
+                env=storage_env,
+                check=True, timeout=600,
             )
-            for ref in refs_result.stdout.strip().splitlines():
-                if re.match(r"^ostree/[0-9]+/", ref):
-                    subprocess.run(
-                        ["ostree", "refs", "--repo=/ostree/repo", "--delete", ref],
-                        capture_output=True, timeout=10,
-                    )
-            subprocess.run(
-                ["ostree", "prune", "--repo=/ostree/repo",
-                 "--refs-only", "--depth=0"],
-                capture_output=True, timeout=60,
-            )
-        except Exception:
-            pass  # Best-effort; bootc may still work
+        except subprocess.CalledProcessError as exc:
+            lines = (exc.output or "").strip().splitlines()
+            tail = "\n".join(lines[-3:]) if lines else str(exc)
+            return f"Failed to prepare image: {tail}"
+        except subprocess.TimeoutExpired:
+            return "Image preparation timed out"
 
         cmd = [
             "bootc", "install", "to-filesystem",
-            "--source-imgref", f"docker://{image_name}",
+            "--source-imgref", f"containers-storage:{image_name}",
             "--bootloader", "grub",
             "--root-mount-spec", f"UUID={self._root_uuid}",
             mount_point,
         ]
 
         try:
-            self._run_logged(cmd, check=True, timeout=900)
+            self._run_logged(cmd, env=storage_env, check=True, timeout=900)
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
             tail = "\n".join(lines[-5:]) if lines else str(exc)
             return f"Installation failed: {tail}"
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
+
+        # Clean up temp container storage from the target disk
+        import shutil
+        shutil.rmtree(tmp_storage, ignore_errors=True)
 
         # Locate the ostree deployment directory for post-install steps.
         # bootc to-filesystem creates the standard ostree layout under our
