@@ -2435,15 +2435,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         while time.time() < deadline:
             if proc.poll() is not None:
                 break  # Process exited on its own
-            # Check for grub config — one of the last files bootc writes
-            # before trim/finalize.  Check both BIOS and EFI locations.
-            # The 120s grace covers the trim/finalize that follows.
-            grub_bios = Path(mount_point, "boot", "grub2", "grub.cfg")
-            grub_efi = Path(mount_point, "boot", "efi", "EFI", "fedora", "grub.cfg")
-            if grub_bios.exists() or grub_efi.exists():
+            # Once the ostree deployment exists, the image data is on disk.
+            # bootc still writes grub config + trims after this — wait
+            # up to 3 minutes for it to finish and exit on its own.
+            if list(Path(mount_point).glob("ostree/deploy/*/deploy/*/")):
                 deploy_found = True
                 try:
-                    proc.wait(timeout=120)
+                    proc.wait(timeout=180)
                 except subprocess.TimeoutExpired:
                     try:
                         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
