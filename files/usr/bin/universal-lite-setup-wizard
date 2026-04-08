@@ -2368,7 +2368,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         Path(f"{tmp_storage}/run").mkdir(parents=True, exist_ok=True)
         Path(tmp_conf).write_text(
             "[storage]\n"
-            'driver = "overlay"\n'
+            'driver = "vfs"\n'
             f'graphroot = "{tmp_storage}"\n'
             f'runroot = "{tmp_storage}/run"\n'
         )
