@@ -2898,14 +2898,33 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _log(self, text: str) -> None:
-        """Append text to the progress log (thread-safe)."""
-        def _append():
-            end = self._log_buffer.get_end_iter()
-            self._log_buffer.insert(end, text)
-            # Auto-scroll to bottom
-            end = self._log_buffer.get_end_iter()
-            self._log_textview.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
-        GLib.idle_add(_append)
+        """Append text to the progress log (thread-safe, throttled).
+
+        Batches text and flushes to the UI at most twice per second to
+        avoid overwhelming GTK's main loop during rapid output (bootc
+        registry pull produces many "Copying blob" lines per second).
+        """
+        if not hasattr(self, "_log_pending"):
+            self._log_pending = []
+            self._log_flush_scheduled = False
+
+        self._log_pending.append(text)
+
+        if not self._log_flush_scheduled:
+            self._log_flush_scheduled = True
+
+            def _flush():
+                lines = self._log_pending[:]
+                self._log_pending.clear()
+                self._log_flush_scheduled = False
+                if lines:
+                    end = self._log_buffer.get_end_iter()
+                    self._log_buffer.insert(end, "".join(lines))
+                    end = self._log_buffer.get_end_iter()
+                    self._log_textview.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
+                return False  # Don't repeat
+
+            GLib.timeout_add(500, _flush)  # Flush every 500ms
 
     def _run_logged(self, cmd, **kwargs) -> subprocess.CompletedProcess:
         """Run a subprocess, streaming stdout/stderr to the log view.
