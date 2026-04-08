@@ -2390,24 +2390,95 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             mount_point,
         ]
 
+        # Run bootc and monitor the target filesystem for completion.
+        # bootc hangs after printing "Installation complete!" due to child
+        # processes that won't exit.  Instead of string matching, we poll
+        # the target disk: once the ostree deployment exists, the install
+        # data is on disk and we can kill the process group.
+        self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
+
+        import tempfile
+        log_path = tempfile.mktemp(suffix=".log")
+        log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+
+        proc = subprocess.Popen(
+            cmd, stdout=log_fd, stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            close_fds=True, start_new_session=True,
+            preexec_fn=_reset_child_signals,
+        )
+        os.close(log_fd)
+
+        # Tail log in background for the UI
+        output_lines: list[str] = []
+        stop_event = threading.Event()
+
+        def _reader():
+            with open(log_path, errors="replace") as f:
+                while not stop_event.is_set():
+                    line = f.readline()
+                    if line:
+                        output_lines.append(line)
+                        self._log(line)
+                    else:
+                        stop_event.wait(0.1)
+                for line in f:
+                    output_lines.append(line)
+                    self._log(line)
+
+        reader = threading.Thread(target=_reader, daemon=True)
+        reader.start()
+
+        # Poll: wait for process exit or deployment on target disk
+        deadline = time.time() + 3600
+        deploy_found = False
+        while time.time() < deadline:
+            if proc.poll() is not None:
+                break  # Process exited on its own
+            # Check if bootc has created the deployment
+            if list(Path(mount_point).glob("ostree/deploy/*/deploy/*/")):
+                # Deployment exists — give bootc a moment to finish writing
+                time.sleep(5)
+                deploy_found = True
+                # Kill the entire process group
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                    proc.wait(timeout=5)
+                except (subprocess.TimeoutExpired, ProcessLookupError):
+                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    try:
+                        proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        pass
+                break
+            time.sleep(2)
+        else:
+            # Timed out with no deployment
+            proc.kill()
+            proc.wait()
+
+        stop_event.set()
+        reader.join(timeout=3)
         try:
-            self._run_logged(cmd, check=True, timeout=3600,
-                             done_pattern="Installation complete!")
-        except subprocess.CalledProcessError as exc:
-            lines = (exc.output or "").strip().splitlines()
-            tail = "\n".join(lines[-5:]) if lines else str(exc)
+            os.unlink(log_path)
+        except OSError:
+            pass
+
+        # Check result: did the deployment actually land?
+        if proc.poll() is not None and proc.returncode != 0 and not deploy_found:
+            stdout_text = "".join(output_lines)
+            lines = stdout_text.strip().splitlines()
+            tail = "\n".join(lines[-5:]) if lines else "unknown error"
             return f"Installation failed: {tail}"
-        except subprocess.TimeoutExpired:
-            return "Installation timed out"
 
         # Restore /ostree
         subprocess.run(["umount", "/ostree"],
                        capture_output=True, timeout=10)
 
         # Locate the ostree deployment directory for post-install steps.
-        # bootc to-filesystem creates the standard ostree layout under our
-        # mount point.  We glob for it (same approach Anaconda uses) —
-        # sorted so [-1] picks the highest-serial deployment.
         deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
         if not deploy_dirs:
             return "No ostree deployment found after install"
@@ -2841,17 +2912,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         This avoids pipe-fd-inheritance and BufferedReader-lock issues that
         cause hangs when subprocesses outlive their parent.
 
-        If done_pattern is set, the reader thread watches for that string
-        in the output.  Once seen, the process gets a short grace period
-        to exit, then is killed.  This handles bootc's post-install hang
-        where child processes keep the parent alive after completion.
         """
         kwargs.pop("capture_output", None)
         kwargs.pop("stdout", None)
         kwargs.pop("stderr", None)
         timeout = kwargs.pop("timeout", None)
         check = kwargs.pop("check", False)
-        done_pattern = kwargs.pop("done_pattern", None)
 
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
@@ -2883,7 +2949,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Tail the log file in a background thread
         output_lines: list[str] = []
         stop_event = threading.Event()
-        done_event = threading.Event()
 
         def _reader():
             with open(log_path, errors="replace") as f:
@@ -2892,8 +2957,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     if line:
                         output_lines.append(line)
                         self._log(line)
-                        if done_pattern and done_pattern in line:
-                            done_event.set()
                     else:
                         stop_event.wait(0.1)
                 # Drain remaining lines after process exits
@@ -2904,35 +2967,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
-        done_success = False
         try:
-            if done_pattern:
-                # Poll: wait for process exit OR done_pattern in output
-                deadline = time.time() + (timeout or 3600)
-                while time.time() < deadline:
-                    retcode = proc.poll()
-                    if retcode is not None:
-                        break  # Process exited
-                    if done_event.is_set():
-                        # Pattern seen — kill entire process group
-                        done_success = True
-                        try:
-                            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                            proc.wait(timeout=5)
-                        except (subprocess.TimeoutExpired, ProcessLookupError):
-                            try:
-                                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                            except ProcessLookupError:
-                                pass
-                            proc.wait(timeout=5)
-                        break
-                    time.sleep(0.5)
-                else:
-                    proc.kill()
-                    proc.wait()
-                    raise subprocess.TimeoutExpired(cmd, timeout)
-            else:
-                proc.wait(timeout=timeout)
+            proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.wait()
@@ -2949,7 +2985,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         result = subprocess.CompletedProcess(
             cmd, proc.returncode, stdout=stdout_text, stderr="",
         )
-        if check and proc.returncode != 0 and not done_success:
+        if check and proc.returncode != 0:
             raise subprocess.CalledProcessError(
                 proc.returncode, cmd, output=stdout_text, stderr="",
             )
