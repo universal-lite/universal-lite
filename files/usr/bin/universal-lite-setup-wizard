@@ -2377,10 +2377,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"Failed to set up container storage: {exc.stderr.strip() or exc}"
 
+        # Point TMPDIR to the target disk too — bootc and skopeo write
+        # large temp files during image operations that would fill the
+        # RAM-backed /tmp on the live USB.
+        tmp_dir = f"{mount_point}/.bootc-tmp"
+        Path(tmp_dir).mkdir(parents=True, exist_ok=True)
+        disk_env = {**os.environ, "TMPDIR": tmp_dir}
+
         try:
             self._run_logged(
                 ["bootc", "image", "copy-to-storage"],
-                check=True, timeout=3600,
+                env=disk_env, check=True, timeout=3600,
             )
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
@@ -2398,7 +2405,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         ]
 
         try:
-            self._run_logged(cmd, check=True, timeout=900)
+            self._run_logged(cmd, env=disk_env, check=True, timeout=900)
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
             tail = "\n".join(lines[-5:]) if lines else str(exc)
@@ -2406,9 +2413,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
 
-        # Clean up: unmount bind mount and remove temp storage
+        # Clean up: unmount bind mount and remove temp storage/tmpdir
         subprocess.run(["umount", host_storage],
                        capture_output=True, timeout=10)
+        shutil.rmtree(tmp_dir, ignore_errors=True)
         import shutil
         shutil.rmtree(tmp_storage, ignore_errors=True)
 
