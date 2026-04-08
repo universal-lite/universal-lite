@@ -2441,7 +2441,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             if list(Path(mount_point).glob("boot/loader/entries/*.conf")):
                 deploy_found = True
                 try:
-                    proc.wait(timeout=60)
+                    proc.wait(timeout=120)
                 except subprocess.TimeoutExpired:
                     try:
                         os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
