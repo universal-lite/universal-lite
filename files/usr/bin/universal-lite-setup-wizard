@@ -2360,24 +2360,27 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return ("Could not determine the booted image reference. "
                     "Is this system booted from a bootc image?")
 
-        # Workaround for ostree bug #1343: bootc checks the local ostree
-        # repo even when pulling from a registry, and fails if multiple
-        # commit objects exist.  The live USB's repo has deployment +
-        # container image commits.  Hide it by bind-mounting a fresh
-        # empty repo over /ostree/repo — makes our environment look like
-        # Anaconda's (no local ostree state to trip over).
-        empty_repo = f"{mount_point}/.bootc-empty-repo"
-        subprocess.run(
-            ["ostree", "init", f"--repo={empty_repo}", "--mode=bare"],
-            capture_output=True, timeout=10,
-        )
+        # Workaround for ostree bug #1343: bootc checks /ostree/repo on
+        # the host and fails if multiple commit objects exist.  Anaconda
+        # doesn't have this problem because its installer environment has
+        # NO /ostree/repo at all.  When the path doesn't exist, bootc
+        # skips the ostree check and takes a fallback code path.
+        #
+        # Mount tmpfs over /ostree to hide the repo.  The running system
+        # is already loaded — /ostree is only metadata at this point.
         try:
             subprocess.run(
-                ["mount", "--bind", empty_repo, "/ostree/repo"],
+                ["mount", "-t", "tmpfs", "tmpfs", "/ostree"],
                 check=True, capture_output=True, timeout=10,
             )
         except subprocess.CalledProcessError as exc:
-            return f"Failed to prepare ostree repo: {exc.stderr.strip() or exc}"
+            return f"Failed to prepare install environment: {exc.stderr.strip() or exc}"
+
+        # Anaconda also ensures this config exists for bootc
+        Path("/etc/ostree").mkdir(parents=True, exist_ok=True)
+        prepare_root = Path("/etc/ostree/prepare-root.conf")
+        if not prepare_root.exists():
+            prepare_root.write_text("[ostree]\nsysroot=/sysroot\n")
 
         cmd = [
             "bootc", "install", "to-filesystem",
@@ -2396,11 +2399,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.TimeoutExpired:
             return "Installation timed out"
 
-        # Restore the real ostree repo and clean up
-        subprocess.run(["umount", "/ostree/repo"],
+        # Restore /ostree
+        subprocess.run(["umount", "/ostree"],
                        capture_output=True, timeout=10)
-        import shutil
-        shutil.rmtree(empty_repo, ignore_errors=True)
 
         # Locate the ostree deployment directory for post-install steps.
         # bootc to-filesystem creates the standard ostree layout under our
