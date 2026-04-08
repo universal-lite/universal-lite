@@ -2904,6 +2904,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
+        done_success = False
         try:
             if done_pattern:
                 # Poll: wait for process exit OR done_pattern in output
@@ -2913,12 +2914,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     if retcode is not None:
                         break  # Process exited
                     if done_event.is_set():
-                        # Pattern seen — grace period then kill
+                        # Pattern seen — kill entire process group
+                        done_success = True
                         try:
-                            proc.wait(timeout=10)
-                        except subprocess.TimeoutExpired:
-                            proc.kill()
-                            proc.wait()
+                            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                            proc.wait(timeout=5)
+                        except (subprocess.TimeoutExpired, ProcessLookupError):
+                            try:
+                                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                            except ProcessLookupError:
+                                pass
+                            proc.wait(timeout=5)
                         break
                     time.sleep(0.5)
                 else:
@@ -2943,7 +2949,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         result = subprocess.CompletedProcess(
             cmd, proc.returncode, stdout=stdout_text, stderr="",
         )
-        if check and proc.returncode != 0:
+        if check and proc.returncode != 0 and not done_success:
             raise subprocess.CalledProcessError(
                 proc.returncode, cmd, output=stdout_text, stderr="",
             )
