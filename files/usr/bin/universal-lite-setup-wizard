@@ -2437,23 +2437,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 break  # Process exited on its own
             # Check if bootc has created the deployment
             if list(Path(mount_point).glob("ostree/deploy/*/deploy/*/")):
-                # Deployment exists — give bootc time to finish writing
-                # grub config, boot entries, and fstab after the deploy
-                time.sleep(30)
+                # Deployment exists — wait up to 120s for bootc to
+                # finish writing grub/fstab and exit on its own.
+                # If it hangs (child process issue), kill the group.
                 deploy_found = True
-                # Kill the entire process group
                 try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                    proc.wait(timeout=5)
-                except (subprocess.TimeoutExpired, ProcessLookupError):
+                    proc.wait(timeout=120)
+                except subprocess.TimeoutExpired:
                     try:
-                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
                         proc.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        pass
+                    except (subprocess.TimeoutExpired, ProcessLookupError):
+                        try:
+                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        try:
+                            proc.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            pass
                 break
             time.sleep(2)
         else:
