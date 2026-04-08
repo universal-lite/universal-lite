@@ -2435,29 +2435,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         while time.time() < deadline:
             if proc.poll() is not None:
                 break  # Process exited on its own
-            # Check if bootc has finished: boot loader entries are one of
-            # the last things written, so their presence means grub config,
-            # fstab, and the ostree deployment are all on disk.
-            if list(Path(mount_point).glob("boot/loader/entries/*.conf")):
-                # Deployment exists — wait up to 120s for bootc to
-                # finish writing grub/fstab and exit on its own.
-                # If it hangs (child process issue), kill the group.
+            # Two-stage completion check:
+            # 1. BLS entries exist → critical data (deployment, grub,
+            #    fstab) is on disk
+            # 2. "Installation complete!" in output → bootc finished
+            #    trim/finalize and considers itself done
+            # Once both are true, kill immediately — no grace period.
+            has_bls = list(Path(mount_point).glob("boot/loader/entries/*.conf"))
+            has_complete = any("Installation complete!" in l for l in output_lines)
+            if has_bls and has_complete:
                 deploy_found = True
                 try:
-                    proc.wait(timeout=120)
-                except subprocess.TimeoutExpired:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                    proc.wait(timeout=5)
+                except (subprocess.TimeoutExpired, ProcessLookupError):
                     try:
-                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    try:
                         proc.wait(timeout=5)
-                    except (subprocess.TimeoutExpired, ProcessLookupError):
-                        try:
-                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                        except ProcessLookupError:
-                            pass
-                        try:
-                            proc.wait(timeout=5)
-                        except subprocess.TimeoutExpired:
-                            pass
+                    except subprocess.TimeoutExpired:
+                        pass
                 break
             time.sleep(2)
         else:
