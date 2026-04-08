@@ -2340,10 +2340,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_install_system(self) -> str | None:
-        """Install OS image into the mounted target via bootc to-filesystem."""
+        """Pull and install OS image from registry via bootc to-filesystem.
+
+        Pulls directly from the container registry (like Anaconda does),
+        streaming to the target disk with no intermediate copies.  Requires
+        network — the wizard's network page ensures connectivity first.
+        """
         mount_point = self._mount_point
 
-        # Get the booted image name for --source-imgref
+        # Get the booted image name to pull the same image from the registry
         try:
             result = subprocess.run(
                 ["bootc", "status", "--format=json"],
@@ -2355,70 +2360,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return ("Could not determine the booted image reference. "
                     "Is this system booted from a bootc image?")
 
-        # Copy the booted image into a clean container storage on the
-        # target disk.  The live USB's ostree repo has multiple commit
-        # objects which triggers bug #1343 ("Multiple commit objects
-        # found") when bootc uses docker:// transport.  Anaconda avoids
-        # this by pulling into fresh container storage; we replicate that
-        # with bootc image copy-to-storage.
-        #
-        # Bind-mount the target disk to /var/lib/containers/storage so
-        # bootc writes there instead of to RAM (the live USB's rootfs
-        # overlay).  This avoids OOM on low-memory devices.
-        tmp_storage = f"{mount_point}/.bootc-tmp-storage"
-        host_storage = "/var/lib/containers/storage"
-        Path(tmp_storage).mkdir(parents=True, exist_ok=True)
-        Path(host_storage).mkdir(parents=True, exist_ok=True)
-        try:
-            subprocess.run(
-                ["mount", "--bind", tmp_storage, host_storage],
-                check=True, capture_output=True, timeout=10,
-            )
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to set up container storage: {exc.stderr.strip() or exc}"
-
-        # Point TMPDIR to the target disk too — bootc and skopeo write
-        # large temp files during image operations that would fill the
-        # RAM-backed /tmp on the live USB.
-        tmp_dir = f"{mount_point}/.bootc-tmp"
-        Path(tmp_dir).mkdir(parents=True, exist_ok=True)
-        disk_env = {**os.environ, "TMPDIR": tmp_dir}
-
-        try:
-            self._run_logged(
-                ["bootc", "image", "copy-to-storage"],
-                env=disk_env, check=True, timeout=3600,
-            )
-        except subprocess.CalledProcessError as exc:
-            lines = (exc.output or "").strip().splitlines()
-            tail = "\n".join(lines[-3:]) if lines else str(exc)
-            return f"Failed to prepare image: {tail}"
-        except subprocess.TimeoutExpired:
-            return "Image preparation timed out"
-
         cmd = [
             "bootc", "install", "to-filesystem",
-            "--source-imgref", f"containers-storage:{image_name}",
+            "--source-imgref", f"docker://{image_name}",
             "--bootloader", "grub",
             "--root-mount-spec", f"UUID={self._root_uuid}",
             mount_point,
         ]
 
         try:
-            self._run_logged(cmd, env=disk_env, check=True, timeout=900)
+            self._run_logged(cmd, check=True, timeout=3600)
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
             tail = "\n".join(lines[-5:]) if lines else str(exc)
             return f"Installation failed: {tail}"
         except subprocess.TimeoutExpired:
-            return "Installation timed out after 15 minutes"
-
-        # Clean up: unmount bind mount and remove temp storage/tmpdir
-        subprocess.run(["umount", host_storage],
-                       capture_output=True, timeout=10)
-        shutil.rmtree(tmp_dir, ignore_errors=True)
-        import shutil
-        shutil.rmtree(tmp_storage, ignore_errors=True)
+            return "Installation timed out"
 
         # Locate the ostree deployment directory for post-install steps.
         # bootc to-filesystem creates the standard ostree layout under our
