@@ -2435,11 +2435,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         while time.time() < deadline:
             if proc.poll() is not None:
                 break  # Process exited on its own
-            # Once the ostree deployment exists on the target disk, the
-            # bulk of the install is done.  Wait up to 120s for bootc to
-            # finish remaining work (grub, fstab, trim) and exit on its
-            # own, then kill the process group if it hangs.
-            if list(Path(mount_point).glob("ostree/deploy/*/deploy/*/")):
+            # Check for grub config — one of the last files bootc writes
+            # before trim/finalize.  Check both BIOS and EFI locations.
+            # The 120s grace covers the trim/finalize that follows.
+            grub_bios = Path(mount_point, "boot", "grub2", "grub.cfg")
+            grub_efi = Path(mount_point, "boot", "efi", "EFI", "fedora", "grub.cfg")
+            if grub_bios.exists() or grub_efi.exists():
                 deploy_found = True
                 try:
                     proc.wait(timeout=120)
