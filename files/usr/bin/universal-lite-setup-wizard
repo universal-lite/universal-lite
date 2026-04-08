@@ -2360,24 +2360,26 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # objects which triggers bug #1343 ("Multiple commit objects
         # found") when bootc uses docker:// transport.  Anaconda avoids
         # this by pulling into fresh container storage; we replicate that
-        # with bootc image copy-to-storage, using the target disk for
-        # temp storage so we don't eat RAM on low-memory devices.
+        # with bootc image copy-to-storage.
+        #
+        # Bind-mount the target disk to /var/lib/containers/storage so
+        # bootc writes there instead of to RAM (the live USB's rootfs
+        # overlay).  This avoids OOM on low-memory devices.
         tmp_storage = f"{mount_point}/.bootc-tmp-storage"
-        tmp_conf = f"{tmp_storage}/storage.conf"
+        host_storage = "/var/lib/containers/storage"
         Path(tmp_storage).mkdir(parents=True, exist_ok=True)
-        Path(f"{tmp_storage}/run").mkdir(parents=True, exist_ok=True)
-        Path(tmp_conf).write_text(
-            "[storage]\n"
-            'driver = "vfs"\n'
-            f'graphroot = "{tmp_storage}"\n'
-            f'runroot = "{tmp_storage}/run"\n'
-        )
-        storage_env = {**os.environ, "CONTAINERS_STORAGE_CONF": tmp_conf}
+        Path(host_storage).mkdir(parents=True, exist_ok=True)
+        try:
+            subprocess.run(
+                ["mount", "--bind", tmp_storage, host_storage],
+                check=True, capture_output=True, timeout=10,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to set up container storage: {exc.stderr.strip() or exc}"
 
         try:
             self._run_logged(
                 ["bootc", "image", "copy-to-storage"],
-                env=storage_env,
                 check=True, timeout=3600,
             )
         except subprocess.CalledProcessError as exc:
@@ -2396,7 +2398,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         ]
 
         try:
-            self._run_logged(cmd, env=storage_env, check=True, timeout=900)
+            self._run_logged(cmd, check=True, timeout=900)
         except subprocess.CalledProcessError as exc:
             lines = (exc.output or "").strip().splitlines()
             tail = "\n".join(lines[-5:]) if lines else str(exc)
@@ -2404,7 +2406,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.TimeoutExpired:
             return "Installation timed out after 15 minutes"
 
-        # Clean up temp container storage from the target disk
+        # Clean up: unmount bind mount and remove temp storage
+        subprocess.run(["umount", host_storage],
+                       capture_output=True, timeout=10)
         import shutil
         shutil.rmtree(tmp_storage, ignore_errors=True)
 
