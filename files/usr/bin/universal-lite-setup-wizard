@@ -2401,12 +2401,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         log_path = tempfile.mktemp(suffix=".log")
         log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
 
-        # Use stdbuf to force line-buffered stdout — without this,
-        # bootc's output is block-buffered (it's writing to a file, not
-        # a terminal) and "Installation complete!" stays in the buffer
-        # unflushed when bootc hangs.
         proc = subprocess.Popen(
-            ["stdbuf", "-oL"] + cmd, stdout=log_fd, stderr=subprocess.STDOUT,
+            cmd, stdout=log_fd, stderr=subprocess.STDOUT,
             stdin=subprocess.DEVNULL,
             close_fds=True, start_new_session=True,
             preexec_fn=_reset_child_signals,
@@ -2439,28 +2435,26 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         while time.time() < deadline:
             if proc.poll() is not None:
                 break  # Process exited on its own
-            # Two-stage completion check:
-            # 1. BLS entries exist → critical data (deployment, grub,
-            #    fstab) is on disk
-            # 2. "Installation complete!" in output → bootc finished
-            #    trim/finalize and considers itself done
-            # Once both are true, kill immediately — no grace period.
-            has_bls = list(Path(mount_point).glob("boot/loader/entries/*.conf"))
-            has_complete = any("Installation complete!" in l for l in output_lines)
-            if has_bls and has_complete:
+            # BLS entries are written near the end of bootc's install.
+            # Once they exist, wait 60s for bootc to exit on its own
+            # (trim/finalize), then kill the process group if it hangs.
+            if list(Path(mount_point).glob("boot/loader/entries/*.conf")):
                 deploy_found = True
                 try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                    proc.wait(timeout=5)
-                except (subprocess.TimeoutExpired, ProcessLookupError):
+                    proc.wait(timeout=60)
+                except subprocess.TimeoutExpired:
                     try:
-                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
                         proc.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        pass
+                    except (subprocess.TimeoutExpired, ProcessLookupError):
+                        try:
+                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        try:
+                            proc.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            pass
                 break
             time.sleep(2)
         else:
