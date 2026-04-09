@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 12:13-0400\n"
+"POT-Creation-Date: 2026-04-09 13:38-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -18,13 +18,13 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:382
+#: ../files/usr/bin/universal-lite-setup-wizard:434
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
 "Только сжатая оперативная память (zram) — быстро, но приложения могут "
 "закрыться при заполнении памяти"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:383
+#: ../files/usr/bin/universal-lite-setup-wizard:435
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
@@ -32,168 +32,168 @@ msgstr ""
 "Сжатая оперативная память + резерв на диске (zswap) — более медленный сброс "
 "на диск, приложения остаются открытыми"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:386
+#: ../files/usr/bin/universal-lite-setup-wizard:438
 msgid "Custom"
 msgstr "Пользовательский"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:431
+#: ../files/usr/bin/universal-lite-setup-wizard:483
 msgid "Web browser"
 msgstr "Веб-браузер"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:432
+#: ../files/usr/bin/universal-lite-setup-wizard:484
 msgid "Browse and install apps"
 msgstr "Просмотр и установка приложений"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:433
+#: ../files/usr/bin/universal-lite-setup-wizard:485
 msgid "Modern styling for classic apps"
 msgstr "Современное оформление для классических приложений"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:434
+#: ../files/usr/bin/universal-lite-setup-wizard:486
 msgid "Dark variant for classic apps"
 msgstr "Тёмная тема для классических приложений"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:618
-#: ../files/usr/bin/universal-lite-setup-wizard:1497
+#: ../files/usr/bin/universal-lite-setup-wizard:670
+#: ../files/usr/bin/universal-lite-setup-wizard:1549
 msgid "Back"
 msgstr "Назад"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:625
-#: ../files/usr/bin/universal-lite-setup-wizard:1971
+#: ../files/usr/bin/universal-lite-setup-wizard:677
+#: ../files/usr/bin/universal-lite-setup-wizard:2023
 msgid "Next"
 msgstr "Далее"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:716
-#: ../files/usr/bin/universal-lite-setup-wizard:1412
+#: ../files/usr/bin/universal-lite-setup-wizard:768
+#: ../files/usr/bin/universal-lite-setup-wizard:1464
 msgid "Language"
 msgstr "Язык"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:722
+#: ../files/usr/bin/universal-lite-setup-wizard:774
 msgid "Select your language."
 msgstr "Выберите язык."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:826
-#: ../files/usr/bin/universal-lite-setup-wizard:908
-#: ../files/usr/bin/universal-lite-setup-wizard:921
+#: ../files/usr/bin/universal-lite-setup-wizard:878
+#: ../files/usr/bin/universal-lite-setup-wizard:960
+#: ../files/usr/bin/universal-lite-setup-wizard:973
 #, python-brace-format
 msgid "Keyboard layout: {layout}"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:839
+#: ../files/usr/bin/universal-lite-setup-wizard:891
 msgid ""
 "Auto-selected from your language. Override if your physical keyboard differs."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:979
+#: ../files/usr/bin/universal-lite-setup-wizard:1031
 msgid "Welcome to Universal-Lite"
 msgstr "Добро пожаловать в Universal-Lite"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:985
+#: ../files/usr/bin/universal-lite-setup-wizard:1037
 msgid "Create your account to get started."
 msgstr "Создайте учётную запись для начала работы."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:991
+#: ../files/usr/bin/universal-lite-setup-wizard:1043
 msgid "Full Name"
 msgstr "Полное имя"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:993
+#: ../files/usr/bin/universal-lite-setup-wizard:1045
 msgid "Jane Doe"
 msgstr "Иван Иванов"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1001
-#: ../files/usr/bin/universal-lite-setup-wizard:1418
+#: ../files/usr/bin/universal-lite-setup-wizard:1053
+#: ../files/usr/bin/universal-lite-setup-wizard:1470
 msgid "Username"
 msgstr "Имя пользователя"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1009
-#: ../files/usr/bin/universal-lite-setup-wizard:1105
-#: ../files/usr/bin/universal-lite-setup-wizard:1699
+#: ../files/usr/bin/universal-lite-setup-wizard:1061
+#: ../files/usr/bin/universal-lite-setup-wizard:1157
+#: ../files/usr/bin/universal-lite-setup-wizard:1751
 msgid "Password"
 msgstr "Пароль"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1016
+#: ../files/usr/bin/universal-lite-setup-wizard:1068
 msgid "Confirm Password"
 msgstr "Подтвердите пароль"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1025
+#: ../files/usr/bin/universal-lite-setup-wizard:1077
 msgid "Administrator account (sudo)"
 msgstr "Учётная запись администратора (sudo)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1033
+#: ../files/usr/bin/universal-lite-setup-wizard:1085
 msgid "Root Password (optional)"
 msgstr "Пароль root (необязательно)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1058
+#: ../files/usr/bin/universal-lite-setup-wizard:1110
 msgid "Connect to Wi-Fi"
 msgstr "Подключение к Wi-Fi"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1064
+#: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Select a network to get online."
 msgstr "Выберите сеть для подключения к Интернету."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1078
-#: ../files/usr/bin/universal-lite-setup-wizard:1598
+#: ../files/usr/bin/universal-lite-setup-wizard:1130
+#: ../files/usr/bin/universal-lite-setup-wizard:1650
 msgid "Scanning for networks..."
 msgstr "Поиск сетей..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1086
+#: ../files/usr/bin/universal-lite-setup-wizard:1138
 msgid "Rescan"
 msgstr "Обновить"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1099
+#: ../files/usr/bin/universal-lite-setup-wizard:1151
 msgid "Network Name (SSID)"
 msgstr "Имя сети (SSID)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1112
-#: ../files/usr/bin/universal-lite-setup-wizard:1702
-#: ../files/usr/bin/universal-lite-setup-wizard:1708
+#: ../files/usr/bin/universal-lite-setup-wizard:1164
+#: ../files/usr/bin/universal-lite-setup-wizard:1754
+#: ../files/usr/bin/universal-lite-setup-wizard:1760
 msgid "Connect"
 msgstr "Подключить"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1123
+#: ../files/usr/bin/universal-lite-setup-wizard:1175
 msgid "Join hidden network..."
 msgstr "Подключиться к скрытой сети..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1159
+#: ../files/usr/bin/universal-lite-setup-wizard:1211
 msgid "Choose Installation Disk"
 msgstr "Выбор диска для установки"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1165
+#: ../files/usr/bin/universal-lite-setup-wizard:1217
 msgid "Select the target drive and installation options."
 msgstr "Выберите целевой диск и параметры установки."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1172
-#: ../files/usr/bin/universal-lite-setup-wizard:1414
+#: ../files/usr/bin/universal-lite-setup-wizard:1224
+#: ../files/usr/bin/universal-lite-setup-wizard:1466
 msgid "Target drive"
 msgstr "Целевой диск"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1176
-#: ../files/usr/bin/universal-lite-setup-wizard:2225
+#: ../files/usr/bin/universal-lite-setup-wizard:1228
+#: ../files/usr/bin/universal-lite-setup-wizard:2277
 msgid "Unknown"
 msgstr "Неизвестно"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1184
-#: ../files/usr/bin/universal-lite-setup-wizard:1897
+#: ../files/usr/bin/universal-lite-setup-wizard:1236
+#: ../files/usr/bin/universal-lite-setup-wizard:1949
 msgid "No eligible drives found"
 msgstr "Подходящие диски не найдены"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1191
-#: ../files/usr/bin/universal-lite-setup-wizard:1415
+#: ../files/usr/bin/universal-lite-setup-wizard:1243
+#: ../files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Filesystem"
 msgstr "Файловая система"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1199
+#: ../files/usr/bin/universal-lite-setup-wizard:1251
 msgid "Memory management"
 msgstr "Управление памятью"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1209
+#: ../files/usr/bin/universal-lite-setup-wizard:1261
 msgid "Disk swap size"
 msgstr "Размер подкачки на диске"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1217
+#: ../files/usr/bin/universal-lite-setup-wizard:1269
 msgid "Custom size (GB)"
 msgstr "Пользовательский размер (GB)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1227
+#: ../files/usr/bin/universal-lite-setup-wizard:1279
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
@@ -201,33 +201,33 @@ msgstr ""
 "zswap использует сжатую оперативную память в качестве кеша и сбрасывает "
 "данные в файл подкачки на диске при заполнении."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1244
+#: ../files/usr/bin/universal-lite-setup-wizard:1296
 msgid "All data on the selected drive will be erased."
 msgstr "Все данные на выбранном диске будут удалены."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1267
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
 msgid "System Setup"
 msgstr "Настройка системы"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1274
-#: ../files/usr/bin/universal-lite-setup-wizard:1421
+#: ../files/usr/bin/universal-lite-setup-wizard:1326
+#: ../files/usr/bin/universal-lite-setup-wizard:1473
 msgid "Timezone"
 msgstr "Часовой пояс"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1303
-#: ../files/usr/bin/universal-lite-setup-wizard:1422
+#: ../files/usr/bin/universal-lite-setup-wizard:1355
+#: ../files/usr/bin/universal-lite-setup-wizard:1474
 msgid "Hostname"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1310
+#: ../files/usr/bin/universal-lite-setup-wizard:1362
 msgid "Your computer's name on the network. Leave blank to auto-generate."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1336
+#: ../files/usr/bin/universal-lite-setup-wizard:1388
 msgid "Install Apps"
 msgstr "Установить приложения"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1343
+#: ../files/usr/bin/universal-lite-setup-wizard:1395
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
@@ -235,169 +235,170 @@ msgstr ""
 "Эти приложения предварительно загружены и будут скопированы при установке. "
 "Снимите отметку с тех, которые вам не нужны."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1400
+#: ../files/usr/bin/universal-lite-setup-wizard:1452
 msgid "Ready to Install"
 msgstr "Готово к установке"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1406
+#: ../files/usr/bin/universal-lite-setup-wizard:1458
 msgid "Review your settings and click Install to begin."
 msgstr "Проверьте настройки и нажмите «Установить», чтобы начать."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1413
+#: ../files/usr/bin/universal-lite-setup-wizard:1465
 msgid "Network"
 msgstr "Сеть"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1416
+#: ../files/usr/bin/universal-lite-setup-wizard:1468
 msgid "Memory"
 msgstr "Память"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1417
+#: ../files/usr/bin/universal-lite-setup-wizard:1469
 msgid "Name"
 msgstr "Имя"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1419
+#: ../files/usr/bin/universal-lite-setup-wizard:1471
 msgid "Administrator"
 msgstr "Администратор"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1420
+#: ../files/usr/bin/universal-lite-setup-wizard:1472
 msgid "Root password"
 msgstr "Пароль root"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1423
+#: ../files/usr/bin/universal-lite-setup-wizard:1475
 msgid "Keyboard layout"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1424
+#: ../files/usr/bin/universal-lite-setup-wizard:1476
 msgid "Apps"
 msgstr "Приложения"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1443
+#: ../files/usr/bin/universal-lite-setup-wizard:1495
 msgid "Installing..."
 msgstr "Установка..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1455
-#: ../files/usr/bin/universal-lite-setup-wizard:1485
+#: ../files/usr/bin/universal-lite-setup-wizard:1507
+#: ../files/usr/bin/universal-lite-setup-wizard:1537
 msgid "Show details ▼"
 msgstr "Показать подробности ▼"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1485
+#: ../files/usr/bin/universal-lite-setup-wizard:1537
 msgid "Hide details ▲"
 msgstr "Скрыть подробности ▲"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1504
+#: ../files/usr/bin/universal-lite-setup-wizard:1556
 msgid "Skip"
 msgstr "Пропустить"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1511
+#: ../files/usr/bin/universal-lite-setup-wizard:1563
 msgid "Retry"
 msgstr "Повторить"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1518
-msgid "Continue"
-msgstr "Продолжить"
+#: ../files/usr/bin/universal-lite-setup-wizard:1570
+#: ../files/usr/bin/universal-lite-setup-wizard:2509
+msgid "Waiting for install..."
+msgstr "Ожидание установки..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1525
+#: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "Перезагрузить"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1638
+#: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "No networks found."
 msgstr "Сети не найдены."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1665
+#: ../files/usr/bin/universal-lite-setup-wizard:1717
 msgid "Strong"
 msgstr "Сильный"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1667
+#: ../files/usr/bin/universal-lite-setup-wizard:1719
 msgid "Medium"
 msgstr "Средний"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1669
+#: ../files/usr/bin/universal-lite-setup-wizard:1721
 msgid "Weak"
 msgstr "Слабый"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1675
+#: ../files/usr/bin/universal-lite-setup-wizard:1727
 msgid "WPA3"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1677
+#: ../files/usr/bin/universal-lite-setup-wizard:1729
 msgid "Secured"
 msgstr "Защищённая"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1679
+#: ../files/usr/bin/universal-lite-setup-wizard:1731
 msgid "Open"
 msgstr "Открытая"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1733
+#: ../files/usr/bin/universal-lite-setup-wizard:1785
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "Подключение к {ssid}..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1798
-#: ../files/usr/bin/universal-lite-setup-wizard:1821
+#: ../files/usr/bin/universal-lite-setup-wizard:1850
+#: ../files/usr/bin/universal-lite-setup-wizard:1873
 msgid "Wrong password."
 msgstr "Неверный пароль."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1800
-#: ../files/usr/bin/universal-lite-setup-wizard:1823
+#: ../files/usr/bin/universal-lite-setup-wizard:1852
+#: ../files/usr/bin/universal-lite-setup-wizard:1875
 #, python-brace-format
 msgid "Connection failed: {err}"
 msgstr "Ошибка подключения: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1808
+#: ../files/usr/bin/universal-lite-setup-wizard:1860
 msgid "Enter a network name."
 msgstr "Введите название сети."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1836
+#: ../files/usr/bin/universal-lite-setup-wizard:1888
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "Подключено к {ssid}!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1841
+#: ../files/usr/bin/universal-lite-setup-wizard:1893
 msgid "Connected, but no internet access detected."
 msgstr "Подключено, но доступ к Интернету не обнаружен."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1962
+#: ../files/usr/bin/universal-lite-setup-wizard:2014
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "Шаг {n} из {total}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1971
+#: ../files/usr/bin/universal-lite-setup-wizard:2023
 msgid "Install"
 msgstr "Установить"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1997
+#: ../files/usr/bin/universal-lite-setup-wizard:2049
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
 "Целевые диски не найдены. Подключите диск и перезапустите программу "
 "установки."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2002
+#: ../files/usr/bin/universal-lite-setup-wizard:2054
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr ""
 "Пользовательский размер подкачки должен быть положительным целым числом (в "
 "GB)."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2025
+#: ../files/usr/bin/universal-lite-setup-wizard:2077
 #, python-brace-format
 msgid ""
 "Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
 "{max} GB."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2054
+#: ../files/usr/bin/universal-lite-setup-wizard:2106
 msgid "Full name is required."
 msgstr "Полное имя обязательно."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2057
+#: ../files/usr/bin/universal-lite-setup-wizard:2109
 msgid "Username is required."
 msgstr "Имя пользователя обязательно."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2060
+#: ../files/usr/bin/universal-lite-setup-wizard:2112
 msgid "Username must be 32 characters or fewer."
 msgstr "Имя пользователя не должно превышать 32 символа."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2064
+#: ../files/usr/bin/universal-lite-setup-wizard:2116
 #, fuzzy
 msgid ""
 "Username must start with a lowercase letter or underscore, contain only "
@@ -407,19 +408,19 @@ msgstr ""
 "Имя пользователя должно начинаться со строчной буквы и содержать только "
 "строчные буквы, цифры и дефисы."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2070
+#: ../files/usr/bin/universal-lite-setup-wizard:2122
 msgid "Password is required."
 msgstr "Пароль обязателен."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2073
+#: ../files/usr/bin/universal-lite-setup-wizard:2125
 msgid "Password must be at least 6 characters."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2076
+#: ../files/usr/bin/universal-lite-setup-wizard:2128
 msgid "Passwords do not match."
 msgstr "Пароли не совпадают."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2082
+#: ../files/usr/bin/universal-lite-setup-wizard:2134
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -427,100 +428,104 @@ msgstr ""
 "Включите доступ администратора или задайте пароль root. Без одного из этих "
 "вариантов управление системой будет невозможно."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2092
+#: ../files/usr/bin/universal-lite-setup-wizard:2144
 #, fuzzy
 msgid "Hostname must be 63 characters or fewer."
 msgstr "Имя пользователя не должно превышать 32 символа."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2096
+#: ../files/usr/bin/universal-lite-setup-wizard:2148
 msgid ""
 "Hostname must contain only letters, numbers, and hyphens, and cannot start "
 "or end with a hyphen."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2114
+#: ../files/usr/bin/universal-lite-setup-wizard:2166
 msgid "Wired connection"
 msgstr "Проводное подключение"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2117
+#: ../files/usr/bin/universal-lite-setup-wizard:2169
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "Подключено к {ssid}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2120
+#: ../files/usr/bin/universal-lite-setup-wizard:2172
 msgid "No network (offline install)"
 msgstr "Без сети (автономная установка)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2130
+#: ../files/usr/bin/universal-lite-setup-wizard:2182
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap с {swap_gb} GB подкачки на диске"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2133
+#: ../files/usr/bin/universal-lite-setup-wizard:2185
 msgid "zram only (compressed RAM)"
 msgstr "Только zram (сжатая оперативная память)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2138
+#: ../files/usr/bin/universal-lite-setup-wizard:2190
 msgid "Yes"
 msgstr "Да"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2138
+#: ../files/usr/bin/universal-lite-setup-wizard:2190
 msgid "No"
 msgstr "Нет"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2140
+#: ../files/usr/bin/universal-lite-setup-wizard:2192
 msgid "Set"
 msgstr "Задан"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2140
+#: ../files/usr/bin/universal-lite-setup-wizard:2192
 msgid "Not set"
 msgstr "Не задан"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2161
+#: ../files/usr/bin/universal-lite-setup-wizard:2213
 msgid "No apps selected"
 msgstr "Приложения не выбраны"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2220
-#: ../files/usr/bin/universal-lite-setup-wizard:2223
+#: ../files/usr/bin/universal-lite-setup-wizard:2272
+#: ../files/usr/bin/universal-lite-setup-wizard:2275
 msgid "None"
 msgstr "Нет"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3059
+#: ../files/usr/bin/universal-lite-setup-wizard:2515
+msgid "Continue"
+msgstr "Продолжить"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3144
 msgid "Partitioning disk"
 msgstr "Разметка диска"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3060
+#: ../files/usr/bin/universal-lite-setup-wizard:3145
 msgid "Installing system"
 msgstr "Установка системы"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3061
+#: ../files/usr/bin/universal-lite-setup-wizard:3146
 msgid "Configuring user account"
 msgstr "Настройка учётной записи пользователя"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3062
+#: ../files/usr/bin/universal-lite-setup-wizard:3147
 msgid "Copying network configuration"
 msgstr "Копирование сетевых настроек"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3066
+#: ../files/usr/bin/universal-lite-setup-wizard:3151
 msgid "Installing selected apps"
 msgstr "Установка выбранных приложений"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3070
+#: ../files/usr/bin/universal-lite-setup-wizard:3155
 msgid "Configuring memory management"
 msgstr "Настройка управления памятью"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3071
+#: ../files/usr/bin/universal-lite-setup-wizard:3156
 msgid "Finalizing"
 msgstr "Завершение"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3138
+#: ../files/usr/bin/universal-lite-setup-wizard:3224
 msgid "(skipped)"
 msgstr "(пропущено)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3169
+#: ../files/usr/bin/universal-lite-setup-wizard:3255
 msgid "Installation Complete!"
 msgstr "Установка завершена!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3204
+#: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Не удалось перезагрузить — пожалуйста, перезагрузите вручную."

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 12:13-0400\n"
+"POT-Creation-Date: 2026-04-09 13:38-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,12 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:382
+#: ../files/usr/bin/universal-lite-setup-wizard:434
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr ""
 "압축 메모리만 사용 (zram) — 빠르지만, 메모리 부족 시 앱이 종료될 수 있습니다"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:383
+#: ../files/usr/bin/universal-lite-setup-wizard:435
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
@@ -30,168 +30,168 @@ msgstr ""
 "압축 메모리 + 디스크 백업 (zswap) — 디스크로의 전환은 느리지만, 앱이 열린 상"
 "태로 유지됩니다"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:386
+#: ../files/usr/bin/universal-lite-setup-wizard:438
 msgid "Custom"
 msgstr "사용자 지정"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:431
+#: ../files/usr/bin/universal-lite-setup-wizard:483
 msgid "Web browser"
 msgstr "웹 브라우저"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:432
+#: ../files/usr/bin/universal-lite-setup-wizard:484
 msgid "Browse and install apps"
 msgstr "앱 탐색 및 설치"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:433
+#: ../files/usr/bin/universal-lite-setup-wizard:485
 msgid "Modern styling for classic apps"
 msgstr "클래식 앱을 위한 현대적 스타일"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:434
+#: ../files/usr/bin/universal-lite-setup-wizard:486
 msgid "Dark variant for classic apps"
 msgstr "클래식 앱을 위한 다크 스타일"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:618
-#: ../files/usr/bin/universal-lite-setup-wizard:1497
+#: ../files/usr/bin/universal-lite-setup-wizard:670
+#: ../files/usr/bin/universal-lite-setup-wizard:1549
 msgid "Back"
 msgstr "뒤로"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:625
-#: ../files/usr/bin/universal-lite-setup-wizard:1971
+#: ../files/usr/bin/universal-lite-setup-wizard:677
+#: ../files/usr/bin/universal-lite-setup-wizard:2023
 msgid "Next"
 msgstr "다음"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:716
-#: ../files/usr/bin/universal-lite-setup-wizard:1412
+#: ../files/usr/bin/universal-lite-setup-wizard:768
+#: ../files/usr/bin/universal-lite-setup-wizard:1464
 msgid "Language"
 msgstr "언어"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:722
+#: ../files/usr/bin/universal-lite-setup-wizard:774
 msgid "Select your language."
 msgstr "언어를 선택하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:826
-#: ../files/usr/bin/universal-lite-setup-wizard:908
-#: ../files/usr/bin/universal-lite-setup-wizard:921
+#: ../files/usr/bin/universal-lite-setup-wizard:878
+#: ../files/usr/bin/universal-lite-setup-wizard:960
+#: ../files/usr/bin/universal-lite-setup-wizard:973
 #, python-brace-format
 msgid "Keyboard layout: {layout}"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:839
+#: ../files/usr/bin/universal-lite-setup-wizard:891
 msgid ""
 "Auto-selected from your language. Override if your physical keyboard differs."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:979
+#: ../files/usr/bin/universal-lite-setup-wizard:1031
 msgid "Welcome to Universal-Lite"
 msgstr "Universal-Lite에 오신 것을 환영합니다"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:985
+#: ../files/usr/bin/universal-lite-setup-wizard:1037
 msgid "Create your account to get started."
 msgstr "계정을 만들어 시작하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:991
+#: ../files/usr/bin/universal-lite-setup-wizard:1043
 msgid "Full Name"
 msgstr "이름"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:993
+#: ../files/usr/bin/universal-lite-setup-wizard:1045
 msgid "Jane Doe"
 msgstr "홍길동"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1001
-#: ../files/usr/bin/universal-lite-setup-wizard:1418
+#: ../files/usr/bin/universal-lite-setup-wizard:1053
+#: ../files/usr/bin/universal-lite-setup-wizard:1470
 msgid "Username"
 msgstr "사용자 이름"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1009
-#: ../files/usr/bin/universal-lite-setup-wizard:1105
-#: ../files/usr/bin/universal-lite-setup-wizard:1699
+#: ../files/usr/bin/universal-lite-setup-wizard:1061
+#: ../files/usr/bin/universal-lite-setup-wizard:1157
+#: ../files/usr/bin/universal-lite-setup-wizard:1751
 msgid "Password"
 msgstr "비밀번호"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1016
+#: ../files/usr/bin/universal-lite-setup-wizard:1068
 msgid "Confirm Password"
 msgstr "비밀번호 확인"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1025
+#: ../files/usr/bin/universal-lite-setup-wizard:1077
 msgid "Administrator account (sudo)"
 msgstr "관리자 계정 (sudo)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1033
+#: ../files/usr/bin/universal-lite-setup-wizard:1085
 msgid "Root Password (optional)"
 msgstr "root 비밀번호 (선택 사항)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1058
+#: ../files/usr/bin/universal-lite-setup-wizard:1110
 msgid "Connect to Wi-Fi"
 msgstr "Wi-Fi 연결"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1064
+#: ../files/usr/bin/universal-lite-setup-wizard:1116
 msgid "Select a network to get online."
 msgstr "네트워크를 선택하여 인터넷에 연결하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1078
-#: ../files/usr/bin/universal-lite-setup-wizard:1598
+#: ../files/usr/bin/universal-lite-setup-wizard:1130
+#: ../files/usr/bin/universal-lite-setup-wizard:1650
 msgid "Scanning for networks..."
 msgstr "네트워크 검색 중..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1086
+#: ../files/usr/bin/universal-lite-setup-wizard:1138
 msgid "Rescan"
 msgstr "재검색"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1099
+#: ../files/usr/bin/universal-lite-setup-wizard:1151
 msgid "Network Name (SSID)"
 msgstr "네트워크 이름 (SSID)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1112
-#: ../files/usr/bin/universal-lite-setup-wizard:1702
-#: ../files/usr/bin/universal-lite-setup-wizard:1708
+#: ../files/usr/bin/universal-lite-setup-wizard:1164
+#: ../files/usr/bin/universal-lite-setup-wizard:1754
+#: ../files/usr/bin/universal-lite-setup-wizard:1760
 msgid "Connect"
 msgstr "연결"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1123
+#: ../files/usr/bin/universal-lite-setup-wizard:1175
 msgid "Join hidden network..."
 msgstr "숨겨진 네트워크에 연결..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1159
+#: ../files/usr/bin/universal-lite-setup-wizard:1211
 msgid "Choose Installation Disk"
 msgstr "설치 디스크 선택"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1165
+#: ../files/usr/bin/universal-lite-setup-wizard:1217
 msgid "Select the target drive and installation options."
 msgstr "대상 드라이브와 설치 옵션을 선택하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1172
-#: ../files/usr/bin/universal-lite-setup-wizard:1414
+#: ../files/usr/bin/universal-lite-setup-wizard:1224
+#: ../files/usr/bin/universal-lite-setup-wizard:1466
 msgid "Target drive"
 msgstr "대상 드라이브"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1176
-#: ../files/usr/bin/universal-lite-setup-wizard:2225
+#: ../files/usr/bin/universal-lite-setup-wizard:1228
+#: ../files/usr/bin/universal-lite-setup-wizard:2277
 msgid "Unknown"
 msgstr "알 수 없음"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1184
-#: ../files/usr/bin/universal-lite-setup-wizard:1897
+#: ../files/usr/bin/universal-lite-setup-wizard:1236
+#: ../files/usr/bin/universal-lite-setup-wizard:1949
 msgid "No eligible drives found"
 msgstr "사용 가능한 드라이브를 찾을 수 없습니다"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1191
-#: ../files/usr/bin/universal-lite-setup-wizard:1415
+#: ../files/usr/bin/universal-lite-setup-wizard:1243
+#: ../files/usr/bin/universal-lite-setup-wizard:1467
 msgid "Filesystem"
 msgstr "파일 시스템"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1199
+#: ../files/usr/bin/universal-lite-setup-wizard:1251
 msgid "Memory management"
 msgstr "메모리 관리"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1209
+#: ../files/usr/bin/universal-lite-setup-wizard:1261
 msgid "Disk swap size"
 msgstr "디스크 스왑 크기"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1217
+#: ../files/usr/bin/universal-lite-setup-wizard:1269
 msgid "Custom size (GB)"
 msgstr "사용자 지정 크기 (GB)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1227
+#: ../files/usr/bin/universal-lite-setup-wizard:1279
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
@@ -199,33 +199,33 @@ msgstr ""
 "zswap은 압축된 메모리를 캐시로 사용하며, 가득 차면 디스크의 스왑 파일로 넘깁"
 "니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1244
+#: ../files/usr/bin/universal-lite-setup-wizard:1296
 msgid "All data on the selected drive will be erased."
 msgstr "선택한 드라이브의 모든 데이터가 삭제됩니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1267
+#: ../files/usr/bin/universal-lite-setup-wizard:1319
 msgid "System Setup"
 msgstr "시스템 설정"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1274
-#: ../files/usr/bin/universal-lite-setup-wizard:1421
+#: ../files/usr/bin/universal-lite-setup-wizard:1326
+#: ../files/usr/bin/universal-lite-setup-wizard:1473
 msgid "Timezone"
 msgstr "시간대"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1303
-#: ../files/usr/bin/universal-lite-setup-wizard:1422
+#: ../files/usr/bin/universal-lite-setup-wizard:1355
+#: ../files/usr/bin/universal-lite-setup-wizard:1474
 msgid "Hostname"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1310
+#: ../files/usr/bin/universal-lite-setup-wizard:1362
 msgid "Your computer's name on the network. Leave blank to auto-generate."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1336
+#: ../files/usr/bin/universal-lite-setup-wizard:1388
 msgid "Install Apps"
 msgstr "앱 설치"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1343
+#: ../files/usr/bin/universal-lite-setup-wizard:1395
 msgid ""
 "These apps are pre-downloaded and will be copied during install. Uncheck any "
 "you don't want."
@@ -233,167 +233,168 @@ msgstr ""
 "이 앱들은 미리 다운로드되어 있으며 설치 중에 복사됩니다. 원하지 않는 앱은 선"
 "택을 해제하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1400
+#: ../files/usr/bin/universal-lite-setup-wizard:1452
 msgid "Ready to Install"
 msgstr "설치 준비 완료"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1406
+#: ../files/usr/bin/universal-lite-setup-wizard:1458
 msgid "Review your settings and click Install to begin."
 msgstr "설정을 확인한 후 '설치'를 클릭하여 시작하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1413
+#: ../files/usr/bin/universal-lite-setup-wizard:1465
 msgid "Network"
 msgstr "네트워크"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1416
+#: ../files/usr/bin/universal-lite-setup-wizard:1468
 msgid "Memory"
 msgstr "메모리"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1417
+#: ../files/usr/bin/universal-lite-setup-wizard:1469
 msgid "Name"
 msgstr "이름"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1419
+#: ../files/usr/bin/universal-lite-setup-wizard:1471
 msgid "Administrator"
 msgstr "관리자"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1420
+#: ../files/usr/bin/universal-lite-setup-wizard:1472
 msgid "Root password"
 msgstr "root 비밀번호"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1423
+#: ../files/usr/bin/universal-lite-setup-wizard:1475
 msgid "Keyboard layout"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1424
+#: ../files/usr/bin/universal-lite-setup-wizard:1476
 msgid "Apps"
 msgstr "앱"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1443
+#: ../files/usr/bin/universal-lite-setup-wizard:1495
 msgid "Installing..."
 msgstr "설치 중..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1455
-#: ../files/usr/bin/universal-lite-setup-wizard:1485
+#: ../files/usr/bin/universal-lite-setup-wizard:1507
+#: ../files/usr/bin/universal-lite-setup-wizard:1537
 msgid "Show details ▼"
 msgstr "세부 정보 표시 ▼"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1485
+#: ../files/usr/bin/universal-lite-setup-wizard:1537
 msgid "Hide details ▲"
 msgstr "세부 정보 숨기기 ▲"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1504
+#: ../files/usr/bin/universal-lite-setup-wizard:1556
 msgid "Skip"
 msgstr "건너뛰기"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1511
+#: ../files/usr/bin/universal-lite-setup-wizard:1563
 msgid "Retry"
 msgstr "재시도"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1518
-msgid "Continue"
-msgstr "계속"
+#: ../files/usr/bin/universal-lite-setup-wizard:1570
+#: ../files/usr/bin/universal-lite-setup-wizard:2509
+msgid "Waiting for install..."
+msgstr "설치 대기 중..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1525
+#: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "재부팅"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1638
+#: ../files/usr/bin/universal-lite-setup-wizard:1690
 msgid "No networks found."
 msgstr "네트워크를 찾을 수 없습니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1665
+#: ../files/usr/bin/universal-lite-setup-wizard:1717
 msgid "Strong"
 msgstr "강함"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1667
+#: ../files/usr/bin/universal-lite-setup-wizard:1719
 msgid "Medium"
 msgstr "보통"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1669
+#: ../files/usr/bin/universal-lite-setup-wizard:1721
 msgid "Weak"
 msgstr "약함"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1675
+#: ../files/usr/bin/universal-lite-setup-wizard:1727
 msgid "WPA3"
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1677
+#: ../files/usr/bin/universal-lite-setup-wizard:1729
 msgid "Secured"
 msgstr "보안됨"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1679
+#: ../files/usr/bin/universal-lite-setup-wizard:1731
 msgid "Open"
 msgstr "열림"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1733
+#: ../files/usr/bin/universal-lite-setup-wizard:1785
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "{ssid}에 연결 중..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1798
-#: ../files/usr/bin/universal-lite-setup-wizard:1821
+#: ../files/usr/bin/universal-lite-setup-wizard:1850
+#: ../files/usr/bin/universal-lite-setup-wizard:1873
 msgid "Wrong password."
 msgstr "비밀번호가 틀렸습니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1800
-#: ../files/usr/bin/universal-lite-setup-wizard:1823
+#: ../files/usr/bin/universal-lite-setup-wizard:1852
+#: ../files/usr/bin/universal-lite-setup-wizard:1875
 #, python-brace-format
 msgid "Connection failed: {err}"
 msgstr "연결 실패: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1808
+#: ../files/usr/bin/universal-lite-setup-wizard:1860
 msgid "Enter a network name."
 msgstr "네트워크 이름을 입력하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1836
+#: ../files/usr/bin/universal-lite-setup-wizard:1888
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "{ssid}에 연결되었습니다!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1841
+#: ../files/usr/bin/universal-lite-setup-wizard:1893
 msgid "Connected, but no internet access detected."
 msgstr "연결되었지만 인터넷 접속이 감지되지 않았습니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1962
+#: ../files/usr/bin/universal-lite-setup-wizard:2014
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "{total}단계 중 {n}단계"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1971
+#: ../files/usr/bin/universal-lite-setup-wizard:2023
 msgid "Install"
 msgstr "설치"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1997
+#: ../files/usr/bin/universal-lite-setup-wizard:2049
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr ""
 "대상 드라이브를 찾을 수 없습니다. 드라이브를 연결하고 설치 프로그램을 다시 시"
 "작하세요."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2002
+#: ../files/usr/bin/universal-lite-setup-wizard:2054
 msgid "Custom swap size must be a positive whole number (in GB)."
 msgstr "사용자 지정 스왑 크기는 양의 정수여야 합니다(단위: GB)."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2025
+#: ../files/usr/bin/universal-lite-setup-wizard:2077
 #, python-brace-format
 msgid ""
 "Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
 "{max} GB."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2054
+#: ../files/usr/bin/universal-lite-setup-wizard:2106
 msgid "Full name is required."
 msgstr "이름을 입력해야 합니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2057
+#: ../files/usr/bin/universal-lite-setup-wizard:2109
 msgid "Username is required."
 msgstr "사용자 이름을 입력해야 합니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2060
+#: ../files/usr/bin/universal-lite-setup-wizard:2112
 msgid "Username must be 32 characters or fewer."
 msgstr "사용자 이름은 32자 이하여야 합니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2064
+#: ../files/usr/bin/universal-lite-setup-wizard:2116
 #, fuzzy
 msgid ""
 "Username must start with a lowercase letter or underscore, contain only "
@@ -403,19 +404,19 @@ msgstr ""
 "사용자 이름은 소문자로 시작해야 하며, 소문자, 숫자, 하이픈만 사용할 수 있습니"
 "다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2070
+#: ../files/usr/bin/universal-lite-setup-wizard:2122
 msgid "Password is required."
 msgstr "비밀번호를 입력해야 합니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2073
+#: ../files/usr/bin/universal-lite-setup-wizard:2125
 msgid "Password must be at least 6 characters."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2076
+#: ../files/usr/bin/universal-lite-setup-wizard:2128
 msgid "Passwords do not match."
 msgstr "비밀번호가 일치하지 않습니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2082
+#: ../files/usr/bin/universal-lite-setup-wizard:2134
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -423,100 +424,104 @@ msgstr ""
 "관리자 접근을 활성화하거나 root 비밀번호를 설정하세요. 둘 다 설정하지 않으면 "
 "시스템 관리가 불가능해집니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2092
+#: ../files/usr/bin/universal-lite-setup-wizard:2144
 #, fuzzy
 msgid "Hostname must be 63 characters or fewer."
 msgstr "사용자 이름은 32자 이하여야 합니다."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2096
+#: ../files/usr/bin/universal-lite-setup-wizard:2148
 msgid ""
 "Hostname must contain only letters, numbers, and hyphens, and cannot start "
 "or end with a hyphen."
 msgstr ""
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2114
+#: ../files/usr/bin/universal-lite-setup-wizard:2166
 msgid "Wired connection"
 msgstr "유선 연결"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2117
+#: ../files/usr/bin/universal-lite-setup-wizard:2169
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "{ssid}에 연결됨"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2120
+#: ../files/usr/bin/universal-lite-setup-wizard:2172
 msgid "No network (offline install)"
 msgstr "네트워크 없음 (오프라인 설치)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2130
+#: ../files/usr/bin/universal-lite-setup-wizard:2182
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap (디스크 스왑 {swap_gb} GB)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2133
+#: ../files/usr/bin/universal-lite-setup-wizard:2185
 msgid "zram only (compressed RAM)"
 msgstr "zram만 사용 (압축 메모리)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2138
+#: ../files/usr/bin/universal-lite-setup-wizard:2190
 msgid "Yes"
 msgstr "예"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2138
+#: ../files/usr/bin/universal-lite-setup-wizard:2190
 msgid "No"
 msgstr "아니오"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2140
+#: ../files/usr/bin/universal-lite-setup-wizard:2192
 msgid "Set"
 msgstr "설정됨"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2140
+#: ../files/usr/bin/universal-lite-setup-wizard:2192
 msgid "Not set"
 msgstr "미설정"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2161
+#: ../files/usr/bin/universal-lite-setup-wizard:2213
 msgid "No apps selected"
 msgstr "선택된 앱 없음"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2220
-#: ../files/usr/bin/universal-lite-setup-wizard:2223
+#: ../files/usr/bin/universal-lite-setup-wizard:2272
+#: ../files/usr/bin/universal-lite-setup-wizard:2275
 msgid "None"
 msgstr "없음"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3059
+#: ../files/usr/bin/universal-lite-setup-wizard:2515
+msgid "Continue"
+msgstr "계속"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3144
 msgid "Partitioning disk"
 msgstr "디스크 파티션 생성 중"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3060
+#: ../files/usr/bin/universal-lite-setup-wizard:3145
 msgid "Installing system"
 msgstr "시스템 설치 중"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3061
+#: ../files/usr/bin/universal-lite-setup-wizard:3146
 msgid "Configuring user account"
 msgstr "사용자 계정 설정"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3062
+#: ../files/usr/bin/universal-lite-setup-wizard:3147
 msgid "Copying network configuration"
 msgstr "네트워크 설정 복사"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3066
+#: ../files/usr/bin/universal-lite-setup-wizard:3151
 msgid "Installing selected apps"
 msgstr "선택한 앱 설치"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3070
+#: ../files/usr/bin/universal-lite-setup-wizard:3155
 msgid "Configuring memory management"
 msgstr "메모리 관리 설정"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3071
+#: ../files/usr/bin/universal-lite-setup-wizard:3156
 msgid "Finalizing"
 msgstr "마무리 중"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3138
+#: ../files/usr/bin/universal-lite-setup-wizard:3224
 msgid "(skipped)"
 msgstr "(건너뜀)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3169
+#: ../files/usr/bin/universal-lite-setup-wizard:3255
 msgid "Installation Complete!"
 msgstr "설치 완료!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3204
+#: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "재부팅에 실패했습니다 — 수동으로 다시 시작해 주세요."
