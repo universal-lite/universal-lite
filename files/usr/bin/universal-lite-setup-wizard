@@ -118,12 +118,16 @@ checkbutton label {
 
 button.create-button {
     font-family: "Roboto", sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     padding: 12px 32px;
-    border-radius: 8px;
+    border-radius: 10px;
     background: #3584e4;
     color: #ffffff;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    min-height: 36px;
+    transition: background 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
 }
 
 button.create-button label {
@@ -134,23 +138,33 @@ button.create-button:hover {
     background: #62a0ea;
 }
 
+button.create-button:active {
+    background: #1c71d8;
+    box-shadow: none;
+}
+
 button.create-button:disabled {
-    background: #555555;
-    color: #999999;
+    background: #3d3d3d;
+    color: #888888;
+    box-shadow: none;
 }
 
 button.create-button:disabled label {
-    color: #999999;
+    color: #888888;
 }
 
 button.destructive-button {
     font-family: "Roboto", sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     padding: 12px 32px;
-    border-radius: 8px;
-    background: #c64646;
+    border-radius: 10px;
+    background: #c01c28;
     color: #ffffff;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    min-height: 36px;
+    transition: background 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
 }
 
 button.destructive-button label {
@@ -158,26 +172,64 @@ button.destructive-button label {
 }
 
 button.destructive-button:hover {
-    background: #d45a5a;
+    background: #e01b24;
+}
+
+button.destructive-button:active {
+    background: #a51d2d;
+    box-shadow: none;
+}
+
+button.destructive-button:disabled {
+    background: #3d3d3d;
+    color: #888888;
+    box-shadow: none;
+}
+
+button.destructive-button:disabled label {
+    color: #888888;
+}
+
+@keyframes pop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.pop-in {
+    animation: pop-in 300ms ease-out;
 }
 
 button.back-button {
     font-family: "Roboto", sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     padding: 12px 32px;
-    border-radius: 8px;
-    background: none;
+    border-radius: 10px;
+    background: transparent;
     border: none;
     box-shadow: none;
     color: #aaaaaa;
+    min-height: 36px;
+    transition: background 200ms ease, color 200ms ease;
 }
 
 button.back-button label {
     color: #aaaaaa;
 }
 
+button.back-button:hover {
+    background: rgba(255,255,255,0.08);
+}
+
 button.back-button:hover label {
     color: #dddddd;
+}
+
+button.back-button:active {
+    background: rgba(255,255,255,0.04);
+}
+
+button.back-button:active label {
+    color: #bbbbbb;
 }
 
 .keyboard-toggle {
