@@ -143,6 +143,24 @@ button.create-button:disabled label {
     color: #999999;
 }
 
+button.destructive-button {
+    font-family: "Roboto", sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 32px;
+    border-radius: 8px;
+    background: #c64646;
+    color: #ffffff;
+}
+
+button.destructive-button label {
+    color: #ffffff;
+}
+
+button.destructive-button:hover {
+    background: #d45a5a;
+}
+
 button.back-button {
     font-family: "Roboto", sans-serif;
     font-size: 18px;
@@ -1497,6 +1515,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._retranslatable.append((self._progress_retry_btn.set_label, "Retry"))
         btn_box.append(self._progress_retry_btn)
 
+        self._progress_continue_btn = Gtk.Button(label=_("Continue"))
+        self._progress_continue_btn.add_css_class("destructive-button")
+        self._progress_continue_btn.set_visible(False)
+        self._progress_continue_btn.connect("clicked", lambda _: self._bootc_continue_clicked())
+        self._retranslatable.append((self._progress_continue_btn.set_label, "Continue"))
+        btn_box.append(self._progress_continue_btn)
+
         self._progress_reboot_btn = Gtk.Button(label=_("Reboot"))
         self._progress_reboot_btn.add_css_class("create-button")
         self._progress_reboot_btn.set_visible(False)
@@ -2390,9 +2415,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             mount_point,
         ]
 
-        # bootc hangs after completion due to child processes that won't
-        # exit.  Monitor disk I/O on the target device: once writes stop
-        # for 30 seconds, the install is done and we kill the process.
+        # bootc to-filesystem hangs in its finalize step (fstrim, fsfreeze,
+        # remount-ro) which can block indefinitely on slow storage.  It also
+        # does NOT print any completion message (only to-disk does).
+        # Show a Continue button so the user can signal when bootc is done.
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
         import tempfile
@@ -2424,61 +2450,30 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
-        # Monitor disk I/O on the target device.  /sys/block/<dev>/stat
-        # fields (0-indexed): 0-3 reads, 4-7 writes, 8 in-flight,
-        # 9-10 I/O time, 11-14 discards.  Track both writes (field 6)
-        # and discards (field 14) since bootc's trim phase uses discards.
-        target = self._setup_target_drive  # e.g. "vdb"
-        stat_path = f"/sys/block/{target}/stat"
-        last_activity = None
-        ever_active = False
-        idle_since = None
+        # Show Continue button for user to signal bootc completion
+        self._bootc_continue_event = threading.Event()
+        GLib.idle_add(self._progress_continue_btn.set_visible, True)
 
-        def _read_activity():
-            """Return combined write + discard count, or None on error."""
-            try:
-                fields = Path(stat_path).read_text().split()
-                writes = int(fields[6])
-                discards = int(fields[14]) if len(fields) > 14 else 0
-                return writes + discards
-            except (OSError, IndexError, ValueError):
-                return None
-
+        # Wait for: process exit, user Continue click, or 1-hour timeout
         deadline = time.time() + 3600
         while time.time() < deadline:
             if proc.poll() is not None:
-                break  # Process exited on its own
-
-            activity = _read_activity()
-            if activity is None:
-                time.sleep(5)
-                continue
-
-            # Only start idle tracking after we've seen actual I/O
-            if last_activity is not None and activity != last_activity:
-                ever_active = True
-                idle_since = None
-
-            if ever_active and last_activity is not None and activity == last_activity:
-                if idle_since is None:
-                    idle_since = time.time()
-                elif time.time() - idle_since >= 30:
-                    # No disk activity for 30 seconds — bootc is done
+                break
+            if self._bootc_continue_event.wait(timeout=5):
+                # User confirmed bootc is done — kill the process group
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                    proc.wait(timeout=10)
+                except (subprocess.TimeoutExpired, ProcessLookupError):
                     try:
-                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    try:
                         proc.wait(timeout=5)
-                    except (subprocess.TimeoutExpired, ProcessLookupError):
-                        try:
-                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                        except ProcessLookupError:
-                            pass
-                        try:
-                            proc.wait(timeout=5)
-                        except subprocess.TimeoutExpired:
-                            pass
-                    break
-            last_activity = activity
-            time.sleep(5)
+                    except subprocess.TimeoutExpired:
+                        pass
+                break
         else:
             proc.kill()
             try:
@@ -2486,6 +2481,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             except subprocess.TimeoutExpired:
                 pass
 
+        GLib.idle_add(self._progress_continue_btn.set_visible, False)
         stop_event.set()
         reader.join(timeout=3)
         try:
@@ -3102,6 +3098,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._progress_back_btn.set_visible(False)
         self._progress_skip_btn.set_visible(False)
         self._progress_retry_btn.set_visible(False)
+        self._progress_continue_btn.set_visible(False)
         self._progress_reboot_btn.set_visible(False)
         self._log_buffer.set_text("")
 
@@ -3183,6 +3180,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._on_all_steps_done()
         else:
             self._start_step_runner()
+
+    def _bootc_continue_clicked(self) -> None:
+        """User confirmed bootc is done — signal the worker thread to proceed."""
+        if hasattr(self, "_bootc_continue_event"):
+            self._bootc_continue_event.set()
+        self._progress_continue_btn.set_visible(False)
 
     def _progress_go_back(self) -> None:
         """Return to confirm page on fatal error for correction."""
