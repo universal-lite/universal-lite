@@ -31,7 +31,7 @@ _ = gettext.gettext
 APP_ID = "org.universallite.Greeter"
 
 LAST_USER_PATH = Path("/var/lib/universal-lite/last-user")
-GREETER_CONFIG_PATH = Path("/etc/universal-lite/greeter.json")
+GREETER_THEME_PATH = Path("/var/lib/universal-lite/greeter-theme")
 SESSIONS_DIR = Path("/usr/share/wayland-sessions")
 PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 
@@ -80,13 +80,11 @@ PALETTES = _load_palettes()
 
 
 def _load_theme() -> str:
-    """Read theme from greeter config. Default to light."""
     try:
-        data = json.loads(GREETER_CONFIG_PATH.read_text(encoding="utf-8"))
-        theme = data.get("theme", "light")
+        theme = GREETER_THEME_PATH.read_text(encoding="utf-8").strip()
         if theme in PALETTES:
             return theme
-    except (OSError, json.JSONDecodeError, TypeError):
+    except OSError:
         pass
     return "light"
 

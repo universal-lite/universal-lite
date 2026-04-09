@@ -103,9 +103,14 @@ class SoundPage(BasePage):
         self._in_mute.connect("state-set", self._on_in_mute_set)
         page.append(self.make_setting_row(_("Mute"), "", self._in_mute))
 
-        # Start PulseAudio event subscriber and wire up live updates
         self._pa = PulseAudioSubscriber(self.event_bus)
         self.event_bus.subscribe("audio-changed", self._on_audio_changed)
+
+        def _on_pa_map(_widget):
+            self._pa = PulseAudioSubscriber(self.event_bus)
+            self._refresh()
+
+        page.connect("map", _on_pa_map)
         page.connect("unmap", lambda _: self._pa.stop() if self._pa else None)
 
         return page

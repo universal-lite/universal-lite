@@ -250,6 +250,12 @@ def ensure_settings() -> dict:
     if accent not in VALID_ACCENT:
         accent = "blue"
 
+    greeter_theme_path = Path("/var/lib/universal-lite/greeter-theme")
+    try:
+        greeter_theme_path.write_text(theme + "\n", encoding="utf-8")
+    except OSError:
+        pass
+
     scale = data.get("scale", 1.0)
     if scale not in VALID_SCALE:
         scale = 1.0
@@ -1072,17 +1078,20 @@ def main() -> int:
                 gs_cmd = ["gammastep", "-t", f"{temp}:{temp}"]
                 restart_program("gammastep", gs_cmd)
             else:
-                # Custom schedule: check if current time is in range
                 import datetime
-                now = datetime.datetime.now().strftime("%H:%M")
-                start = settings.get("night_light_start", "20:00")
-                end = settings.get("night_light_end", "06:00")
-                if start > end:
-                    # Overnight range (e.g., 20:00 - 06:00)
-                    in_range = now >= start or now < end
+                now = datetime.datetime.now()
+                now_min = now.hour * 60 + now.minute
+
+                def _to_min(t):
+                    p = t.split(":")
+                    return int(p[0]) * 60 + int(p[1])
+
+                start_min = _to_min(settings.get("night_light_start", "20:00"))
+                end_min = _to_min(settings.get("night_light_end", "06:00"))
+                if start_min > end_min:
+                    in_range = now_min >= start_min or now_min < end_min
                 else:
-                    # Same-day range (e.g., 08:00 - 17:00)
-                    in_range = start <= now < end
+                    in_range = start_min <= now_min < end_min
                 if in_range:
                     restart_program("gammastep", ["gammastep", "-O", temp])
                 else:

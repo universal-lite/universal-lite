@@ -2817,12 +2817,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             if not os.path.exists(src_path):
                 continue
             try:
-                self._run_logged(
-                    ["rsync", "-a", "--info=progress2", f"{src_path}/", f"{dst}/{subdir}/"],
-                    check=True, timeout=600,
-                )
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to copy Flatpak data ({subdir}): {exc.output.strip() or exc}"
+                if os.path.isdir(src_path):
+                    self._run_logged(
+                        ["rsync", "-a", "--info=progress2", f"{src_path}/", f"{dst}/{subdir}/"],
+                        check=True, timeout=600,
+                    )
+                else:
+                    shutil.copy2(src_path, f"{dst}/{subdir}")
+            except (subprocess.CalledProcessError, OSError) as exc:
+                return f"Failed to copy Flatpak data ({subdir}): {exc}"
 
         # Determine which runtimes are needed by selected apps
         needed_runtimes: set[str] = set()

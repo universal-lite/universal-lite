@@ -124,7 +124,7 @@ class DisplayPage(BasePage):
 
         def _validate_and_save_time(entry, key):
             text = entry.get_text().strip()
-            if re.fullmatch(r"[0-2]?\d:[0-5]\d", text):
+            if re.fullmatch(r"[0-2]\d:[0-5]\d", text):
                 h, m = text.split(":")
                 if int(h) < 24:
                     entry.remove_css_class("error")
