@@ -1567,11 +1567,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._retranslatable.append((self._progress_retry_btn.set_label, "Retry"))
         btn_box.append(self._progress_retry_btn)
 
-        self._progress_continue_btn = Gtk.Button(label=_("Continue"))
+        self._progress_continue_btn = Gtk.Button(label=_("Waiting for install..."))
         self._progress_continue_btn.add_css_class("destructive-button")
         self._progress_continue_btn.set_visible(False)
+        self._progress_continue_btn.set_sensitive(False)
         self._progress_continue_btn.connect("clicked", lambda _: self._bootc_continue_clicked())
-        self._retranslatable.append((self._progress_continue_btn.set_label, "Continue"))
+        self._retranslatable.append((self._progress_continue_btn.set_label, "Waiting for install..."))
         btn_box.append(self._progress_continue_btn)
 
         self._progress_reboot_btn = Gtk.Button(label=_("Reboot"))
@@ -2502,36 +2503,66 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
-        # Show Continue button for user to signal bootc completion
+        # Show disabled Continue button — enables when bootc exits or after timeout
         self._bootc_continue_event = threading.Event()
-        GLib.idle_add(self._progress_continue_btn.set_visible, True)
 
-        # Wait for: process exit, user Continue click, or 1-hour timeout
-        deadline = time.time() + 3600
+        def _show_disabled_continue():
+            self._progress_continue_btn.set_label(_("Waiting for install..."))
+            self._progress_continue_btn.set_sensitive(False)
+            self._progress_continue_btn.set_visible(True)
+            self._progress_continue_btn.remove_css_class("pop-in")
+
+        def _enable_continue():
+            self._progress_continue_btn.set_label(_("Continue"))
+            self._progress_continue_btn.set_sensitive(True)
+            self._progress_continue_btn.add_css_class("pop-in")
+
+        GLib.idle_add(_show_disabled_continue)
+
+        bootc_exited = False
+        enabled = False
+        fallback_timeout = 600  # 10 minutes
+        start_time = time.time()
+        deadline = start_time + 3600  # 1-hour hard limit
+
         while time.time() < deadline:
-            if proc.poll() is not None:
-                break
+            # Check if bootc exited — enable button if so
+            if not bootc_exited and proc.poll() is not None:
+                bootc_exited = True
+                if not enabled:
+                    enabled = True
+                    GLib.idle_add(_enable_continue)
+
+            # Fallback: enable after 10 minutes even if bootc still running
+            if not enabled and (time.time() - start_time) >= fallback_timeout:
+                enabled = True
+                GLib.idle_add(_enable_continue)
+
+            # Wait for user click
             if self._bootc_continue_event.wait(timeout=5):
-                # User confirmed bootc is done — kill the process group
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                    proc.wait(timeout=10)
-                except (subprocess.TimeoutExpired, ProcessLookupError):
+                # User clicked Continue — kill bootc if still alive
+                if proc.poll() is None:
                     try:
-                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                    try:
-                        proc.wait(timeout=5)
-                    except subprocess.TimeoutExpired:
-                        pass
+                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                        proc.wait(timeout=10)
+                    except (subprocess.TimeoutExpired, ProcessLookupError):
+                        try:
+                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        try:
+                            proc.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            pass
                 break
         else:
-            proc.kill()
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                pass
+            # 1-hour hard deadline — force kill
+            if proc.poll() is None:
+                proc.kill()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    pass
 
         GLib.idle_add(self._progress_continue_btn.set_visible, False)
         stop_event.set()
@@ -3151,6 +3182,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._progress_skip_btn.set_visible(False)
         self._progress_retry_btn.set_visible(False)
         self._progress_continue_btn.set_visible(False)
+        self._progress_continue_btn.set_sensitive(False)
         self._progress_reboot_btn.set_visible(False)
         self._log_buffer.set_text("")
 
