@@ -1572,7 +1572,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._progress_continue_btn.set_visible(False)
         self._progress_continue_btn.set_sensitive(False)
         self._progress_continue_btn.connect("clicked", lambda _: self._bootc_continue_clicked())
-        self._retranslatable.append((self._progress_continue_btn.set_label, "Waiting for install..."))
         btn_box.append(self._progress_continue_btn)
 
         self._progress_reboot_btn = Gtk.Button(label=_("Reboot"))
@@ -2558,7 +2557,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         else:
             # 1-hour hard deadline — force kill
             if proc.poll() is None:
-                proc.kill()
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                except (ProcessLookupError, OSError):
+                    proc.kill()
                 try:
                     proc.wait(timeout=5)
                 except subprocess.TimeoutExpired:
