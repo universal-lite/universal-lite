@@ -190,6 +190,7 @@ button.destructive-button:disabled label {
     color: #888888;
 }
 
+/* GTK4 CSS does not support transform: scale(), so opacity-only pop-in. */
 @keyframes pop-in {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -2474,8 +2475,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
         import tempfile
-        log_path = tempfile.mktemp(suffix=".log")
-        log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        log_fd, log_path = tempfile.mkstemp(suffix=".log")
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
@@ -3043,8 +3043,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         stdin_data = kwargs.pop("input", None)
 
         import tempfile
-        log_path = tempfile.mktemp(suffix=".log")
-        log_fd = os.open(log_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        log_fd, log_path = tempfile.mkstemp(suffix=".log")
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
