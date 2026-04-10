@@ -3205,7 +3205,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             for i in range(start, len(self._steps)):
                 label_text, func, behavior = self._steps[i]
                 GLib.idle_add(self._update_step_status, i, "active")
-                err = func()
+                try:
+                    err = func()
+                except Exception as exc:
+                    err = f"Unexpected error: {exc}"
                 if err:
                     GLib.idle_add(self._on_step_failed, i, err, behavior)
                     return
