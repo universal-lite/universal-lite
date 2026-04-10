@@ -24,6 +24,7 @@ import os
 
 import re
 import signal
+import socket
 import subprocess
 import sys
 import threading
@@ -2426,6 +2427,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         """
         mount_point = self._mount_point
 
+        # Pre-flight DNS check — fail fast with a clear message instead of
+        # letting bootc produce a cryptic "Temporary failure in name resolution".
+        try:
+            socket.getaddrinfo("ghcr.io", 443, type=socket.SOCK_STREAM)
+        except socket.gaierror:
+            return ("Cannot resolve ghcr.io — check your network connection. "
+                    "The container registry must be reachable to install.")
+
         # Get the booted image name to pull the same image from the registry
         try:
             result = subprocess.run(
@@ -3144,7 +3153,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         #                 "skippable" = Skip + Retry buttons
         self._steps: list[tuple[str, callable, str]] = [
             (N_("Partitioning disk"), self._step_partition_disk, "fatal"),
-            (N_("Installing system"), self._step_install_system, "fatal"),
+            (N_("Installing system"), self._step_install_system, "retry"),
             (N_("Configuring user account"), self._step_configure_user, "retry"),
             (N_("Copying network configuration"), self._step_copy_network, "retry"),
         ]
