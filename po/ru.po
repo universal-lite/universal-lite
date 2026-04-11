@@ -228,9 +228,7 @@ msgid "Install Apps"
 msgstr "Установить приложения"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "Эти приложения предварительно загружены и будут скопированы при установке. "
 "Снимите отметку с тех, которые вам не нужны."

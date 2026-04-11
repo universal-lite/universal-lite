@@ -224,9 +224,7 @@ msgid "Install Apps"
 msgstr "ऐप्स इंस्टॉल करें"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "ये ऐप्स पहले से डाउनलोड हैं और इंस्टॉल के दौरान कॉपी किए जाएँगे। जो आप नहीं चाहते उनका "
 "चयन हटा दें।"

@@ -226,9 +226,7 @@ msgid "Install Apps"
 msgstr "نصب برنامه‌ها"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "این برنامه‌ها از قبل دانلود شده‌اند و در حین نصب کپی خواهند شد. برنامه‌هایی که "
 "نمی‌خواهید را از حالت انتخاب خارج کنید."

@@ -262,9 +262,7 @@ msgstr "መተግበሪያዎችን ጫን"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr "እነዚህ መተግበሪያዎች አስቀድመው ተወርደዋል፣ በመጫን ጊዜ ይገለበጣሉ። የማይፈልጓቸውን ምልክት ያንሱ።"
 
 # NEEDS-REVIEW

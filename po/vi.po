@@ -226,9 +226,7 @@ msgid "Install Apps"
 msgstr "Cài đặt ứng dụng"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "Các ứng dụng này đã được tải sẵn và sẽ được sao chép trong quá trình cài "
 "đặt. Bỏ chọn những ứng dụng bạn không muốn."

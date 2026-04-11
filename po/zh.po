@@ -220,9 +220,7 @@ msgid "Install Apps"
 msgstr "安装应用"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr "这些应用已预先下载，安装时将自动复制。请取消勾选您不需要的应用。"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1452

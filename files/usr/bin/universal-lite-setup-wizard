@@ -1385,14 +1385,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._apps_title)
 
         self._apps_subtitle = Gtk.Label(
-            label=_("These apps are pre-downloaded and will be copied during install. Uncheck any you don't want.")
+            label=_("These apps will be installed on first boot. Uncheck any you don't want.")
         )
         self._apps_subtitle.add_css_class("welcome-subtitle")
         self._apps_subtitle.set_halign(Gtk.Align.CENTER)
         self._apps_subtitle.set_wrap(True)
         self._apps_subtitle.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self._apps_subtitle.set_max_width_chars(50)
-        self._retranslatable.append((self._apps_subtitle.set_label, "These apps are pre-downloaded and will be copied during install. Uncheck any you don't want."))
+        self._retranslatable.append((self._apps_subtitle.set_label, "These apps will be installed on first boot. Uncheck any you don't want."))
         card.append(self._apps_subtitle)
 
         self._app_checks: list[tuple[str, str, Gtk.CheckButton]] = []
@@ -2751,14 +2751,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_copy_flatpaks(self) -> str | None:
-        """rsync selected Flatpak apps from live USB to installed sysroot."""
+        """Save Flatpak selection and copy pre-installed apps if available.
+
+        Always writes the app list so the first-boot service knows what
+        to install.  If the live image has pre-installed Flatpaks, copies
+        them to the target for offline install; otherwise the first-boot
+        service downloads them from Flathub.
+        """
         var_dir = self._sysroot_var
         selected_ids = {app_id for app_id, _ in self._setup_selected_apps}
+
+        # Always write app list first — the first-boot service reads this
+        state_dir = Path(var_dir) / "lib" / "universal-lite"
+        state_dir.mkdir(parents=True, exist_ok=True)
+        (state_dir / "flatpak-apps").write_text("\n".join(selected_ids) + "\n")
+
         src = "/var/lib/flatpak"
         dst = f"{var_dir}/lib/flatpak"
 
-        if not os.path.isdir(src):
-            return "Flatpak store not found on live environment"
+        # If no Flatpak apps on the live image, the first-boot service
+        # will download them from Flathub — not an error.
+        if not os.path.isdir(f"{src}/app") or not os.listdir(f"{src}/app"):
+            return None
 
         Path(dst).mkdir(parents=True, exist_ok=True)
 
@@ -2826,11 +2840,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         app_dst = f"{dst}/app"
         os.makedirs(app_dst, exist_ok=True)
 
-        failed = []
+        copied_all = True
         for app_id in selected_ids:
             src_app = f"{app_src}/{app_id}"
             if not os.path.isdir(src_app):
-                failed.append(app_id)
+                copied_all = False
                 continue
             try:
                 self._run_logged(
@@ -2839,18 +2853,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     check=True, timeout=300,
                 )
             except subprocess.CalledProcessError:
-                failed.append(app_id)
+                copied_all = False
 
-        if failed:
-            return f"Failed to copy: {', '.join(failed)}"
-
-        # Write app list for boot-time fallback service
-        state_dir = Path(var_dir) / "lib" / "universal-lite"
-        state_dir.mkdir(parents=True, exist_ok=True)
-        (state_dir / "flatpak-apps").write_text("\n".join(selected_ids) + "\n")
-
-        # Mark as complete so boot service doesn't re-run
-        (state_dir / "flatpak-setup.done").write_text("")
+        # Only mark complete if all apps were copied — otherwise the
+        # first-boot service will download any missing ones from Flathub.
+        if copied_all:
+            (state_dir / "flatpak-setup.done").write_text("")
 
         return None
 

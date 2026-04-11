@@ -225,9 +225,7 @@ msgid "Install Apps"
 msgstr "Fi Àwọn App Sórí Ẹ̀rọ"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid ""
-"These apps are pre-downloaded and will be copied during install. Uncheck any "
-"you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "Àwọn app wọ̀nyí ti gbà tẹ́lẹ̀ tí wọ́n yóò sì ṣe àdàkọ wọn ní àkókò fífi sórí "
 "ẹ̀rọ. Mú àmì kúrò lórí èyíkéyìí tí o kò fẹ́."
