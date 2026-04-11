@@ -180,6 +180,15 @@ systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
 systemctl --global disable flatpak-user-update.timer
 
+# Pre-install Flatpak apps so the installer can copy them offline.
+flatpak remote-add --system --if-not-exists flathub \
+    https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --system --noninteractive flathub \
+    com.google.Chrome \
+    dev.bazaar.app \
+    org.gtk.Gtk3theme.adw-gtk3 \
+    org.gtk.Gtk3theme.adw-gtk3-dark
+
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
 find /tmp /var/tmp -mindepth 1 -delete 2>/dev/null || true

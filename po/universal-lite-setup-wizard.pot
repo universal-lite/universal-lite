@@ -221,7 +221,7 @@ msgid "Install Apps"
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid "These apps will be installed on first boot. Uncheck any you don't want."
+msgid "These apps are included and will be copied during install. Uncheck any you don't want."
 msgstr ""
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1452

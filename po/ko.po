@@ -226,7 +226,7 @@ msgid "Install Apps"
 msgstr "앱 설치"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid "These apps will be installed on first boot. Uncheck any you don't want."
+msgid "These apps are included and will be copied during install. Uncheck any you don't want."
 msgstr ""
 "이 앱들은 미리 다운로드되어 있으며 설치 중에 복사됩니다. 원하지 않는 앱은 선"
 "택을 해제하세요."
