@@ -2587,6 +2587,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         subprocess.run(["umount", "/ostree"],
                        capture_output=True, timeout=10)
 
+        # bootc's finalize step remounts the target filesystem read-only
+        # (fstrim → fsfreeze → remount-ro).  Remount rw so post-install
+        # steps can write configuration files.
+        try:
+            subprocess.run(
+                ["mount", "-o", "remount,rw", mount_point],
+                check=True, capture_output=True, timeout=10,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to remount target read-write: {exc.stderr.strip() or exc}"
+
         # Locate the ostree deployment directory for post-install steps.
         deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
         if not deploy_dirs:
