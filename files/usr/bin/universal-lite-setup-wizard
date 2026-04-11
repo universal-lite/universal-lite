@@ -545,11 +545,24 @@ def _load_timezones() -> list[str]:
             "America/Los_Angeles", "Europe/London", "UTC"]
 
 
+def _fmt_bytes(n) -> str:
+    """Format a byte count as a human-readable string (e.g. '119.2 GB')."""
+    try:
+        b = int(n)
+    except (ValueError, TypeError):
+        return str(n)
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if abs(b) < 1024 or unit == "TB":
+            return f"{b:.1f} {unit}" if isinstance(b, float) else f"{b} {unit}"
+        b = b / 1024
+    return str(n)
+
+
 def _load_drives() -> list[dict]:
     """Return list of eligible target drives from lsblk, excluding the boot device."""
     try:
         result = subprocess.run(
-            ["lsblk", "--json", "--output", "NAME,SIZE,MODEL,TRAN,RM,TYPE"],
+            ["lsblk", "--json", "--bytes", "--output", "NAME,SIZE,MODEL,TRAN,RM,TYPE"],
             capture_output=True, text=True, check=True, timeout=10,
         )
         data = json.loads(result.stdout)
@@ -1220,7 +1233,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         for d in self._drives:
             model = d.get("model") or _("Unknown")
             label = "{name} \u2014 {size} {model}".format(
-                name=d['name'], size=d['size'], model=model)
+                name=d['name'], size=_fmt_bytes(d['size']), model=model)
             tran = d.get("tran")
             if tran:
                 label += " ({tran})".format(tran=tran)
@@ -2043,16 +2056,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if use_zswap:
             drive_idx = self._drive_dropdown.get_selected()
             if 0 <= drive_idx < len(self._drives):
-                size_str = self._drives[drive_idx].get("size", "")
+                size_val = self._drives[drive_idx].get("size")
                 try:
-                    if size_str.endswith("G"):
-                        drive_gb = float(size_str[:-1])
-                    elif size_str.endswith("T"):
-                        drive_gb = float(size_str[:-1]) * 1024
-                    elif size_str.endswith("M"):
-                        drive_gb = float(size_str[:-1]) / 1024
-                    else:
-                        drive_gb = None
+                    drive_gb = int(size_val) / (1024 ** 3)
                 except (ValueError, TypeError):
                     drive_gb = None
 
@@ -2261,7 +2267,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return _("None")
         d = self._drives[idx]
         model = d.get("model") or _("Unknown")
-        return f"{d['name']} \u2014 {d['size']} {model}"
+        return f"{d['name']} \u2014 {_fmt_bytes(d['size'])} {model}"
 
     def _get_selected_filesystem(self) -> str:
         """Return the selected filesystem name."""
@@ -2294,10 +2300,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         subprocess.run(["umount", "-R", mount_point],
                        capture_output=True, timeout=10)
 
+        # Unmount any partitions on the target device that are mounted
+        # elsewhere (e.g. udisks2 automount).  Without this, sfdisk
+        # will fail or corrupt a live filesystem.
+        try:
+            result = subprocess.run(
+                ["findmnt", "-rno", "TARGET", "-S", dev],
+                capture_output=True, text=True, timeout=10,
+            )
+            for mnt in result.stdout.strip().splitlines():
+                if mnt:
+                    subprocess.run(["umount", mnt],
+                                   capture_output=True, timeout=10)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass  # findmnt returns non-zero if no mounts found — that's fine
+
         # Wipe all filesystem/RAID/partition-table signatures so sfdisk
         # starts from a clean slate (previous installs leave signatures
         # that can confuse sfdisk even with --wipe).
-        self._run_logged(["wipefs", "-af", dev], check=False, timeout=15)
+        self._run_logged(["wipefs", "-af", dev], check=True, timeout=15)
 
         # --- Wipe and partition with sfdisk ---
         sfdisk_script = (
@@ -2463,8 +2484,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
+        # Write bootc log to the target disk (already mounted) instead of
+        # RAM-backed /tmp which can fill on 2 GB Chromebooks.
         import tempfile
-        log_fd, log_path = tempfile.mkstemp(suffix=".log")
+        log_fd, log_path = tempfile.mkstemp(suffix=".log", dir=mount_point)
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
@@ -2495,14 +2518,19 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         try:
             proc.wait(timeout=3600)
         except subprocess.TimeoutExpired:
+            # Graceful shutdown: SIGTERM first, then SIGKILL if needed
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-            except (ProcessLookupError, OSError):
-                proc.kill()
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                pass
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                proc.wait(timeout=10)
+            except (subprocess.TimeoutExpired, ProcessLookupError):
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                except (ProcessLookupError, OSError):
+                    proc.kill()
+                try:
+                    proc.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    pass
 
         stop_event.set()
         reader.join(timeout=3)
@@ -2511,12 +2539,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except OSError:
             pass
 
-        if proc.returncode != 0:
-            return f"bootc install failed (exit code {proc.returncode})"
-
-        # Restore /ostree
+        # Always restore /ostree — even if bootc failed, the live
+        # environment needs its ostree repo back for retry attempts.
         subprocess.run(["umount", "/ostree"],
                        capture_output=True, timeout=10)
+
+        if proc.returncode != 0:
+            return f"bootc install failed (exit code {proc.returncode})"
 
         # bootc's finalize step remounts the target filesystem read-only
         # (fstrim → fsfreeze → remount-ro).  Remount rw so post-install
@@ -2548,94 +2577,84 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         return None
 
+    @staticmethod
+    def _sysroot_unlink_write(path: Path, content: str) -> None:
+        """Break ostree hardlink and write content atomically.
+
+        ostree deployments hardlink /etc files to the read-only object
+        store.  Writing through the hardlink either fails (EACCES) or
+        corrupts the store.  This helper:
+          1. Unlinks the existing file (breaks the hardlink)
+          2. Writes to a temp file in the same directory
+          3. Renames atomically into place
+        """
+        path.unlink(missing_ok=True)
+        tmp = path.with_suffix(".tmp")
+        tmp.write_text(content)
+        os.rename(tmp, path)
+
     def _step_configure_user(self) -> str | None:
-        """Create user account, set root password, timezone, and locale on sysroot."""
+        """Create user account, set root password, timezone, and locale on sysroot.
+
+        Uses useradd -R / chpasswd -e -R (the Anaconda pattern) instead
+        of manual file editing.  The -R flag operates on an alternate
+        root, correctly handling ostree hardlinks, UID allocation,
+        shadow permissions, and retry idempotency.
+        """
         deploy = self._sysroot_deploy
         var_dir = self._sysroot_var
         username = self._setup_username
         fullname = self._setup_fullname
-
-        try:
-            hashed_pw = _hash_password(self._setup_password)
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to hash password: {exc}"
-
-        # Write user account directly into sysroot files — useradd cannot
-        # lock /etc/group inside an ostree deployment (read-only checkout).
         etc = Path(deploy) / "etc"
-        uid = gid = 1000
 
-        # Find next free UID/GID (start at 1000)
+        # Ensure system groups needed for hardware access exist.
+        # Bazzite #3418: missing groups cause login/hardware failures.
+        for grp in ["video", "input", "render"]:
+            subprocess.run(
+                ["groupadd", "-R", deploy, "--system", "-f", grp],
+                capture_output=True, timeout=10,
+            )
+
+        # Create user with primary group, home directory, and shell.
+        # useradd -R handles ostree hardlinks, UID/GID allocation, and
+        # /etc/login.defs defaults (subuid/subgid ranges, etc).
+        sup_groups = ["video", "input", "render"]
+        if self._setup_is_admin:
+            sup_groups.insert(0, "wheel")
+
+        useradd_cmd = [
+            "useradd", "-R", deploy,
+            "-m", "-d", f"/var/home/{username}",
+            "-s", "/bin/bash",
+            "-U",  # create matching primary group
+            "-G", ",".join(sup_groups),
+        ]
+        if fullname:
+            useradd_cmd.extend(["-c", fullname])
+        useradd_cmd.append(username)
+
+        result = subprocess.run(
+            useradd_cmd, capture_output=True, text=True, timeout=30,
+        )
+        # Exit code 9 = user already exists (retry) — not an error
+        if result.returncode not in (0, 9):
+            return f"Failed to create user: {result.stderr.strip() or result}"
+
+        # Set user password via chpasswd -e -R (encrypted password via stdin).
+        # Handles shadow permissions (0640) and hardlinks correctly.
         try:
-            for line in (etc / "passwd").read_text().splitlines():
-                parts = line.split(":")
-                if len(parts) > 2:
-                    try:
-                        existing = int(parts[2])
-                        if existing >= uid:
-                            uid = existing + 1
-                    except ValueError:
-                        pass
-            for line in (etc / "group").read_text().splitlines():
-                parts = line.split(":")
-                if len(parts) > 2:
-                    try:
-                        existing = int(parts[2])
-                        if existing >= gid:
-                            gid = existing + 1
-                    except ValueError:
-                        pass
-        except OSError:
-            pass
+            hashed_pw = self._setup_hashed_password
+            subprocess.run(
+                ["chpasswd", "-e", "-R", deploy],
+                input=f"{username}:{hashed_pw}\n",
+                capture_output=True, text=True, check=True, timeout=10,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to set password: {exc.stderr.strip() or exc}"
 
-        shadow_date = int(time.time() / 86400)
-
-        try:
-            # Append user's primary group
-            with open(etc / "group", "a") as f:
-                f.write(f"{username}:x:{gid}:\n")
-
-            # Append matching gshadow entry
-            with open(etc / "gshadow", "a") as f:
-                f.write(f"{username}:!::\n")
-
-            # Add user to supplementary groups
-            sup_groups = ["video"]
-            if self._setup_is_admin:
-                sup_groups.insert(0, "wheel")
-            group_lines = (etc / "group").read_text().splitlines()
-            with open(etc / "group", "w") as f:
-                for line in group_lines:
-                    parts = line.split(":")
-                    if len(parts) >= 4 and parts[0] in sup_groups:
-                        members = parts[3].split(",") if parts[3] else []
-                        if username not in members:
-                            members.append(username)
-                        parts[3] = ",".join(members)
-                        line = ":".join(parts)
-                    f.write(line + "\n")
-
-            # Append to passwd
-            with open(etc / "passwd", "a") as f:
-                f.write(f"{username}:x:{uid}:{gid}:{fullname}:/var/home/{username}:/bin/bash\n")
-
-            # Append to shadow
-            with open(etc / "shadow", "a") as f:
-                f.write(f"{username}:{hashed_pw}:{shadow_date}:0:99999:7:::\n")
-
-            # Allocate subordinate UID/GID ranges for rootless containers
-            with open(etc / "subuid", "a") as f:
-                f.write(f"{username}:{uid + 100000}:65536\n")
-            with open(etc / "subgid", "a") as f:
-                f.write(f"{username}:{gid + 100000}:65536\n")
-
-        except OSError as exc:
-            return f"Failed to create user: {exc}"
-
-        # Create home directory in the var partition (ostree keeps /home in /var/home)
+        # Ensure home directory exists in /var/home (ostree symlinks /home → /var/home)
         home = Path(var_dir) / "home" / username
         home.mkdir(parents=True, exist_ok=True)
-
         # Copy skeleton files
         skel = etc / "skel"
         if skel.is_dir():
@@ -2643,37 +2662,46 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 ["cp", "-a", f"{skel}/.", str(home)],
                 check=False, capture_output=True, timeout=10,
             )
+        # Get UID/GID from the created user's passwd entry
+        try:
+            pw_line = [l for l in (etc / "passwd").read_text().splitlines()
+                       if l.startswith(f"{username}:")]
+            if pw_line:
+                parts = pw_line[0].split(":")
+                uid_gid = f"{parts[2]}:{parts[3]}"
+            else:
+                uid_gid = f"{username}:{username}"
+        except OSError:
+            uid_gid = f"{username}:{username}"
 
-        subprocess.run(
-            ["chown", "-R", f"{uid}:{gid}", str(home)],
-            check=False, capture_output=True, timeout=10,
-        )
+        try:
+            subprocess.run(
+                ["chown", "-R", uid_gid, str(home)],
+                check=True, capture_output=True, timeout=10,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"Failed to set home directory ownership: {exc}"
 
-        # Set root password if provided — edit shadow directly (chpasswd
-        # has the same locking issue as useradd inside ostree deployments)
-        if self._setup_root_password:
+        # Set root password if provided
+        if self._setup_hashed_root_password:
             try:
-                root_hash = _hash_password(self._setup_root_password)
-                shadow_path = etc / "shadow"
-                lines = shadow_path.read_text().splitlines()
-                with open(shadow_path, "w") as f:
-                    for line in lines:
-                        if line.startswith("root:"):
-                            parts = line.split(":")
-                            parts[1] = root_hash
-                            line = ":".join(parts)
-                        f.write(line + "\n")
-            except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-                return f"Failed to set root password: {exc}"
+                subprocess.run(
+                    ["chpasswd", "-e", "-R", deploy],
+                    input=f"root:{self._setup_hashed_root_password}\n",
+                    capture_output=True, text=True, check=True, timeout=10,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to set root password: {exc.stderr.strip() or exc}"
 
-        # Set timezone and locale
+        # Set timezone and locale — unlink ostree hardlinks before writing
         try:
             tz = self._setup_timezone
             localtime = Path(deploy) / "etc" / "localtime"
             localtime.unlink(missing_ok=True)
             localtime.symlink_to(f"../usr/share/zoneinfo/{tz}")
-            (Path(deploy) / "etc" / "locale.conf").write_text(
-                f'LANG="{self._setup_locale}"\n'
+            self._sysroot_unlink_write(
+                etc / "locale.conf",
+                f'LANG="{self._setup_locale}"\n',
             )
         except OSError as exc:
             return f"Failed to configure timezone/locale: {exc}"
@@ -2683,7 +2711,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if not hostname:
             hostname = f"{username}-desktop"
         try:
-            (Path(deploy) / "etc" / "hostname").write_text(hostname + "\n")
+            self._sysroot_unlink_write(etc / "hostname", hostname + "\n")
         except OSError as exc:
             return f"Failed to set hostname: {exc}"
 
@@ -2702,18 +2730,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         elif xkb_layout == "us":
             vconsole_keymap = "us"
         try:
-            (Path(deploy) / "etc" / "vconsole.conf").write_text(
+            self._sysroot_unlink_write(
+                etc / "vconsole.conf",
                 f'KEYMAP="{vconsole_keymap}"\n'
-                f'FONT="eurlatgr"\n'
+                f'FONT="eurlatgr"\n',
             )
-            xkb_dir = Path(deploy) / "etc" / "X11" / "xorg.conf.d"
+            xkb_dir = etc / "X11" / "xorg.conf.d"
             xkb_dir.mkdir(parents=True, exist_ok=True)
-            (xkb_dir / "00-keyboard.conf").write_text(
+            self._sysroot_unlink_write(
+                xkb_dir / "00-keyboard.conf",
                 'Section "InputClass"\n'
                 '    Identifier "system-keyboard"\n'
                 '    MatchIsKeyboard "on"\n'
                 f'    Option "XkbLayout" "{xkb_layout}"\n'
-                'EndSection\n'
+                'EndSection\n',
             )
         except OSError as exc:
             return f"Failed to configure keyboard layout: {exc}"
@@ -2773,6 +2803,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # will download them from Flathub — not an error.
         if not os.path.isdir(f"{src}/app") or not os.listdir(f"{src}/app"):
             return None
+
+        # Check available disk space before starting the multi-GB copy.
+        try:
+            src_usage = subprocess.run(
+                ["du", "-sb", src], capture_output=True, text=True, timeout=30,
+            )
+            src_bytes = int(src_usage.stdout.split()[0])
+            stat = os.statvfs(var_dir)
+            avail_bytes = stat.f_bavail * stat.f_frsize
+            if src_bytes > avail_bytes:
+                return (f"Not enough disk space for Flatpak apps "
+                        f"({_fmt_bytes(src_bytes)} needed, "
+                        f"{_fmt_bytes(avail_bytes)} available)")
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
+                ValueError, OSError):
+            pass  # Best-effort check — proceed if du/statvfs fails
 
         Path(dst).mkdir(parents=True, exist_ok=True)
 
@@ -2877,19 +2923,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # Persist swappiness for disk-backed swap
             sysctl_dir = Path(deploy) / "etc" / "sysctl.d"
             sysctl_dir.mkdir(parents=True, exist_ok=True)
-            (sysctl_dir / "91-universal-lite-zswap.conf").write_text(
-                "vm.swappiness = 100\n"
+            self._sysroot_unlink_write(
+                sysctl_dir / "91-universal-lite-zswap.conf",
+                "vm.swappiness = 100\n",
             )
         else:
             # Explicitly write the zram-generator config to the sysroot
             # (ensures 125% even if the image default changes later)
             zram_dir = Path(deploy) / "etc" / "systemd"
             zram_dir.mkdir(parents=True, exist_ok=True)
-            (zram_dir / "zram-generator.conf").write_text(
+            self._sysroot_unlink_write(
+                zram_dir / "zram-generator.conf",
                 "[zram0]\n"
                 "zram-size = min(ram * 5 / 4, 3072)\n"
                 "compression-algorithm = zstd(level=3)\n"
-                "swap-priority = 100\n"
+                "swap-priority = 100\n",
             )
 
         return None
@@ -2915,29 +2963,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Ensure machine-id is empty so systemd generates a unique one on
         # first boot.  If the container image baked in a populated ID, every
         # install from that image would share it (breaks journal, DHCP, D-Bus).
-        machine_id = Path(deploy) / "etc" / "machine-id"
-        if machine_id.exists():
-            content = machine_id.read_text().strip()
-            if len(content) == 32:
-                machine_id.write_text("")
+        self._sysroot_unlink_write(Path(deploy) / "etc" / "machine-id", "")
 
         # Ensure graphical.target is the default so greetd starts on boot,
         # even if the base image defaults to multi-user.target.
         default_target = Path(deploy) / "etc" / "systemd" / "system" / "default.target"
-        if not default_target.exists():
-            default_target.parent.mkdir(parents=True, exist_ok=True)
-            default_target.symlink_to("/usr/lib/systemd/system/graphical.target")
+        default_target.parent.mkdir(parents=True, exist_ok=True)
+        default_target.unlink(missing_ok=True)
+        default_target.symlink_to("/usr/lib/systemd/system/graphical.target")
 
         # Restore SELinux labels on all files we created or modified.
         # Without this, passwd/shadow/group/hostname/NM configs/home dirs
         # get unlabeled_t and SELinux-enforcing systems deny access.
-        self._run_logged(
-            ["restorecon", "-ir",
-             f"{deploy}/etc",
-             f"{var_dir}/home",
-             f"{var_dir}/lib"],
-            check=False, timeout=120,
-        )
+        try:
+            self._run_logged(
+                ["restorecon", "-ir",
+                 f"{deploy}/etc",
+                 f"{var_dir}/home",
+                 f"{var_dir}/lib"],
+                check=True, timeout=120,
+            )
+        except subprocess.CalledProcessError as exc:
+            return f"SELinux relabeling failed: {exc.output.strip() if exc.output else exc}"
 
         # Flush writes before unmounting
         os.sync()
@@ -2965,26 +3012,29 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         registry pull produces many "Copying blob" lines per second).
         """
         if not hasattr(self, "_log_pending"):
-            self._log_pending = []
+            self._log_pending: list[str] = []
             self._log_flush_scheduled = False
+            self._log_lock = threading.Lock()
 
-        self._log_pending.append(text)
+        with self._log_lock:
+            self._log_pending.append(text)
 
-        if not self._log_flush_scheduled:
-            self._log_flush_scheduled = True
+            if not self._log_flush_scheduled:
+                self._log_flush_scheduled = True
 
-            def _flush():
-                lines = self._log_pending[:]
-                self._log_pending.clear()
-                self._log_flush_scheduled = False
-                if lines:
-                    end = self._log_buffer.get_end_iter()
-                    self._log_buffer.insert(end, "".join(lines))
-                    end = self._log_buffer.get_end_iter()
-                    self._log_textview.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
-                return False  # Don't repeat
+                def _flush():
+                    with self._log_lock:
+                        lines = self._log_pending[:]
+                        self._log_pending.clear()
+                        self._log_flush_scheduled = False
+                    if lines:
+                        end = self._log_buffer.get_end_iter()
+                        self._log_buffer.insert(end, "".join(lines))
+                        end = self._log_buffer.get_end_iter()
+                        self._log_textview.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
+                    return False  # Don't repeat
 
-            GLib.timeout_add(500, _flush)  # Flush every 500ms
+                GLib.timeout_add(500, _flush)  # Flush every 500ms
 
     def _run_logged(self, cmd, **kwargs) -> subprocess.CompletedProcess:
         """Run a subprocess, streaming stdout/stderr to the log view.
@@ -3083,11 +3133,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._setup_fullname = self._fullname_entry.get_text().strip()
         self._setup_username = self._username_entry.get_text().strip()
         self._setup_hostname = self._hostname_entry.get_text().strip()
-        self._setup_password = self._password_entry.get_text()
+        # Hash passwords immediately — don't hold plaintext in memory
+        # for the 30+ minute install duration.
+        try:
+            self._setup_hashed_password = _hash_password(
+                self._password_entry.get_text())
+            root_pw = self._root_password_entry.get_text()
+            self._setup_hashed_root_password = (
+                _hash_password(root_pw) if root_pw else "")
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+            self._set_status(f"Failed to hash password: {exc}")
+            return
+        self._password_entry.set_text("")
+        self._root_password_entry.set_text("")
 
         # System page
         self._setup_is_admin = self._admin_check.get_active()
-        self._setup_root_password = self._root_password_entry.get_text()
         self._setup_timezone = self._get_selected_timezone()
 
         # Apps
