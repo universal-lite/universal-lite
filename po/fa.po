@@ -290,11 +290,6 @@ msgstr "پرش"
 msgid "Retry"
 msgstr "تلاش مجدد"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "در انتظار نصب..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "راه‌اندازی مجدد"

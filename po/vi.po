@@ -290,11 +290,6 @@ msgstr "Bỏ qua"
 msgid "Retry"
 msgstr "Thử lại"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "Đang chờ cài đặt..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "Khởi động lại"

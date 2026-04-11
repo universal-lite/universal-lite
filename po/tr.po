@@ -291,11 +291,6 @@ msgstr "Atla"
 msgid "Retry"
 msgstr "Yeniden dene"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "Kurulum bekleniyor..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "Yeniden başlat"

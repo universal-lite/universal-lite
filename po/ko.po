@@ -290,11 +290,6 @@ msgstr "건너뛰기"
 msgid "Retry"
 msgstr "재시도"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "설치 대기 중..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "재부팅"

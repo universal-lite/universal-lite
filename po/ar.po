@@ -289,11 +289,6 @@ msgstr "تخطي"
 msgid "Retry"
 msgstr "إعادة المحاولة"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "في انتظار التثبيت..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "إعادة التشغيل"

@@ -21,6 +21,7 @@ Eight-page flow:
 import gettext
 import json
 import os
+import shutil
 
 import re
 import signal
@@ -189,16 +190,6 @@ button.destructive-button:disabled {
 
 button.destructive-button:disabled label {
     color: #888888;
-}
-
-/* GTK4 CSS does not support transform: scale(), so opacity-only pop-in. */
-@keyframes pop-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-.pop-in {
-    animation: pop-in 300ms ease-out;
 }
 
 button.back-button {
@@ -1569,13 +1560,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._retranslatable.append((self._progress_retry_btn.set_label, "Retry"))
         btn_box.append(self._progress_retry_btn)
 
-        self._progress_continue_btn = Gtk.Button(label=_("Waiting for install..."))
-        self._progress_continue_btn.add_css_class("destructive-button")
-        self._progress_continue_btn.set_visible(False)
-        self._progress_continue_btn.set_sensitive(False)
-        self._progress_continue_btn.connect("clicked", lambda _: self._bootc_continue_clicked())
-        btn_box.append(self._progress_continue_btn)
-
         self._progress_reboot_btn = Gtk.Button(label=_("Reboot"))
         self._progress_reboot_btn.add_css_class("create-button")
         self._progress_reboot_btn.set_visible(False)
@@ -2477,10 +2461,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             mount_point,
         ]
 
-        # bootc to-filesystem hangs in its finalize step (fstrim, fsfreeze,
-        # remount-ro) which can block indefinitely on slow storage.  It also
-        # does NOT print any completion message (only to-disk does).
-        # Show a Continue button so the user can signal when bootc is done.
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
         import tempfile
@@ -2511,77 +2491,28 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
-        # Show disabled Continue button — enables when bootc exits or after timeout
-        self._bootc_continue_event = threading.Event()
+        # Wait for bootc to finish (1-hour hard limit)
+        try:
+            proc.wait(timeout=3600)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except (ProcessLookupError, OSError):
+                proc.kill()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                pass
 
-        def _show_disabled_continue():
-            self._progress_continue_btn.set_label(_("Waiting for install..."))
-            self._progress_continue_btn.set_sensitive(False)
-            self._progress_continue_btn.set_visible(True)
-            self._progress_continue_btn.remove_css_class("pop-in")
-
-        def _enable_continue():
-            self._progress_continue_btn.set_label(_("Continue"))
-            self._progress_continue_btn.set_sensitive(True)
-            self._progress_continue_btn.add_css_class("pop-in")
-
-        GLib.idle_add(_show_disabled_continue)
-
-        bootc_exited = False
-        enabled = False
-        fallback_timeout = 600  # 10 minutes
-        start_time = time.time()
-        deadline = start_time + 3600  # 1-hour hard limit
-
-        while time.time() < deadline:
-            # Check if bootc exited — enable button if so
-            if not bootc_exited and proc.poll() is not None:
-                bootc_exited = True
-                if not enabled:
-                    enabled = True
-                    GLib.idle_add(_enable_continue)
-
-            # Fallback: enable after 10 minutes even if bootc still running
-            if not enabled and (time.time() - start_time) >= fallback_timeout:
-                enabled = True
-                GLib.idle_add(_enable_continue)
-
-            # Wait for user click
-            if self._bootc_continue_event.wait(timeout=5):
-                # User clicked Continue — kill bootc if still alive
-                if proc.poll() is None:
-                    try:
-                        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                        proc.wait(timeout=10)
-                    except (subprocess.TimeoutExpired, ProcessLookupError):
-                        try:
-                            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                        except ProcessLookupError:
-                            pass
-                        try:
-                            proc.wait(timeout=5)
-                        except subprocess.TimeoutExpired:
-                            pass
-                break
-        else:
-            # 1-hour hard deadline — force kill
-            if proc.poll() is None:
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                except (ProcessLookupError, OSError):
-                    proc.kill()
-                try:
-                    proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    pass
-
-        GLib.idle_add(self._progress_continue_btn.set_visible, False)
         stop_event.set()
         reader.join(timeout=3)
         try:
             os.unlink(log_path)
         except OSError:
             pass
+
+        if proc.returncode != 0:
+            return f"bootc install failed (exit code {proc.returncode})"
 
         # Restore /ostree
         subprocess.run(["umount", "/ostree"],
@@ -3205,8 +3136,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._progress_back_btn.set_visible(False)
         self._progress_skip_btn.set_visible(False)
         self._progress_retry_btn.set_visible(False)
-        self._progress_continue_btn.set_visible(False)
-        self._progress_continue_btn.set_sensitive(False)
         self._progress_reboot_btn.set_visible(False)
         self._log_buffer.set_text("")
 
@@ -3291,12 +3220,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._on_all_steps_done()
         else:
             self._start_step_runner()
-
-    def _bootc_continue_clicked(self) -> None:
-        """User confirmed bootc is done — signal the worker thread to proceed."""
-        if hasattr(self, "_bootc_continue_event"):
-            self._bootc_continue_event.set()
-        self._progress_continue_btn.set_visible(False)
 
     def _progress_go_back(self) -> None:
         """Return to confirm page on fatal error for correction."""

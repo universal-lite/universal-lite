@@ -291,11 +291,6 @@ msgstr "Ignorer"
 msgid "Retry"
 msgstr "Réessayer"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "En attente de l'installation..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "Redémarrer"

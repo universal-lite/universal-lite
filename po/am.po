@@ -335,11 +335,6 @@ msgstr "ዝለል"
 msgid "Retry"
 msgstr "እንደገና ሞክር"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "ጭነት በመጠባበቅ ላይ..."
-
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"

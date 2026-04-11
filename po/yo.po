@@ -289,11 +289,6 @@ msgstr "Fò"
 msgid "Retry"
 msgstr "Tún gbìyànjú"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "Nduro fun ifi sori ẹrọ..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "Tún bẹ̀rẹ̀"

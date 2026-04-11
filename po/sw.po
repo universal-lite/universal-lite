@@ -343,11 +343,6 @@ msgstr "Ruka"
 msgid "Retry"
 msgstr "Jaribu tena"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "Inasubiri usakinishaji..."
-
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"

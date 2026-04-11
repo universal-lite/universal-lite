@@ -291,11 +291,6 @@ msgstr "スキップ"
 msgid "Retry"
 msgstr "再試行"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "インストールを待機中..."
-
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
 msgstr "再起動"

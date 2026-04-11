@@ -343,11 +343,6 @@ msgstr "Tsallake"
 msgid "Retry"
 msgstr "Sake gwadawa"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1570
-#: ../files/usr/bin/universal-lite-setup-wizard:2509
-msgid "Waiting for install..."
-msgstr "Ana jiran shigarwa..."
-
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1577
 msgid "Reboot"
