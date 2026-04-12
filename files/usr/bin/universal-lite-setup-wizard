@@ -2514,9 +2514,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
-        # Wait for bootc to finish (2-hour limit for slow WiFi + eMMC)
+        # Wait for bootc to finish (1-hour hard limit)
         try:
-            proc.wait(timeout=7200)
+            proc.wait(timeout=3600)
         except subprocess.TimeoutExpired:
             # Graceful shutdown: SIGTERM first, then SIGKILL if needed
             try:
