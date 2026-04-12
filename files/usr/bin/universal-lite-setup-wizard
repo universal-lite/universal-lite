@@ -2624,7 +2624,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         useradd_cmd = [
             "useradd", "-R", deploy,
-            "-m", "-d", f"/var/home/{username}",
+            "-M", "-d", f"/var/home/{username}",
             "-s", "/bin/bash",
             "-U",  # create matching primary group
             "-G", ",".join(sup_groups),
@@ -2751,7 +2751,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     def _step_copy_network(self) -> str | None:
-        """Copy NetworkManager connection profiles from live environment to sysroot."""
+        """Copy NetworkManager connection profiles from live environment to sysroot.
+
+        Matches Anaconda's NetworkInstallationTask: copies keyfiles and
+        ensures autoconnect=yes so WiFi reconnects on first boot.
+        """
         src = "/etc/NetworkManager/system-connections/"
         dst = f"{self._sysroot_deploy}/etc/NetworkManager/system-connections/"
 
@@ -2777,6 +2781,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             )
         except subprocess.CalledProcessError as exc:
             return f"Failed to copy network configuration: {exc.stderr.strip() or exc}"
+
+        # Ensure autoconnect=yes on copied connections so WiFi reconnects
+        # on first boot (matches Anaconda's ConfigureActivationOnBootTask).
+        for keyfile in Path(dst).iterdir():
+            if not keyfile.is_file():
+                continue
+            try:
+                text = keyfile.read_text()
+                if "autoconnect=" not in text:
+                    # Insert autoconnect under [connection] section
+                    text = text.replace(
+                        "[connection]\n",
+                        "[connection]\nautoconnect=true\n", 1)
+                    self._sysroot_unlink_write(keyfile, text)
+            except OSError:
+                pass  # Best-effort — connection still works without this
 
         return None
 
@@ -2989,14 +3009,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Flush writes before unmounting
         os.sync()
 
-        # Unmount all target filesystems (root, /boot, /boot/efi)
-        try:
-            subprocess.run(
-                ["umount", "-R", self._mount_point],
-                check=True, capture_output=True, text=True, timeout=30,
+        # Unmount all target filesystems (root, /boot, /boot/efi).
+        # Try normal recursive unmount first; fall back to lazy unmount
+        # if a leaked fd or reader thread keeps a mount busy.
+        result = subprocess.run(
+            ["umount", "-R", self._mount_point],
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode != 0:
+            result = subprocess.run(
+                ["umount", "-lR", self._mount_point],
+                capture_output=True, text=True, timeout=30,
             )
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-            return f"Failed to unmount target: {getattr(exc, 'stderr', '').strip() or exc}"
+            if result.returncode != 0:
+                return f"Failed to unmount target: {result.stderr.strip()}"
 
         return None
 
