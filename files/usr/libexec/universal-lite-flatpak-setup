@@ -1,22 +1,24 @@
 #!/bin/bash
 # Installs Flatpak apps on first boot. Uses the wizard's selection if available,
-# otherwise falls back to a default set (Bazaar app store).
+# otherwise falls back to a default set.
 # Called by universal-lite-flatpak-setup.service.
 
-set -euo pipefail
+set -uo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
-DEFAULT_APPS="com.google.Chrome io.github.kolunmi.Bazaar"
-
-# If the wizard didn't write an apps list, use defaults
-if [ ! -f "$APPS_FILE" ]; then
-    mkdir -p "$(dirname "$APPS_FILE")"
-    echo "$DEFAULT_APPS" > "$APPS_FILE"
-fi
 STAMP=/var/lib/universal-lite/flatpak-setup.done
 MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
+
+# If the wizard didn't write an apps list, use defaults (one per line)
+if [ ! -f "$APPS_FILE" ]; then
+    mkdir -p "$(dirname "$APPS_FILE")"
+    cat > "$APPS_FILE" <<'EOF'
+com.google.Chrome
+io.github.kolunmi.Bazaar
+EOF
+fi
 
 # Wait for actual network connectivity (DNS must resolve Flathub)
 waited=0
@@ -50,14 +52,22 @@ if ! "$remote_ok"; then
     exit 1
 fi
 
-# Install each app with per-app retry
+# Install each app with per-app retry.
+# --or-update handles apps whose ostree refs were copied from the live
+# image but not fully deployed (e.g. extra-data apps like Chrome).
 failed=0
 while IFS= read -r app_id; do
     [[ -z "$app_id" ]] && continue
 
+    # Skip already-installed apps (copied by the wizard)
+    if flatpak info --system "$app_id" >/dev/null 2>&1; then
+        echo "$app_id already installed, skipping" >&2
+        continue
+    fi
+
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
-        if flatpak install --system --noninteractive flathub "$app_id" 2>&1; then
+        if flatpak install --or-update --system --noninteractive flathub "$app_id" 2>&1; then
             ok=true
             break
         fi
