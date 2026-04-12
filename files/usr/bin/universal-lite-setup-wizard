@@ -2484,10 +2484,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
-        # Write bootc log to the target disk (already mounted) instead of
-        # RAM-backed /tmp which can fill on 2 GB Chromebooks.
+        # bootc requires an empty root filesystem — log file must go
+        # to /tmp, not the target disk.  _run_logged (used by post-bootc
+        # steps) writes to the target disk instead.
         import tempfile
-        log_fd, log_path = tempfile.mkstemp(suffix=".log", dir=mount_point)
+        log_fd, log_path = tempfile.mkstemp(suffix=".log")
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
