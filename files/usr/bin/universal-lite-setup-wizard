@@ -474,7 +474,7 @@ PAGE_PROGRESS = 7
 
 DEFAULT_FLATPAKS = [
     ("com.google.Chrome", "Google Chrome", N_("Web browser")),
-    ("dev.bazaar.app", "Bazaar", N_("Browse and install apps")),
+    ("io.github.kolunmi.Bazaar", "Bazaar", N_("Browse and install apps")),
     ("org.gtk.Gtk3theme.adw-gtk3", "Adwaita GTK3 Theme", N_("Modern styling for classic apps")),
     ("org.gtk.Gtk3theme.adw-gtk3-dark", "Adwaita GTK3 Dark Theme", N_("Dark variant for classic apps")),
 ]

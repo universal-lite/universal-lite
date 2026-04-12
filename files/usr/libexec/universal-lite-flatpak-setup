@@ -6,7 +6,7 @@
 set -euo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
-DEFAULT_APPS="com.google.Chrome dev.bazaar.app"
+DEFAULT_APPS="com.google.Chrome io.github.kolunmi.Bazaar"
 
 # If the wizard didn't write an apps list, use defaults
 if [ ! -f "$APPS_FILE" ]; then

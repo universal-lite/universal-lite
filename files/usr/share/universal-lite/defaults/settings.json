@@ -12,7 +12,7 @@
   "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg",
   "pinned": [
     {"name": "Chrome",  "command": "flatpak run com.google.Chrome", "icon": "com.google.Chrome"},
-    {"name": "Bazaar",  "command": "flatpak run dev.bazaar.app",    "icon": "dev.bazaar.app"}
+    {"name": "Bazaar",  "command": "flatpak run io.github.kolunmi.Bazaar", "icon": "io.github.kolunmi.Bazaar"}
   ],
   "touchpad_tap_to_click": true,
   "touchpad_natural_scroll": false,

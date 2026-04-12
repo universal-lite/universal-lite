@@ -185,7 +185,7 @@ flatpak remote-add --system --if-not-exists flathub \
     https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install --system --noninteractive flathub \
     com.google.Chrome \
-    dev.bazaar.app \
+    io.github.kolunmi.Bazaar \
     org.gtk.Gtk3theme.adw-gtk3 \
     org.gtk.Gtk3theme.adw-gtk3-dark
 
