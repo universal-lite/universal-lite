@@ -8,7 +8,7 @@ ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
 Type=oneshot
 ExecStart=/usr/libexec/universal-lite-flatpak-setup
 RemainAfterExit=yes
-TimeoutStartSec=600
+TimeoutStartSec=1800
 
 [Install]
 WantedBy=graphical.target

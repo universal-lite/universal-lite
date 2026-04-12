@@ -2063,7 +2063,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     drive_gb = None
 
                 if drive_gb is not None:
-                    available = drive_gb - 5  # Reserve ~5 GB for OS + boot + overhead
+                    available = drive_gb - 10  # Reserve ~10 GB for OS + boot + Flatpaks
                     if swap_gb > available:
                         self._set_status(
                             _("Swap size ({swap} GB) is too large for this drive. "
@@ -2514,9 +2514,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         reader = threading.Thread(target=_reader, daemon=True)
         reader.start()
 
-        # Wait for bootc to finish (1-hour hard limit)
+        # Wait for bootc to finish (2-hour limit for slow WiFi + eMMC)
         try:
-            proc.wait(timeout=3600)
+            proc.wait(timeout=7200)
         except subprocess.TimeoutExpired:
             # Graceful shutdown: SIGTERM first, then SIGKILL if needed
             try:
@@ -3006,13 +3006,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                  f"{deploy}/etc",
                  f"{var_dir}/home",
                  f"{var_dir}/roothome",
-                 f"{var_dir}/lib",
+                 f"{var_dir}/lib/universal-lite",
                  f"{var_dir}/opt",
                  f"{var_dir}/srv",
                  f"{var_dir}/mnt",
                  f"{var_dir}/media",
                  f"{var_dir}/spool"],
-                check=True, timeout=120,
+                check=True, timeout=180,
             )
         except subprocess.CalledProcessError as exc:
             return f"SELinux relabeling failed: {exc.output.strip() if exc.output else exc}"
@@ -3067,6 +3067,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     if lines:
                         end = self._log_buffer.get_end_iter()
                         self._log_buffer.insert(end, "".join(lines))
+                        # Cap buffer to ~1000 lines to prevent unbounded
+                        # memory growth from bootc's thousands of
+                        # "Copying blob" lines on a 2 GB Chromebook.
+                        line_count = self._log_buffer.get_line_count()
+                        if line_count > 1000:
+                            trim_end = self._log_buffer.get_iter_at_line(
+                                line_count - 1000)
+                            self._log_buffer.delete(
+                                self._log_buffer.get_start_iter(), trim_end)
                         end = self._log_buffer.get_end_iter()
                         self._log_textview.scroll_to_iter(end, 0.0, False, 0.0, 0.0)
                     return False  # Don't repeat
@@ -3091,8 +3100,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         stdin_data = kwargs.pop("input", None)
 
+        # Write temp log to target disk (if mounted) instead of RAM-backed
+        # /tmp which can fill on 2 GB Chromebooks.
         import tempfile
-        log_fd, log_path = tempfile.mkstemp(suffix=".log")
+        log_dir = getattr(self, "_mount_point", None)
+        log_fd, log_path = tempfile.mkstemp(
+            suffix=".log", dir=log_dir if log_dir and os.path.ismount(log_dir) else None)
 
         proc = subprocess.Popen(
             cmd, stdout=log_fd, stderr=subprocess.STDOUT,
@@ -3137,7 +3150,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         try:
             proc.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
-            proc.kill()
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+            except (ProcessLookupError, OSError):
+                proc.kill()
             proc.wait()
             raise
         finally:
