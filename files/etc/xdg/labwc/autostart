@@ -3,7 +3,7 @@
 # Wizard mode: launch only the setup wizard, skip all desktop daemons.
 # Keeps RAM minimal on 2 GB Chromebooks that use the DD install path.
 if [ "${UNIVERSAL_LITE_WIZARD:-}" = "1" ]; then
-    /usr/bin/universal-lite-setup-wizard &
+    /usr/bin/universal-lite-setup-wizard 2>/tmp/wizard-crash.log &
     exit 0
 fi
 
