@@ -227,7 +227,8 @@ msgid "Install Apps"
 msgstr "Installera appar"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid "These apps are included and will be copied during install. Uncheck any you don't want."
+#, fuzzy
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "Dessa appar är förhandsnedladdade och kopieras under installationen. "
 "Avmarkera de du inte vill ha."
@@ -497,7 +498,8 @@ msgid "Copying network configuration"
 msgstr "Kopierar nätverkskonfiguration"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
-msgid "Installing selected apps"
+#, fuzzy
+msgid "Saving app selection"
 msgstr "Installerar valda appar"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3155

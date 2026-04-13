@@ -224,8 +224,9 @@ msgstr ""
 msgid "Install Apps"
 msgstr "تثبيت التطبيقات"
 
+#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid "These apps are included and will be copied during install. Uncheck any you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "هذه التطبيقات تم تنزيلها مسبقاً وسيتم نسخها أثناء التثبيت. قم بإلغاء تحديد "
 "التطبيقات التي لا تريدها."
@@ -494,8 +495,9 @@ msgstr "جارٍ إعداد حساب المستخدم"
 msgid "Copying network configuration"
 msgstr "جارٍ نسخ إعدادات الشبكة"
 
+#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
-msgid "Installing selected apps"
+msgid "Saving app selection"
 msgstr "جارٍ تثبيت التطبيقات المحددة"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3155

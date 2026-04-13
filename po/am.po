@@ -261,8 +261,9 @@ msgid "Install Apps"
 msgstr "መተግበሪያዎችን ጫን"
 
 # NEEDS-REVIEW
+#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid "These apps are included and will be copied during install. Uncheck any you don't want."
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr "እነዚህ መተግበሪያዎች አስቀድመው ተወርደዋል፣ በመጫን ጊዜ ይገለበጣሉ። የማይፈልጓቸውን ምልክት ያንሱ።"
 
 # NEEDS-REVIEW
@@ -575,8 +576,9 @@ msgid "Copying network configuration"
 msgstr "የአውታረ መረብ ውቅረት በመገልበጥ ላይ"
 
 # NEEDS-REVIEW
+#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
-msgid "Installing selected apps"
+msgid "Saving app selection"
 msgstr "የተመረጡ መተግበሪያዎችን በመጫን ላይ"
 
 # NEEDS-REVIEW

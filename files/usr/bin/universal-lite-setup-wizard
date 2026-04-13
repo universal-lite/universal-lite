@@ -1398,14 +1398,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.append(self._apps_title)
 
         self._apps_subtitle = Gtk.Label(
-            label=_("These apps are included and will be copied during install. Uncheck any you don't want.")
+            label=_("These apps will be installed on first boot. Uncheck any you don't want.")
         )
         self._apps_subtitle.add_css_class("welcome-subtitle")
         self._apps_subtitle.set_halign(Gtk.Align.CENTER)
         self._apps_subtitle.set_wrap(True)
         self._apps_subtitle.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self._apps_subtitle.set_max_width_chars(50)
-        self._retranslatable.append((self._apps_subtitle.set_label, "These apps are included and will be copied during install. Uncheck any you don't want."))
+        self._retranslatable.append((self._apps_subtitle.set_label, "These apps will be installed on first boot. Uncheck any you don't want."))
         card.append(self._apps_subtitle)
 
         self._app_checks: list[tuple[str, str, Gtk.CheckButton]] = []

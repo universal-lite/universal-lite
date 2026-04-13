@@ -227,7 +227,8 @@ msgid "Install Apps"
 msgstr "アプリのインストール"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-msgid "These apps are included and will be copied during install. Uncheck any you don't want."
+#, fuzzy
+msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
 "これらのアプリは事前にダウンロード済みで、インストール時にコピーされます。不"
 "要なアプリのチェックを外してください。"
@@ -497,7 +498,8 @@ msgid "Copying network configuration"
 msgstr "ネットワーク設定のコピー"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
-msgid "Installing selected apps"
+#, fuzzy
+msgid "Saving app selection"
 msgstr "選択したアプリのインストール"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3155
