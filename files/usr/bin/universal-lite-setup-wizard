@@ -2391,6 +2391,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # parts[0] is BIOS boot — no filesystem
             part_efi, part_boot, part_root = parts[1], parts[2], parts[3]
 
+        # Save for retry re-mount in _step_install_system
+        self._part_efi = part_efi
+        self._part_boot = part_boot
+
         # --- Format partitions ---
         mkfs_cmds = [
             (["mkfs.vfat", "-F", "32", "-n", "EFI", part_efi], "EFI"),
@@ -2458,6 +2462,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         preventing local ostree source.  See project Decision #6.
         """
         mount_point = self._mount_point
+
+        # Clean target filesystem for retry — bootc requires an empty root.
+        # A failed previous attempt leaves partial ostree data behind.
+        # Unmount any sub-mounts (boot/efi) first, then wipe contents.
+        subprocess.run(["umount", "-R", f"{mount_point}/boot"],
+                       capture_output=True, timeout=10)
+        for entry in Path(mount_point).iterdir():
+            subprocess.run(["rm", "-rf", str(entry)],
+                           capture_output=True, timeout=60)
+        # Re-mount boot partitions for bootc
+        for part_dev, mnt in [
+            (self._part_boot, f"{mount_point}/boot"),
+            (self._part_efi, f"{mount_point}/boot/efi"),
+        ]:
+            Path(mnt).mkdir(parents=True, exist_ok=True)
+            subprocess.run(["mount", part_dev, mnt],
+                           capture_output=True, timeout=30)
 
         # Pre-flight DNS check — fail fast with a clear message instead of
         # letting bootc produce a cryptic "Temporary failure in name resolution".
