@@ -2672,12 +2672,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # This matches Anaconda's create_user() which only adds wheel.
         sup_groups = ["wheel"] if self._setup_is_admin else []
 
-        # Run user management commands inside the sysroot (Anaconda pattern).
-        # chroot ensures the sysroot's own NSS, PAM, and login.defs are used
-        # instead of the live image's — important for UID ranges, password
-        # policies, and any NSS modules the target image ships.
+        # Use -R (alternate root) for user management commands.  This
+        # operates directly on the sysroot's /etc files without needing a
+        # full chroot environment (which lacks /proc, /dev, etc.).
         useradd_cmd = [
-            "chroot", deploy, "useradd",
+            "useradd", "-R", deploy,
             "-M", "-d", f"/var/home/{username}",
             "-s", "/bin/bash",
             "-U",  # create matching primary group
@@ -2695,11 +2694,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if result.returncode not in (0, 9):
             return f"Failed to create user: {result.stderr.strip() or result}"
 
-        # Set user password via chpasswd -e (encrypted password via stdin).
+        # Set user password via chpasswd -e -R (encrypted password via stdin).
         try:
             hashed_pw = self._setup_hashed_password
             subprocess.run(
-                ["chroot", deploy, "chpasswd", "-e"],
+                ["chpasswd", "-e", "-R", deploy],
                 input=f"{username}:{hashed_pw}\n",
                 capture_output=True, text=True, check=True, timeout=10,
             )
@@ -2709,7 +2708,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Reset sp_lstchg so password aging won't force a change on first
         # login.  Matches Anaconda's chage -d "" after chpasswd.
         subprocess.run(
-            ["chroot", deploy, "chage", "-d", "", username],
+            ["chage", "-R", deploy, "-d", "", username],
             capture_output=True, timeout=10,
         )
 
@@ -2747,7 +2746,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if self._setup_hashed_root_password:
             try:
                 subprocess.run(
-                    ["chroot", deploy, "chpasswd", "-e"],
+                    ["chpasswd", "-e", "-R", deploy],
                     input=f"root:{self._setup_hashed_root_password}\n",
                     capture_output=True, text=True, check=True, timeout=10,
                 )
