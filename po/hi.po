@@ -223,12 +223,11 @@ msgstr ""
 msgid "Install Apps"
 msgstr "ऐप्स इंस्टॉल करें"
 
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
 msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
-"ये ऐप्स पहले से डाउनलोड हैं और इंस्टॉल के दौरान कॉपी किए जाएँगे। जो आप नहीं चाहते उनका "
-"चयन हटा दें।"
+"ये ऐप्स पहली बार बूट करने पर इंस्टॉल होंगे। जो आप नहीं चाहते उनका चयन हटा "
+"दें।"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1452
 msgid "Ready to Install"
@@ -492,10 +491,9 @@ msgstr "उपयोगकर्ता खाता कॉन्फ़िगर 
 msgid "Copying network configuration"
 msgstr "नेटवर्क कॉन्फ़िगरेशन कॉपी हो रहा है"
 
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
 msgid "Saving app selection"
-msgstr "चयनित ऐप्स इंस्टॉल हो रहे हैं"
+msgstr "ऐप चयन सहेजा जा रहा है"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3155
 msgid "Configuring memory management"

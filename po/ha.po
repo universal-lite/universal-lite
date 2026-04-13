@@ -267,12 +267,11 @@ msgid "Install Apps"
 msgstr "Shigar da Manhajoji"
 
 # NEEDS-REVIEW
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
 msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
-"An riga an zazzage waɗannan manhajoji kuma za a kwafa su yayin shigarwa. "
-"Cire alamar duk wanda ba ka so."
+"Za a shigar da waɗannan manhajoji a farkon kunna na'ura. Cire alamar duk "
+"wanda ba ka so."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1452
@@ -588,10 +587,9 @@ msgid "Copying network configuration"
 msgstr "Ana kwafin saitin hanyar sadarwa"
 
 # NEEDS-REVIEW
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
 msgid "Saving app selection"
-msgstr "Ana shigar da manhajojin da aka zaɓa"
+msgstr "Ana adana zaɓin manhajoji"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:3155

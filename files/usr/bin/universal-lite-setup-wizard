@@ -2502,7 +2502,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             cmd = [
                 "bootc", "install", "to-filesystem",
                 "--source-imgref", f"docker://{image_name}",
-                "--bootloader", "systemd" if self._uefi_boot else "grub",
+                "--bootloader", "grub",  # systemd-boot needs bootupd in image
                 "--root-mount-spec", f"UUID={self._root_uuid}",
             ]
 

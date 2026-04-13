@@ -267,12 +267,11 @@ msgid "Install Apps"
 msgstr "Sakinisha Programu"
 
 # NEEDS-REVIEW
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
 msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
-"Programu hizi zimepakuliwa tayari na zitanakiliwa wakati wa usakinishaji. "
-"Ondoa alama kwenye zile usizozihitaji."
+"Programu hizi zitasakinishwa wakati wa kuanza kwa kwanza. Ondoa alama "
+"kwenye zile usizozihitaji."
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:1452
@@ -588,10 +587,9 @@ msgid "Copying network configuration"
 msgstr "Inanakili usanidi wa mtandao"
 
 # NEEDS-REVIEW
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
 msgid "Saving app selection"
-msgstr "Inasakinisha programu zilizochaguliwa"
+msgstr "Inahifadhi chaguo la programu"
 
 # NEEDS-REVIEW
 #: ../files/usr/bin/universal-lite-setup-wizard:3155

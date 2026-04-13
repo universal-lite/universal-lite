@@ -227,11 +227,10 @@ msgid "Install Apps"
 msgstr "Apps installeren"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
-#, fuzzy
 msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
-"Deze apps zijn vooraf gedownload en worden tijdens de installatie "
-"gekopieerd. Schakel de apps uit die u niet wilt."
+"Deze apps worden bij de eerste opstart geïnstalleerd. Schakel de apps uit "
+"die u niet wilt."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1452
 msgid "Ready to Install"
@@ -499,9 +498,8 @@ msgid "Copying network configuration"
 msgstr "Netwerkconfiguratie kopiëren"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
-#, fuzzy
 msgid "Saving app selection"
-msgstr "Geselecteerde apps installeren"
+msgstr "App-selectie opslaan"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3155
 msgid "Configuring memory management"

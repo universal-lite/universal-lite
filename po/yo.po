@@ -224,12 +224,11 @@ msgstr ""
 msgid "Install Apps"
 msgstr "Fi Àwọn App Sórí Ẹ̀rọ"
 
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:1395
 msgid "These apps will be installed on first boot. Uncheck any you don't want."
 msgstr ""
-"Àwọn app wọ̀nyí ti gbà tẹ́lẹ̀ tí wọ́n yóò sì ṣe àdàkọ wọn ní àkókò fífi sórí "
-"ẹ̀rọ. Mú àmì kúrò lórí èyíkéyìí tí o kò fẹ́."
+"Àwọn app wọ̀nyí yóò jẹ́ fífi sórí ẹ̀rọ ní ìbẹ̀rẹ̀ àkọ́kọ́. Mú àmì kúrò lórí "
+"èyíkéyìí tí o kò fẹ́."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1452
 msgid "Ready to Install"
@@ -494,10 +493,9 @@ msgstr "Ń ṣètò àkọọ́lẹ̀ olùmúlò"
 msgid "Copying network configuration"
 msgstr "Ń ṣe àdàkọ ètò nẹ́tíwọ́ọ̀kì"
 
-#, fuzzy
 #: ../files/usr/bin/universal-lite-setup-wizard:3151
 msgid "Saving app selection"
-msgstr "Ń fi àwọn app tí a yàn sórí ẹ̀rọ"
+msgstr "Ń tọ́jú àṣàyàn app"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3155
 msgid "Configuring memory management"
