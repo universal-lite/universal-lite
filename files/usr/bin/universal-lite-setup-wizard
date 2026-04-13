@@ -626,6 +626,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._timezones = _load_timezones()
         self._keyboard_layouts = _load_keyboard_layouts()  # [(code, name), ...]
         self._keyboard_user_override = False  # True once user manually picks a layout
+        self._uefi_boot = os.path.isdir("/sys/firmware/efi")
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
         self._connected_ssid: str | None = None
         self._current_page = PAGE_LANGUAGE  # Start at Language page
@@ -2048,29 +2049,37 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._set_status(_("No target drives found. Connect a drive and restart the installer."))
             return False
 
+        # Minimum disk size: OS ~4 GB + boot 1.5 GB + Flatpaks ~3 GB + swap
+        drive_idx = self._drive_dropdown.get_selected()
+        drive_gb = None
+        if 0 <= drive_idx < len(self._drives):
+            size_val = self._drives[drive_idx].get("size")
+            try:
+                drive_gb = int(size_val) / (1024 ** 3)
+            except (ValueError, TypeError):
+                pass
+
+        if drive_gb is not None and drive_gb < 16:
+            self._set_status(
+                _("Selected drive is too small ({size} GB). "
+                  "Minimum required: 16 GB.").format(size=int(drive_gb))
+            )
+            return False
+
         use_zswap, swap_gb = self._get_swap_config()
         if use_zswap and swap_gb == -1:
             self._set_status(_("Custom swap size must be a positive whole number (in GB)."))
             return False
 
-        if use_zswap:
-            drive_idx = self._drive_dropdown.get_selected()
-            if 0 <= drive_idx < len(self._drives):
-                size_val = self._drives[drive_idx].get("size")
-                try:
-                    drive_gb = int(size_val) / (1024 ** 3)
-                except (ValueError, TypeError):
-                    drive_gb = None
-
-                if drive_gb is not None:
-                    available = drive_gb - 10  # Reserve ~10 GB for OS + boot + Flatpaks
-                    if swap_gb > available:
-                        self._set_status(
-                            _("Swap size ({swap} GB) is too large for this drive. "
-                              "Maximum recommended: {max} GB.").format(
-                                swap=swap_gb, max=max(1, int(available)))
-                        )
-                        return False
+        if use_zswap and drive_gb is not None:
+            available = drive_gb - 10  # Reserve ~10 GB for OS + boot + Flatpaks
+            if swap_gb > available:
+                self._set_status(
+                    _("Swap size ({swap} GB) is too large for this drive. "
+                      "Maximum recommended: {max} GB.").format(
+                        swap=swap_gb, max=max(1, int(available)))
+                )
+                return False
 
         return True
 
@@ -2284,10 +2293,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         """Create GPT partition table, format, and mount target disk.
 
         Partition layout (matches Anaconda/Readymade pattern):
-          1: BIOS boot   —   1 MiB  — no filesystem (for grub-install)
-          2: EFI System  — 512 MiB  — FAT32
-          3: XBOOTLDR    —   1 GiB  — ext4
-          4: Linux root  — remaining — user's choice (ext4/xfs/btrfs)
+          UEFI (3 partitions, systemd-boot):
+            1: EFI System  — 512 MiB  — FAT32
+            2: XBOOTLDR    —   1 GiB  — ext4
+            3: Linux root  — remaining — user's choice
+          Legacy BIOS (4 partitions, GRUB):
+            1: BIOS boot   —   2 MiB  — no filesystem
+            2: EFI System  — 512 MiB  — FAT32
+            3: XBOOTLDR    —   1 GiB  — ext4
+            4: Linux root  — remaining — user's choice
 
         Sets self._mount_point and self._root_uuid for _step_install_system.
         """
@@ -2321,14 +2335,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._run_logged(["wipefs", "-af", dev], check=True, timeout=15)
 
         # --- Wipe and partition with sfdisk ---
-        sfdisk_script = (
-            "label: gpt\n"
-            "\n"
-            "size=1MiB,  type=21686148-6449-6E6F-744E-656564454649\n"  # BIOS boot
-            "size=512MiB,type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B\n"  # EFI System
-            "size=1GiB,  type=BC13C2FF-59E6-4262-A352-B275FD6F7172\n"  # XBOOTLDR
-            "type=0FC63DAF-8483-4772-8E79-3D69D8477DE4\n"              # Linux root (remaining)
-        )
+        if self._uefi_boot:
+            sfdisk_script = (
+                "label: gpt\n"
+                "\n"
+                "size=512MiB,type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B\n"  # EFI System
+                "size=1GiB,  type=BC13C2FF-59E6-4262-A352-B275FD6F7172\n"  # XBOOTLDR
+                "type=0FC63DAF-8483-4772-8E79-3D69D8477DE4\n"              # Linux root
+            )
+        else:
+            sfdisk_script = (
+                "label: gpt\n"
+                "\n"
+                "size=2MiB,  type=21686148-6449-6E6F-744E-656564454649\n"  # BIOS boot
+                "size=512MiB,type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B\n"  # EFI System
+                "size=1GiB,  type=BC13C2FF-59E6-4262-A352-B275FD6F7172\n"  # XBOOTLDR
+                "type=0FC63DAF-8483-4772-8E79-3D69D8477DE4\n"              # Linux root
+            )
         try:
             self._run_logged(
                 ["sfdisk", "--wipe", "always", "--wipe-partitions", "always", dev],
@@ -2357,13 +2380,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 line.split()[0] for line in result.stdout.strip().splitlines()
                 if len(line.split()) >= 2 and line.split()[1] == "part"
             ]
-            if len(parts) < 4:
-                return f"Expected 4 partitions, found {len(parts)}: {parts}"
+            expected_parts = 3 if self._uefi_boot else 4
+            if len(parts) < expected_parts:
+                return f"Expected {expected_parts} partitions, found {len(parts)}: {parts}"
         except subprocess.CalledProcessError as exc:
             return f"Failed to list partitions: {exc.stderr.strip() or exc}"
 
-        part_efi, part_boot, part_root = parts[1], parts[2], parts[3]
-        # parts[0] is BIOS boot — no filesystem
+        if self._uefi_boot:
+            part_efi, part_boot, part_root = parts[0], parts[1], parts[2]
+        else:
+            # parts[0] is BIOS boot — no filesystem
+            part_efi, part_boot, part_root = parts[1], parts[2], parts[3]
 
         # --- Format partitions ---
         mkfs_cmds = [
@@ -2426,9 +2453,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _step_install_system(self) -> str | None:
         """Pull and install OS image from registry via bootc to-filesystem.
 
-        Pulls directly from the container registry (like Anaconda does),
-        streaming to the target disk with no intermediate copies.  Requires
-        network — the wizard's network page ensures connectivity first.
+        Uses docker:// transport (network pull) by design — the live
+        environment runs from ostree, not podman, so containers-storage
+        is not available.  We also mask /ostree with tmpfs for bug #1343,
+        preventing local ostree source.  See project Decision #6.
         """
         mount_point = self._mount_point
 
@@ -2455,11 +2483,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Workaround for ostree bug #1343: bootc checks /ostree/repo on
         # the host and fails if multiple commit objects exist.  Anaconda
         # doesn't have this problem because its installer environment has
-        # NO /ostree/repo at all.  When the path doesn't exist, bootc
-        # skips the ostree check and takes a fallback code path.
-        #
-        # Mount tmpfs over /ostree to hide the repo.  The running system
-        # is already loaded — /ostree is only metadata at this point.
+        # NO /ostree/repo at all.  Mount tmpfs over /ostree to hide the
+        # repo — the running system is already loaded.
         try:
             subprocess.run(
                 ["mount", "-t", "tmpfs", "tmpfs", "/ostree"],
@@ -2468,82 +2493,95 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"Failed to prepare install environment: {exc.stderr.strip() or exc}"
 
-        # Anaconda also ensures this config exists for bootc
-        Path("/etc/ostree").mkdir(parents=True, exist_ok=True)
-        prepare_root = Path("/etc/ostree/prepare-root.conf")
-        if not prepare_root.exists():
-            prepare_root.write_text("[ostree]\nsysroot=/sysroot\n")
+        try:
+            # Anaconda also ensures this config exists for bootc
+            Path("/etc/ostree").mkdir(parents=True, exist_ok=True)
+            prepare_root = Path("/etc/ostree/prepare-root.conf")
+            if not prepare_root.exists():
+                prepare_root.write_text("[ostree]\nsysroot=/sysroot\n")
 
-        cmd = [
-            "bootc", "install", "to-filesystem",
-            "--source-imgref", f"docker://{image_name}",
-            "--bootloader", "grub",
-            "--root-mount-spec", f"UUID={self._root_uuid}",
-            mount_point,
-        ]
+            cmd = [
+                "bootc", "install", "to-filesystem",
+                "--source-imgref", f"docker://{image_name}",
+                "--bootloader", "systemd" if self._uefi_boot else "grub",
+                "--root-mount-spec", f"UUID={self._root_uuid}",
+            ]
 
-        self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
+            # Inject zswap kernel args at install time so they persist
+            # across bootc upgrades (replaces the old grubby approach in
+            # first-boot, which bootc upgrade would overwrite).
+            if self._setup_use_zswap:
+                cmd.extend([
+                    "--karg", "zswap.enabled=1",
+                    "--karg", "zswap.compressor=zstd",
+                    "--karg", "zswap.max_pool_percent=25",
+                ])
 
-        # bootc requires an empty root filesystem — log file must go
-        # to /tmp, not the target disk.  _run_logged (used by post-bootc
-        # steps) writes to the target disk instead.
-        import tempfile
-        log_fd, log_path = tempfile.mkstemp(suffix=".log")
+            cmd.append(mount_point)
 
-        proc = subprocess.Popen(
-            cmd, stdout=log_fd, stderr=subprocess.STDOUT,
-            stdin=subprocess.DEVNULL,
-            close_fds=True, start_new_session=True,
-            preexec_fn=_reset_child_signals,
-        )
-        os.close(log_fd)
+            self._log(f"$ {' '.join(str(c) for c in cmd)}\n")
 
-        # Tail log in background for the UI
-        stop_event = threading.Event()
+            # bootc requires an empty root filesystem — log file must go
+            # to /tmp, not the target disk.
+            import tempfile
+            log_fd, log_path = tempfile.mkstemp(suffix=".log")
 
-        def _reader():
-            with open(log_path, errors="replace") as f:
-                while not stop_event.is_set():
-                    line = f.readline()
-                    if line:
+            proc = subprocess.Popen(
+                cmd, stdout=log_fd, stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL,
+                close_fds=True, start_new_session=True,
+                preexec_fn=_reset_child_signals,
+            )
+            os.close(log_fd)
+
+            # Tail log in background for the UI
+            stop_event = threading.Event()
+
+            def _reader():
+                with open(log_path, errors="replace") as f:
+                    while not stop_event.is_set():
+                        line = f.readline()
+                        if line:
+                            self._log(line)
+                        else:
+                            stop_event.wait(0.1)
+                    for line in f:
                         self._log(line)
-                    else:
-                        stop_event.wait(0.1)
-                for line in f:
-                    self._log(line)
 
-        reader = threading.Thread(target=_reader, daemon=True)
-        reader.start()
+            reader = threading.Thread(target=_reader, daemon=True)
+            reader.start()
 
-        # Wait for bootc to finish (1-hour hard limit)
-        try:
-            proc.wait(timeout=3600)
-        except subprocess.TimeoutExpired:
-            # Graceful shutdown: SIGTERM first, then SIGKILL if needed
+            # Wait for bootc to finish (1-hour hard limit)
             try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
-                proc.wait(timeout=10)
-            except (subprocess.TimeoutExpired, ProcessLookupError):
+                proc.wait(timeout=3600)
+            except subprocess.TimeoutExpired:
+                # Graceful shutdown: SIGTERM first, then SIGKILL if needed
                 try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                except (ProcessLookupError, OSError):
-                    proc.kill()
-                try:
-                    proc.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    pass
+                    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+                    proc.wait(timeout=10)
+                except (subprocess.TimeoutExpired, ProcessLookupError):
+                    try:
+                        os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                    except (ProcessLookupError, OSError):
+                        proc.kill()
+                    try:
+                        proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        pass
 
-        stop_event.set()
-        reader.join(timeout=3)
-        try:
-            os.unlink(log_path)
-        except OSError:
-            pass
+            stop_event.set()
+            reader.join(timeout=3)
+            try:
+                os.unlink(log_path)
+            except OSError:
+                pass
 
-        # Always restore /ostree — even if bootc failed, the live
-        # environment needs its ostree repo back for retry attempts.
-        subprocess.run(["umount", "/ostree"],
-                       capture_output=True, timeout=10)
+        finally:
+            # Always restore /ostree — even if bootc failed or an
+            # unexpected exception occurred, the live environment needs
+            # its ostree repo back for retry attempts.
+            subprocess.run(["umount", "/ostree"],
+                           capture_output=True, timeout=10)
 
         if proc.returncode != 0:
             return f"bootc install failed (exit code {proc.returncode})"
@@ -2928,6 +2966,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._sysroot_unlink_write(
                 sysctl_dir / "91-universal-lite-zswap.conf",
                 "vm.swappiness = 100\n",
+            )
+
+            # Disable zram-generator via config so it doesn't compete
+            # with disk swap (replaces the old "systemctl mask" approach
+            # in first-boot, which was irreversible without manual unmask).
+            zram_dir = Path(deploy) / "etc" / "systemd"
+            zram_dir.mkdir(parents=True, exist_ok=True)
+            self._sysroot_unlink_write(
+                zram_dir / "zram-generator.conf",
+                "[zram0]\nzram-size = 0\n",
             )
         else:
             # Explicitly write the zram-generator config to the sysroot
