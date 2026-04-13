@@ -21,7 +21,6 @@ Eight-page flow:
 import gettext
 import json
 import os
-import shutil
 
 import re
 import signal
@@ -2846,105 +2845,20 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         return None
 
-    def _step_copy_flatpaks(self) -> str | None:
-        """Save Flatpak selection and copy pre-installed apps if available.
+    def _step_save_app_selection(self) -> str | None:
+        """Write the selected Flatpak app list for the first-boot service.
 
-        Always writes the app list so the first-boot service knows what
-        to install.  If the live image has pre-installed Flatpaks, copies
-        them to the target for offline install; otherwise the first-boot
-        service downloads them from Flathub.
+        The first-boot service (universal-lite-flatpak-setup) reads this
+        list and downloads the apps from Flathub on first boot.  No apps
+        are copied during install — keeps the raw image small for
+        constrained target hardware.
         """
         var_dir = self._sysroot_var
         selected_ids = {app_id for app_id, _ in self._setup_selected_apps}
 
-        # Always write app list first — the first-boot service reads this
         state_dir = Path(var_dir) / "lib" / "universal-lite"
         state_dir.mkdir(parents=True, exist_ok=True)
         (state_dir / "flatpak-apps").write_text("\n".join(selected_ids) + "\n")
-
-        src = "/var/lib/flatpak"
-        dst = f"{var_dir}/lib/flatpak"
-
-        # If no Flatpak apps on the live image, the first-boot service
-        # will download them from Flathub — not an error.
-        if not os.path.isdir(f"{src}/app") or not os.listdir(f"{src}/app"):
-            return None
-
-        # Check available disk space before starting the multi-GB copy.
-        try:
-            src_usage = subprocess.run(
-                ["du", "-sb", src], capture_output=True, text=True, timeout=30,
-            )
-            src_bytes = int(src_usage.stdout.split()[0])
-            stat = os.statvfs(var_dir)
-            avail_bytes = stat.f_bavail * stat.f_frsize
-            if src_bytes > avail_bytes:
-                return (f"Not enough disk space for Flatpak apps "
-                        f"({_fmt_bytes(src_bytes)} needed, "
-                        f"{_fmt_bytes(avail_bytes)} available)")
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
-                ValueError, OSError):
-            pass  # Best-effort check — proceed if du/statvfs fails
-
-        Path(dst).mkdir(parents=True, exist_ok=True)
-
-        # Copy shared infrastructure: repo (ostree object store), exports
-        for subdir in ["repo", "exports", ".changed"]:
-            src_path = f"{src}/{subdir}"
-            if not os.path.exists(src_path):
-                continue
-            try:
-                if os.path.isdir(src_path):
-                    self._run_logged(
-                        ["rsync", "-a", "--info=progress2", f"{src_path}/", f"{dst}/{subdir}/"],
-                        check=True, timeout=600,
-                    )
-                else:
-                    shutil.copy2(src_path, f"{dst}/{subdir}")
-            except (subprocess.CalledProcessError, OSError) as exc:
-                return f"Failed to copy Flatpak data ({subdir}): {exc}"
-
-        # Copy all runtimes and extensions.  The ostree object store
-        # (repo/) is already copied in full — runtime deploy dirs are just
-        # small metadata, so selective copying saves negligible space while
-        # risking missing GL drivers, locale packs, and other extensions
-        # that apps depend on at launch.
-        runtime_src = f"{src}/runtime"
-        runtime_dst = f"{dst}/runtime"
-        if os.path.isdir(runtime_src):
-            try:
-                self._run_logged(
-                    ["rsync", "-a", "--info=progress2",
-                     f"{runtime_src}/", f"{runtime_dst}/"],
-                    check=True, timeout=600,
-                )
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to copy Flatpak runtimes: {exc.output.strip() or exc}"
-
-        # Copy only selected app directories
-        app_src = f"{src}/app"
-        app_dst = f"{dst}/app"
-        os.makedirs(app_dst, exist_ok=True)
-
-        copied_all = True
-        for app_id in selected_ids:
-            src_app = f"{app_src}/{app_id}"
-            if not os.path.isdir(src_app):
-                copied_all = False
-                continue
-            try:
-                self._run_logged(
-                    ["rsync", "-a", "--info=progress2",
-                     f"{src_app}/", f"{app_dst}/{app_id}/"],
-                    check=True, timeout=300,
-                )
-            except subprocess.CalledProcessError:
-                copied_all = False
-
-        # Only mark complete if all apps were copied — otherwise the
-        # first-boot service will download any missing ones from Flathub.
-        if copied_all:
-            (state_dir / "flatpak-setup.done").write_text("")
 
         return None
 
@@ -3248,9 +3162,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         ]
         if self._setup_selected_apps:
             self._steps.append((
-                N_("Installing selected apps"),
-                self._step_copy_flatpaks,
-                "skippable",
+                N_("Saving app selection"),
+                self._step_save_app_selection,
+                "retry",
             ))
         self._steps.append((N_("Configuring memory management"), self._step_configure_memory, "retry"))
         self._steps.append((N_("Finalizing"), self._step_finalize, "retry"))

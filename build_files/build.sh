@@ -180,16 +180,9 @@ systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
 systemctl --global disable flatpak-user-update.timer
 
-# Pre-install Flatpak apps so the installer can copy them offline.
-# Chrome is excluded — it uses extra-data (downloads proprietary bits
-# via a sandbox script) which fails inside container builds.  The
-# first-boot service installs it from Flathub instead.
-flatpak remote-add --system --if-not-exists flathub \
-    https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak install --system --noninteractive flathub \
-    io.github.kolunmi.Bazaar \
-    org.gtk.Gtk3theme.adw-gtk3 \
-    org.gtk.Gtk3theme.adw-gtk3-dark
+# Flatpak apps are installed by the first-boot service from Flathub —
+# not pre-installed in the image.  This keeps the raw image small for
+# constrained target hardware (16 GB eMMC).
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
