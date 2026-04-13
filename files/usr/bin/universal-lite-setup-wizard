@@ -2864,48 +2864,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             except (subprocess.CalledProcessError, OSError) as exc:
                 return f"Failed to copy Flatpak data ({subdir}): {exc}"
 
-        # Determine which runtimes are needed by selected apps
-        needed_runtimes: set[str] = set()
-        for app_id in selected_ids:
-            metadata_path = f"{src}/app/{app_id}/current/active/metadata"
-            try:
-                with open(metadata_path) as f:
-                    for line in f:
-                        if line.startswith("runtime="):
-                            runtime_ref = line.strip().split("=", 1)[1]
-                            runtime_name = runtime_ref.split("/")[0]
-                            needed_runtimes.add(runtime_name)
-                            break
-            except OSError:
-                pass  # If metadata unreadable, fallback copies all runtimes
-
-        # Copy only needed runtimes (or all if detection failed)
+        # Copy all runtimes and extensions.  The ostree object store
+        # (repo/) is already copied in full — runtime deploy dirs are just
+        # small metadata, so selective copying saves negligible space while
+        # risking missing GL drivers, locale packs, and other extensions
+        # that apps depend on at launch.
         runtime_src = f"{src}/runtime"
         runtime_dst = f"{dst}/runtime"
         if os.path.isdir(runtime_src):
-            if needed_runtimes:
-                os.makedirs(runtime_dst, exist_ok=True)
-                for rt_name in os.listdir(runtime_src):
-                    if rt_name in needed_runtimes:
-                        try:
-                            self._run_logged(
-                                ["rsync", "-a", "--info=progress2",
-                                 f"{runtime_src}/{rt_name}/",
-                                 f"{runtime_dst}/{rt_name}/"],
-                                check=True, timeout=600,
-                            )
-                        except subprocess.CalledProcessError as exc:
-                            return f"Failed to copy runtime {rt_name}: {exc.output.strip() or exc}"
-            else:
-                # Fallback: couldn't determine runtimes, copy everything
-                try:
-                    self._run_logged(
-                        ["rsync", "-a", "--info=progress2",
-                         f"{runtime_src}/", f"{runtime_dst}/"],
-                        check=True, timeout=600,
-                    )
-                except subprocess.CalledProcessError as exc:
-                    return f"Failed to copy Flatpak runtimes: {exc.output.strip() or exc}"
+            try:
+                self._run_logged(
+                    ["rsync", "-a", "--info=progress2",
+                     f"{runtime_src}/", f"{runtime_dst}/"],
+                    check=True, timeout=600,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to copy Flatpak runtimes: {exc.output.strip() or exc}"
 
         # Copy only selected app directories
         app_src = f"{src}/app"

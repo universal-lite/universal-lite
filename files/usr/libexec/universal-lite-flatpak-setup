@@ -52,18 +52,13 @@ if ! "$remote_ok"; then
     exit 1
 fi
 
-# Install each app with per-app retry.
-# --or-update handles apps whose ostree refs were copied from the live
-# image but not fully deployed (e.g. extra-data apps like Chrome).
+# Install or repair each app with per-app retry.
+# --or-update is always used so Flatpak resolves any missing runtime
+# extensions (GL drivers, locales) even for apps the wizard already copied.
+# For fully-installed apps this is a fast no-op.
 failed=0
 while IFS= read -r app_id; do
     [[ -z "$app_id" ]] && continue
-
-    # Skip already-installed apps (copied by the wizard)
-    if flatpak info --system "$app_id" >/dev/null 2>&1; then
-        echo "$app_id already installed, skipping" >&2
-        continue
-    fi
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
