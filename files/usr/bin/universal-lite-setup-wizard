@@ -2608,28 +2608,24 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         fullname = self._setup_fullname
         etc = Path(deploy) / "etc"
 
-        # Ensure system groups needed for hardware access exist.
-        # Bazzite #3418: missing groups cause login/hardware failures.
-        for grp in ["video", "input", "render"]:
-            subprocess.run(
-                ["groupadd", "-R", deploy, "--system", "-f", grp],
-                capture_output=True, timeout=10,
-            )
-
         # Create user with primary group, home directory, and shell.
-        # useradd -R handles ostree hardlinks, UID/GID allocation, and
-        # /etc/login.defs defaults (subuid/subgid ranges, etc).
-        sup_groups = ["video", "input", "render"]
-        if self._setup_is_admin:
-            sup_groups.insert(0, "wheel")
+        # Only add wheel for admin — hardware groups (video, input, render)
+        # are managed by logind seat ACLs, not /etc/group membership.
+        # This matches Anaconda's create_user() which only adds wheel.
+        sup_groups = ["wheel"] if self._setup_is_admin else []
 
+        # Run user management commands inside the sysroot (Anaconda pattern).
+        # chroot ensures the sysroot's own NSS, PAM, and login.defs are used
+        # instead of the live image's — important for UID ranges, password
+        # policies, and any NSS modules the target image ships.
         useradd_cmd = [
-            "useradd", "-R", deploy,
+            "chroot", deploy, "useradd",
             "-M", "-d", f"/var/home/{username}",
             "-s", "/bin/bash",
             "-U",  # create matching primary group
-            "-G", ",".join(sup_groups),
         ]
+        if sup_groups:
+            useradd_cmd.extend(["-G", ",".join(sup_groups)])
         if fullname:
             useradd_cmd.extend(["-c", fullname])
         useradd_cmd.append(username)
@@ -2641,17 +2637,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if result.returncode not in (0, 9):
             return f"Failed to create user: {result.stderr.strip() or result}"
 
-        # Set user password via chpasswd -e -R (encrypted password via stdin).
-        # Handles shadow permissions (0640) and hardlinks correctly.
+        # Set user password via chpasswd -e (encrypted password via stdin).
         try:
             hashed_pw = self._setup_hashed_password
             subprocess.run(
-                ["chpasswd", "-e", "-R", deploy],
+                ["chroot", deploy, "chpasswd", "-e"],
                 input=f"{username}:{hashed_pw}\n",
                 capture_output=True, text=True, check=True, timeout=10,
             )
         except subprocess.CalledProcessError as exc:
             return f"Failed to set password: {exc.stderr.strip() or exc}"
+
+        # Reset sp_lstchg so password aging won't force a change on first
+        # login.  Matches Anaconda's chage -d "" after chpasswd.
+        subprocess.run(
+            ["chroot", deploy, "chage", "-d", "", username],
+            capture_output=True, timeout=10,
+        )
 
         # Ensure home directory exists in /var/home (ostree symlinks /home → /var/home)
         home = Path(var_dir) / "home" / username
@@ -2687,7 +2689,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if self._setup_hashed_root_password:
             try:
                 subprocess.run(
-                    ["chpasswd", "-e", "-R", deploy],
+                    ["chroot", deploy, "chpasswd", "-e"],
                     input=f"root:{self._setup_hashed_root_password}\n",
                     capture_output=True, text=True, check=True, timeout=10,
                 )
