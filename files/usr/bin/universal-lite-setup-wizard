@@ -2302,7 +2302,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             3: XBOOTLDR    —   1 GiB  — ext4
             4: Linux root  — remaining — user's choice
 
-        Sets self._mount_point and self._root_uuid for _step_install_system.
+        Sets self._mount_point for _step_install_system.
         """
         target = self._setup_target_drive
         fs = self._setup_filesystem
@@ -2416,19 +2416,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             except subprocess.TimeoutExpired:
                 return f"Formatting {label} partition timed out"
 
-        # --- Read root partition UUID for bootc --root-mount-spec ---
-        try:
-            result = subprocess.run(
-                ["blkid", "-s", "UUID", "-o", "value", part_root],
-                capture_output=True, text=True, check=True, timeout=10,
-            )
-            self._root_uuid = result.stdout.strip()
-            if not self._root_uuid:
-                return "blkid returned empty UUID for root partition"
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to read root UUID: {exc.stderr.strip() or exc}"
-
         # --- Mount in correct order: root, then /boot, then /boot/efi ---
+        # bootc auto-detects UUIDs from mounted filesystems — no blkid needed.
         Path(mount_point).mkdir(parents=True, exist_ok=True)
 
         mount_sequence = [
@@ -2520,11 +2509,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             if not prepare_root.exists():
                 prepare_root.write_text("[ostree]\nsysroot=/sysroot\n")
 
+            # Don't pass --root-mount-spec or --boot-mount-spec — let bootc
+            # auto-detect UUIDs from the mounted filesystems (Anaconda pattern).
+            # bootc writes /etc/fstab for /boot and sets root=UUID= in the
+            # kernel cmdline.  /boot/efi is auto-discovered via DPS (GPT type).
             cmd = [
                 "bootc", "install", "to-filesystem",
                 "--source-imgref", f"docker://{image_name}",
                 "--bootloader", "grub",  # systemd-boot needs bootupd in image
-                "--root-mount-spec", f"UUID={self._root_uuid}",
+                "--karg", f"vconsole.keymap={self._setup_vconsole_keymap}",
             ]
 
             # Inject zswap kernel args at install time so they persist
@@ -2782,18 +2775,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # Set keyboard layout for console and graphical sessions
         xkb_layout = self._setup_xkb_layout
-        # Derive console keymap from XKB layout (best-effort mapping)
-        lang_prefix = self._setup_locale.split("_")[0]
-        vconsole_keymap, _ = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
-        # Override console keymap for specific XKB layouts with known mappings
-        _xkb_to_vconsole = {"de": "de", "fr": "fr", "es": "es", "it": "it",
-                            "pt": "pt-latin1", "br": "br-abnt2", "ru": "ru",
-                            "pl": "pl", "se": "sv-latin1", "jp": "jp106",
-                            "tr": "trq", "gb": "uk"}
-        if xkb_layout in _xkb_to_vconsole:
-            vconsole_keymap = _xkb_to_vconsole[xkb_layout]
-        elif xkb_layout == "us":
-            vconsole_keymap = "us"
+        vconsole_keymap = self._setup_vconsole_keymap
         try:
             self._sysroot_unlink_write(
                 etc / "vconsole.conf",
@@ -3170,6 +3152,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._setup_locale = self._selected_locale
         kb_idx = self._kb_dropdown.get_selected()
         self._setup_xkb_layout = self._kb_codes[kb_idx] if 0 <= kb_idx < len(self._kb_codes) else "us"
+
+        # Derive vconsole keymap for --karg and vconsole.conf
+        lang_prefix = self._setup_locale.split("_")[0]
+        self._setup_vconsole_keymap, _ = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        _xkb_to_vc = {"de": "de", "fr": "fr", "es": "es", "it": "it",
+                       "pt": "pt-latin1", "br": "br-abnt2", "ru": "ru",
+                       "pl": "pl", "se": "sv-latin1", "jp": "jp106",
+                       "tr": "trq", "gb": "uk"}
+        if self._setup_xkb_layout in _xkb_to_vc:
+            self._setup_vconsole_keymap = _xkb_to_vc[self._setup_xkb_layout]
+        elif self._setup_xkb_layout == "us":
+            self._setup_vconsole_keymap = "us"
 
         # Build step list: (english_label, callable, error_behavior)
         # error_behavior: "fatal" = Back button, "retry" = Retry button,
