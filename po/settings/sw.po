@@ -841,6 +841,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
 msgid "Cancel"
 msgstr "Ghairi"
 
@@ -1404,3 +1405,36 @@ msgstr "Nenosiri hazilingani"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "Imeshindwa kuweka nenosiri"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults"
+msgstr "Rejesha chaguo-msingi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select which settings to reset to factory defaults."
+msgstr "Chagua mipangilio ipi ya kurudishwa kwa chaguo-msingi za kiwanda."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select All"
+msgstr "Chagua yote"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset"
+msgstr "Weka upya"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Could not read defaults file"
+msgstr "Haiwezi kusoma faili ya chaguo-msingi"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Troubleshooting"
+msgstr "Utatuzi wa matatizo"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset settings to factory defaults"
+msgstr "Weka upya mipangilio kwa chaguo-msingi za kiwanda"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults..."
+msgstr "Rejesha chaguo-msingi..."
+

@@ -841,6 +841,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
 msgid "Cancel"
 msgstr "ሰርዝ"
 
@@ -1404,3 +1405,36 @@ msgstr "የይለፍ ቃሎች አይዛመዱም"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "የይለፍ ቃል ለማዘጋጀት አልተሳካም"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults"
+msgstr "ነባሪዎችን ወደነበሩበት መልስ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select which settings to reset to factory defaults."
+msgstr "ወደ ፋብሪካ ነባሪዎች ለመመለስ ምን ቅንብሮች እንደሚመረጡ ይምረጡ።"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select All"
+msgstr "ሁሉንም ምረጥ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset"
+msgstr "ዳግም አስጀምር"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Could not read defaults file"
+msgstr "የነባሪ ፋይል ማንበብ አልተቻለም"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Troubleshooting"
+msgstr "መላ ፍለጋ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset settings to factory defaults"
+msgstr "ቅንብሮችን ወደ ፋብሪካ ነባሪዎች ይመልሱ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults..."
+msgstr "ነባሪዎችን ወደነበሩበት መልስ..."
+

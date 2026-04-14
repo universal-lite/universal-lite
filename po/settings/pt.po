@@ -842,6 +842,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -1405,3 +1406,36 @@ msgstr "As senhas não coincidem"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "Falha ao definir a senha"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults"
+msgstr "Restaurar padrões"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select which settings to reset to factory defaults."
+msgstr "Selecione quais configurações redefinir para os padrões de fábrica."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select All"
+msgstr "Selecionar tudo"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset"
+msgstr "Redefinir"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Could not read defaults file"
+msgstr "Não foi possível ler o arquivo de padrões"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Troubleshooting"
+msgstr "Solução de problemas"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset settings to factory defaults"
+msgstr "Redefinir configurações para os padrões de fábrica"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults..."
+msgstr "Restaurar padrões..."
+

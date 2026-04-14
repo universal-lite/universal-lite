@@ -842,6 +842,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
 msgid "Cancel"
 msgstr "취소"
 
@@ -1405,3 +1406,36 @@ msgstr "비밀번호가 일치하지 않습니다"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "비밀번호 설정에 실패했습니다"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults"
+msgstr "기본값으로 복원"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select which settings to reset to factory defaults."
+msgstr "공장 기본값으로 재설정할 설정을 선택하세요."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select All"
+msgstr "모두 선택"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset"
+msgstr "재설정"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Could not read defaults file"
+msgstr "기본값 파일을 읽을 수 없습니다"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Troubleshooting"
+msgstr "문제 해결"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset settings to factory defaults"
+msgstr "설정을 공장 기본값으로 재설정"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults..."
+msgstr "기본값으로 복원..."
+

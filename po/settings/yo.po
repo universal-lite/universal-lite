@@ -841,6 +841,7 @@ msgstr ""
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
 msgid "Cancel"
 msgstr "Fagilé"
 
@@ -1404,3 +1405,36 @@ msgstr "Àwọn ọ̀rọ̀ aṣínà kò bára mu"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "Kò le ṣètò ọ̀rọ̀ aṣínà"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults"
+msgstr "Mú àwọn ìṣètò padà sí ìpilẹ̀ṣẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select which settings to reset to factory defaults."
+msgstr "Yan àwọn ìṣètò tí o fẹ́ tún ṣe sí ìpilẹ̀ṣẹ̀ iléeṣẹ́."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Select All"
+msgstr "Yan gbogbo"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset"
+msgstr "Tún ṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Could not read defaults file"
+msgstr "Kò lè ka fáìlì ìpilẹ̀ṣẹ̀"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Troubleshooting"
+msgstr "Ìwádìí àṣìṣe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Reset settings to factory defaults"
+msgstr "Tún àwọn ìṣètò ṣe sí ìpilẹ̀ṣẹ̀ iléeṣẹ́"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py
+msgid "Restore Defaults..."
+msgstr "Mú àwọn ìṣètò padà sí ìpilẹ̀ṣẹ̀..."
+
