@@ -518,3 +518,7 @@ msgstr "Cài đặt hoàn tất!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Khởi động lại thất bại — vui lòng khởi động lại thủ công."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "Tên người dùng này được dành riêng cho hệ thống."

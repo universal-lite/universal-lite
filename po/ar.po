@@ -517,3 +517,7 @@ msgstr "اكتمل التثبيت!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "فشلت إعادة التشغيل — يرجى إعادة التشغيل يدوياً."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "اسم المستخدم هذا محجوز للنظام."

@@ -505,3 +505,7 @@ msgstr "安装完成！"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "重启失败 — 请手动重新启动。"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "此用户名已被系统保留。"

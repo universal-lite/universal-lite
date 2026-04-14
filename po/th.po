@@ -511,3 +511,7 @@ msgstr "ติดตั้งเสร็จสมบูรณ์!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "รีบูตไม่สำเร็จ — กรุณารีสตาร์ทด้วยตนเอง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "ชื่อผู้ใช้นี้ถูกสงวนไว้สำหรับระบบ"

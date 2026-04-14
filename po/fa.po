@@ -517,3 +517,7 @@ msgstr "نصب کامل شد!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "راه‌اندازی مجدد ناموفق بود — لطفاً به صورت دستی راه‌اندازی مجدد کنید."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "این نام کاربری برای سیستم رزرو شده است."

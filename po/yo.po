@@ -516,3 +516,7 @@ msgstr "Fífi Sórí Ẹ̀rọ Ti Parí!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Àtúnbẹ̀rẹ̀ kùnà — jọ̀wọ́ tún bẹ̀rẹ̀ pẹ̀lú ọwọ́."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "Orúkọ olùmúlò yìí ti wà fún ètò náà."

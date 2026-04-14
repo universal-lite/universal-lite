@@ -519,3 +519,7 @@ msgstr "Kurulum tamamlandı!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Yeniden başlatma başarısız — lütfen elle yeniden başlatın."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "Bu kullanıcı adı sistem için ayrılmıştır."

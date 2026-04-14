@@ -522,3 +522,7 @@ msgstr "Установка завершена!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Не удалось перезагрузить — пожалуйста, перезагрузите вручную."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "Это имя пользователя зарезервировано для системы."

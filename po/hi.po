@@ -514,3 +514,7 @@ msgstr "इंस्टॉलेशन पूर्ण!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "रीबूट विफल — कृपया मैन्युअल रूप से पुनः शुरू करें।"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "यह उपयोगकर्ता नाम सिस्टम के लिए आरक्षित है।"

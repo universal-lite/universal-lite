@@ -520,3 +520,7 @@ msgstr "Installatie voltooid!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Herstarten mislukt — start handmatig opnieuw op."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "Deze gebruikersnaam is gereserveerd voor het systeem."

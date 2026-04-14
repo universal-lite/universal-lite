@@ -519,3 +519,7 @@ msgstr "Installationen är klar!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Omstart misslyckades — starta om manuellt."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "Detta användarnamn är reserverat för systemet."

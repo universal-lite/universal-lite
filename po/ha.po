@@ -615,3 +615,7 @@ msgstr "An Kammala Shigarwa!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "Sake kunna ya gaza — da fatan za a sake kunna da hannu."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "An keɓe wannan sunan mai amfani don tsarin."

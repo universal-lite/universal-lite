@@ -517,3 +517,7 @@ msgstr "설치 완료!"
 #: ../files/usr/bin/universal-lite-setup-wizard:3290
 msgid "Reboot failed — please restart manually."
 msgstr "재부팅에 실패했습니다 — 수동으로 다시 시작해 주세요."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "This username is reserved for the system."
+msgstr "이 사용자 이름은 시스템에 예약되어 있습니다."
