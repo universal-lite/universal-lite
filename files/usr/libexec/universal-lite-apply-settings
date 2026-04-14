@@ -886,6 +886,7 @@ menu.border.radius: 8
 # OSD
 osd.bg: flat solid
 osd.bg.color: {palette["window_bg"]}
+osd.border.width: 1
 osd.border.color: {palette["border"]}
 osd.label.text.color: {palette["fg"]}
 """

@@ -55,7 +55,7 @@ _dpms_timeout=${_dpms_timeout:-600}
 # Build swayidle command safely without eval
 set -- swayidle -w
 [ "$_lock_timeout" != "0" ] && set -- "$@" timeout "$_lock_timeout" 'swaylock -f'
-[ "$_dpms_timeout" != "0" ] && set -- "$@" timeout "$_dpms_timeout" 'wlopm --off *' resume 'wlopm --on *'
+[ "$_dpms_timeout" != "0" ] && set -- "$@" timeout "$_dpms_timeout" 'wlopm --off "*"' resume 'wlopm --on "*"'
 set -- "$@" before-sleep 'swaylock -f'
 "$@" >/dev/null 2>&1 &
 pgrep -x Thunar >/dev/null 2>&1 || Thunar --daemon >/dev/null 2>&1 &
