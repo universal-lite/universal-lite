@@ -2320,7 +2320,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         target = self._setup_target_drive
         fs = self._setup_filesystem
         dev = f"/dev/{target}"
-        mount_point = "/mnt/target"
+        mount_point = "/run/universal-lite-target"
 
         # Clean up mounts from any previous attempt (no-op if nothing mounted)
         subprocess.run(["umount", "-R", mount_point],
