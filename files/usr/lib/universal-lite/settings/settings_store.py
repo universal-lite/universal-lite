@@ -54,6 +54,20 @@ class SettingsStore:
     def get(self, key: str, default=None):
         return self._data.get(key, default)
 
+    def get_defaults(self) -> dict:
+        """Load and return the factory defaults from the image."""
+        return self._load_defaults()
+
+    def restore_keys(self, keys: list[str], defaults: dict) -> None:
+        """Overwrite specified keys with values from defaults, then apply."""
+        for key in keys:
+            if key in defaults:
+                self._data[key] = defaults[key]
+            else:
+                self._data.pop(key, None)
+        self._write()
+        self._run_apply()
+
     def save_and_apply(self, key: str, value) -> None:
         self._data[key] = value
         self._write()

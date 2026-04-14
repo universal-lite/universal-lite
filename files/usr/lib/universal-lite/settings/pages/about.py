@@ -1,4 +1,3 @@
-import json
 import os
 import socket
 import subprocess
@@ -35,13 +34,9 @@ CATEGORY_KEYS = {
         "keyboard_repeat_delay", "keyboard_repeat_rate",
         "capslock_behavior",
     ],
-    "Sound": [],
     "Power & Lock": [
         "lock_timeout", "display_off_timeout",
-        "suspend_timeout", "lid_close_action", "power_profile",
-    ],
-    "Default Apps": [
-        "default_browser", "default_file_manager", "default_terminal",
+        "suspend_timeout", "lid_close_action",
     ],
 }
 
@@ -144,36 +139,24 @@ class RestoreDefaultsDialog(Gtk.Window):
             return
 
         # Load defaults from the image (updated via bootc)
-        try:
-            defaults = json.loads(
-                self._store._defaults_path.read_text(encoding="utf-8")
-            )
-        except (OSError, json.JSONDecodeError):
+        defaults = self._store.get_defaults()
+        if not defaults:
             self._store.show_toast(_("Could not read defaults file"), True)
             self.close()
             return
 
-        # Merge selected category keys from defaults into current settings
+        # Collect all keys from selected categories
+        keys = []
         for category in selected:
-            for key in CATEGORY_KEYS.get(category, []):
-                if key in defaults:
-                    self._store._data[key] = defaults[key]
-                else:
-                    self._store._data.pop(key, None)
+            keys.extend(CATEGORY_KEYS.get(category, []))
 
-        # Write and apply
-        self._store._write()
-        try:
-            subprocess.run(
-                [self._store._apply_script],
-                timeout=30, capture_output=True,
-            )
-        except (subprocess.TimeoutExpired, OSError):
-            pass  # Settings file is written; restart will re-apply
+        # Write merged settings and apply asynchronously via store
+        self._store.restore_keys(keys, defaults)
 
-        # Restart the settings app
+        # Restart the settings app after GTK processes the close
         self.close()
-        os.execv(sys.executable, [sys.executable] + sys.argv)
+        GLib.timeout_add(100, lambda: os.execv(
+            sys.executable, [sys.executable] + sys.argv))
 
 
 class AboutPage(BasePage):
