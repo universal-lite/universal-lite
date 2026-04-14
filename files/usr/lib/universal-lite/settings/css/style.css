@@ -70,3 +70,29 @@
     color: white;
     border-color: #c01c28;
 }
+.dialog-overlay {
+    background-color: alpha(black, 0.5);
+}
+.dialog-card {
+    background-color: @theme_bg_color;
+    border-radius: 12px;
+    border: 1px solid alpha(@borders, 0.3);
+    box-shadow: 0 4px 16px alpha(black, 0.2);
+    padding: 24px;
+    min-width: 360px;
+}
+.dialog-title {
+    font-size: 18px;
+    font-weight: bold;
+}
+.dialog-subtitle {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 8px;
+}
+.destructive-button {
+    color: #c01c28;
+}
+.destructive-button:hover {
+    background-color: alpha(#c01c28, 0.1);
+}
