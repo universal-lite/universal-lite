@@ -1970,7 +1970,12 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return
 
         if self._current_page == PAGE_CONFIRM:
-            self._on_setup_clicked()
+            try:
+                self._on_setup_clicked()
+            except Exception as exc:
+                import traceback
+                self._set_status(f"Install failed: {exc}")
+                traceback.print_exc()
             return
 
         self._current_page += 1
@@ -3135,7 +3140,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             root_pw = self._root_password_entry.get_text()
             self._setup_hashed_root_password = (
                 _hash_password(root_pw) if root_pw else "")
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
             self._set_status(f"Failed to hash password: {exc}")
             return
         self._password_entry.set_text("")
