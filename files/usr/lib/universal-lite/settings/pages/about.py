@@ -1,6 +1,8 @@
+import json
 import os
 import socket
 import subprocess
+import sys
 from gettext import gettext as _
 from pathlib import Path
 
@@ -10,6 +12,168 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import GLib, Gtk
 
 from ..base import BasePage
+
+CATEGORY_KEYS = {
+    "Appearance": [
+        "theme", "accent", "wallpaper", "font_size",
+        "cursor_size", "high_contrast", "reduce_motion",
+    ],
+    "Display": [
+        "scale", "night_light_enabled", "night_light_temp",
+        "night_light_schedule", "night_light_start", "night_light_end",
+    ],
+    "Panel": [
+        "edge", "layout", "pinned", "clock_24h", "density",
+    ],
+    "Mouse & Touchpad": [
+        "touchpad_tap_to_click", "touchpad_natural_scroll",
+        "touchpad_pointer_speed", "touchpad_scroll_speed",
+        "mouse_pointer_speed", "mouse_natural_scroll", "mouse_accel_profile",
+    ],
+    "Keyboard": [
+        "keyboard_layout", "keyboard_variant",
+        "keyboard_repeat_delay", "keyboard_repeat_rate",
+        "capslock_behavior",
+    ],
+    "Sound": [],
+    "Power & Lock": [
+        "lock_timeout", "display_off_timeout",
+        "suspend_timeout", "lid_close_action", "power_profile",
+    ],
+    "Default Apps": [
+        "default_browser", "default_file_manager", "default_terminal",
+    ],
+}
+
+
+class RestoreDefaultsDialog(Gtk.Window):
+    """Modal dialog for selecting which setting categories to reset."""
+
+    def __init__(self, parent: Gtk.Window, store):
+        super().__init__(
+            transient_for=parent,
+            modal=True,
+            decorated=False,
+            default_width=1,
+            default_height=1,
+        )
+        self._store = store
+        self._checks: list[tuple[str, Gtk.CheckButton]] = []
+
+        # Dim overlay background
+        overlay_box = Gtk.Box()
+        overlay_box.add_css_class("dialog-overlay")
+        overlay_box.set_halign(Gtk.Align.FILL)
+        overlay_box.set_valign(Gtk.Align.FILL)
+        overlay_box.set_hexpand(True)
+        overlay_box.set_vexpand(True)
+        self.set_child(overlay_box)
+
+        # Centered card
+        card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        card.add_css_class("dialog-card")
+        card.set_halign(Gtk.Align.CENTER)
+        card.set_valign(Gtk.Align.CENTER)
+        overlay_box.append(card)
+
+        title = Gtk.Label(label=_("Restore Defaults"))
+        title.add_css_class("dialog-title")
+        title.set_halign(Gtk.Align.START)
+        card.append(title)
+
+        subtitle = Gtk.Label(
+            label=_("Select which settings to reset to factory defaults."),
+            xalign=0, wrap=True,
+        )
+        subtitle.add_css_class("dialog-subtitle")
+        card.append(subtitle)
+
+        # "Select All" checkbox
+        self._select_all = Gtk.CheckButton(label=_("Select All"))
+        self._select_all.set_active(False)
+        self._select_all.connect("toggled", self._on_select_all_toggled)
+        card.append(self._select_all)
+
+        card.append(Gtk.Separator())
+
+        # Category checkboxes
+        for category in CATEGORY_KEYS:
+            check = Gtk.CheckButton(label=_(category))
+            check.connect("toggled", self._on_category_toggled)
+            self._checks.append((category, check))
+            card.append(check)
+
+        card.append(Gtk.Separator())
+
+        # Button row
+        btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        btn_row.set_halign(Gtk.Align.END)
+
+        cancel_btn = Gtk.Button(label=_("Cancel"))
+        cancel_btn.connect("clicked", lambda _: self.close())
+        btn_row.append(cancel_btn)
+
+        self._reset_btn = Gtk.Button(label=_("Reset"))
+        self._reset_btn.add_css_class("destructive-button")
+        self._reset_btn.set_sensitive(False)
+        self._reset_btn.connect("clicked", self._on_reset_clicked)
+        btn_row.append(self._reset_btn)
+
+        card.append(btn_row)
+
+        # Fullscreen so the overlay covers the parent
+        self.fullscreen()
+
+    def _on_select_all_toggled(self, btn: Gtk.CheckButton) -> None:
+        active = btn.get_active()
+        for _, check in self._checks:
+            check.set_active(active)
+
+    def _on_category_toggled(self, _btn: Gtk.CheckButton) -> None:
+        any_checked = any(c.get_active() for _, c in self._checks)
+        all_checked = all(c.get_active() for _, c in self._checks)
+        self._reset_btn.set_sensitive(any_checked)
+        # Update "Select All" without re-triggering its handler
+        self._select_all.handler_block_by_func(self._on_select_all_toggled)
+        self._select_all.set_active(all_checked)
+        self._select_all.handler_unblock_by_func(self._on_select_all_toggled)
+
+    def _on_reset_clicked(self, _btn: Gtk.Button) -> None:
+        selected = [cat for cat, check in self._checks if check.get_active()]
+        if not selected:
+            return
+
+        # Load defaults from the image (updated via bootc)
+        try:
+            defaults = json.loads(
+                self._store._defaults_path.read_text(encoding="utf-8")
+            )
+        except (OSError, json.JSONDecodeError):
+            self._store.show_toast(_("Could not read defaults file"), True)
+            self.close()
+            return
+
+        # Merge selected category keys from defaults into current settings
+        for category in selected:
+            for key in CATEGORY_KEYS.get(category, []):
+                if key in defaults:
+                    self._store._data[key] = defaults[key]
+                else:
+                    self._store._data.pop(key, None)
+
+        # Write and apply
+        self._store._write()
+        try:
+            subprocess.run(
+                [self._store._apply_script],
+                timeout=30, capture_output=True,
+            )
+        except (subprocess.TimeoutExpired, OSError):
+            pass  # Settings file is written; restart will re-apply
+
+        # Restart the settings app
+        self.close()
+        os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 class AboutPage(BasePage):
