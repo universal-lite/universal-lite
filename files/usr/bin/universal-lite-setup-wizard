@@ -2679,30 +2679,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         Uses useradd -R / chpasswd -e -R (the Anaconda pattern) instead
         of manual file editing.  The -R flag operates on an alternate
         root for UID allocation, shadow permissions, and retry
-        idempotency.
-
-        SELinux is set permissive during this step because shadow-utils
-        creates lock/temp files in the deployment's /etc/ and the
-        ostree SELinux context blocks that.  restorecon in _step_finalize
-        fixes all labels before boot.
+        idempotency.  SELinux is set permissive at the step-runner
+        level for the entire install.
         """
         deploy = self._sysroot_deploy
         var_dir = self._sysroot_var
         username = self._setup_username
         fullname = self._setup_fullname
         etc = Path(deploy) / "etc"
-
-        # Save SELinux mode and set permissive — shadow-utils needs to
-        # create lock/temp files in the deployment's /etc/ directory,
-        # which the ostree SELinux context blocks.
-        selinux_was_enforcing = False
-        try:
-            r = subprocess.run(["getenforce"], capture_output=True, text=True, timeout=5)
-            selinux_was_enforcing = r.stdout.strip() == "Enforcing"
-            if selinux_was_enforcing:
-                subprocess.run(["setenforce", "0"], capture_output=True, timeout=5)
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
-            pass
 
         # Break ostree hardlinks on auth files so useradd/chpasswd can
         # write to them.  These files are hardlinked to the read-only
@@ -2859,11 +2843,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             )
         except OSError as exc:
             return f"Failed to configure keyboard layout: {exc}"
-        finally:
-            # Restore SELinux enforcement — restorecon in finalize fixes labels
-            if selinux_was_enforcing:
-                subprocess.run(["setenforce", "1"],
-                               capture_output=True, timeout=5)
 
         return None
 
@@ -3027,17 +3006,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Restore SELinux labels on all files we created or modified.
         # Matches Anaconda's SetContextsTask scope — ostree docs state
         # that labeling /var is "categorically the installer's job."
+        mount_point = self._mount_point
         try:
             self._run_logged(
                 ["restorecon", "-ir",
+                 f"{mount_point}/boot",
                  f"{deploy}/etc",
                  f"{var_dir}/home",
                  f"{var_dir}/roothome",
-                 f"{var_dir}/lib/universal-lite",
+                 f"{var_dir}/lib",
+                 f"{var_dir}/log",
                  f"{var_dir}/opt",
                  f"{var_dir}/srv",
                  f"{var_dir}/mnt",
                  f"{var_dir}/media",
+                 f"{var_dir}/run",
                  f"{var_dir}/spool"],
                 check=True, timeout=180,
             )
@@ -3303,19 +3286,41 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         start = self._run_from_step
 
         def _thread() -> None:
-            for i in range(start, len(self._steps)):
-                label_text, func, behavior = self._steps[i]
-                GLib.idle_add(self._update_step_status, i, "active")
-                try:
-                    err = func()
-                except Exception as exc:
-                    err = f"Unexpected error: {exc}"
-                if err:
-                    GLib.idle_add(self._on_step_failed, i, err, behavior)
-                    return
-                GLib.idle_add(self._update_step_status, i, "done")
+            # Set SELinux permissive for the entire install — all post-
+            # install steps write to the deployment's /etc/ and the ostree
+            # SELinux context blocks temp/lock file creation by tools like
+            # shadow-utils.  Anaconda's live ISO boots permissive; we must
+            # toggle at runtime.  restorecon in finalize relabels everything.
+            selinux_was_enforcing = False
+            try:
+                r = subprocess.run(
+                    ["getenforce"], capture_output=True, text=True, timeout=5)
+                selinux_was_enforcing = r.stdout.strip() == "Enforcing"
+                if selinux_was_enforcing:
+                    subprocess.run(
+                        ["setenforce", "0"], capture_output=True, timeout=5)
+            except (subprocess.CalledProcessError, subprocess.TimeoutExpired,
+                    OSError):
+                pass
 
-            GLib.idle_add(self._on_all_steps_done)
+            try:
+                for i in range(start, len(self._steps)):
+                    label_text, func, behavior = self._steps[i]
+                    GLib.idle_add(self._update_step_status, i, "active")
+                    try:
+                        err = func()
+                    except Exception as exc:
+                        err = f"Unexpected error: {exc}"
+                    if err:
+                        GLib.idle_add(self._on_step_failed, i, err, behavior)
+                        return
+                    GLib.idle_add(self._update_step_status, i, "done")
+
+                GLib.idle_add(self._on_all_steps_done)
+            finally:
+                if selinux_was_enforcing:
+                    subprocess.run(
+                        ["setenforce", "1"], capture_output=True, timeout=5)
 
         threading.Thread(target=_thread, daemon=True).start()
 
