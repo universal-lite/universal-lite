@@ -2679,14 +2679,25 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         Uses useradd -R / chpasswd -e -R (the Anaconda pattern) instead
         of manual file editing.  The -R flag operates on an alternate
-        root, correctly handling ostree hardlinks, UID allocation,
-        shadow permissions, and retry idempotency.
+        root for UID allocation, shadow permissions, and retry
+        idempotency.  Ostree hardlinks on auth files must be broken
+        first or useradd fails with EACCES.
         """
         deploy = self._sysroot_deploy
         var_dir = self._sysroot_var
         username = self._setup_username
         fullname = self._setup_fullname
         etc = Path(deploy) / "etc"
+
+        # Break ostree hardlinks on auth files so useradd/chpasswd can
+        # write to them.  These files are hardlinked to the read-only
+        # object store — writing through the link fails with EACCES.
+        for auth_file in ("passwd", "shadow", "group", "gshadow"):
+            p = etc / auth_file
+            if p.exists():
+                data = p.read_bytes()
+                p.unlink()
+                p.write_bytes(data)
 
         # Create user with primary group, home directory, and shell.
         # Only add wheel for admin — hardware groups (video, input, render)
