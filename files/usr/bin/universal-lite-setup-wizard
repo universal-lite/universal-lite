@@ -2692,7 +2692,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Break ostree hardlinks on auth files so useradd/chpasswd can
         # write to them.  These files are hardlinked to the read-only
         # object store — writing through the link fails with EACCES.
-        for auth_file in ("passwd", "shadow", "group", "gshadow"):
+        for auth_file in ("passwd", "shadow", "group", "gshadow",
+                          "subuid", "subgid"):
             p = etc / auth_file
             if p.exists():
                 data = p.read_bytes()
