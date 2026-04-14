@@ -2658,7 +2658,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return None
 
     @staticmethod
-    def _sysroot_unlink_write(path: Path, content: str) -> None:
+    def _sysroot_unlink_write(path: Path, content: str,
+                              mode: int | None = None) -> None:
         """Break ostree hardlink and write content atomically.
 
         ostree deployments hardlink /etc files to the read-only object
@@ -2666,11 +2667,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         corrupts the store.  This helper:
           1. Unlinks the existing file (breaks the hardlink)
           2. Writes to a temp file in the same directory
-          3. Renames atomically into place
+          3. Sets permissions if mode is specified (e.g. 0o600 for shadow)
+          4. Renames atomically into place
         """
         path.unlink(missing_ok=True)
         tmp = path.with_suffix(".tmp")
         tmp.write_text(content)
+        if mode is not None:
+            os.chmod(tmp, mode)
         os.rename(tmp, path)
 
     def _step_configure_user(self) -> str | None:
@@ -2704,11 +2708,22 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     user_exists = True
 
         if user_exists:
-            # Retry — user already created, skip to password/config
+            # Retry — user already created, extract UID/GID
             pw_line = [l for l in passwd_text.splitlines()
                        if l.startswith(f"{username}:")]
             parts = pw_line[0].split(":")
             uid, gid = int(parts[2]), int(parts[3])
+
+            # Ensure shadow entry exists (covers partial-write retry)
+            shadow_path = etc / "shadow"
+            shadow_text = shadow_path.read_text() if shadow_path.exists() else ""
+            if not any(l.startswith(f"{username}:") for l in shadow_text.splitlines()):
+                hashed_pw = self._setup_hashed_password
+                new_shadow = shadow_text.rstrip("\n")
+                if new_shadow:
+                    new_shadow += "\n"
+                new_shadow += f"{username}:{hashed_pw}::0:99999:7:::\n"
+                self._sysroot_unlink_write(shadow_path, new_shadow, mode=0o000)
         else:
             uid = 1000
             while uid in existing_uids:
@@ -2766,7 +2781,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 new_shadow += "\n"
             # Empty sp_lstchg field ("::" after hash) = no forced password change
             new_shadow += f"{username}:{hashed_pw}::0:99999:7:::\n"
-            self._sysroot_unlink_write(shadow_path, new_shadow)
+            self._sysroot_unlink_write(shadow_path, new_shadow, mode=0o000)
 
             # --- Write gshadow ---
             gshadow_path = etc / "gshadow"
@@ -2787,7 +2802,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                             lines[i] = ":".join(parts)
                         break
                 new_gshadow = "\n".join(lines) + "\n"
-            self._sysroot_unlink_write(gshadow_path, new_gshadow)
+            self._sysroot_unlink_write(gshadow_path, new_gshadow, mode=0o000)
 
             # --- Allocate subordinate UIDs/GIDs for rootless containers ---
             for sub_file in ("subuid", "subgid"):
@@ -2838,7 +2853,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 parts[1] = root_hash
                 lines[i] = ":".join(parts)
                 break
-        self._sysroot_unlink_write(shadow_path, "\n".join(lines) + "\n")
+        self._sysroot_unlink_write(shadow_path, "\n".join(lines) + "\n",
+                                   mode=0o000)
 
         # Set timezone and locale — unlink ostree hardlinks before writing
         try:
