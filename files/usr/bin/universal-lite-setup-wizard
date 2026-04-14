@@ -21,6 +21,7 @@ Eight-page flow:
 import gettext
 import json
 import os
+import shutil
 
 import re
 import signal
@@ -420,6 +421,11 @@ button.back-button:active label {
 """
 
 USERNAME_RE = re.compile(r"^[a-z_]([a-z0-9_-]*[a-z0-9_])?$")
+RESERVED_USERNAMES = {
+    "root", "bin", "daemon", "adm", "lp", "sync", "shutdown",
+    "halt", "mail", "operator", "games", "ftp", "nobody",
+    "system", "home",
+}
 HOSTNAME_RE = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$")
 
 SWAP_STRATEGIES = [
@@ -2123,6 +2129,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                   "and cannot end with a hyphen.")
             )
             return False
+        if username in RESERVED_USERNAMES:
+            self._set_status(_("This username is reserved for the system."))
+            return False
         if not password:
             self._set_status(_("Password is required."))
             return False
@@ -2332,6 +2341,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                                    capture_output=True, timeout=10)
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             pass  # findmnt returns non-zero if no mounts found — that's fine
+
+        # Verify all partitions are actually unmounted before destructive ops
+        try:
+            verify = subprocess.run(
+                ["findmnt", "-rno", "TARGET", "-S", dev],
+                capture_output=True, text=True, timeout=10,
+            )
+            still_mounted = [m for m in verify.stdout.strip().splitlines() if m]
+            if still_mounted:
+                return f"Cannot proceed: partitions still mounted: {', '.join(still_mounted)}"
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            pass  # No mounts found — safe to proceed
 
         # Wipe all filesystem/RAID/partition-table signatures so sfdisk
         # starts from a clean slate (previous installs leave signatures
@@ -2740,7 +2761,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"Failed to set home directory ownership: {exc}"
 
-        # Set root password if provided
+        # Set root password if provided, otherwise explicitly lock root
         if self._setup_hashed_root_password:
             try:
                 subprocess.run(
@@ -2750,6 +2771,15 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 )
             except subprocess.CalledProcessError as exc:
                 return f"Failed to set root password: {exc.stderr.strip() or exc}"
+        else:
+            try:
+                subprocess.run(
+                    ["chpasswd", "-e", "-R", deploy],
+                    input="root:!\n",
+                    capture_output=True, text=True, check=True, timeout=10,
+                )
+            except subprocess.CalledProcessError as exc:
+                return f"Failed to lock root account: {exc.stderr.strip() or exc}"
 
         # Set timezone and locale — unlink ostree hardlinks before writing
         try:
@@ -2849,6 +2879,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     self._sysroot_unlink_write(keyfile, text)
             except OSError:
                 pass  # Best-effort — connection still works without this
+
+        # Copy resolv.conf so DNS works on first boot before NM reconnects.
+        # Preserves the symlink (Fedora points to systemd-resolved's stub).
+        src_resolv = "/etc/resolv.conf"
+        dst_resolv = f"{self._sysroot_deploy}/etc/resolv.conf"
+        try:
+            if os.path.exists(src_resolv):
+                shutil.copy2(src_resolv, dst_resolv, follow_symlinks=False)
+        except OSError:
+            pass  # Best-effort — NM will reconfigure DNS on first boot
 
         return None
 
