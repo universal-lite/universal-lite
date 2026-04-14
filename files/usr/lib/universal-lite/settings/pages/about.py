@@ -188,6 +188,7 @@ class AboutPage(BasePage):
             (_("About"), _("Processor")), (_("About"), _("Memory")), (_("About"), _("Disk")),
             (_("About"), _("Desktop")), (_("About"), _("Graphics")), (_("About"), _("GPU")),
             (_("About"), _("Updates")),
+            (_("About"), _("Restore Defaults")),
         ]
 
     def build(self):
@@ -264,6 +265,22 @@ class AboutPage(BasePage):
         update_box.append(check_btn)
         page.append(update_box)
 
+        # Troubleshooting
+        page.append(self.make_group_label(_("Troubleshooting")))
+        restore_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        restore_row.set_valign(Gtk.Align.CENTER)
+        restore_desc = Gtk.Label(
+            label=_("Reset settings to factory defaults"),
+            xalign=0,
+        )
+        restore_desc.set_hexpand(True)
+        restore_row.append(restore_desc)
+        restore_btn = Gtk.Button(label=_("Restore Defaults..."))
+        restore_btn.add_css_class("destructive-button")
+        restore_btn.connect("clicked", self._on_restore_defaults_clicked)
+        restore_row.append(restore_btn)
+        page.append(restore_row)
+
         return page
 
     def _check_updates(self):
@@ -284,3 +301,8 @@ class AboutPage(BasePage):
             except Exception:
                 GLib.idle_add(self._update_label.set_text, _("Could not check for updates"))
         threading.Thread(target=_check, daemon=True).start()
+
+    def _on_restore_defaults_clicked(self, _btn: Gtk.Button) -> None:
+        window = _btn.get_root()
+        dialog = RestoreDefaultsDialog(window, self.store)
+        dialog.present()
