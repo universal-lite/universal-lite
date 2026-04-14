@@ -3200,7 +3200,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         # Derive vconsole keymap for --karg and vconsole.conf
         lang_prefix = self._setup_locale.split("_")[0]
-        self._setup_vconsole_keymap, _ = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
+        self._setup_vconsole_keymap, _xkb = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
         _xkb_to_vc = {"de": "de", "fr": "fr", "es": "es", "it": "it",
                        "pt": "pt-latin1", "br": "br-abnt2", "ru": "ru",
                        "pl": "pl", "se": "sv-latin1", "jp": "jp106",
