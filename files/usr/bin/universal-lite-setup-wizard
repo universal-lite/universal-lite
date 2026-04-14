@@ -2951,7 +2951,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                     text = text.replace(
                         "[connection]\n",
                         "[connection]\nautoconnect=true\n", 1)
-                    self._sysroot_unlink_write(keyfile, text)
+                    self._sysroot_unlink_write(keyfile, text, mode=0o600)
             except OSError:
                 pass  # Best-effort — connection still works without this
 
