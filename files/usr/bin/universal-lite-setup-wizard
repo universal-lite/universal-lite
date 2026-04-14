@@ -2676,11 +2676,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _step_configure_user(self) -> str | None:
         """Create user account, set root password, timezone, and locale on sysroot.
 
-        Uses useradd -R / chpasswd -e -R (the Anaconda pattern) instead
-        of manual file editing.  The -R flag operates on an alternate
-        root for UID allocation, shadow permissions, and retry
-        idempotency.  SELinux is set permissive at the step-runner
-        level for the entire install.
+        Edits passwd/shadow/group/gshadow directly instead of using
+        useradd -R, which fails on ostree deployments due to hardlinked
+        auth files and shadow-utils lock/temp file creation issues.
+        Uses _sysroot_unlink_write to break ostree hardlinks atomically.
         """
         deploy = self._sysroot_deploy
         var_dir = self._sysroot_var
@@ -2688,112 +2687,158 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         fullname = self._setup_fullname
         etc = Path(deploy) / "etc"
 
-        # Break ostree hardlinks on auth files so useradd/chpasswd can
-        # write to them.  These files are hardlinked to the read-only
-        # object store — writing through the link fails with EACCES.
-        for auth_file in ("passwd", "shadow", "group", "gshadow",
-                          "subuid", "subgid"):
-            p = etc / auth_file
-            if p.exists():
-                data = p.read_bytes()
-                p.unlink()
-                p.write_bytes(data)
+        # --- Allocate UID/GID ---
+        # Read existing passwd to find next available UID >= 1000
+        passwd_path = etc / "passwd"
+        passwd_text = passwd_path.read_text() if passwd_path.exists() else ""
+        existing_uids = set()
+        user_exists = False
+        for line in passwd_text.splitlines():
+            parts = line.split(":")
+            if len(parts) >= 3:
+                try:
+                    existing_uids.add(int(parts[2]))
+                except ValueError:
+                    pass
+                if parts[0] == username:
+                    user_exists = True
 
-        # Create user with primary group, home directory, and shell.
-        # Only add wheel for admin — hardware groups (video, input, render)
-        # are managed by logind seat ACLs, not /etc/group membership.
-        # This matches Anaconda's create_user() which only adds wheel.
-        sup_groups = ["wheel"] if self._setup_is_admin else []
+        if user_exists:
+            # Retry — user already created, skip to password/config
+            pw_line = [l for l in passwd_text.splitlines()
+                       if l.startswith(f"{username}:")]
+            parts = pw_line[0].split(":")
+            uid, gid = int(parts[2]), int(parts[3])
+        else:
+            uid = 1000
+            while uid in existing_uids:
+                uid += 1
+            gid = uid  # Primary group gets same ID
 
-        # Use -R (alternate root) for user management commands.  This
-        # operates directly on the sysroot's /etc files without needing a
-        # full chroot environment (which lacks /proc, /dev, etc.).
-        useradd_cmd = [
-            "useradd", "-R", deploy,
-            "-M", "-d", f"/var/home/{username}",
-            "-s", "/bin/bash",
-            "-U",  # create matching primary group
-        ]
-        if sup_groups:
-            useradd_cmd.extend(["-G", ",".join(sup_groups)])
-        if fullname:
-            useradd_cmd.extend(["-c", fullname])
-        useradd_cmd.append(username)
+            # Read existing group to check for GID conflicts
+            group_path = etc / "group"
+            group_text = group_path.read_text() if group_path.exists() else ""
+            existing_gids = set()
+            for line in group_text.splitlines():
+                parts = line.split(":")
+                if len(parts) >= 3:
+                    try:
+                        existing_gids.add(int(parts[2]))
+                    except ValueError:
+                        pass
+            while gid in existing_gids:
+                gid += 1
 
-        result = subprocess.run(
-            useradd_cmd, capture_output=True, text=True, timeout=30,
-        )
-        # Exit code 9 = user already exists (retry) — not an error
-        if result.returncode not in (0, 9):
-            return f"Failed to create user: {result.stderr.strip() or result}"
+            # --- Write passwd ---
+            gecos = fullname or ""
+            new_passwd = passwd_text.rstrip("\n")
+            if new_passwd:
+                new_passwd += "\n"
+            new_passwd += f"{username}:x:{uid}:{gid}:{gecos}:/var/home/{username}:/bin/bash\n"
+            self._sysroot_unlink_write(passwd_path, new_passwd)
 
-        # Set user password via chpasswd -e -R (encrypted password via stdin).
-        try:
+            # --- Write group (primary group + wheel if admin) ---
+            new_group = group_text.rstrip("\n")
+            if new_group:
+                new_group += "\n"
+            new_group += f"{username}:x:{gid}:\n"
+            # Add user to wheel group if admin
+            if self._setup_is_admin:
+                lines = new_group.splitlines()
+                for i, line in enumerate(lines):
+                    if line.startswith("wheel:"):
+                        parts = line.split(":")
+                        members = parts[3].split(",") if parts[3] else []
+                        if username not in members:
+                            members.append(username)
+                            parts[3] = ",".join(members)
+                            lines[i] = ":".join(parts)
+                        break
+                new_group = "\n".join(lines) + "\n"
+            self._sysroot_unlink_write(group_path, new_group)
+
+            # --- Write shadow ---
+            shadow_path = etc / "shadow"
+            shadow_text = shadow_path.read_text() if shadow_path.exists() else ""
             hashed_pw = self._setup_hashed_password
-            subprocess.run(
-                ["chpasswd", "-e", "-R", deploy],
-                input=f"{username}:{hashed_pw}\n",
-                capture_output=True, text=True, check=True, timeout=10,
-            )
-        except subprocess.CalledProcessError as exc:
-            return f"Failed to set password: {exc.stderr.strip() or exc}"
+            new_shadow = shadow_text.rstrip("\n")
+            if new_shadow:
+                new_shadow += "\n"
+            # Empty sp_lstchg field ("::" after hash) = no forced password change
+            new_shadow += f"{username}:{hashed_pw}::0:99999:7:::\n"
+            self._sysroot_unlink_write(shadow_path, new_shadow)
 
-        # Reset sp_lstchg so password aging won't force a change on first
-        # login.  Matches Anaconda's chage -d "" after chpasswd.
-        subprocess.run(
-            ["chage", "-R", deploy, "-d", "", username],
-            capture_output=True, timeout=10,
-        )
+            # --- Write gshadow ---
+            gshadow_path = etc / "gshadow"
+            gshadow_text = gshadow_path.read_text() if gshadow_path.exists() else ""
+            new_gshadow = gshadow_text.rstrip("\n")
+            if new_gshadow:
+                new_gshadow += "\n"
+            new_gshadow += f"{username}:!::\n"
+            if self._setup_is_admin:
+                lines = new_gshadow.splitlines()
+                for i, line in enumerate(lines):
+                    if line.startswith("wheel:"):
+                        parts = line.split(":")
+                        members = parts[3].split(",") if parts[3] else []
+                        if username not in members:
+                            members.append(username)
+                            parts[3] = ",".join(members)
+                            lines[i] = ":".join(parts)
+                        break
+                new_gshadow = "\n".join(lines) + "\n"
+            self._sysroot_unlink_write(gshadow_path, new_gshadow)
 
-        # Ensure home directory exists in /var/home (ostree symlinks /home → /var/home)
+            # --- Allocate subordinate UIDs/GIDs for rootless containers ---
+            for sub_file in ("subuid", "subgid"):
+                sub_path = etc / sub_file
+                sub_text = sub_path.read_text() if sub_path.exists() else ""
+                # Find next available subordinate range (each user gets 65536)
+                max_start = 100000
+                for line in sub_text.splitlines():
+                    parts = line.split(":")
+                    if len(parts) >= 3:
+                        try:
+                            end = int(parts[1]) + int(parts[2])
+                            if end > max_start:
+                                max_start = end
+                        except ValueError:
+                            pass
+                new_sub = sub_text.rstrip("\n")
+                if new_sub:
+                    new_sub += "\n"
+                new_sub += f"{username}:{max_start}:65536\n"
+                self._sysroot_unlink_write(sub_path, new_sub)
+
+        # --- Home directory ---
         home = Path(var_dir) / "home" / username
         home.mkdir(parents=True, exist_ok=True)
-        # Copy skeleton files
         skel = etc / "skel"
         if skel.is_dir():
             subprocess.run(
                 ["cp", "-a", f"{skel}/.", str(home)],
                 check=False, capture_output=True, timeout=10,
             )
-        # Get UID/GID from the created user's passwd entry
-        try:
-            pw_line = [l for l in (etc / "passwd").read_text().splitlines()
-                       if l.startswith(f"{username}:")]
-            if pw_line:
-                parts = pw_line[0].split(":")
-                uid_gid = f"{parts[2]}:{parts[3]}"
-            else:
-                uid_gid = f"{username}:{username}"
-        except OSError:
-            uid_gid = f"{username}:{username}"
-
         try:
             subprocess.run(
-                ["chown", "-R", uid_gid, str(home)],
+                ["chown", "-R", f"{uid}:{gid}", str(home)],
                 check=True, capture_output=True, timeout=10,
             )
         except subprocess.CalledProcessError as exc:
             return f"Failed to set home directory ownership: {exc}"
 
-        # Set root password if provided, otherwise explicitly lock root
-        if self._setup_hashed_root_password:
-            try:
-                subprocess.run(
-                    ["chpasswd", "-e", "-R", deploy],
-                    input=f"root:{self._setup_hashed_root_password}\n",
-                    capture_output=True, text=True, check=True, timeout=10,
-                )
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to set root password: {exc.stderr.strip() or exc}"
-        else:
-            try:
-                subprocess.run(
-                    ["chpasswd", "-e", "-R", deploy],
-                    input="root:!\n",
-                    capture_output=True, text=True, check=True, timeout=10,
-                )
-            except subprocess.CalledProcessError as exc:
-                return f"Failed to lock root account: {exc.stderr.strip() or exc}"
+        # --- Root password ---
+        shadow_path = etc / "shadow"
+        shadow_text = shadow_path.read_text()
+        lines = shadow_text.splitlines()
+        root_hash = self._setup_hashed_root_password or "!"
+        for i, line in enumerate(lines):
+            if line.startswith("root:"):
+                parts = line.split(":")
+                parts[1] = root_hash
+                lines[i] = ":".join(parts)
+                break
+        self._sysroot_unlink_write(shadow_path, "\n".join(lines) + "\n")
 
         # Set timezone and locale — unlink ostree hardlinks before writing
         try:
