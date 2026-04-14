@@ -23,6 +23,14 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
+# GTK 4.16+ defaults to the Vulkan renderer.  VMs and older Intel GPUs
+# (Bay Trail, Haswell) lack Vulkan support — force GL to avoid blank/crash.
+if command -v vulkaninfo >/dev/null 2>&1 && vulkaninfo --summary >/dev/null 2>&1; then
+    : # Vulkan works, let GTK choose
+else
+    export GSK_RENDERER=gl
+fi
+
 # Launch the greeter via cage
 cage -s -- /usr/bin/universal-lite-greeter
 status=$?
