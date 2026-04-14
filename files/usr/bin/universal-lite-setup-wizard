@@ -2528,6 +2528,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"Failed to prepare install environment: {exc.stderr.strip() or exc}"
 
+        proc = None
         try:
             # Anaconda also ensures this config exists for bootc
             Path("/etc/ostree").mkdir(parents=True, exist_ok=True)
@@ -2622,6 +2623,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             subprocess.run(["umount", "/ostree"],
                            capture_output=True, timeout=10)
 
+        if proc is None:
+            return "bootc install failed to start"
         if proc.returncode != 0:
             return f"bootc install failed (exit code {proc.returncode})"
 
