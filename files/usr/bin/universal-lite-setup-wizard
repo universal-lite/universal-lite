@@ -3064,29 +3064,27 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         default_target.unlink(missing_ok=True)
         default_target.symlink_to("/usr/lib/systemd/system/graphical.target")
 
-        # Restore SELinux labels on all files we created or modified.
-        # Matches Anaconda's SetContextsTask scope — ostree docs state
-        # that labeling /var is "categorically the installer's job."
-        mount_point = self._mount_point
-        try:
-            self._run_logged(
-                ["restorecon", "-ir",
-                 f"{mount_point}/boot",
-                 f"{deploy}/etc",
-                 f"{var_dir}/home",
-                 f"{var_dir}/roothome",
-                 f"{var_dir}/lib",
-                 f"{var_dir}/log",
-                 f"{var_dir}/opt",
-                 f"{var_dir}/srv",
-                 f"{var_dir}/mnt",
-                 f"{var_dir}/media",
-                 f"{var_dir}/run",
-                 f"{var_dir}/spool"],
-                check=True, timeout=180,
-            )
-        except subprocess.CalledProcessError as exc:
-            return f"SELinux relabeling failed: {exc.output.strip() if exc.output else exc}"
+        # Restore SELinux labels on files we created or modified.
+        # /boot is NOT included — bootc owns it and its contents are
+        # read-only (kernel, initramfs, BLS entries).  Anaconda also
+        # skips /boot for bootc installs.
+        # Best-effort: don't fail the install if restorecon hits
+        # read-only files in the ostree object store.
+        self._run_logged(
+            ["restorecon", "-ir",
+             f"{deploy}/etc",
+             f"{var_dir}/home",
+             f"{var_dir}/roothome",
+             f"{var_dir}/lib",
+             f"{var_dir}/log",
+             f"{var_dir}/opt",
+             f"{var_dir}/srv",
+             f"{var_dir}/mnt",
+             f"{var_dir}/media",
+             f"{var_dir}/run",
+             f"{var_dir}/spool"],
+            check=False, timeout=180,
+        )
 
         # Flush writes before unmounting
         os.sync()
