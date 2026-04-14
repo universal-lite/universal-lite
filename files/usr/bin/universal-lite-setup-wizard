@@ -2895,13 +2895,19 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             except OSError:
                 pass  # Best-effort — connection still works without this
 
-        # Copy resolv.conf so DNS works on first boot before NM reconnects.
-        # Preserves the symlink (Fedora points to systemd-resolved's stub).
-        src_resolv = "/etc/resolv.conf"
-        dst_resolv = f"{self._sysroot_deploy}/etc/resolv.conf"
+        # Copy resolved DNS config so first-boot has working nameservers.
+        # Follow the symlink to get actual content (Fedora's resolv.conf is
+        # a symlink to systemd-resolved's stub — copying the symlink would
+        # create a dangling link since /run/ doesn't exist in the sysroot).
+        # NM/systemd-resolved will take over on first boot.
+        src_resolv = Path("/etc/resolv.conf")
         try:
-            if os.path.exists(src_resolv):
-                shutil.copy2(src_resolv, dst_resolv, follow_symlinks=False)
+            if src_resolv.exists():
+                content = src_resolv.read_text()
+                self._sysroot_unlink_write(
+                    Path(self._sysroot_deploy) / "etc" / "resolv.conf",
+                    content,
+                )
         except OSError:
             pass  # Best-effort — NM will reconfigure DNS on first boot
 
