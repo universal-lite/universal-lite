@@ -21,7 +21,6 @@ Eight-page flow:
 import gettext
 import json
 import os
-import shutil
 
 import re
 import signal
