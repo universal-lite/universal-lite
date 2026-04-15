@@ -29,13 +29,27 @@ _settings="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
 _wallpaper=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('wallpaper',''))" "$_settings" 2>/dev/null || true)
 [ -n "$_wallpaper" ] && swaybg -i "$_wallpaper" -m fill >/dev/null 2>&1 &
 
-# Apply display scale to all active outputs (no-op at default 1.0).
-_scale=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('scale', 1.0))" "$_settings" 2>/dev/null || echo "1.0")
-if [ "$_scale" != "1.0" ]; then
-    wlr-randr | awk '/^[A-Za-z]/{print $1}' | while IFS= read -r _out; do
-        wlr-randr --output "$_out" --scale "$_scale" 2>/dev/null || true
-    done
-fi
+# Apply display scale and saved resolutions to all active outputs.
+python3 -c "
+import json, subprocess, sys
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+scale = d.get('scale', 1.0)
+r = subprocess.run(['wlr-randr'], capture_output=True, text=True)
+for line in r.stdout.splitlines():
+    if line and not line[0].isspace():
+        output = line.split()[0]
+        res_key = f'resolution_{output}'
+        if res_key in d:
+            mode = d[res_key].replace('Hz', '').strip()
+            subprocess.run(['wlr-randr', '--output', output, '--mode', mode],
+                           capture_output=True)
+        if scale != 1.0:
+            subprocess.run(['wlr-randr', '--output', output, '--scale', str(scale)],
+                           capture_output=True)
+" "$_settings" 2>/dev/null || true
 
 waybar >/dev/null 2>&1 &
 mako >/dev/null 2>&1 &
