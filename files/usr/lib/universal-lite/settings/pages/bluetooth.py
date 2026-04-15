@@ -96,7 +96,11 @@ class BluetoothPage(BasePage):
     def _on_toggle(self, _switch, state):
         if self._updating:
             return True
-        self._bt.set_powered(state)
+        self._updating = True
+        try:
+            self._bt.set_powered(state)
+        finally:
+            self._updating = False
         return False
 
     def _on_scan_clicked(self, btn):

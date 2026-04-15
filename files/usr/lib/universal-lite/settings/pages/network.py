@@ -102,8 +102,12 @@ class NetworkPage(BasePage):
     def _on_wifi_toggled(self, _switch, state):
         if self._updating:
             return True
-        if self._nm:
-            self._nm.set_wifi_enabled(state)
+        self._updating = True
+        try:
+            if self._nm:
+                self._nm.set_wifi_enabled(state)
+        finally:
+            self._updating = False
         return False
 
     def _refresh_all(self):
