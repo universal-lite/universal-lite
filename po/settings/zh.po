@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-06 05:02-0400\n"
+"POT-Creation-Date: 2026-04-15 16:38-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,103 +16,103 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../files/usr/bin/universal-lite-greeter:311
+#: ../files/usr/bin/universal-lite-greeter:320
 msgid "Login"
 msgstr "登录"
 
-#: ../files/usr/bin/universal-lite-greeter:368
+#: ../files/usr/bin/universal-lite-greeter:378
 msgid "Session"
 msgstr "会话"
 
-#: ../files/usr/bin/universal-lite-greeter:394
+#: ../files/usr/bin/universal-lite-greeter:404
 msgid "Username"
 msgstr "用户名"
 
-#: ../files/usr/bin/universal-lite-greeter:403
+#: ../files/usr/bin/universal-lite-greeter:413
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:191
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:238
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:201
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:248
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Password"
 msgstr "密码"
 
-#: ../files/usr/bin/universal-lite-greeter:465
+#: ../files/usr/bin/universal-lite-greeter:475
 #, python-brace-format
 msgid "Welcome back, {username}"
 msgstr "欢迎回来，{username}"
 
-#: ../files/usr/bin/universal-lite-greeter:471
+#: ../files/usr/bin/universal-lite-greeter:481
 msgid "Log In"
 msgstr "登录"
 
-#: ../files/usr/bin/universal-lite-greeter:472
+#: ../files/usr/bin/universal-lite-greeter:482
 #, python-brace-format
 msgid "Not {username}?"
 msgstr "不是 {username}？"
 
-#: ../files/usr/bin/universal-lite-greeter:488
+#: ../files/usr/bin/universal-lite-greeter:498
 msgid "Log in"
 msgstr "登录"
 
-#: ../files/usr/bin/universal-lite-greeter:494
+#: ../files/usr/bin/universal-lite-greeter:504
 msgid "Next"
 msgstr "下一步"
 
-#: ../files/usr/bin/universal-lite-greeter:507
-#: ../files/usr/bin/universal-lite-greeter:522
-#: ../files/usr/bin/universal-lite-greeter:571
+#: ../files/usr/bin/universal-lite-greeter:517
+#: ../files/usr/bin/universal-lite-greeter:532
+#: ../files/usr/bin/universal-lite-greeter:581
 #, python-brace-format
 msgid "Connection error: {exc}"
 msgstr "连接错误：{exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:531
-#: ../files/usr/bin/universal-lite-greeter:536
+#: ../files/usr/bin/universal-lite-greeter:541
+#: ../files/usr/bin/universal-lite-greeter:546
 msgid "Authentication error"
 msgstr "认证错误"
 
-#: ../files/usr/bin/universal-lite-greeter:546
+#: ../files/usr/bin/universal-lite-greeter:556
 msgid "Unknown error"
 msgstr "未知错误"
 
-#: ../files/usr/bin/universal-lite-greeter:555
+#: ../files/usr/bin/universal-lite-greeter:565
 msgid "Enter a username."
 msgstr "请输入用户名。"
 
-#: ../files/usr/bin/universal-lite-greeter:563
+#: ../files/usr/bin/universal-lite-greeter:573
 msgid "Enter your password."
 msgstr "请输入密码。"
 
-#: ../files/usr/bin/universal-lite-greeter:582
+#: ../files/usr/bin/universal-lite-greeter:592
 msgid "Authentication failed"
 msgstr "认证失败"
 
-#: ../files/usr/bin/universal-lite-greeter:593
+#: ../files/usr/bin/universal-lite-greeter:603
 msgid "Unexpected authentication response."
 msgstr "意外的认证响应。"
 
-#: ../files/usr/bin/universal-lite-greeter:597
+#: ../files/usr/bin/universal-lite-greeter:607
 msgid "Multi-step auth not supported."
 msgstr "不支持多步认证。"
 
-#: ../files/usr/bin/universal-lite-greeter:602
+#: ../files/usr/bin/universal-lite-greeter:612
 msgid "Incorrect password."
 msgstr "密码不正确。"
 
-#: ../files/usr/bin/universal-lite-greeter:604
+#: ../files/usr/bin/universal-lite-greeter:614
 msgid "Login failed."
 msgstr "登录失败。"
 
-#: ../files/usr/bin/universal-lite-greeter:607
+#: ../files/usr/bin/universal-lite-greeter:617
 msgid "Unexpected response from login service."
 msgstr "登录服务返回了意外的响应。"
 
-#: ../files/usr/bin/universal-lite-greeter:616
+#: ../files/usr/bin/universal-lite-greeter:626
 #, python-brace-format
 msgid "Failed to start session: {exc}"
 msgstr "启动会话失败：{exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:624
+#: ../files/usr/bin/universal-lite-greeter:634
 msgid "Failed to start session."
 msgstr "启动会话失败。"
 
@@ -139,7 +139,7 @@ msgstr "显示"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:286
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
 msgid "Network"
 msgstr "网络"
 
@@ -151,7 +151,7 @@ msgid "Bluetooth"
 msgstr "蓝牙"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
 msgid "Panel"
 msgstr "面板"
 
@@ -181,11 +181,11 @@ msgid "Accessibility"
 msgstr "辅助功能"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:30
 msgid "Date & Time"
 msgstr "日期和时间"
 
@@ -211,81 +211,124 @@ msgid "Default Apps"
 msgstr "默认应用"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:31
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:184
 msgid "About"
 msgstr "关于"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+msgid "Restore Defaults"
+msgstr "恢复默认设置"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:80
+msgid "Select which settings to reset to factory defaults."
+msgstr "选择要恢复为出厂默认值的设置。"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:87
+msgid "Select All"
+msgstr "全选"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:107
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:253
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:335
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+msgid "Cancel"
+msgstr "取消"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:111
+msgid "Reset"
+msgstr "重置"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:144
+msgid "Could not read defaults file"
+msgstr "无法读取默认设置文件"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:194
 msgid "Operating System"
 msgstr "操作系统"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:195
 msgid "Hostname"
 msgstr "主机名"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:52
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:205
 msgid "Processor"
 msgstr "处理器"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:215
 msgid "Memory"
 msgstr "内存"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:68
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:221
 msgid "Disk"
 msgstr "磁盘"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:242
 msgid "Desktop"
 msgstr "桌面"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:234
 msgid "Graphics"
 msgstr "图形"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
 msgid "GPU"
 msgstr "GPU"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:92
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:245
 msgid "Updates"
 msgstr "更新"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:95
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:248
 msgid "Click to check for updates"
 msgstr "点击检查更新"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:98
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:251
 msgid "Check for Updates"
 msgstr "检查更新"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:257
+msgid "Troubleshooting"
+msgstr "故障排除"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:261
+msgid "Reset settings to factory defaults"
+msgstr "将设置恢复为出厂默认值"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:266
+msgid "Restore Defaults..."
+msgstr "恢复默认设置..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:275
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:77
 msgid "Checking..."
 msgstr "检查中..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:117
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:286
 #, python-brace-format
 msgid "Update available: {version}"
 msgstr "有可用更新：{version}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:119
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:288
 msgid "System is up to date"
 msgstr "系统已是最新"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:121
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:290
 msgid "Could not check for updates"
 msgstr "无法检查更新"
 
@@ -414,7 +457,7 @@ msgid "Custom..."
 msgstr "自定义..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:169
 msgid "Pair"
 msgstr "配对"
 
@@ -440,8 +483,8 @@ msgid "Available Devices"
 msgstr "可用设备"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:197
 msgid "Search for devices"
 msgstr "搜索设备"
 
@@ -450,86 +493,86 @@ msgstr "搜索设备"
 msgid "Advanced..."
 msgstr "高级..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:109
 msgid "Scanning..."
 msgstr "扫描中..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:156
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:155
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:166
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:308
 msgid "Connected"
 msgstr "已连接"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:158
 msgid "Disconnect"
 msgstr "断开连接"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:199
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:246
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:162
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:209
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:256
 msgid "Connect"
 msgstr "连接"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:159
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:165
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:169
 msgid "Forget"
 msgstr "忘记"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
 msgid "Pairing..."
 msgstr "配对中..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
 msgid "Paired successfully"
 msgstr "配对成功"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:187
 #, python-brace-format
 msgid "Pairing failed: {message}"
 msgstr "配对失败：{message}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
 msgid "Timezone"
 msgstr "时区"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
 msgid "Automatic time"
 msgstr "自动设置时间"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 msgid "NTP"
 msgstr "NTP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "24-hour clock"
 msgstr "24小时制"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 msgid "e.g. America/New_York"
 msgstr "例如 America/New_York"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Press Enter to apply"
 msgstr "按 Enter 键应用"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
 msgid "Sync clock via network (NTP)"
 msgstr "通过网络同步时间 (NTP)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "Use 24-hour time format"
 msgstr "使用24小时时间格式"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:102
 msgid "Failed to set timezone"
 msgstr "设置时区失败"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:105
 msgid "Invalid timezone"
 msgstr "无效的时区"
 
@@ -675,12 +718,12 @@ msgstr "高级显示设置"
 msgid "Arrange and configure displays visually"
 msgstr "以可视方式排列和配置显示器"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:204
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
 msgid "Confirm Scale"
 msgstr "确认缩放"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:215
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:241
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:257
 #, python-brace-format
 msgid ""
 "Keep this display scale?\n"
@@ -689,22 +732,22 @@ msgstr ""
 "保留此显示缩放？\n"
 "{seconds}秒后将恢复..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:342
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:236
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:361
 msgid "Revert"
 msgstr "恢复"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:348
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:239
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:367
 msgid "Keep"
 msgstr "保留"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:325
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:344
 msgid "Confirm Resolution"
 msgstr "确认分辨率"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:336
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:369
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:355
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:388
 #, python-brace-format
 msgid ""
 "Keep this resolution?\n"
@@ -835,15 +878,6 @@ msgstr ""
 "\"{key}\"已分配给\"{conflict}\"。\n"
 "\n"
 "是否重新分配给\"{target}\"？"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:196
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Cancel"
-msgstr "取消"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 msgid "Reassign"
@@ -990,208 +1024,225 @@ msgstr "连接到隐藏网络..."
 msgid "Active Connection"
 msgstr "活动连接"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:174
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:254
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:87
+msgid "Connection editor not found"
+msgstr ""
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:184
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:216
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:264
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "正在连接到 {ssid}..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:189
 #, python-brace-format
 msgid "Connect to {ssid}"
 msgstr "连接到 {ssid}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:219
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:229
 msgid "Connect to Hidden Network"
 msgstr "连接到隐藏网络"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:230
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
 msgid "Network name (SSID)"
 msgstr "网络名称 (SSID)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "None"
 msgstr "无"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "WPA/WPA2"
 msgstr "WPA/WPA2"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "WPA3"
 msgstr "WPA3"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:234
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:244
 msgid "Security"
 msgstr "安全"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:269
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:279
 msgid "Connected successfully"
 msgstr "连接成功"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:294
 msgid "Not connected"
 msgstr "未连接"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:287
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:297
 msgid "Type"
 msgstr "类型"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:288
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
 msgid "IP Address"
 msgstr "IP 地址"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:299
 msgid "Gateway"
 msgstr "网关"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:290
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
 msgid "DNS"
 msgstr "DNS"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:306
 msgid "No wired adapter detected"
 msgstr "未检测到有线网络适配器"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:310
 msgid "Disconnected"
 msgstr "已断开"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
 msgid "Apps"
 msgstr "应用"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
 msgid "Window list"
 msgstr "窗口列表"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
 msgid "Volume"
 msgstr "音量"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 msgid "Brightness"
 msgstr "亮度"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 msgid "Battery"
 msgstr "电池"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "Clock"
 msgstr "时钟"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 msgid "Power"
 msgstr "电源"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "System tray"
 msgstr "系统托盘"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Left"
 msgstr "左"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
 msgid "Center"
 msgstr "居中"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Right"
 msgstr "右"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Top"
 msgstr "顶部"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Bottom"
 msgstr "底部"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:63
 msgid "Position"
 msgstr "位置"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:69
 msgid "Density"
 msgstr "密度"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
 msgid "Compact"
 msgstr "紧凑"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:80
+msgid "Twilight"
+msgstr "暮光"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+msgid "Invert"
+msgstr "反转"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:85
 msgid "Module Layout"
 msgstr "模块布局"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
 msgid "Modules"
 msgstr "模块"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:87
 msgid "Pinned Apps"
 msgstr "固定应用"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
 msgid "Pinned"
 msgstr "已固定"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
 msgid "Normal"
 msgstr "正常"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:81
+msgid "Invert panel colors from the system theme"
+msgstr "将面板颜色反转为系统主题的相反色"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:89
 msgid "Reset layout to defaults"
 msgstr "将布局重置为默认"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:182
 #, python-brace-format
 msgid "Move to {section}"
 msgstr "移动到 {section}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:188
 msgid "Move up in section"
 msgstr "在分区内上移"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:193
 msgid "Move down in section"
 msgstr "在分区内下移"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:227
 msgid "Add pinned app"
 msgstr "添加固定应用"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:256
 msgid "Remove"
 msgstr "移除"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:269
 msgid "Add Pinned App"
 msgstr "添加固定应用"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:282
 msgid "Search apps…"
 msgstr "搜索应用…"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:315
 msgid "Add"
 msgstr "添加"
 
@@ -1224,17 +1275,17 @@ msgid "Never"
 msgstr "从不"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
 msgid "Balanced"
 msgstr "均衡"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
 msgid "Power Saver"
 msgstr "省电"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:127
 msgid "Performance"
 msgstr "性能"
 
@@ -1306,6 +1357,10 @@ msgstr "挂起等待时间"
 msgid "When lid is closed"
 msgstr "合上盖子时"
 
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:145
+msgid "Failed to change lid close action"
+msgstr ""
+
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
 msgid "Output"
@@ -1337,12 +1392,12 @@ msgid "Microphone"
 msgstr "麦克风"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:209
 msgid "(No output devices)"
 msgstr "(无输出设备)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:233
 msgid "(No input devices)"
 msgstr "(无输入设备)"
 
@@ -1405,36 +1460,3 @@ msgstr "密码不匹配"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "设置密码失败"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Restore Defaults"
-msgstr "恢复默认设置"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Select which settings to reset to factory defaults."
-msgstr "选择要恢复为出厂默认值的设置。"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Select All"
-msgstr "全选"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Reset"
-msgstr "重置"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Could not read defaults file"
-msgstr "无法读取默认设置文件"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Troubleshooting"
-msgstr "故障排除"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Reset settings to factory defaults"
-msgstr "将设置恢复为出厂默认值"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Restore Defaults..."
-msgstr "恢复默认设置..."
-

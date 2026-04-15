@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-06 05:02-0400\n"
+"POT-Creation-Date: 2026-04-15 16:38-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -17,103 +17,103 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../files/usr/bin/universal-lite-greeter:311
+#: ../files/usr/bin/universal-lite-greeter:320
 msgid "Login"
 msgstr "Đăng nhập"
 
-#: ../files/usr/bin/universal-lite-greeter:368
+#: ../files/usr/bin/universal-lite-greeter:378
 msgid "Session"
 msgstr "Phiên"
 
-#: ../files/usr/bin/universal-lite-greeter:394
+#: ../files/usr/bin/universal-lite-greeter:404
 msgid "Username"
 msgstr "Tên người dùng"
 
-#: ../files/usr/bin/universal-lite-greeter:403
+#: ../files/usr/bin/universal-lite-greeter:413
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:191
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:238
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:201
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:248
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Password"
 msgstr "Mật khẩu"
 
-#: ../files/usr/bin/universal-lite-greeter:465
+#: ../files/usr/bin/universal-lite-greeter:475
 #, python-brace-format
 msgid "Welcome back, {username}"
 msgstr "Chào mừng trở lại, {username}"
 
-#: ../files/usr/bin/universal-lite-greeter:471
+#: ../files/usr/bin/universal-lite-greeter:481
 msgid "Log In"
 msgstr "Đăng nhập"
 
-#: ../files/usr/bin/universal-lite-greeter:472
+#: ../files/usr/bin/universal-lite-greeter:482
 #, python-brace-format
 msgid "Not {username}?"
 msgstr "Không phải {username}?"
 
-#: ../files/usr/bin/universal-lite-greeter:488
+#: ../files/usr/bin/universal-lite-greeter:498
 msgid "Log in"
 msgstr "Đăng nhập"
 
-#: ../files/usr/bin/universal-lite-greeter:494
+#: ../files/usr/bin/universal-lite-greeter:504
 msgid "Next"
 msgstr "Tiếp theo"
 
-#: ../files/usr/bin/universal-lite-greeter:507
-#: ../files/usr/bin/universal-lite-greeter:522
-#: ../files/usr/bin/universal-lite-greeter:571
+#: ../files/usr/bin/universal-lite-greeter:517
+#: ../files/usr/bin/universal-lite-greeter:532
+#: ../files/usr/bin/universal-lite-greeter:581
 #, python-brace-format
 msgid "Connection error: {exc}"
 msgstr "Lỗi kết nối: {exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:531
-#: ../files/usr/bin/universal-lite-greeter:536
+#: ../files/usr/bin/universal-lite-greeter:541
+#: ../files/usr/bin/universal-lite-greeter:546
 msgid "Authentication error"
 msgstr "Lỗi xác thực"
 
-#: ../files/usr/bin/universal-lite-greeter:546
+#: ../files/usr/bin/universal-lite-greeter:556
 msgid "Unknown error"
 msgstr "Lỗi không xác định"
 
-#: ../files/usr/bin/universal-lite-greeter:555
+#: ../files/usr/bin/universal-lite-greeter:565
 msgid "Enter a username."
 msgstr "Nhập tên người dùng."
 
-#: ../files/usr/bin/universal-lite-greeter:563
+#: ../files/usr/bin/universal-lite-greeter:573
 msgid "Enter your password."
 msgstr "Nhập mật khẩu của bạn."
 
-#: ../files/usr/bin/universal-lite-greeter:582
+#: ../files/usr/bin/universal-lite-greeter:592
 msgid "Authentication failed"
 msgstr "Xác thực thất bại"
 
-#: ../files/usr/bin/universal-lite-greeter:593
+#: ../files/usr/bin/universal-lite-greeter:603
 msgid "Unexpected authentication response."
 msgstr "Phản hồi xác thực không mong đợi."
 
-#: ../files/usr/bin/universal-lite-greeter:597
+#: ../files/usr/bin/universal-lite-greeter:607
 msgid "Multi-step auth not supported."
 msgstr "Không hỗ trợ xác thực nhiều bước."
 
-#: ../files/usr/bin/universal-lite-greeter:602
+#: ../files/usr/bin/universal-lite-greeter:612
 msgid "Incorrect password."
 msgstr "Sai mật khẩu."
 
-#: ../files/usr/bin/universal-lite-greeter:604
+#: ../files/usr/bin/universal-lite-greeter:614
 msgid "Login failed."
 msgstr "Đăng nhập thất bại."
 
-#: ../files/usr/bin/universal-lite-greeter:607
+#: ../files/usr/bin/universal-lite-greeter:617
 msgid "Unexpected response from login service."
 msgstr "Phản hồi không mong đợi từ dịch vụ đăng nhập."
 
-#: ../files/usr/bin/universal-lite-greeter:616
+#: ../files/usr/bin/universal-lite-greeter:626
 #, python-brace-format
 msgid "Failed to start session: {exc}"
 msgstr "Không thể khởi động phiên: {exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:624
+#: ../files/usr/bin/universal-lite-greeter:634
 msgid "Failed to start session."
 msgstr "Không thể khởi động phiên."
 
@@ -140,7 +140,7 @@ msgstr "Màn hình"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:286
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
 msgid "Network"
 msgstr "Mạng"
 
@@ -152,7 +152,7 @@ msgid "Bluetooth"
 msgstr "Bluetooth"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
 msgid "Panel"
 msgstr "Bảng điều khiển"
 
@@ -182,11 +182,11 @@ msgid "Accessibility"
 msgstr "Trợ năng"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:30
 msgid "Date & Time"
 msgstr "Ngày và giờ"
 
@@ -212,81 +212,124 @@ msgid "Default Apps"
 msgstr "Ứng dụng mặc định"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:31
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:184
 msgid "About"
 msgstr "Giới thiệu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+msgid "Restore Defaults"
+msgstr "Khôi phục mặc định"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:80
+msgid "Select which settings to reset to factory defaults."
+msgstr "Chọn cài đặt nào để đặt lại về mặc định gốc."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:87
+msgid "Select All"
+msgstr "Chọn tất cả"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:107
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:253
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:335
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+msgid "Cancel"
+msgstr "Hủy"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:111
+msgid "Reset"
+msgstr "Đặt lại"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:144
+msgid "Could not read defaults file"
+msgstr "Không thể đọc tệp mặc định"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:194
 msgid "Operating System"
 msgstr "Hệ điều hành"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:195
 msgid "Hostname"
 msgstr "Tên máy chủ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:52
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:205
 msgid "Processor"
 msgstr "Bộ xử lý"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:215
 msgid "Memory"
 msgstr "Bộ nhớ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:68
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:221
 msgid "Disk"
 msgstr "Ổ đĩa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:242
 msgid "Desktop"
 msgstr "Màn hình nền"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:234
 msgid "Graphics"
 msgstr "Đồ họa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
 msgid "GPU"
 msgstr "GPU"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:92
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:245
 msgid "Updates"
 msgstr "Cập nhật"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:95
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:248
 msgid "Click to check for updates"
 msgstr "Nhấp để kiểm tra cập nhật"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:98
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:251
 msgid "Check for Updates"
 msgstr "Kiểm tra cập nhật"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:257
+msgid "Troubleshooting"
+msgstr "Khắc phục sự cố"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:261
+msgid "Reset settings to factory defaults"
+msgstr "Đặt lại cài đặt về mặc định gốc"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:266
+msgid "Restore Defaults..."
+msgstr "Khôi phục mặc định..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:275
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:77
 msgid "Checking..."
 msgstr "Đang kiểm tra..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:117
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:286
 #, python-brace-format
 msgid "Update available: {version}"
 msgstr "Có bản cập nhật: {version}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:119
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:288
 msgid "System is up to date"
 msgstr "Hệ thống đã được cập nhật"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:121
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:290
 msgid "Could not check for updates"
 msgstr "Không thể kiểm tra cập nhật"
 
@@ -415,7 +458,7 @@ msgid "Custom..."
 msgstr "Tùy chỉnh..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:169
 msgid "Pair"
 msgstr "Ghép nối"
 
@@ -441,8 +484,8 @@ msgid "Available Devices"
 msgstr "Thiết bị khả dụng"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:197
 msgid "Search for devices"
 msgstr "Tìm kiếm thiết bị"
 
@@ -451,86 +494,86 @@ msgstr "Tìm kiếm thiết bị"
 msgid "Advanced..."
 msgstr "Nâng cao..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:109
 msgid "Scanning..."
 msgstr "Đang quét..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:156
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:155
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:166
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:308
 msgid "Connected"
 msgstr "Đã kết nối"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:158
 msgid "Disconnect"
 msgstr "Ngắt kết nối"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:199
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:246
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:162
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:209
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:256
 msgid "Connect"
 msgstr "Kết nối"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:159
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:165
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:169
 msgid "Forget"
 msgstr "Quên"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
 msgid "Pairing..."
 msgstr "Đang ghép nối..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
 msgid "Paired successfully"
 msgstr "Ghép nối thành công"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:187
 #, python-brace-format
 msgid "Pairing failed: {message}"
 msgstr "Ghép nối thất bại: {message}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
 msgid "Timezone"
 msgstr "Múi giờ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
 msgid "Automatic time"
 msgstr "Thời gian tự động"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 msgid "NTP"
 msgstr "NTP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "24-hour clock"
 msgstr "Đồng hồ 24 giờ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 msgid "e.g. America/New_York"
 msgstr "ví dụ: America/New_York"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Press Enter to apply"
 msgstr "Nhấn Enter để áp dụng"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
 msgid "Sync clock via network (NTP)"
 msgstr "Đồng bộ đồng hồ qua mạng (NTP)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "Use 24-hour time format"
 msgstr "Sử dụng định dạng giờ 24"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:102
 msgid "Failed to set timezone"
 msgstr "Không thể đặt múi giờ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:105
 msgid "Invalid timezone"
 msgstr "Múi giờ không hợp lệ"
 
@@ -676,12 +719,12 @@ msgstr "Cài đặt màn hình nâng cao"
 msgid "Arrange and configure displays visually"
 msgstr "Sắp xếp và cấu hình màn hình trực quan"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:204
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
 msgid "Confirm Scale"
 msgstr "Xác nhận tỷ lệ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:215
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:241
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:257
 #, python-brace-format
 msgid ""
 "Keep this display scale?\n"
@@ -690,22 +733,22 @@ msgstr ""
 "Giữ tỷ lệ màn hình này?\n"
 "Hoàn tác sau {seconds} giây..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:342
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:236
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:361
 msgid "Revert"
 msgstr "Hoàn tác"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:348
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:239
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:367
 msgid "Keep"
 msgstr "Giữ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:325
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:344
 msgid "Confirm Resolution"
 msgstr "Xác nhận độ phân giải"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:336
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:369
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:355
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:388
 #, python-brace-format
 msgid ""
 "Keep this resolution?\n"
@@ -836,15 +879,6 @@ msgstr ""
 "\"{key}\" đã được gán cho \"{conflict}\".\n"
 "\n"
 "Gán lại cho \"{target}\"?"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:196
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Cancel"
-msgstr "Hủy"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 msgid "Reassign"
@@ -991,208 +1025,225 @@ msgstr "Kết nối mạng ẩn..."
 msgid "Active Connection"
 msgstr "Kết nối đang hoạt động"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:174
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:254
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:87
+msgid "Connection editor not found"
+msgstr ""
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:184
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:216
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:264
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "Đang kết nối đến {ssid}..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:189
 #, python-brace-format
 msgid "Connect to {ssid}"
 msgstr "Kết nối đến {ssid}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:219
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:229
 msgid "Connect to Hidden Network"
 msgstr "Kết nối mạng ẩn"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:230
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
 msgid "Network name (SSID)"
 msgstr "Tên mạng (SSID)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "None"
 msgstr "Không"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "WPA/WPA2"
 msgstr "WPA/WPA2"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "WPA3"
 msgstr "WPA3"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:234
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:244
 msgid "Security"
 msgstr "Bảo mật"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:269
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:279
 msgid "Connected successfully"
 msgstr "Kết nối thành công"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:294
 msgid "Not connected"
 msgstr "Chưa kết nối"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:287
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:297
 msgid "Type"
 msgstr "Loại"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:288
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
 msgid "IP Address"
 msgstr "Địa chỉ IP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:299
 msgid "Gateway"
 msgstr "Cổng mặc định"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:290
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
 msgid "DNS"
 msgstr "DNS"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:306
 msgid "No wired adapter detected"
 msgstr "Không phát hiện bộ chuyển đổi có dây"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:310
 msgid "Disconnected"
 msgstr "Đã ngắt kết nối"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
 msgid "Apps"
 msgstr "Ứng dụng"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
 msgid "Window list"
 msgstr "Danh sách cửa sổ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
 msgid "Volume"
 msgstr "Âm lượng"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 msgid "Brightness"
 msgstr "Độ sáng"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 msgid "Battery"
 msgstr "Pin"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "Clock"
 msgstr "Đồng hồ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 msgid "Power"
 msgstr "Nguồn"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "System tray"
 msgstr "Khay hệ thống"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Left"
 msgstr "Trái"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
 msgid "Center"
 msgstr "Giữa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Right"
 msgstr "Phải"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Top"
 msgstr "Trên"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Bottom"
 msgstr "Dưới"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:63
 msgid "Position"
 msgstr "Vị trí"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:69
 msgid "Density"
 msgstr "Mật độ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
 msgid "Compact"
 msgstr "Thu gọn"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:80
+msgid "Twilight"
+msgstr "Hoàng hôn"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+msgid "Invert"
+msgstr "Đảo ngược"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:85
 msgid "Module Layout"
 msgstr "Bố cục mô-đun"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
 msgid "Modules"
 msgstr "Mô-đun"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:87
 msgid "Pinned Apps"
 msgstr "Ứng dụng đã ghim"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
 msgid "Pinned"
 msgstr "Đã ghim"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
 msgid "Normal"
 msgstr "Bình thường"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:81
+msgid "Invert panel colors from the system theme"
+msgstr "Đảo ngược màu thanh tác vụ so với chủ đề hệ thống"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:89
 msgid "Reset layout to defaults"
 msgstr "Đặt lại bố cục về mặc định"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:182
 #, python-brace-format
 msgid "Move to {section}"
 msgstr "Di chuyển đến {section}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:188
 msgid "Move up in section"
 msgstr "Di chuyển lên trong phần"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:193
 msgid "Move down in section"
 msgstr "Di chuyển xuống trong phần"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:227
 msgid "Add pinned app"
 msgstr "Thêm ứng dụng đã ghim"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:256
 msgid "Remove"
 msgstr "Xóa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:269
 msgid "Add Pinned App"
 msgstr "Thêm ứng dụng đã ghim"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:282
 msgid "Search apps…"
 msgstr "Tìm kiếm ứng dụng…"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:315
 msgid "Add"
 msgstr "Thêm"
 
@@ -1225,17 +1276,17 @@ msgid "Never"
 msgstr "Không bao giờ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
 msgid "Balanced"
 msgstr "Cân bằng"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
 msgid "Power Saver"
 msgstr "Tiết kiệm pin"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:127
 msgid "Performance"
 msgstr "Hiệu năng"
 
@@ -1307,6 +1358,10 @@ msgstr "Tạm ngưng sau"
 msgid "When lid is closed"
 msgstr "Khi gập nắp"
 
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:145
+msgid "Failed to change lid close action"
+msgstr ""
+
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
 msgid "Output"
@@ -1338,12 +1393,12 @@ msgid "Microphone"
 msgstr "Micrô"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:209
 msgid "(No output devices)"
 msgstr "(Không có thiết bị đầu ra)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:233
 msgid "(No input devices)"
 msgstr "(Không có thiết bị đầu vào)"
 
@@ -1406,36 +1461,3 @@ msgstr "Mật khẩu không khớp"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "Không thể đặt mật khẩu"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Restore Defaults"
-msgstr "Khôi phục mặc định"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Select which settings to reset to factory defaults."
-msgstr "Chọn cài đặt nào để đặt lại về mặc định gốc."
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Select All"
-msgstr "Chọn tất cả"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Reset"
-msgstr "Đặt lại"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Could not read defaults file"
-msgstr "Không thể đọc tệp mặc định"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Troubleshooting"
-msgstr "Khắc phục sự cố"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Reset settings to factory defaults"
-msgstr "Đặt lại cài đặt về mặc định gốc"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Restore Defaults..."
-msgstr "Khôi phục mặc định..."
-

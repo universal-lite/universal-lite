@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-06 05:02-0400\n"
+"POT-Creation-Date: 2026-04-15 16:38-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,103 +16,103 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../files/usr/bin/universal-lite-greeter:311
+#: ../files/usr/bin/universal-lite-greeter:320
 msgid "Login"
 msgstr "Shiga"
 
-#: ../files/usr/bin/universal-lite-greeter:368
+#: ../files/usr/bin/universal-lite-greeter:378
 msgid "Session"
 msgstr "Zama"
 
-#: ../files/usr/bin/universal-lite-greeter:394
+#: ../files/usr/bin/universal-lite-greeter:404
 msgid "Username"
 msgstr "Sunan mai amfani"
 
-#: ../files/usr/bin/universal-lite-greeter:403
+#: ../files/usr/bin/universal-lite-greeter:413
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:191
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:238
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:201
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:248
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:105
 msgid "Password"
 msgstr "Kalmar sirri"
 
-#: ../files/usr/bin/universal-lite-greeter:465
+#: ../files/usr/bin/universal-lite-greeter:475
 #, python-brace-format
 msgid "Welcome back, {username}"
 msgstr "Barka da dawowa, {username}"
 
-#: ../files/usr/bin/universal-lite-greeter:471
+#: ../files/usr/bin/universal-lite-greeter:481
 msgid "Log In"
 msgstr "Shiga"
 
-#: ../files/usr/bin/universal-lite-greeter:472
+#: ../files/usr/bin/universal-lite-greeter:482
 #, python-brace-format
 msgid "Not {username}?"
 msgstr "Ba {username} ba ne?"
 
-#: ../files/usr/bin/universal-lite-greeter:488
+#: ../files/usr/bin/universal-lite-greeter:498
 msgid "Log in"
 msgstr "Shiga"
 
-#: ../files/usr/bin/universal-lite-greeter:494
+#: ../files/usr/bin/universal-lite-greeter:504
 msgid "Next"
 msgstr "Na gaba"
 
-#: ../files/usr/bin/universal-lite-greeter:507
-#: ../files/usr/bin/universal-lite-greeter:522
-#: ../files/usr/bin/universal-lite-greeter:571
+#: ../files/usr/bin/universal-lite-greeter:517
+#: ../files/usr/bin/universal-lite-greeter:532
+#: ../files/usr/bin/universal-lite-greeter:581
 #, python-brace-format
 msgid "Connection error: {exc}"
 msgstr "Kuskuren haɗi: {exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:531
-#: ../files/usr/bin/universal-lite-greeter:536
+#: ../files/usr/bin/universal-lite-greeter:541
+#: ../files/usr/bin/universal-lite-greeter:546
 msgid "Authentication error"
 msgstr "Kuskuren tabbatarwa"
 
-#: ../files/usr/bin/universal-lite-greeter:546
+#: ../files/usr/bin/universal-lite-greeter:556
 msgid "Unknown error"
 msgstr "Kuskure da ba a sani ba"
 
-#: ../files/usr/bin/universal-lite-greeter:555
+#: ../files/usr/bin/universal-lite-greeter:565
 msgid "Enter a username."
 msgstr "Shigar da sunan mai amfani."
 
-#: ../files/usr/bin/universal-lite-greeter:563
+#: ../files/usr/bin/universal-lite-greeter:573
 msgid "Enter your password."
 msgstr "Shigar da kalmar sirri."
 
-#: ../files/usr/bin/universal-lite-greeter:582
+#: ../files/usr/bin/universal-lite-greeter:592
 msgid "Authentication failed"
 msgstr "Tabbatarwa ta gaza"
 
-#: ../files/usr/bin/universal-lite-greeter:593
+#: ../files/usr/bin/universal-lite-greeter:603
 msgid "Unexpected authentication response."
 msgstr "Amsar tabbatarwa da ba a tsammata ba."
 
-#: ../files/usr/bin/universal-lite-greeter:597
+#: ../files/usr/bin/universal-lite-greeter:607
 msgid "Multi-step auth not supported."
 msgstr "Tabbatarwa mai matakai da yawa ba a tallafawa ba."
 
-#: ../files/usr/bin/universal-lite-greeter:602
+#: ../files/usr/bin/universal-lite-greeter:612
 msgid "Incorrect password."
 msgstr "Kalmar sirri ba daidai ba."
 
-#: ../files/usr/bin/universal-lite-greeter:604
+#: ../files/usr/bin/universal-lite-greeter:614
 msgid "Login failed."
 msgstr "Shiga ya gaza."
 
-#: ../files/usr/bin/universal-lite-greeter:607
+#: ../files/usr/bin/universal-lite-greeter:617
 msgid "Unexpected response from login service."
 msgstr "Amsa da ba a tsammata ba daga sabis na shiga."
 
-#: ../files/usr/bin/universal-lite-greeter:616
+#: ../files/usr/bin/universal-lite-greeter:626
 #, python-brace-format
 msgid "Failed to start session: {exc}"
 msgstr "Fara zama ya gaza: {exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:624
+#: ../files/usr/bin/universal-lite-greeter:634
 msgid "Failed to start session."
 msgstr "Fara zama ya gaza."
 
@@ -139,7 +139,7 @@ msgstr "Nunawa"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:286
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
 msgid "Network"
 msgstr "Hanyar sadarwa"
 
@@ -151,7 +151,7 @@ msgid "Bluetooth"
 msgstr "Bluetooth"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
 msgid "Panel"
 msgstr "Bango"
 
@@ -181,11 +181,11 @@ msgid "Accessibility"
 msgstr "Sauƙin amfani"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:30
 msgid "Date & Time"
 msgstr "Kwanan wata da Lokaci"
 
@@ -211,81 +211,124 @@ msgid "Default Apps"
 msgstr "Manhajar asali"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:31
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:184
 msgid "About"
 msgstr "Game da"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+msgid "Restore Defaults"
+msgstr "Maido da tsoffin saitunan"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:80
+msgid "Select which settings to reset to factory defaults."
+msgstr "Zaɓi waɗanne saituna za a mayar su zuwa saitunan masana'anta."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:87
+msgid "Select All"
+msgstr "Zaɓi duka"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:107
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:253
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:335
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+msgid "Cancel"
+msgstr "Soke"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:111
+msgid "Reset"
+msgstr "Sake saita"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:144
+msgid "Could not read defaults file"
+msgstr "Ba a iya karanta fayil ɗin tsoffin saituna ba"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:194
 msgid "Operating System"
 msgstr "Tsarin aiki"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:195
 msgid "Hostname"
 msgstr "Sunan kwamfuta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:52
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:205
 msgid "Processor"
 msgstr "Mai sarrafawa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:215
 msgid "Memory"
 msgstr "Ƙwaƙwalwa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:68
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:221
 msgid "Disk"
 msgstr "Faifai"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:242
 msgid "Desktop"
 msgstr "Fuskar tebur"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:234
 msgid "Graphics"
 msgstr "Zane-zane"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
 msgid "GPU"
 msgstr "GPU"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:92
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:245
 msgid "Updates"
 msgstr "Sabuntawa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:95
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:248
 msgid "Click to check for updates"
 msgstr "Danna don duba sabuntawa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:98
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:251
 msgid "Check for Updates"
 msgstr "Duba sabuntawa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:257
+msgid "Troubleshooting"
+msgstr "Warware matsaloli"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:261
+msgid "Reset settings to factory defaults"
+msgstr "Sake saita saituna zuwa tsoffin masana'anta"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:266
+msgid "Restore Defaults..."
+msgstr "Maido da tsoffin saitunan..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:275
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:77
 msgid "Checking..."
 msgstr "Ana dubawa..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:117
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:286
 #, python-brace-format
 msgid "Update available: {version}"
 msgstr "Sabuntawa akwai: {version}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:119
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:288
 msgid "System is up to date"
 msgstr "Tsarin yana kan lokaci"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:121
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:290
 msgid "Could not check for updates"
 msgstr "Ba za a iya duba sabuntawa ba"
 
@@ -414,7 +457,7 @@ msgid "Custom..."
 msgstr "Na musamman..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:164
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:169
 msgid "Pair"
 msgstr "Haɗa"
 
@@ -440,8 +483,8 @@ msgid "Available Devices"
 msgstr "Na'urorin da ake samu"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:111
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:192
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:197
 msgid "Search for devices"
 msgstr "Nemo na'urori"
 
@@ -450,86 +493,86 @@ msgstr "Nemo na'urori"
 msgid "Advanced..."
 msgstr "Ci gaba..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:109
 msgid "Scanning..."
 msgstr "Ana dubawa..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:150
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:156
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:155
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:166
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:308
 msgid "Connected"
 msgstr "An haɗa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:153
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:158
 msgid "Disconnect"
 msgstr "Yanke haɗi"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:157
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:199
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:246
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:162
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:209
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:256
 msgid "Connect"
 msgstr "Haɗa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:160
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:159
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:165
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:169
 msgid "Forget"
 msgstr "Manta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:172
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
 msgid "Pairing..."
 msgstr "Ana haɗawa..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
 msgid "Paired successfully"
 msgstr "An haɗa cikin nasara"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:187
 #, python-brace-format
 msgid "Pairing failed: {message}"
 msgstr "Haɗawa ta gaza: {message}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
 msgid "Timezone"
 msgstr "Yankin lokaci"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
 msgid "Automatic time"
 msgstr "Lokaci ta atomatik"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 msgid "NTP"
 msgstr "NTP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "24-hour clock"
 msgstr "Agogon awa 24"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
 msgid "e.g. America/New_York"
 msgstr "misali America/New_York"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:100
 msgid "Press Enter to apply"
 msgstr "Danna Enter don aiwatarwa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
 msgid "Sync clock via network (NTP)"
 msgstr "Daidaita agogo ta hanyar sadarwa (NTP)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "Use 24-hour time format"
 msgstr "Yi amfani da tsarin lokaci na awa 24"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:96
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:102
 msgid "Failed to set timezone"
 msgstr "Saita yankin lokaci ya gaza"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:99
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:105
 msgid "Invalid timezone"
 msgstr "Yankin lokaci mara inganci"
 
@@ -675,12 +718,12 @@ msgstr "Saituna na ci gaba na nunawa"
 msgid "Arrange and configure displays visually"
 msgstr "Tsara da saita alluna ta hanyar gani"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:204
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
 msgid "Confirm Scale"
 msgstr "Tabbatar da sikeli"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:215
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:241
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:257
 #, python-brace-format
 msgid ""
 "Keep this display scale?\n"
@@ -689,22 +732,22 @@ msgstr ""
 "A ci gaba da wannan sikelin nunawa?\n"
 "Ana komawa cikin {seconds}s..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:342
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:236
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:361
 msgid "Revert"
 msgstr "Koma baya"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:348
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:239
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:367
 msgid "Keep"
 msgstr "Ajiye"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:325
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:344
 msgid "Confirm Resolution"
 msgstr "Tabbatar da ƙuduri"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:336
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:369
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:355
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:388
 #, python-brace-format
 msgid ""
 "Keep this resolution?\n"
@@ -835,15 +878,6 @@ msgstr ""
 "An riga an sanya \"{key}\" ga \"{conflict}\".\n"
 "\n"
 "A sake sanya shi ga \"{target}\"?"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:196
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:284
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Cancel"
-msgstr "Soke"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
 msgid "Reassign"
@@ -990,208 +1024,225 @@ msgstr "Haɗa zuwa ɓoyayyar hanyar sadarwa..."
 msgid "Active Connection"
 msgstr "Haɗi mai aiki"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:174
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:254
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:87
+msgid "Connection editor not found"
+msgstr ""
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:184
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:216
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:264
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "Ana haɗa zuwa {ssid}..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:189
 #, python-brace-format
 msgid "Connect to {ssid}"
 msgstr "Haɗa zuwa {ssid}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:219
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:229
 msgid "Connect to Hidden Network"
 msgstr "Haɗa zuwa ɓoyayyar hanyar sadarwa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:230
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
 msgid "Network name (SSID)"
 msgstr "Sunan hanyar sadarwa (SSID)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "None"
 msgstr "Babu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "WPA/WPA2"
 msgstr "WPA/WPA2"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
 msgid "WPA3"
 msgstr "WPA3"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:234
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:244
 msgid "Security"
 msgstr "Tsaro"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:269
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:279
 msgid "Connected successfully"
 msgstr "An haɗa cikin nasara"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:294
 msgid "Not connected"
 msgstr "Ba a haɗa ba"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:287
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:297
 msgid "Type"
 msgstr "Nau'i"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:288
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
 msgid "IP Address"
 msgstr "Adireshin IP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:299
 msgid "Gateway"
 msgstr "Ƙofar shiga"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:290
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
 msgid "DNS"
 msgstr "DNS"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:306
 msgid "No wired adapter detected"
 msgstr "Ba a gano na'urar waya ba"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:310
 msgid "Disconnected"
 msgstr "An yanke haɗi"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
 msgid "Apps"
 msgstr "Manhajoji"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
 msgid "Window list"
 msgstr "Jerin taga"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
 msgid "Volume"
 msgstr "Ƙarar sauti"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 msgid "Brightness"
 msgstr "Haske"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
 msgid "Battery"
 msgstr "Batir"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "Clock"
 msgstr "Agogo"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 msgid "Power"
 msgstr "Wuta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "System tray"
 msgstr "Akwatin tsarin"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Left"
 msgstr "Hagu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
 msgid "Center"
 msgstr "Tsakiya"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Right"
 msgstr "Dama"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Top"
 msgstr "Sama"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
 msgid "Bottom"
 msgstr "Ƙasa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:63
 msgid "Position"
 msgstr "Matsayi"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:49
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:69
 msgid "Density"
 msgstr "Yawa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
 msgid "Compact"
 msgstr "Taƙaitacce"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:80
+msgid "Twilight"
+msgstr "Magariba"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+msgid "Invert"
+msgstr "Juya"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:85
 msgid "Module Layout"
 msgstr "Tsarin sashe"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
 msgid "Modules"
 msgstr "Sassa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:87
 msgid "Pinned Apps"
 msgstr "Manhajoji masu ɗinke"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
 msgid "Pinned"
 msgstr "An ɗinke"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
 msgid "Normal"
 msgstr "Na al'ada"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:59
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:81
+msgid "Invert panel colors from the system theme"
+msgstr "Juya launukan panel daga jigon tsarin"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:89
 msgid "Reset layout to defaults"
 msgstr "Sake saita tsari zuwa asali"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:127
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:133
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:176
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:182
 #, python-brace-format
 msgid "Move to {section}"
 msgstr "Matsa zuwa {section}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:188
 msgid "Move up in section"
 msgstr "Matsa sama a sashe"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:144
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:193
 msgid "Move down in section"
 msgstr "Matsa ƙasa a sashe"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:227
 msgid "Add pinned app"
 msgstr "Ƙara manhaja mai ɗinke"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:207
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:256
 msgid "Remove"
 msgstr "Cire"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:269
 msgid "Add Pinned App"
 msgstr "Ƙara manhaja mai ɗinke"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:282
 msgid "Search apps…"
 msgstr "Nemo manhajoji…"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:264
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:315
 msgid "Add"
 msgstr "Ƙara"
 
@@ -1224,17 +1275,17 @@ msgid "Never"
 msgstr "Ba taɓa"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:124
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
 msgid "Balanced"
 msgstr "Daidaitacce"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
 msgid "Power Saver"
 msgstr "Mai adana wuta"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:127
 msgid "Performance"
 msgstr "Aiki"
 
@@ -1306,6 +1357,10 @@ msgstr "Dakatar bayan"
 msgid "When lid is closed"
 msgstr "Lokacin da aka rufe murfi"
 
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:145
+msgid "Failed to change lid close action"
+msgstr ""
+
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
 msgid "Output"
@@ -1337,12 +1392,12 @@ msgid "Microphone"
 msgstr "Makirufo"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:203
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:209
 msgid "(No output devices)"
 msgstr "(Babu na'urorin fitarwa)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:233
 msgid "(No input devices)"
 msgstr "(Babu na'urorin shigarwa)"
 
@@ -1405,36 +1460,3 @@ msgstr "Kalmomin sirri ba su dace ba"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:207
 msgid "Failed to set password"
 msgstr "Saita kalmar sirri ya gaza"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Restore Defaults"
-msgstr "Maido da tsoffin saitunan"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Select which settings to reset to factory defaults."
-msgstr "Zaɓi waɗanne saituna za a mayar su zuwa saitunan masana'anta."
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Select All"
-msgstr "Zaɓi duka"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Reset"
-msgstr "Sake saita"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Could not read defaults file"
-msgstr "Ba a iya karanta fayil ɗin tsoffin saituna ba"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Troubleshooting"
-msgstr "Warware matsaloli"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Reset settings to factory defaults"
-msgstr "Sake saita saituna zuwa tsoffin masana'anta"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py
-msgid "Restore Defaults..."
-msgstr "Maido da tsoffin saitunan..."
-
