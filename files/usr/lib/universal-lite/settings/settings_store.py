@@ -25,6 +25,8 @@ class SettingsStore:
         self._debounce_timers: dict[str, int] = {}
         self._toast_callback = None
         self._data = self._load()
+        self._apply_running = False
+        self._apply_pending = False
 
     def _load(self) -> dict:
         self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -104,6 +106,11 @@ class SettingsStore:
         os.rename(tmp, self._path)
 
     def _run_apply(self) -> None:
+        if self._apply_running:
+            self._apply_pending = True
+            return
+        self._apply_running = True
+
         try:
             proc = subprocess.Popen(
                 [self._apply_script],
@@ -111,6 +118,7 @@ class SettingsStore:
                 stderr=subprocess.PIPE,
             )
         except FileNotFoundError:
+            self._apply_running = False
             if self._toast_callback:
                 self._toast_callback("Apply script not found", True)
             return
@@ -122,6 +130,7 @@ class SettingsStore:
         threading.Thread(target=_wait, daemon=True).start()
 
     def _on_apply_done(self, returncode: int, stderr_bytes: bytes) -> bool:
+        self._apply_running = False
         if self._toast_callback is not None:
             if returncode == 0:
                 self._toast_callback("Settings applied", False)
@@ -129,4 +138,21 @@ class SettingsStore:
                 err = stderr_bytes.decode("utf-8", errors="replace").strip()
                 msg = f"Failed to apply: {err[:80]}" if err else "Failed to apply settings"
                 self._toast_callback(msg, True)
+        if self._apply_pending:
+            self._apply_pending = False
+            self._run_apply()
         return GLib.SOURCE_REMOVE
+
+    def wait_for_apply(self, callback) -> None:
+        """Call callback once the current apply-settings finishes.
+        If no apply is running, calls immediately via idle_add."""
+        if not self._apply_running:
+            GLib.idle_add(callback)
+            return
+
+        def _poll():
+            if self._apply_running:
+                return GLib.SOURCE_CONTINUE
+            callback()
+            return GLib.SOURCE_REMOVE
+        GLib.timeout_add(50, _poll)
