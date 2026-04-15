@@ -1007,11 +1007,91 @@ def write_labwc_rc_overrides(settings: dict) -> None:
   <keyboard>
     <repeatDelay>{repeat_delay}</repeatDelay>
     <repeatRate>{repeat_rate}</repeatRate>
-{keybinds_xml}\
+
+    <!-- Terminal -->
+    <keybind key="C-A-T">
+      <action name="Execute" command="foot"/>
+    </keybind>
+
+    <!-- Audio (Chromebook top row) -->
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute" command="/usr/libexec/universal-lite-volume up"/>
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute" command="/usr/libexec/universal-lite-volume down"/>
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute" command="/usr/libexec/universal-lite-volume mute"/>
+    </keybind>
+
+    <!-- Brightness (Chromebook top row) -->
+    <keybind key="XF86MonBrightnessUp">
+      <action name="Execute" command="/usr/libexec/universal-lite-brightness up"/>
+    </keybind>
+    <keybind key="XF86MonBrightnessDown">
+      <action name="Execute" command="/usr/libexec/universal-lite-brightness down"/>
+    </keybind>
+
+    <!-- Chromebook function keys -->
+    <keybind key="XF86FullScreen">
+      <action name="ToggleFullscreen"/>
+    </keybind>
+
+    <!-- Screenshots -->
+    <keybind key="Print">
+      <action name="Execute" command="sh -c 'grim - | wl-copy'"/>
+    </keybind>
+    <keybind key="S-Print">
+      <action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; - | wl-copy'"/>
+    </keybind>
+
+    <!-- Super key shortcuts -->
+    <keybind key="W-l">
+      <action name="Execute" command="swaylock -f"/>
+    </keybind>
+    <keybind key="W-e">
+      <action name="Execute" command="Thunar"/>
+    </keybind>
+    <keybind key="W-Escape">
+      <action name="Execute" command="foot -e htop"/>
+    </keybind>
+    <keybind key="W-comma">
+      <action name="Execute" command="universal-lite-settings"/>
+    </keybind>
+    <keybind key="W-space">
+      <action name="Execute" command="fuzzel"/>
+    </keybind>
+
+    <!-- Window management -->
+    <keybind key="A-Tab">
+      <action name="NextWindow"/>
+    </keybind>
+    <keybind key="A-S-Tab">
+      <action name="PreviousWindow"/>
+    </keybind>
+    <keybind key="A-bracketleft">
+      <action name="SnapToEdge"><direction>left</direction></action>
+    </keybind>
+    <keybind key="A-bracketright">
+      <action name="SnapToEdge"><direction>right</direction></action>
+    </keybind>
+    <keybind key="A-F4">
+      <action name="Close"/>
+    </keybind>
+    <keybind key="W-Up">
+      <action name="ToggleMaximize"/>
+    </keybind>
+    <keybind key="W-Down">
+      <action name="Iconify"/>
+    </keybind>
+
     <!-- Hidden keybind for waybar launcher to trigger the app menu -->
     <keybind key="C-F12">
       <action name="ShowMenu" menu="root-menu"/>
     </keybind>
+
+    <!-- User custom keybinds -->
+{keybinds_xml}\
     <xkb>
       <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
     </xkb>
