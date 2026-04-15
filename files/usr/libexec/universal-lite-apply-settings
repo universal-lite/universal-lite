@@ -1175,7 +1175,7 @@ def write_swaylock_config(tokens: dict) -> None:
     ring = _strip_hash(tokens["accent_hex"])
     bg = _strip_hash(tokens["surface_base"])
     fg = _strip_hash(tokens["text_primary"])
-    border = _strip_hash(tokens["border"])
+    border = _strip_hash(tokens["border_default"])
     wrong = "c01c28"
     transparent = "00000000"
 
