@@ -1622,16 +1622,46 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 self._wifi_device = dev
                 break
 
+        # Check if a wired device is still connecting — retry after a delay
+        # to handle the common case where NM hasn't obtained an IP yet.
+        if not hasattr(self, "_connectivity_retries"):
+            self._connectivity_retries = 0
+        if self._connectivity_retries < 5:
+            for dev in self._nm_client.get_devices():
+                if isinstance(dev, NM.DeviceEthernet):
+                    state = dev.get_state()
+                    if state in (NM.DeviceState.PREPARE,
+                                 NM.DeviceState.CONFIG,
+                                 NM.DeviceState.IP_CONFIG,
+                                 NM.DeviceState.IP_CHECK,
+                                 NM.DeviceState.NEED_AUTH):
+                        # Wired is still connecting — retry in 2 seconds
+                        self._connectivity_retries += 1
+                        GLib.timeout_add(2000, self._retry_connectivity_check)
+                        return
+                    break
+
         if self._wifi_device is None:
-            # No WiFi adapter — stay skipped
+            # No WiFi adapter and wired isn't connecting — show network
+            # page so the user knows there's no connection rather than
+            # silently attempting an offline install that will fail.
+            self._network_skipped = False
+            if self._current_page < PAGE_NETWORK:
+                self._update_navigation()
             return
 
         # WiFi available, no connectivity — show network page if user hasn't advanced
         self._network_skipped = False
         if self._current_page < PAGE_NETWORK:
-            self._current_page = PAGE_NETWORK
             self._update_navigation()
         self._request_wifi_scan()
+
+    def _retry_connectivity_check(self) -> bool:
+        """Re-check connectivity after wired device had time to connect."""
+        if self._nm_client is not None:
+            self._nm_client.check_connectivity_async(
+                None, self._on_connectivity_checked)
+        return GLib.SOURCE_REMOVE
 
     def _detect_current_ssid(self) -> str | None:
         if self._nm_client is None:
@@ -2051,7 +2081,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return self._validate_account()
         elif page == PAGE_SYSTEM:
             return self._validate_system()
-        return True  # Network, Apps, Confirm have no blocking validation
+        elif page == PAGE_CONFIRM:
+            return self._validate_connectivity()
+        return True  # Network, Apps have no blocking validation
 
     def _validate_disk(self) -> bool:
         if not self._drives:
@@ -2162,6 +2194,17 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                       "and cannot start or end with a hyphen.")
                 )
                 return False
+        return True
+
+    def _validate_connectivity(self) -> bool:
+        """Check network before allowing install — bootc needs docker:// transport."""
+        if self._nm_client is None:
+            self._set_status(_("Network is not available. An internet connection is required to install."))
+            return False
+        connectivity = self._nm_client.get_connectivity()
+        if connectivity != NM.ConnectivityState.FULL:
+            self._set_status(_("No internet connection. Connect to a network and try again."))
+            return False
         return True
 
     # ------------------------------------------------------------------
