@@ -1121,6 +1121,7 @@ def write_labwc_rc_overrides(settings: dict) -> None:
       <mousebind button="Right" action="Press">
         <action name="Focus"/>
         <action name="Raise"/>
+        <action name="ShowMenu" menu="client-menu"/>
       </mousebind>
     </context>
     <context name="Close">
