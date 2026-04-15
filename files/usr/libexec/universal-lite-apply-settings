@@ -148,19 +148,22 @@ def _build_tokens(settings: dict) -> dict:
     edge = settings["edge"]
     is_vertical = edge in ("left", "right")
 
-    # Scale panel dimensions proportionally with font size for accessibility.
-    # Base: font_size=11 → font_size_ui=13 → size_scale=1.0 (no change).
+    # Icon sizes are pinned to standard freedesktop/Adwaita theme sizes so
+    # they always hit exact assets (no resampling blur):
+    #   1x → 16 or 24 px   |   2x → 32 or 48 px
+    # Panel dimensions scale with font size for accessibility; icons don't.
     font_size_ui = settings.get("font_size", 11) + 2
     size_scale = font_size_ui / 13
 
-    panel_height = round((36 if density == "compact" else 46) * size_scale)
-    panel_width = round((56 if density == "compact" else 64) * size_scale)
-    panel_spacing = round((6 if density == "compact" else 10) * size_scale)
-    panel_icon_size = round((14 if density == "compact" else 18) * size_scale)
+    panel_icon_size = 16 if density == "compact" else 24
+    panel_height = round((40 if density == "compact" else 48) * size_scale)
+    panel_width = round((48 if density == "compact" else 64) * size_scale)
+    panel_spacing = round((6 if density == "compact" else 8) * size_scale)
     panel_margin = round(8 * size_scale)
-    panel_pad_module = round(10 * size_scale)
-    panel_pad_launcher = round(14 * size_scale)
-    panel_pad_clock = round(14 * size_scale)
+    panel_bar_inset = round(4 * size_scale)
+    panel_pad_module = round(8 * size_scale)
+    panel_pad_launcher = round(12 * size_scale)
+    panel_pad_clock = round(12 * size_scale)
     panel_pad_tray = round(6 * size_scale)
     panel_pad_pin = round(8 * size_scale)
 
@@ -217,6 +220,7 @@ def _build_tokens(settings: dict) -> dict:
         "panel_pad_clock": panel_pad_clock,
         "panel_pad_tray": panel_pad_tray,
         "panel_pad_pin": panel_pad_pin,
+        "panel_bar_inset": panel_bar_inset,
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
@@ -371,6 +375,9 @@ def ensure_settings() -> dict:
 def _waybar_css_common(tokens: dict) -> str:
     r, g, b = _hex_to_rgb_tuple(tokens["surface_base"])
     m = tokens["panel_margin"]
+    inset = tokens["panel_bar_inset"]
+    icon_sz = tokens["panel_icon_size"]
+    bar_pad = f"padding: {inset}px 0;" if tokens["is_vertical"] else f"padding: 0 {inset}px;"
     return f"""\
 * {{
     font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
@@ -384,10 +391,16 @@ window#waybar {{
     background: rgba({r}, {g}, {b}, 0.95);
     border-radius: 999px;
     margin: {m}px;
+    {bar_pad}
+}}
+
+/* Material Icons glyphs sized to match theme icons (standard {icon_sz}px) */
+#custom-launcher,
+#pulseaudio, #backlight, #battery, #custom-power {{
+    font-size: {icon_sz}px;
 }}
 
 #custom-launcher {{
-    background: {tokens["surface_card"]};
     border-radius: 999px;
 }}
 
@@ -488,7 +501,6 @@ window#waybar {{ min-width: {w}px; }}
 #custom-launcher {{
     padding: {pl}px 0;
     min-width: {w}px;
-    margin-bottom: 4px;
 }}
 
 #taskbar {{ padding: 0; }}
@@ -1139,10 +1151,29 @@ def write_labwc_rc_overrides(settings: dict) -> None:
         <action name="Iconify"/>
       </mousebind>
     </context>
-    <context name="Frame">
-      <mousebind button="Left" action="Drag">
-        <action name="Resize"/>
-      </mousebind>
+    <context name="Top">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="Bottom">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="Left">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="Right">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="TLCorner">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="TRCorner">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="BLCorner">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
+    </context>
+    <context name="BRCorner">
+      <mousebind button="Left" action="Drag"><action name="Resize"/></mousebind>
     </context>
     <context name="Root">
       <mousebind button="Right" action="Press">
