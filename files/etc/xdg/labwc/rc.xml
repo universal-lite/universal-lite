@@ -154,4 +154,7 @@
       </mousebind>
     </context>
   </mouse>
+  <windowSwitcher preview="yes" outlines="yes" order="focus">
+    <osd show="yes" style="thumbnail" output="all" />
+  </windowSwitcher>
 </labwc_config>

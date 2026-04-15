@@ -42,6 +42,15 @@ osd.label.text.color: #1e1e1e
 osd.border.width: 1
 osd.border.color: #d1d1d1
 
+# Window switcher (thumbnail mode — ChromeOS / GNOME style)
+window.switcher.width: 80%
+window.switcher.padding: 12
+window.switcher.item.width: 200
+window.switcher.item.height: 160
+window.switcher.item.padding: 8
+window.switcher.item.border.width: 3
+window.switcher.item.border.color: #3584e4
+
 menu.items.bg: flat solid
 menu.items.bg.color: #fafafa
 menu.items.text.color: #1e1e1e

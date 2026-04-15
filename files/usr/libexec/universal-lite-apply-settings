@@ -890,6 +890,15 @@ osd.bg.color: {palette["window_bg"]}
 osd.border.width: 1
 osd.border.color: {palette["border"]}
 osd.label.text.color: {palette["fg"]}
+
+# Window switcher (thumbnail mode — ChromeOS / GNOME style)
+window.switcher.width: 80%
+window.switcher.padding: 12
+window.switcher.item.width: 200
+window.switcher.item.height: 160
+window.switcher.item.padding: 8
+window.switcher.item.border.width: 3
+window.switcher.item.border.color: {accent}
 """
 
     with (LABWC_DIR / "themerc-override").open("w", encoding="utf-8") as handle:
@@ -1150,6 +1159,9 @@ def write_labwc_rc_overrides(settings: dict) -> None:
       </mousebind>
     </context>
   </mouse>
+  <windowSwitcher preview="yes" outlines="yes" order="focus">
+    <osd show="yes" style="thumbnail" output="all" />
+  </windowSwitcher>
 </labwc_config>
 """
 
