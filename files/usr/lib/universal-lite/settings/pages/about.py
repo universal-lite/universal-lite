@@ -150,13 +150,13 @@ class RestoreDefaultsDialog(Gtk.Window):
         for category in selected:
             keys.extend(CATEGORY_KEYS.get(category, []))
 
-        # Write merged settings and apply asynchronously via store
+        # Write merged settings and apply
         self._store.restore_keys(keys, defaults)
 
-        # Restart the settings app after GTK processes the close
+        # Wait for apply-settings to finish, then restart
         self.close()
-        GLib.timeout_add(100, lambda: os.execv(
-            sys.executable, [sys.executable] + sys.argv))
+        self._store.wait_for_apply(
+            lambda: os.execv(sys.executable, [sys.executable] + sys.argv))
 
 
 class AboutPage(BasePage):
