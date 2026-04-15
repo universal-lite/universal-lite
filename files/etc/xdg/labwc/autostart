@@ -54,7 +54,8 @@ for line in r.stdout.splitlines():
 waybar >/dev/null 2>&1 &
 mako >/dev/null 2>&1 &
 pgrep -x nm-applet  >/dev/null 2>&1 || nm-applet --indicator >/dev/null 2>&1 &
-pgrep -x blueman-applet >/dev/null 2>&1 || blueman-applet >/dev/null 2>&1 &
+# Only start blueman if Bluetooth hardware is present (saves ~50 MB on most Chromebooks)
+[ -d /sys/class/bluetooth ] && ! pgrep -x blueman-applet >/dev/null 2>&1 && blueman-applet >/dev/null 2>&1 &
 pgrep -x xfce-polkit >/dev/null 2>&1 || xfce-polkit >/dev/null 2>&1 &
 # Read idle timeouts from user settings (defaults: lock 300s, display-off 600s)
 _lock_timeout=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('lock_timeout', 300))" "$_settings" 2>/dev/null || echo "300")
@@ -72,4 +73,4 @@ set -- swayidle -w
 [ "$_dpms_timeout" != "0" ] && set -- "$@" timeout "$_dpms_timeout" 'wlopm --off "*"' resume 'wlopm --on "*"'
 set -- "$@" before-sleep 'swaylock -f'
 "$@" >/dev/null 2>&1 &
-pgrep -x Thunar >/dev/null 2>&1 || Thunar --daemon >/dev/null 2>&1 &
+# Thunar launches on demand via Super+E — no need to pre-spawn the daemon
