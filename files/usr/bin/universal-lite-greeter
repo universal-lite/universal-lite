@@ -24,13 +24,15 @@ gi.require_version("Gdk", "4.0")
 from gi.repository import Gdk, GLib, Gtk, Pango  # noqa: E402
 
 import gettext
+# Greeter shares the settings text domain — greeter-specific strings
+# must be included in po/settings/*.po files.
 gettext.bindtextdomain("universal-lite-settings", "/usr/share/locale")
 gettext.textdomain("universal-lite-settings")
 _ = gettext.gettext
 
 APP_ID = "org.universallite.Greeter"
 
-LAST_USER_PATH = Path("/var/lib/universal-lite/last-user")
+LAST_USER_PATH = Path("/var/lib/greetd/last-user")
 GREETER_THEME_PATH = Path("/var/lib/universal-lite/greeter-theme")
 SESSIONS_DIR = Path("/usr/share/wayland-sessions")
 PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
@@ -231,7 +233,12 @@ class GreetdClient:
         if not sock_path:
             raise RuntimeError("GREETD_SOCK not set")
         self._sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self._sock.connect(sock_path)
+        self._sock.settimeout(10)
+        try:
+            self._sock.connect(sock_path)
+        except OSError as exc:
+            self._sock.close()
+            raise RuntimeError(f"Cannot connect to greetd: {exc}") from exc
 
     def _send(self, payload: dict) -> dict:
         data = json.dumps(payload).encode()
@@ -286,11 +293,14 @@ def _discover_sessions() -> list[tuple[str, list[str]]]:
 
 
 def _read_last_user() -> str | None:
-    try:
-        user = LAST_USER_PATH.read_text(encoding="utf-8").strip()
-        return user if user else None
-    except OSError:
-        return None
+    for path in [LAST_USER_PATH, Path("/var/lib/universal-lite/last-user")]:
+        try:
+            user = path.read_text(encoding="utf-8").strip()
+            if user:
+                return user
+        except OSError:
+            pass
+    return None
 
 
 def _write_last_user(username: str) -> None:
