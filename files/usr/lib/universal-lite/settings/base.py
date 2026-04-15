@@ -15,6 +15,7 @@ class BasePage:
     def __init__(self, store: SettingsStore, event_bus: EventBus) -> None:
         self.store = store
         self.event_bus = event_bus
+        self._subscriptions: list[tuple[str, object]] = []
 
     @property
     def search_keywords(self) -> list[tuple[str, str]]:
@@ -25,6 +26,22 @@ class BasePage:
 
     def refresh(self) -> None:
         pass
+
+    def subscribe(self, event: str, callback) -> None:
+        """Subscribe to an event and track it for cleanup on unmap."""
+        self.event_bus.subscribe(event, callback)
+        self._subscriptions.append((event, callback))
+
+    def unsubscribe_all(self) -> None:
+        """Unsubscribe all tracked event callbacks."""
+        for event, callback in self._subscriptions:
+            self.event_bus.unsubscribe(event, callback)
+        self._subscriptions.clear()
+
+    def setup_cleanup(self, widget: Gtk.Widget) -> None:
+        """Connect unmap signal to unsubscribe all event callbacks.
+        Call this in build() with the page's root widget."""
+        widget.connect("unmap", lambda _: self.unsubscribe_all())
 
     @staticmethod
     def make_page_box() -> Gtk.Box:

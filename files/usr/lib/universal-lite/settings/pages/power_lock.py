@@ -87,7 +87,7 @@ class PowerLockPage(BasePage):
             child = child.get_next_sibling()
         page.append(cards_box)
 
-        self.event_bus.subscribe("power-profile-changed", self._on_profile_changed)
+        self.subscribe("power-profile-changed", self._on_profile_changed)
 
         # ── Suspend on Idle ──
         page.append(self.make_group_label(_("Suspend on Idle")))
@@ -117,6 +117,7 @@ class PowerLockPage(BasePage):
             self._on_lid_action_changed(lid_values[d.get_selected()]))
         page.append(self.make_setting_row(_("When lid is closed"), "", lid_dd))
 
+        self.setup_cleanup(page)
         return page
 
     def _on_profile_changed(self, new_profile):

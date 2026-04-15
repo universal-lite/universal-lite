@@ -104,7 +104,7 @@ class SoundPage(BasePage):
         page.append(self.make_setting_row(_("Mute"), "", self._in_mute))
 
         self._pa = PulseAudioSubscriber(self.event_bus)
-        self.event_bus.subscribe("audio-changed", self._on_audio_changed)
+        self.subscribe("audio-changed", self._on_audio_changed)
 
         def _on_pa_map(_widget):
             self._pa = PulseAudioSubscriber(self.event_bus)
@@ -113,6 +113,7 @@ class SoundPage(BasePage):
         page.connect("map", _on_pa_map)
         page.connect("unmap", lambda _: self._pa.stop() if self._pa else None)
 
+        self.setup_cleanup(page)
         return page
 
     # -- Signal handlers (user interaction) --

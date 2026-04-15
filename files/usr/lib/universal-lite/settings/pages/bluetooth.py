@@ -82,14 +82,15 @@ class BluetoothPage(BasePage):
         page.append(adv_btn)
 
         # Subscribe
-        self.event_bus.subscribe("bluetooth-changed", lambda _: self._refresh_devices())
-        self.event_bus.subscribe("bluetooth-pair-success", self._on_pair_success)
-        self.event_bus.subscribe("bluetooth-pair-error", self._on_pair_error)
+        self.subscribe("bluetooth-changed", lambda _: self._refresh_devices())
+        self.subscribe("bluetooth-pair-success", self._on_pair_success)
+        self.subscribe("bluetooth-pair-error", self._on_pair_error)
 
         self._refresh_devices()
 
         # Stop discovery if page is torn down
         page.connect("unmap", lambda _: self._cleanup())
+        self.setup_cleanup(page)
         return page
 
     def _on_toggle(self, _switch, state):

@@ -85,11 +85,12 @@ class NetworkPage(BasePage):
         page.append(adv_btn)
 
         # Subscribe to events
-        self.event_bus.subscribe("nm-ready", self._on_nm_ready)
-        self.event_bus.subscribe("network-changed", lambda _: self._refresh_all())
-        self.event_bus.subscribe("network-connect-success", self._on_connect_success)
-        self.event_bus.subscribe("network-connect-error", self._on_connect_error)
+        self.subscribe("nm-ready", self._on_nm_ready)
+        self.subscribe("network-changed", lambda _: self._refresh_all())
+        self.subscribe("network-connect-success", self._on_connect_success)
+        self.subscribe("network-connect-error", self._on_connect_error)
 
+        self.setup_cleanup(page)
         return page
 
     def _on_nm_ready(self, _data):
