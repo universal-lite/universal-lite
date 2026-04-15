@@ -23,16 +23,17 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK 4.16+ defaults to the Vulkan renderer.  VMs and older Intel GPUs
-# (Bay Trail, Haswell) lack Vulkan support — force GL to avoid blank/crash.
-if command -v vulkaninfo >/dev/null 2>&1 && vulkaninfo --summary >/dev/null 2>&1; then
-    : # Vulkan works, let GTK choose
-else
-    export GSK_RENDERER=gl
-fi
+# GTK 4.16+ defaults to the Vulkan renderer which can produce blank
+# windows in cage (kiosk compositor) even when Vulkan appears to work.
+# Force the GL renderer unconditionally for the greeter — it runs
+# fullscreen in cage so the performance difference is negligible.
+export GSK_RENDERER=gl
 
-# Launch the greeter via cage
-cage -s -- /usr/bin/universal-lite-greeter
+# Ensure GTK uses Wayland (cage provides the Wayland socket)
+export GDK_BACKEND=wayland
+
+# Launch the greeter via cage, log stderr for debugging
+cage -s -- /usr/bin/universal-lite-greeter 2>/tmp/greeter-crash.log
 status=$?
 
 if [ "$status" -ne 0 ]; then
