@@ -1121,17 +1121,52 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         card.add_css_class("card")
         card.set_size_request(480, -1)
 
-        self._network_title = Gtk.Label(label=_("Connect to Wi-Fi"))
+        self._network_title = Gtk.Label(label=_("Network"))
         self._network_title.add_css_class("welcome-title")
         self._network_title.set_halign(Gtk.Align.CENTER)
-        self._retranslatable.append((self._network_title.set_label, "Connect to Wi-Fi"))
+        self._retranslatable.append((self._network_title.set_label, "Network"))
         card.append(self._network_title)
 
-        self._network_subtitle = Gtk.Label(label=_("Select a network to get online."))
+        self._network_subtitle = Gtk.Label(label=_("Connect to the internet to continue."))
         self._network_subtitle.add_css_class("welcome-subtitle")
         self._network_subtitle.set_halign(Gtk.Align.CENTER)
-        self._retranslatable.append((self._network_subtitle.set_label, "Select a network to get online."))
+        self._retranslatable.append((self._network_subtitle.set_label, "Connect to the internet to continue."))
         card.append(self._network_subtitle)
+
+        # Wired connection section
+        self._wired_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        self._wired_box.set_margin_bottom(12)
+
+        wired_header = Gtk.Label(label=_("Wired"), xalign=0)
+        wired_header.add_css_class("form-label")
+        self._wired_box.append(wired_header)
+        self._retranslatable.append((wired_header.set_label, "Wired"))
+
+        wired_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        wired_row.add_css_class("setting-row")
+        wired_row.set_valign(Gtk.Align.CENTER)
+
+        self._wired_status_label = Gtk.Label(label=_("Checking..."), xalign=0)
+        self._wired_status_label.set_hexpand(True)
+        wired_row.append(self._wired_status_label)
+
+        self._wired_connect_btn = Gtk.Button(label=_("Connect"))
+        self._wired_connect_btn.add_css_class("create-button")
+        self._wired_connect_btn.set_visible(False)
+        self._wired_connect_btn.connect("clicked", lambda _: self._toggle_wired())
+        self._retranslatable.append((self._wired_connect_btn.set_label, "Connect"))
+        wired_row.append(self._wired_connect_btn)
+
+        self._wired_box.append(wired_row)
+        self._wired_box.set_visible(False)  # Shown once NM detects an ethernet device
+        card.append(self._wired_box)
+
+        # WiFi section header
+        self._wifi_header = Gtk.Label(label=_("Wi-Fi"), xalign=0)
+        self._wifi_header.add_css_class("form-label")
+        self._wifi_header.set_margin_top(4)
+        self._retranslatable.append((self._wifi_header.set_label, "Wi-Fi"))
+        card.append(self._wifi_header)
 
         # WiFi network list
         self._wifi_list = Gtk.ListBox()
@@ -1644,20 +1679,13 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                         return
                     break
 
-        if self._wifi_device is None:
-            # No WiFi adapter and wired isn't connecting — show network
-            # page so the user knows there's no connection rather than
-            # silently attempting an offline install that will fail.
-            self._network_skipped = False
-            if self._current_page < PAGE_NETWORK:
-                self._update_navigation()
-            return
-
-        # WiFi available, no connectivity — show network page if user hasn't advanced
+        # Show network page so user can connect
         self._network_skipped = False
+        self._update_wired_status()
         if self._current_page < PAGE_NETWORK:
             self._update_navigation()
-        self._request_wifi_scan()
+        if self._wifi_device is not None:
+            self._request_wifi_scan()
 
     def _retry_connectivity_check(self) -> bool:
         """Re-check connectivity after wired device had time to connect."""
@@ -1679,6 +1707,73 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
     # WiFi scanning
     # ------------------------------------------------------------------
+
+    def _update_wired_status(self) -> None:
+        """Update the wired connection status display."""
+        if self._nm_client is None:
+            return
+        eth_dev = None
+        for dev in self._nm_client.get_devices():
+            if isinstance(dev, NM.DeviceEthernet):
+                eth_dev = dev
+                break
+        if eth_dev is None:
+            self._wired_box.set_visible(False)
+            return
+
+        self._wired_box.set_visible(True)
+        state = eth_dev.get_state()
+
+        if state == NM.DeviceState.ACTIVATED:
+            self._wired_status_label.set_text(_("Connected"))
+            self._wired_connect_btn.set_label(_("Disconnect"))
+            self._wired_connect_btn.set_visible(True)
+            self._connected_ssid = "(Wired)"
+        elif state in (NM.DeviceState.PREPARE, NM.DeviceState.CONFIG,
+                       NM.DeviceState.IP_CONFIG, NM.DeviceState.IP_CHECK):
+            self._wired_status_label.set_text(_("Connecting..."))
+            self._wired_connect_btn.set_visible(False)
+        elif state == NM.DeviceState.DISCONNECTED:
+            self._wired_status_label.set_text(_("Disconnected"))
+            self._wired_connect_btn.set_label(_("Connect"))
+            self._wired_connect_btn.set_visible(True)
+        elif state == NM.DeviceState.UNAVAILABLE:
+            self._wired_status_label.set_text(_("Cable unplugged"))
+            self._wired_connect_btn.set_visible(False)
+        else:
+            self._wired_status_label.set_text(_("Not connected"))
+            self._wired_connect_btn.set_label(_("Connect"))
+            self._wired_connect_btn.set_visible(True)
+
+    def _toggle_wired(self) -> None:
+        """Connect or disconnect the wired interface."""
+        if self._nm_client is None:
+            return
+        for dev in self._nm_client.get_devices():
+            if isinstance(dev, NM.DeviceEthernet):
+                if dev.get_state() == NM.DeviceState.ACTIVATED:
+                    dev.disconnect_async(None, self._on_wired_toggled)
+                else:
+                    # Activate the default wired connection
+                    self._nm_client.activate_connection_async(
+                        None, dev, None, None, self._on_wired_toggled)
+                break
+
+    def _on_wired_toggled(self, source: object, result: Gio.AsyncResult) -> None:
+        """Callback after wired connect/disconnect attempt."""
+        try:
+            if isinstance(source, NM.Client):
+                source.activate_connection_finish(result)
+            else:
+                source.disconnect_finish(result)
+        except Exception:
+            pass
+        # Refresh status after a brief delay for NM to settle
+        GLib.timeout_add(1000, self._update_wired_status_once)
+
+    def _update_wired_status_once(self) -> bool:
+        self._update_wired_status()
+        return GLib.SOURCE_REMOVE
 
     def _request_wifi_scan(self) -> None:
         if self._wifi_device is None:
