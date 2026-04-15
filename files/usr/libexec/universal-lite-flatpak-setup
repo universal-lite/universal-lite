@@ -2,6 +2,7 @@
 # Installs Flatpak apps on first boot. Uses the wizard's selection if available,
 # otherwise falls back to a default set.
 # Called by universal-lite-flatpak-setup.service.
+# Runs Before=greetd.service so the login screen waits until apps are ready.
 
 set -uo pipefail
 
@@ -20,10 +21,21 @@ io.github.kolunmi.Bazaar
 EOF
 fi
 
+# Count total apps for progress
+total_apps=$(grep -c . "$APPS_FILE" 2>/dev/null || echo 0)
+
+echo ""
+echo "========================================"
+echo "  Universal-Lite — First Boot Setup"
+echo "========================================"
+echo ""
+
 # Wait for actual network connectivity (DNS must resolve Flathub)
+echo "Waiting for network connection..."
 waited=0
 while [ "$waited" -lt "$MAX_NET_WAIT" ]; do
     if getent hosts dl.flathub.org >/dev/null 2>&1; then
+        echo "Network connected."
         break
     fi
     sleep 5
@@ -31,11 +43,14 @@ while [ "$waited" -lt "$MAX_NET_WAIT" ]; do
 done
 
 if [ "$waited" -ge "$MAX_NET_WAIT" ]; then
-    echo "Network not available after ${MAX_NET_WAIT}s, aborting" >&2
-    exit 1
+    echo "ERROR: Network not available after ${MAX_NET_WAIT}s, skipping app install."
+    echo "       Apps can be installed later from Bazaar or flatpak CLI."
+    touch "$STAMP"
+    exit 0
 fi
 
 # Add Flathub remote (retry if needed)
+echo "Configuring Flathub app store..."
 remote_ok=false
 for attempt in $(seq 1 "$RETRIES"); do
     if flatpak remote-add --system --if-not-exists flathub \
@@ -43,40 +58,53 @@ for attempt in $(seq 1 "$RETRIES"); do
         remote_ok=true
         break
     fi
-    echo "Flathub remote-add attempt $attempt/$RETRIES failed, retrying in ${RETRY_DELAY}s..." >&2
+    echo "  Retry $attempt/$RETRIES in ${RETRY_DELAY}s..."
     sleep "$RETRY_DELAY"
 done
 
 if ! "$remote_ok"; then
-    echo "Failed to add Flathub remote after $RETRIES attempts" >&2
-    exit 1
+    echo "ERROR: Could not configure Flathub. Apps can be installed later."
+    touch "$STAMP"
+    exit 0
 fi
 
-# Install or repair each app with per-app retry.
-# --or-update is always used so Flatpak resolves any missing runtime
-# extensions (GL drivers, locales) even for apps the wizard already copied.
-# For fully-installed apps this is a fast no-op.
+# Install each app with per-app retry and progress display
+current=0
 failed=0
 while IFS= read -r app_id; do
     [[ -z "$app_id" ]] && continue
+    current=$((current + 1))
+
+    echo ""
+    echo "[$current/$total_apps] Installing $app_id..."
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
         if flatpak install --or-update --system --noninteractive flathub "$app_id" 2>&1; then
             ok=true
+            echo "[$current/$total_apps] $app_id installed."
             break
         fi
-        echo "Attempt $attempt/$RETRIES failed for $app_id, retrying in ${RETRY_DELAY}s..." >&2
+        echo "  Retry $attempt/$RETRIES in ${RETRY_DELAY}s..."
         sleep "$RETRY_DELAY"
     done
 
     if ! "$ok"; then
-        echo "Failed to install $app_id after $RETRIES attempts" >&2
+        echo "[$current/$total_apps] WARNING: Failed to install $app_id."
         failed=$((failed + 1))
     fi
 done < "$APPS_FILE"
 
+echo ""
+if [ "$failed" -eq 0 ]; then
+    echo "All apps installed successfully. Starting desktop..."
+else
+    echo "$failed app(s) failed to install. Starting desktop..."
+    echo "Missing apps can be installed later from Bazaar or flatpak CLI."
+fi
+echo ""
+
 # Always write stamp — don't retry everything on every boot
 touch "$STAMP"
 
-[ "$failed" -eq 0 ]
+exit 0
