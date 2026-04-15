@@ -3245,9 +3245,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except subprocess.CalledProcessError as exc:
             return f"SELinux relabeling /etc failed: {exc.output.strip() if exc.output else exc}"
 
-        # Relabel /var paths (var_dir may be outside the deploy root,
-        # so use the mount point as the root prefix for /var paths)
-        mount_point = self._mount_point
+        # Relabel /var paths.  var_dir is at {stateroot}/var (sibling of
+        # deploy/), so the root prefix must be the stateroot directory
+        # (parent of var_dir) so setfiles sees /var/home/... not
+        # /ostree/deploy/.../var/home/...
+        stateroot = str(Path(var_dir).parent)
         var_paths = [
             f"{var_dir}/home", f"{var_dir}/roothome", f"{var_dir}/lib",
             f"{var_dir}/log", f"{var_dir}/opt", f"{var_dir}/srv",
@@ -3259,7 +3261,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         if var_paths:
             try:
                 self._run_logged(
-                    ["setfiles", "-r", mount_point, "-F",
+                    ["setfiles", "-r", stateroot, "-F",
                      file_contexts] + var_paths,
                     check=True, timeout=120,
                 )
