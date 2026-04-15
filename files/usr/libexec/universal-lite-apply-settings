@@ -1277,4 +1277,11 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:
+        # Never crash the session — labwc can still start with stale configs
+        print(f"apply-settings: FATAL: {exc}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        sys.exit(0)
