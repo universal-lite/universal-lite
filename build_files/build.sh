@@ -28,6 +28,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     dosfstools \
     evince \
     fastfetch \
+    fedora-logos \
     ffmpegthumbnailer \
     file-roller \
     flatpak \
@@ -184,9 +185,16 @@ systemctl --global disable flatpak-user-update.timer
 # not pre-installed in the image.  This keeps the raw image small for
 # constrained target hardware (16 GB eMMC).
 
-# Install Fedora logo into hicolor icon theme so waybar can find it
-install -Dm644 /usr/share/pixmaps/fedora-logo-icon.png \
-    /usr/share/icons/hicolor/48x48/apps/fedora-logo-icon.png
+# Install Fedora logo into hicolor icon theme so waybar can find it.
+# fedora-logos provides the pixmaps; copy whichever exists.
+for logo in /usr/share/pixmaps/fedora-logo-icon.png \
+            /usr/share/pixmaps/fedora-logo.png \
+            /usr/share/icons/hicolor/48x48/apps/fedora-logo-icon.png; do
+    if [ -f "$logo" ]; then
+        install -Dm644 "$logo" /usr/share/icons/hicolor/48x48/apps/fedora-logo-icon.png
+        break
+    fi
+done
 
 # Rebuild icon caches so waybar/GTK can find symbolic icons
 gtk-update-icon-cache -f /usr/share/icons/Adwaita 2>/dev/null || true
