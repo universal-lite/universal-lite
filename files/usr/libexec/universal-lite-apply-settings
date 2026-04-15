@@ -994,10 +994,22 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     <repeatDelay>{repeat_delay}</repeatDelay>
     <repeatRate>{repeat_rate}</repeatRate>
 {keybinds_xml}\
+    <!-- Hidden keybind for waybar launcher to trigger the app menu -->
+    <keybind key="C-F12">
+      <action name="ShowMenu" menu="root-menu"/>
+    </keybind>
     <xkb>
       <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
     </xkb>
   </keyboard>
+  <!-- Right-click desktop opens desktop menu (not full app menu) -->
+  <mouse>
+    <context name="Root">
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu" menu="desktop-menu"/>
+      </mousebind>
+    </context>
+  </mouse>
 </labwc_config>
 """
 
@@ -1019,6 +1031,7 @@ def write_swaylock_config(tokens: dict) -> None:
 color={bg}
 indicator-radius=80
 indicator-thickness=8
+indicator-idle-visible
 show-failed-attempts
 inside-color={inside}
 inside-clear-color={inside}

@@ -1,5 +1,6 @@
 color=fafafa
 indicator-radius=80
+indicator-idle-visible
 show-failed-attempts
 indicator-thickness=8
 inside-color=ffffff
