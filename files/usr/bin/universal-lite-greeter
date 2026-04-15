@@ -309,6 +309,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app, title=_("Login"))
         self.set_default_size(800, 600)
+        self.fullscreen()
 
         try:
             self._greetd = GreetdClient()
