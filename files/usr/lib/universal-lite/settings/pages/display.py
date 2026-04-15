@@ -316,7 +316,10 @@ class DisplayPage(BasePage):
         return displays
 
     def _on_resolution_changed(self, dd, _param, output_name, modes, old_mode):
-        new_mode = modes[dd.get_selected()]
+        idx = dd.get_selected()
+        if idx < 0 or idx >= len(modes):
+            return
+        new_mode = modes[idx]
         if new_mode == old_mode:
             return
         if self._res_revert_timer_id is not None:

@@ -155,8 +155,13 @@ class RestoreDefaultsDialog(Gtk.Window):
 
         # Wait for apply-settings to finish, then restart
         self.close()
-        self._store.wait_for_apply(
-            lambda: os.execv(sys.executable, [sys.executable] + sys.argv))
+
+        def _restart():
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+
+        self._store.wait_for_apply(_restart)
+        # Safety net: restart after 10s even if apply hasn't finished
+        GLib.timeout_add_seconds(10, _restart)
 
 
 class AboutPage(BasePage):
@@ -219,20 +224,20 @@ class AboutPage(BasePage):
 
         gpu = "Unknown"
         try:
-            r = subprocess.run(["lspci"], capture_output=True, text=True)
+            r = subprocess.run(["lspci"], capture_output=True, text=True, timeout=5)
             for line in r.stdout.splitlines():
                 if "VGA" in line or "3D" in line or "Display" in line:
                     gpu = line.split(": ", 1)[-1] if ": " in line else line
                     break
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
         page.append(self.make_info_row(_("Graphics"), gpu))
 
         labwc_ver = "unknown"
         try:
-            r = subprocess.run(["labwc", "--version"], capture_output=True, text=True)
+            r = subprocess.run(["labwc", "--version"], capture_output=True, text=True, timeout=5)
             labwc_ver = (r.stderr.strip() or r.stdout.strip()) or "unknown"
-        except FileNotFoundError:
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
         page.append(self.make_info_row(_("Desktop"), f"labwc {labwc_ver}"))
 

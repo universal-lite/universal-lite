@@ -103,6 +103,7 @@ class SettingsStore:
         tmp.write_text(
             json.dumps(self._data, indent=2) + "\n", encoding="utf-8"
         )
+        os.chmod(tmp, 0o600)
         os.rename(tmp, self._path)
 
     def _run_apply(self) -> None:
