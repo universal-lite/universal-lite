@@ -901,15 +901,14 @@ def _build_keybinds_xml() -> str:
     from xml.sax.saxutils import escape, quoteattr
 
     keybinds_path = SETTINGS_DIR / "keybindings.json"
-    _fallback = '    <keybind key="NULL">\n      <action name="None"/>\n    </keybind>\n'
     if not keybinds_path.exists():
-        return _fallback
+        return ""
     try:
         bindings = json.loads(keybinds_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return _fallback
+        return ""
     if not bindings:
-        return _fallback
+        return ""
     lines = []
     for entry in bindings:
         key = entry.get("key", "")
@@ -935,7 +934,7 @@ def _build_keybinds_xml() -> str:
             lines.append(f"    <keybind key={quoteattr(key)}>")
             lines.append(f"      <action name={quoteattr(action_name)}/>")
             lines.append("    </keybind>")
-    return "\n".join(lines) + "\n" if lines else _fallback
+    return "\n".join(lines) + "\n" if lines else ""
 
 
 def write_labwc_rc_overrides(settings: dict) -> None:
@@ -983,6 +982,7 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     <cornerRadius>8</cornerRadius>
   </theme>
   <core>
+    <xwayland>no</xwayland>
     <adaptiveSync>yes</adaptiveSync>
     <gap>6</gap>
   </core>
@@ -990,7 +990,6 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     <followMouse>no</followMouse>
     <raiseOnFocus>yes</raiseOnFocus>
   </focus>
-  <windowSwitcher show="yes" preview="no" outlines="yes"/>
   <libinput>
     <device category="touchpad">
       <tap>{tap}</tap>

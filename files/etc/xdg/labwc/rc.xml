@@ -5,6 +5,7 @@
     <cornerRadius>8</cornerRadius>
   </theme>
   <core>
+    <xwayland>no</xwayland>
     <adaptiveSync>yes</adaptiveSync>
     <gap>6</gap>
   </core>
@@ -98,8 +99,6 @@
       <action name="ShowMenu" menu="root-menu"/>
     </keybind>
   </keyboard>
-  <windowSwitcher show="yes" preview="no" outlines="yes"/>
-
   <!-- Mouse bindings: defining ANY mousebind replaces ALL labwc
        built-in defaults, so we must include the full set. -->
   <mouse>
