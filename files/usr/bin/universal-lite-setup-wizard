@@ -1892,7 +1892,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             pw_entry.set_show_peek_icon(True)
             pw_entry.add_css_class("form-entry")
             pw_entry.set_hexpand(True)
-            pw_entry.set_placeholder_text(_("Password"))
+            pw_entry.props.placeholder_text = _("Password")
             pw_box.append(pw_entry)
 
             connect_btn = Gtk.Button(label=_("Connect"))
