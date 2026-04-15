@@ -172,7 +172,23 @@ class DisplayPage(BasePage):
         page.append(self.make_setting_row(
             _("Advanced display settings"), _("Arrange and configure displays visually"), adv_btn))
 
+        page.connect("unmap", lambda _: self._cleanup_dialogs())
         return page
+
+    def _cleanup_dialogs(self) -> None:
+        """Clean up revert dialogs and timers when page is unmapped."""
+        if hasattr(self, "_revert_timer_id") and self._revert_timer_id:
+            GLib.source_remove(self._revert_timer_id)
+            self._revert_timer_id = 0
+        if hasattr(self, "_revert_dialog") and self._revert_dialog:
+            self._revert_dialog.close()
+            self._revert_dialog = None
+        if hasattr(self, "_res_revert_timer_id") and self._res_revert_timer_id:
+            GLib.source_remove(self._res_revert_timer_id)
+            self._res_revert_timer_id = 0
+        if hasattr(self, "_res_revert_dialog") and self._res_revert_dialog:
+            self._res_revert_dialog.close()
+            self._res_revert_dialog = None
 
     # ── Display Scale helpers ──
 
