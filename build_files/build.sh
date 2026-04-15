@@ -184,6 +184,14 @@ systemctl --global disable flatpak-user-update.timer
 # not pre-installed in the image.  This keeps the raw image small for
 # constrained target hardware (16 GB eMMC).
 
+# Install Fedora logo into hicolor icon theme so waybar can find it
+install -Dm644 /usr/share/pixmaps/fedora-logo-icon.png \
+    /usr/share/icons/hicolor/48x48/apps/fedora-logo-icon.png
+
+# Rebuild icon caches so waybar/GTK can find symbolic icons
+gtk-update-icon-cache -f /usr/share/icons/Adwaita 2>/dev/null || true
+gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
+
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
 find /tmp /var/tmp -mindepth 1 -delete 2>/dev/null || true
