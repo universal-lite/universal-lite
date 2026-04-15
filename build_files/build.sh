@@ -118,6 +118,20 @@ cp -a /ctx/files/. /
 # Language name matrix and all MO files (wizard + settings) are
 # pre-compiled and shipped in files/, installed by the cp above.
 
+# Add signature verification for our container registry.
+# Merge into existing policy.json rather than replacing it so
+# the base image's ublue-os verification entries are preserved.
+python3 -c "
+import json
+p = json.load(open('/etc/containers/policy.json'))
+p.setdefault('transports', {}).setdefault('docker', {})['ghcr.io/universal-lite'] = [{
+    'type': 'sigstoreSigned',
+    'keyPath': '/etc/pki/containers/universal-lite.pub',
+    'signedIdentity': {'type': 'matchRepository'},
+}]
+json.dump(p, open('/etc/containers/policy.json', 'w'), indent=2)
+"
+
 # Ensure video group exists for brightnessctl backlight access
 groupadd -f video
 

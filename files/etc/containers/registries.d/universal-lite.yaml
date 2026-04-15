@@ -1,0 +1,3 @@
+docker:
+  ghcr.io/universal-lite:
+    use-sigstore-attachments: true
