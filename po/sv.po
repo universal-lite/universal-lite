@@ -523,3 +523,43 @@ msgstr "Omstart misslyckades — starta om manuellt."
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "This username is reserved for the system."
 msgstr "Detta användarnamn är reserverat för systemet."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connect to the internet to continue."
+msgstr "Anslut till internet för att fortsätta."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wired"
+msgstr "Trådbunden"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Checking..."
+msgstr "Kontrollerar..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connected"
+msgstr "Ansluten"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connecting..."
+msgstr "Ansluter..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnected"
+msgstr "Frånkopplad"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Cable unplugged"
+msgstr "Kabel ej ansluten"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Not connected"
+msgstr "Inte ansluten"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnect"
+msgstr "Koppla från"

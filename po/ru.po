@@ -526,3 +526,43 @@ msgstr "Не удалось перезагрузить — пожалуйста,
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "This username is reserved for the system."
 msgstr "Это имя пользователя зарезервировано для системы."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connect to the internet to continue."
+msgstr "Подключитесь к интернету, чтобы продолжить."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wired"
+msgstr "Проводное"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Checking..."
+msgstr "Проверка..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connected"
+msgstr "Подключено"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connecting..."
+msgstr "Подключение..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnected"
+msgstr "Отключено"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Cable unplugged"
+msgstr "Кабель отключён"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Not connected"
+msgstr "Нет подключения"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnect"
+msgstr "Отключить"

@@ -619,3 +619,43 @@ msgstr "Kuanzisha upya kumeshindwa — tafadhali anzisha upya kwa mkono."
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "This username is reserved for the system."
 msgstr "Jina hili la mtumiaji limehifadhiwa kwa mfumo."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connect to the internet to continue."
+msgstr "Unganisha na mtandao ili kuendelea."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wired"
+msgstr "Waya"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Checking..."
+msgstr "Inakagua..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connected"
+msgstr "Imeunganishwa"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connecting..."
+msgstr "Inaunganisha..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnected"
+msgstr "Imekatika"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Cable unplugged"
+msgstr "Kebo haijaunganishwa"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Not connected"
+msgstr "Haijaunganishwa"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnect"
+msgstr "Kata muunganisho"

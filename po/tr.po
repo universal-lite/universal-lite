@@ -523,3 +523,43 @@ msgstr "Yeniden başlatma başarısız — lütfen elle yeniden başlatın."
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "This username is reserved for the system."
 msgstr "Bu kullanıcı adı sistem için ayrılmıştır."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connect to the internet to continue."
+msgstr "Devam etmek için internete bağlanın."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wired"
+msgstr "Kablolu"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Checking..."
+msgstr "Kontrol ediliyor..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connected"
+msgstr "Bağlandı"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connecting..."
+msgstr "Bağlanıyor..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnected"
+msgstr "Bağlantı kesildi"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Cable unplugged"
+msgstr "Kablo takılı değil"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Not connected"
+msgstr "Bağlı değil"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnect"
+msgstr "Bağlantıyı kes"

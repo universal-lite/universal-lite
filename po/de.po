@@ -528,3 +528,43 @@ msgstr "Neustart fehlgeschlagen — bitte starten Sie manuell neu."
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "This username is reserved for the system."
 msgstr "Dieser Benutzername ist für das System reserviert."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connect to the internet to continue."
+msgstr "Verbinden Sie sich mit dem Internet, um fortzufahren."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wired"
+msgstr "Kabelgebunden"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Wi-Fi"
+msgstr "WLAN"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Checking..."
+msgstr "Überprüfe..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connected"
+msgstr "Verbunden"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Connecting..."
+msgstr "Verbindung wird hergestellt..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnected"
+msgstr "Getrennt"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Cable unplugged"
+msgstr "Kabel nicht angeschlossen"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Not connected"
+msgstr "Nicht verbunden"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "Disconnect"
+msgstr "Trennen"
