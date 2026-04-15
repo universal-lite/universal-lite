@@ -1158,7 +1158,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         wired_row.append(self._wired_connect_btn)
 
         self._wired_box.append(wired_row)
-        self._wired_box.set_visible(False)  # Shown once NM detects an ethernet device
+        self._wired_box.set_visible(True)
         card.append(self._wired_box)
 
         # WiFi section header
@@ -1682,6 +1682,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Show network page so user can connect
         self._network_skipped = False
         self._update_wired_status()
+        # Refresh wired status every 3 seconds while on the network page
+        # so the UI updates when the device connects or appears
+        if not getattr(self, "_wired_poll_id", 0):
+            self._wired_poll_id = GLib.timeout_add(3000, self._poll_wired_status)
         if self._current_page < PAGE_NETWORK:
             self._update_navigation()
         if self._wifi_device is not None:
@@ -1718,10 +1722,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 eth_dev = dev
                 break
         if eth_dev is None:
-            self._wired_box.set_visible(False)
+            self._wired_status_label.set_text(_("No wired adapter detected"))
+            self._wired_connect_btn.set_visible(False)
             return
 
-        self._wired_box.set_visible(True)
         state = eth_dev.get_state()
 
         if state == NM.DeviceState.ACTIVATED:
@@ -1774,6 +1778,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _update_wired_status_once(self) -> bool:
         self._update_wired_status()
         return GLib.SOURCE_REMOVE
+
+    def _poll_wired_status(self) -> bool:
+        """Periodic refresh of wired status while on network page."""
+        if self._current_page != PAGE_NETWORK:
+            self._wired_poll_id = 0
+            return GLib.SOURCE_REMOVE
+        self._update_wired_status()
+        return GLib.SOURCE_CONTINUE
 
     def _request_wifi_scan(self) -> None:
         if self._wifi_device is None:
@@ -2168,10 +2180,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         elif self._current_page == PAGE_SYSTEM:
             self._tz_dropdown.grab_focus()
 
-        # Cancel pending WiFi rescan timer when leaving network page
-        if self._current_page != PAGE_NETWORK and self._rescan_timer_id:
-            GLib.source_remove(self._rescan_timer_id)
-            self._rescan_timer_id = 0
+        # Cancel network page timers when leaving
+        if self._current_page != PAGE_NETWORK:
+            if self._rescan_timer_id:
+                GLib.source_remove(self._rescan_timer_id)
+                self._rescan_timer_id = 0
+            if getattr(self, "_wired_poll_id", 0):
+                GLib.source_remove(self._wired_poll_id)
+                self._wired_poll_id = 0
 
     # ------------------------------------------------------------------
     # Validation
