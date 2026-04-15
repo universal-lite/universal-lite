@@ -45,8 +45,9 @@ if [ "$strategy" = "zswap" ] && [ -n "$swap_gb" ] && [ "$swap_gb" != "None" ]; t
     echo zstd > /sys/module/zswap/parameters/compressor 2>/dev/null || true
     echo 25 > /sys/module/zswap/parameters/max_pool_percent 2>/dev/null || true
 
-    # Persist swappiness for disk-backed swap
-    echo "vm.swappiness = 100" > /etc/sysctl.d/91-universal-lite-zswap.conf
+    # Swappiness sysctl and zram-generator.conf are already written to the
+    # sysroot by the wizard during _step_configure_memory — no need to
+    # write them again here (shell redirects can fail on ostree/SELinux).
     sysctl -w vm.swappiness=100 || true
 fi
 # zram: no action needed — zram-generator.conf (125%) is already in the image
