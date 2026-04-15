@@ -410,7 +410,7 @@ class GreeterWindow(Gtk.ApplicationWindow):
         # Password entry (shown in password state)
         self._password_entry = Gtk.PasswordEntry()
         self._password_entry.set_show_peek_icon(True)
-        self._password_entry.set_placeholder_text(_("Password"))
+        self._password_entry.props.placeholder_text = _("Password")
         self._password_entry.add_css_class("form-entry")
         self._password_entry.set_hexpand(True)
         self._password_entry.connect("activate", lambda _: self._on_submit())
