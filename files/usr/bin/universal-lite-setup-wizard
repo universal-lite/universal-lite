@@ -978,7 +978,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         _, xkb_code = LOCALE_KEYMAP.get(lang_prefix, ("us", "us"))
         try:
             idx = self._kb_codes.index(xkb_code)
+            self._kb_dropdown.handler_block_by_func(self._on_keyboard_selected)
             self._kb_dropdown.set_selected(idx)
+            self._kb_dropdown.handler_unblock_by_func(self._on_keyboard_selected)
             name = self._keyboard_layouts[idx][1]
             self._kb_toggle.set_label(
                 _("Keyboard layout: {layout}").format(layout=name))
