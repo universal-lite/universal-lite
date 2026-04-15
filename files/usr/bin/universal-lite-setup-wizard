@@ -632,6 +632,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._keyboard_user_override = False  # True once user manually picks a layout
         self._uefi_boot = os.path.isdir("/sys/firmware/efi")
         self._network_skipped = True   # Default to skipped; Task 4 will set False when NM is ready
+        self._rescan_timer_id: int = 0
         self._connected_ssid: str | None = None
         self._current_page = PAGE_LANGUAGE  # Start at Language page
 
@@ -1695,7 +1696,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._populate_wifi_list()
         self._rescan_button.set_visible(True)
         # Re-enable rescan after NM cooldown (~10s)
-        GLib.timeout_add_seconds(10, self._enable_rescan)
+        self._rescan_timer_id = GLib.timeout_add_seconds(10, self._enable_rescan)
 
     def _enable_rescan(self) -> bool:
         self._rescan_button.set_sensitive(True)
@@ -2071,6 +2072,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._fullname_entry.grab_focus()
         elif self._current_page == PAGE_SYSTEM:
             self._tz_dropdown.grab_focus()
+
+        # Cancel pending WiFi rescan timer when leaving network page
+        if self._current_page != PAGE_NETWORK and self._rescan_timer_id:
+            GLib.source_remove(self._rescan_timer_id)
+            self._rescan_timer_id = 0
 
     # ------------------------------------------------------------------
     # Validation
