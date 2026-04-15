@@ -1172,15 +1172,17 @@ def write_labwc_rc_overrides(settings: dict) -> None:
 def write_swaylock_config(tokens: dict) -> None:
     SWAYLOCK_DIR.mkdir(parents=True, exist_ok=True)
 
-    inside = _strip_hash(tokens["surface_card"])
     ring = _strip_hash(tokens["accent_hex"])
     bg = _strip_hash(tokens["surface_base"])
     fg = _strip_hash(tokens["text_primary"])
+    border = _strip_hash(tokens["border"])
     wrong = "c01c28"
     transparent = "00000000"
 
-    # Accent with partial opacity for the typing state inside fill
-    accent_input = _strip_hash(tokens["accent_hex"]) + "40"
+    # Idle: semi-transparent inside so the indicator is visible against bg
+    idle_inside = _strip_hash(tokens["surface_card"]) + "80"
+    # Typing: accent fill so every keypress visibly changes the indicator
+    typing_inside = _strip_hash(tokens["accent_hex"]) + "40"
 
     config = f"""\
 color={bg}
@@ -1188,12 +1190,12 @@ indicator-radius=80
 indicator-thickness=12
 indicator-idle-visible
 show-failed-attempts
-inside-color={inside}
-inside-clear-color={inside}
-inside-ver-color={accent_input}
-inside-wrong-color={inside}
-ring-color={ring}
-ring-clear-color={ring}
+inside-color={idle_inside}
+inside-clear-color={idle_inside}
+inside-ver-color={typing_inside}
+inside-wrong-color={wrong}40
+ring-color={border}
+ring-clear-color={border}
 ring-ver-color={ring}
 ring-wrong-color={wrong}
 text-color={fg}
