@@ -23,11 +23,11 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK 4.16+ defaults to the Vulkan renderer which can produce blank
-# windows in cage (kiosk compositor) even when Vulkan appears to work.
-# Force the GL renderer unconditionally for the greeter — it runs
-# fullscreen in cage so the performance difference is negligible.
-export GSK_RENDERER=gl
+# GTK4's GPU renderers (Vulkan, GL, NGL) can produce blank windows
+# inside cage because cage's EGL doesn't satisfy GTK4's requirements.
+# Use the cairo (software) renderer — for a login form the performance
+# difference is invisible and it works on any hardware.
+export GSK_RENDERER=cairo
 
 # Ensure GTK uses Wayland (cage provides the Wayland socket)
 export GDK_BACKEND=wayland

@@ -15,13 +15,10 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK 4.16+ defaults to the Vulkan renderer.  VMs and older Intel GPUs
-# (Bay Trail, Haswell) lack Vulkan support — force GL to avoid blank windows.
-if command -v vulkaninfo >/dev/null 2>&1 && vulkaninfo --summary >/dev/null 2>&1; then
-    : # Vulkan works, let GTK choose
-else
-    export GSK_RENDERER=gl
-fi
+# GTK4's GPU renderers can produce blank windows inside cage (the
+# kiosk compositor used for the wizard).  Use cairo (software) which
+# works on any hardware — the wizard is a simple form, not a game.
+export GSK_RENDERER=cairo
 
 # Provide a debug terminal shortcut (Ctrl+Alt+T) in wizard mode
 mkdir -p /root/.config/labwc
