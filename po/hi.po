@@ -558,3 +558,7 @@ msgstr "कनेक्ट नहीं है"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "डिस्कनेक्ट करें"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "कोई वायर्ड एडाप्टर नहीं मिला"

@@ -647,3 +647,7 @@ msgstr "አልተገናኘም"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "አቋርጥ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "የሽቦ አስማሚ አልተገኘም"

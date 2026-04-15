@@ -566,3 +566,7 @@ msgstr "Нет подключения"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Отключить"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Проводной адаптер не обнаружен"

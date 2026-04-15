@@ -565,3 +565,7 @@ msgstr "Brak połączenia"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Rozłącz"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Nie wykryto karty przewodowej"

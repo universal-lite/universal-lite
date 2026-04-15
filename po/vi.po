@@ -562,3 +562,7 @@ msgstr "Chưa kết nối"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Ngắt kết nối"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Không phát hiện bộ điều hợp có dây"

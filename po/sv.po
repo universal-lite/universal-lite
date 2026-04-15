@@ -563,3 +563,7 @@ msgstr "Inte ansluten"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Koppla från"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Ingen trådbunden adapter hittades"

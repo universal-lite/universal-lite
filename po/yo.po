@@ -560,3 +560,7 @@ msgstr "Kò sí ìsopọ̀"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Yọ ìsopọ̀ kúrò"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Kò rí ohun èlò oníwáyà"

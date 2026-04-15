@@ -568,3 +568,7 @@ msgstr "Nicht verbunden"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Trennen"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Kein kabelgebundener Adapter erkannt"

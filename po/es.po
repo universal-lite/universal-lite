@@ -565,3 +565,7 @@ msgstr "Sin conexión"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Desconectar"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "No se detectó adaptador de cable"

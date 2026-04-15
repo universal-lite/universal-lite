@@ -564,3 +564,7 @@ msgstr "Geen verbinding"
 #: ../files/usr/bin/universal-lite-setup-wizard
 msgid "Disconnect"
 msgstr "Verbinding verbreken"
+
+#: ../files/usr/bin/universal-lite-setup-wizard
+msgid "No wired adapter detected"
+msgstr "Geen bekabelde adapter gedetecteerd"
