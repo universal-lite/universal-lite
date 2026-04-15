@@ -1096,8 +1096,55 @@ def write_labwc_rc_overrides(settings: dict) -> None:
       <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
     </xkb>
   </keyboard>
-  <!-- Right-click desktop opens desktop menu (not full app menu) -->
+  <!-- Mouse bindings: defining ANY mousebind replaces ALL labwc
+       built-in defaults, so we must include the full set. -->
   <mouse>
+    <context name="TitleBar">
+      <mousebind button="Left" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="Left" action="Drag">
+        <action name="Move"/>
+      </mousebind>
+      <mousebind button="Left" action="DoubleClick">
+        <action name="ToggleMaximize"/>
+      </mousebind>
+      <mousebind button="Right" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+    </context>
+    <context name="Close">
+      <mousebind button="Left" action="Click">
+        <action name="Close"/>
+      </mousebind>
+    </context>
+    <context name="Maximize">
+      <mousebind button="Left" action="Click">
+        <action name="ToggleMaximize"/>
+      </mousebind>
+    </context>
+    <context name="Iconify">
+      <mousebind button="Left" action="Click">
+        <action name="Iconify"/>
+      </mousebind>
+    </context>
+    <context name="Frame">
+      <mousebind button="Left" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="Left" action="Drag">
+        <action name="Resize"/>
+      </mousebind>
+    </context>
+    <context name="Client">
+      <mousebind button="Left" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+    </context>
     <context name="Root">
       <mousebind button="Right" action="Press">
         <action name="ShowMenu" menu="desktop-menu"/>
