@@ -14,6 +14,7 @@ class DateTimePage(BasePage):
         super().__init__(store, event_bus)
         self._time_label = None
         self._timer_id = None
+        self._mapped = False
 
     @property
     def search_keywords(self):
@@ -31,9 +32,11 @@ class DateTimePage(BasePage):
         # Current time display (live updating)
         self._time_label = Gtk.Label(xalign=0)
         self._time_label.add_css_class("group-title")
+        self._mapped = True
         self._update_time()
         self._timer_id = GLib.timeout_add_seconds(1, self._update_time)
         page.append(self._time_label)
+        page.connect("map", lambda _: setattr(self, "_mapped", True))
         page.connect("unmap", lambda _: self._cleanup())
 
         # Timezone
@@ -59,6 +62,8 @@ class DateTimePage(BasePage):
         return page
 
     def _update_time(self):
+        if not self._mapped:
+            return GLib.SOURCE_REMOVE
         import datetime
 
         now = datetime.datetime.now()
@@ -71,6 +76,7 @@ class DateTimePage(BasePage):
         return GLib.SOURCE_CONTINUE
 
     def _cleanup(self):
+        self._mapped = False
         if self._timer_id is not None:
             GLib.source_remove(self._timer_id)
             self._timer_id = None
