@@ -978,6 +978,19 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     rc = f"""\
 <?xml version="1.0"?>
 <labwc_config>
+  <theme>
+    <name>Universal-Lite</name>
+    <cornerRadius>8</cornerRadius>
+  </theme>
+  <core>
+    <adaptiveSync>yes</adaptiveSync>
+    <gap>6</gap>
+  </core>
+  <focus>
+    <followMouse>no</followMouse>
+    <raiseOnFocus>yes</raiseOnFocus>
+  </focus>
+  <windowSwitcher show="yes" preview="no" outlines="yes"/>
   <libinput>
     <device category="touchpad">
       <tap>{tap}</tap>
