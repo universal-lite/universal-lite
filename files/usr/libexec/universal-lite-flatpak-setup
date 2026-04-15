@@ -13,12 +13,23 @@ RETRIES=3
 RETRY_DELAY=15
 
 # If the wizard didn't write an apps list, use defaults (one per line)
+# The wizard always writes this file (even if empty = no apps selected).
+# Only use the default list if the file is missing entirely (edge case).
 if [ ! -f "$APPS_FILE" ]; then
     mkdir -p "$(dirname "$APPS_FILE")"
     cat > "$APPS_FILE" <<'EOF'
 com.google.Chrome
 io.github.kolunmi.Bazaar
+org.gtk.Gtk3theme.adw-gtk3
+org.gtk.Gtk3theme.adw-gtk3-dark
 EOF
+fi
+
+# If the file is empty, the user chose no apps — skip install
+if [ ! -s "$APPS_FILE" ]; then
+    echo "No apps selected. Skipping app install."
+    touch "$STAMP"
+    exit 0
 fi
 
 # Count total apps for progress

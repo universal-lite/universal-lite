@@ -3373,12 +3373,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             (N_("Configuring user account"), self._step_configure_user, "retry"),
             (N_("Copying network configuration"), self._step_copy_network, "retry"),
         ]
-        if self._setup_selected_apps:
-            self._steps.append((
-                N_("Saving app selection"),
-                self._step_save_app_selection,
-                "retry",
-            ))
+        self._steps.append((
+            N_("Saving app selection"),
+            self._step_save_app_selection,
+            "retry",
+        ))
         self._steps.append((N_("Configuring memory management"), self._step_configure_memory, "retry"))
         self._steps.append((N_("Finalizing"), self._step_finalize, "retry"))
 
