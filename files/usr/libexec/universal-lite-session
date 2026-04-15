@@ -23,9 +23,4 @@ fi
 # Write theme configs before the compositor starts (no Wayland socket needed).
 /usr/libexec/universal-lite-apply-settings
 
-# Ensure Xwayland socket directory is usable.  cage (greeter) may have
-# created /tmp/.X11-unix owned by the greetd user with restrictive
-# permissions, preventing labwc from starting Xwayland.
-mkdir -p -m 1777 /tmp/.X11-unix 2>/dev/null || true
-
 exec labwc
