@@ -29,6 +29,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     evince \
     fastfetch \
     fedora-logos \
+    material-icons-fonts \
     ffmpegthumbnailer \
     file-roller \
     flatpak \

@@ -373,7 +373,7 @@ def _waybar_css_common(tokens: dict) -> str:
     m = tokens["panel_margin"]
     return f"""\
 * {{
-    font-family: "{tokens["font_ui"]}", sans-serif;
+    font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
     font-size: {tokens["font_size_ui"]}px;
     color: {tokens["text_primary"]};
     border: none;
@@ -565,11 +565,12 @@ def write_waybar_config(tokens: dict) -> bool:
         config["height"] = tokens["panel_height"]
 
     # Always define all module configs; Waybar only renders those in the module lists.
+    # Material Icons Outlined codepoints for waybar modules.
+    # Waybar format-icons are literal text, not icon theme lookups.
+    # Font set via CSS: font-family includes "Material Icons Outlined".
     config["custom/launcher"] = {
-        "return-type": "json",
-        "exec": """echo '{"icon": "fedora-logo-icon", "tooltip": "Applications"}'""",
-        "interval": "once",
-        "format": "{icon}",
+        "format": "\ue5c3",  # apps (2x2 grid)
+        "tooltip-format": "Applications",
         "on-click": "wtype -M ctrl -k F12 -m ctrl",
     }
 
@@ -587,10 +588,10 @@ def write_waybar_config(tokens: dict) -> bool:
         "format-muted": "{icon}",
         "format-icons": {
             "default": [
-                "audio-volume-muted-symbolic",
-                "audio-volume-low-symbolic",
-                "audio-volume-medium-symbolic",
-                "audio-volume-high-symbolic",
+                "\ue04f",  # volume_mute
+                "\ue04d",  # volume_down
+                "\ue04d",  # volume_down
+                "\ue050",  # volume_up
             ],
         },
         "tooltip-format": "{volume}%",
@@ -600,7 +601,7 @@ def write_waybar_config(tokens: dict) -> bool:
 
     config["backlight"] = {
         "format": "{icon}",
-        "format-icons": ["display-brightness-symbolic"],
+        "format-icons": ["\ue1ac"],  # brightness_medium
         "tooltip-format": "{percent}%",
     }
 
@@ -609,18 +610,18 @@ def write_waybar_config(tokens: dict) -> bool:
         "format-charging": "{icon}",
         "format-icons": {
             "charging": [
-                "battery-empty-charging-symbolic",
-                "battery-caution-charging-symbolic",
-                "battery-low-charging-symbolic",
-                "battery-good-charging-symbolic",
-                "battery-full-charging-symbolic",
+                "\ue1a3",  # battery_charging_20
+                "\ue1a3",  # battery_charging_20
+                "\ue1a5",  # battery_charging_50
+                "\ue1a7",  # battery_charging_80
+                "\ue1a4",  # battery_charging_full
             ],
             "default": [
-                "battery-empty-symbolic",
-                "battery-caution-symbolic",
-                "battery-low-symbolic",
-                "battery-good-symbolic",
-                "battery-full-symbolic",
+                "\ue19c",  # battery_1_bar
+                "\ue19c",  # battery_1_bar
+                "\ue1a0",  # battery_3_bar
+                "\ue1a2",  # battery_5_bar
+                "\ue1a4",  # battery_full
             ],
         },
         "states": {"warning": 25, "critical": 12},
@@ -634,7 +635,7 @@ def write_waybar_config(tokens: dict) -> bool:
     }
 
     config["custom/power"] = {
-        "format": "\u23fb",
+        "format": "\ue8ac",  # power_settings_new
         "tooltip": False,
         "on-click": "universal-lite-power-menu",
     }
