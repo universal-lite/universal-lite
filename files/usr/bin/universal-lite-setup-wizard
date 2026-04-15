@@ -3288,6 +3288,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         return result
 
     def _on_setup_clicked(self) -> None:
+        if getattr(self, "_installing", False):
+            return
+        self._installing = True
+        self._stop_requested = threading.Event()
         # Capture all form values for thread-safe access
         # Disk page
         drive_idx = self._drive_dropdown.get_selected()
@@ -3408,12 +3412,16 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
             try:
                 for i in range(start, len(self._steps)):
+                    if self._stop_requested.is_set():
+                        return
                     label_text, func, behavior = self._steps[i]
                     GLib.idle_add(self._update_step_status, i, "active")
                     try:
                         err = func()
                     except Exception as exc:
                         err = f"Unexpected error: {exc}"
+                    if self._stop_requested.is_set():
+                        return
                     if err:
                         GLib.idle_add(self._on_step_failed, i, err, behavior)
                         return
@@ -3492,6 +3500,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
     def _progress_go_back(self) -> None:
         """Return to confirm page on fatal error for correction."""
+        self._stop_requested.set()
+        self._installing = False
         self._current_page = PAGE_CONFIRM
         self._update_navigation()
 
