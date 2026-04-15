@@ -2798,7 +2798,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Initialize standard /var subdirectories that ostree expects
         # (on ostree systems /home, /root, /srv etc. are symlinks into /var)
         for subdir in ["home", "roothome", "opt", "srv", "usrlocal",
-                        "mnt", "media", "spool/mail"]:
+                        "mnt", "media", "spool/mail", "lib/greetd"]:
             Path(self._sysroot_var, subdir).mkdir(parents=True, exist_ok=True)
 
         return None
