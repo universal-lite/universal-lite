@@ -54,6 +54,7 @@ class PanelPage(BasePage):
     def search_keywords(self):
         return [
             (_("Position"), _("Panel")), (_("Density"), _("Compact")),
+            (_("Twilight"), _("Invert")),
             (_("Module Layout"), _("Modules")), (_("Pinned Apps"), _("Pinned")),
         ]
 
@@ -71,6 +72,16 @@ class PanelPage(BasePage):
             self.store.get("density", "normal"),
             lambda v: self.store.save_and_apply("density", v),
         ))
+
+        twilight = Gtk.Switch()
+        twilight.set_active(self.store.get("panel_twilight", False))
+        twilight.connect("state-set", lambda _, s: self.store.save_and_apply("panel_twilight", s) or False)
+        page.append(self.make_setting_row(
+            _("Twilight"),
+            _("Invert panel colors from the system theme"),
+            twilight,
+        ))
+
         page.append(self.make_group_label(_("Module Layout")))
         page.append(self._build_module_layout())
         page.append(self.make_group_label(_("Pinned Apps")))

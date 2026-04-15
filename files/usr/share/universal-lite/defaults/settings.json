@@ -40,5 +40,6 @@
   "suspend_timeout": 0,
   "lid_close_action": "suspend",
   "clock_24h": false,
-  "capslock_behavior": "default"
+  "capslock_behavior": "default",
+  "panel_twilight": false
 }

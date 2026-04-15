@@ -176,6 +176,18 @@ def _build_tokens(settings: dict) -> dict:
 
     border_strong = "#666666" if settings["theme"] == "dark" else palette["border"]
 
+    # Panel colors — normally match the system theme.  In "twilight" mode
+    # the panel draws from the opposite palette (dark bar on light desktop
+    # or light bar on dark desktop).
+    if settings.get("panel_twilight", False):
+        _panel_pal = ADWAITA["dark" if settings["theme"] == "light" else "light"]
+    else:
+        _panel_pal = palette
+    panel_surface = _panel_pal["window_bg"]
+    panel_fg = _panel_pal["fg"]
+    panel_secondary_fg = _panel_pal["secondary_fg"]
+    panel_hover = _rgba_css(_panel_pal["fg"], 0.08)
+
     return {
         **settings,
         # Surfaces
@@ -221,6 +233,11 @@ def _build_tokens(settings: dict) -> dict:
         "panel_pad_tray": panel_pad_tray,
         "panel_pad_pin": panel_pad_pin,
         "panel_bar_inset": panel_bar_inset,
+        # Panel colors (may differ from system theme in twilight mode)
+        "panel_surface": panel_surface,
+        "panel_fg": panel_fg,
+        "panel_secondary_fg": panel_secondary_fg,
+        "panel_hover": panel_hover,
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
@@ -338,6 +355,7 @@ def ensure_settings() -> dict:
     capslock_behavior = data.get("capslock_behavior", "default")
     if capslock_behavior not in ("default", "ctrl", "escape", "disabled"):
         capslock_behavior = "default"
+    panel_twilight = bool(data.get("panel_twilight", False))
 
     # Write back validated values, preserving all other keys (input, keyboard, power)
     data.update({
@@ -363,6 +381,7 @@ def ensure_settings() -> dict:
         "power_profile": power_profile,
         "clock_24h": clock_24h,
         "capslock_behavior": capslock_behavior,
+        "panel_twilight": panel_twilight,
     })
 
     with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
@@ -373,7 +392,7 @@ def ensure_settings() -> dict:
 
 
 def _waybar_css_common(tokens: dict) -> str:
-    r, g, b = _hex_to_rgb_tuple(tokens["surface_base"])
+    pr, pg, pb = _hex_to_rgb_tuple(tokens["panel_surface"])
     m = tokens["panel_margin"]
     inset = tokens["panel_bar_inset"]
     icon_sz = tokens["panel_icon_size"]
@@ -382,13 +401,13 @@ def _waybar_css_common(tokens: dict) -> str:
 * {{
     font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
     font-size: {tokens["font_size_ui"]}px;
-    color: {tokens["text_primary"]};
     border: none;
     box-shadow: none;
 }}
 
 window#waybar {{
-    background: rgba({r}, {g}, {b}, 0.95);
+    background: rgba({pr}, {pg}, {pb}, 0.95);
+    color: {tokens["panel_fg"]};
     border-radius: 999px;
     margin: {m}px;
     {bar_pad}
@@ -404,15 +423,15 @@ window#waybar {{
     border-radius: 999px;
 }}
 
-#custom-launcher:hover {{ background: {tokens["state_hover"]}; }}
+#custom-launcher:hover {{ background: {tokens["panel_hover"]}; }}
 
 #battery.warning {{ color: {tokens["color_warning"]}; }}
 #battery.critical {{ color: {tokens["color_error"]}; }}
-#pulseaudio.muted {{ color: {tokens["text_secondary"]}; }}
+#pulseaudio.muted {{ color: {tokens["panel_secondary_fg"]}; }}
 
 #clock:hover, #battery:hover, #backlight:hover,
 #pulseaudio:hover, #custom-power:hover {{
-    background: {tokens["state_hover"]};
+    background: {tokens["panel_hover"]};
     border-radius: 999px;
 }}
 
@@ -444,7 +463,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     min-height: {h}px;
     border-radius: 999px;
 }}
-{hover_selectors} {{ background: {tokens["state_hover"]}; }}
+{hover_selectors} {{ background: {tokens["panel_hover"]}; }}
 """
 
     return f"""
@@ -460,7 +479,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     background: {tokens["accent_rgba_15"]};
     border-bottom: 3px solid {tokens["accent_hex"]};
 }}
-#taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
+#taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
     padding: 0 {pm}px;
@@ -492,7 +511,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     min-width: {w}px;
     border-radius: 999px;
 }}
-{hover_selectors} {{ background: {tokens["state_hover"]}; }}
+{hover_selectors} {{ background: {tokens["panel_hover"]}; }}
 """
 
     return f"""
@@ -513,7 +532,7 @@ window#waybar {{ min-width: {w}px; }}
     background: {tokens["accent_rgba_15"]};
     {active_border}: 3px solid {tokens["accent_hex"]};
 }}
-#taskbar button:hover  {{ background: {tokens["state_hover"]}; }}
+#taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
     padding: {pm}px 0;
