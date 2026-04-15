@@ -104,6 +104,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     wl-clipboard \
     wtype \
     xfce-polkit \
+    xorg-x11-server-Xwayland \
     xdg-desktop-portal \
     xdg-desktop-portal-gtk \
     xdg-desktop-portal-wlr \
