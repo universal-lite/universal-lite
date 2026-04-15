@@ -23,11 +23,11 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK4's GPU renderers (Vulkan, GL, NGL) can produce blank windows
-# inside cage because cage's EGL doesn't satisfy GTK4's requirements.
-# Use the cairo (software) renderer — for a login form the performance
-# difference is invisible and it works on any hardware.
-export GSK_RENDERER=cairo
+# GTK 4.16+ defaults to the Vulkan renderer on Wayland.  On weak GPUs
+# (VMs, Chromebooks, ARM boards) Vulkan can silently produce blank
+# windows.  Force NGL (OpenGL 3.3+/GLES 3.0+) which is the proven
+# fix for cage + GTK4 (see ReGreet issue #95, cage issue #323).
+export GSK_RENDERER=ngl
 
 # Ensure GTK uses Wayland (cage provides the Wayland socket)
 export GDK_BACKEND=wayland

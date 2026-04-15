@@ -15,10 +15,11 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK4's GPU renderers can produce blank windows inside cage (the
-# kiosk compositor used for the wizard).  Use cairo (software) which
-# works on any hardware — the wizard is a simple form, not a game.
-export GSK_RENDERER=cairo
+# GTK 4.16+ defaults to the Vulkan renderer on Wayland.  On weak GPUs
+# (VMs, Chromebooks, ARM boards) Vulkan can silently produce blank
+# windows in cage.  Force NGL (OpenGL 3.3+/GLES 3.0+) which is the
+# proven fix (see ReGreet issue #95, cage issue #323).
+export GSK_RENDERER=ngl
 
 # Provide a debug terminal shortcut (Ctrl+Alt+T) in wizard mode
 mkdir -p /root/.config/labwc
