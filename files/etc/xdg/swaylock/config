@@ -2,10 +2,10 @@ color=fafafa
 indicator-radius=80
 indicator-idle-visible
 show-failed-attempts
-indicator-thickness=8
+indicator-thickness=12
 inside-color=ffffff
 inside-clear-color=ffffff
-inside-ver-color=ffffff
+inside-ver-color=3584e440
 inside-wrong-color=ffffff
 key-hl-color=3584e4
 bs-hl-color=c01c28

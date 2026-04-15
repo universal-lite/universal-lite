@@ -1028,15 +1028,18 @@ def write_swaylock_config(tokens: dict) -> None:
     wrong = "c01c28"
     transparent = "00000000"
 
+    # Accent with partial opacity for the typing state inside fill
+    accent_input = _strip_hash(tokens["accent_hex"]) + "40"
+
     config = f"""\
 color={bg}
 indicator-radius=80
-indicator-thickness=8
+indicator-thickness=12
 indicator-idle-visible
 show-failed-attempts
 inside-color={inside}
 inside-clear-color={inside}
-inside-ver-color={inside}
+inside-ver-color={accent_input}
 inside-wrong-color={inside}
 ring-color={ring}
 ring-clear-color={ring}
