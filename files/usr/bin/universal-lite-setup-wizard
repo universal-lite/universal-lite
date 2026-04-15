@@ -2456,7 +2456,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 if len(line.split()) >= 2 and line.split()[1] == "part"
             ]
             expected_parts = 3 if self._uefi_boot else 4
-            if len(parts) < expected_parts:
+            if len(parts) != expected_parts:
                 return f"Expected {expected_parts} partitions, found {len(parts)}: {parts}"
         except subprocess.CalledProcessError as exc:
             return f"Failed to list partitions: {exc.stderr.strip() or exc}"
@@ -2762,7 +2762,11 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # Retry — user already created, extract UID/GID
             pw_line = [l for l in passwd_text.splitlines()
                        if l.startswith(f"{username}:")]
+            if not pw_line:
+                return f"User {username} found in passwd but entry is missing"
             parts = pw_line[0].split(":")
+            if len(parts) < 4:
+                return f"Malformed passwd entry for {username}"
             uid, gid = int(parts[2]), int(parts[3])
 
             # Ensure shadow entry exists (covers partial-write retry)
@@ -2811,8 +2815,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # Add user to wheel group if admin
             if self._setup_is_admin:
                 lines = new_group.splitlines()
+                found_wheel = False
                 for i, line in enumerate(lines):
                     if line.startswith("wheel:"):
+                        found_wheel = True
                         parts = line.split(":")
                         members = parts[3].split(",") if parts[3] else []
                         if username not in members:
@@ -2820,6 +2826,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                             parts[3] = ",".join(members)
                             lines[i] = ":".join(parts)
                         break
+                if not found_wheel:
+                    lines.append(f"wheel:x:10:{username}")
                 new_group = "\n".join(lines) + "\n"
             self._sysroot_unlink_write(group_path, new_group)
 
@@ -2843,8 +2851,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             new_gshadow += f"{username}:!::\n"
             if self._setup_is_admin:
                 lines = new_gshadow.splitlines()
+                found_wheel = False
                 for i, line in enumerate(lines):
                     if line.startswith("wheel:"):
+                        found_wheel = True
                         parts = line.split(":")
                         members = parts[3].split(",") if parts[3] else []
                         if username not in members:
@@ -2852,6 +2862,8 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                             parts[3] = ",".join(members)
                             lines[i] = ":".join(parts)
                         break
+                if not found_wheel:
+                    lines.append(f"wheel:!::{username}")
                 new_gshadow = "\n".join(lines) + "\n"
             self._sysroot_unlink_write(gshadow_path, new_gshadow, mode=0o000)
 
@@ -2894,18 +2906,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return f"Failed to set home directory ownership: {exc}"
 
         # --- Root password ---
-        shadow_path = etc / "shadow"
-        shadow_text = shadow_path.read_text()
-        lines = shadow_text.splitlines()
-        root_hash = self._setup_hashed_root_password or "!"
-        for i, line in enumerate(lines):
-            if line.startswith("root:"):
-                parts = line.split(":")
-                parts[1] = root_hash
-                lines[i] = ":".join(parts)
-                break
-        self._sysroot_unlink_write(shadow_path, "\n".join(lines) + "\n",
-                                   mode=0o000)
+        try:
+            shadow_path = etc / "shadow"
+            shadow_text = shadow_path.read_text()
+            lines = shadow_text.splitlines()
+            root_hash = self._setup_hashed_root_password or "!"
+            for i, line in enumerate(lines):
+                if line.startswith("root:"):
+                    parts = line.split(":")
+                    parts[1] = root_hash
+                    lines[i] = ":".join(parts)
+                    break
+            self._sysroot_unlink_write(shadow_path, "\n".join(lines) + "\n",
+                                       mode=0o000)
+        except OSError as exc:
+            return f"Failed to set root password: {exc}"
 
         # Set timezone and locale — unlink ostree hardlinks before writing
         try:
