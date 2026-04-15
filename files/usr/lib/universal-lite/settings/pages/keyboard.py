@@ -506,7 +506,7 @@ class KeyboardPage(BasePage):
             if choice == 1:
                 # Remove the conflicting binding's key (set to "None")
                 old_default = self._get_default_key(conflict_idx)
-                self._bindings[conflict_idx]["key"] = old_default or "None"
+                self._bindings[conflict_idx]["key"] = old_default or ""
                 if conflict_idx < len(self._shortcut_buttons) and self._shortcut_buttons[conflict_idx]:
                     self._shortcut_buttons[conflict_idx].set_label(
                         _human_key_label(self._bindings[conflict_idx]["key"]))

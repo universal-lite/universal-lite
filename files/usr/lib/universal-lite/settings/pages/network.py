@@ -80,8 +80,13 @@ class NetworkPage(BasePage):
         # Advanced button
         adv_btn = Gtk.Button(label=_("Advanced..."))
         adv_btn.set_halign(Gtk.Align.START)
-        adv_btn.connect("clicked", lambda _: subprocess.Popen(
-            ["nm-connection-editor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        def _open_connection_editor(_btn):
+            try:
+                subprocess.Popen(["nm-connection-editor"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except FileNotFoundError:
+                self.store.show_toast(_("Connection editor not found"), True)
+
+        adv_btn.connect("clicked", _open_connection_editor)
         page.append(adv_btn)
 
         # Subscribe to events

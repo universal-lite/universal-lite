@@ -140,5 +140,8 @@ class PowerLockPage(BasePage):
             )
             if result.returncode == 0:
                 GLib.idle_add(lambda: self.store.save_and_apply("lid_close_action", action) or False)
+            else:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Failed to change lid close action"), True) or False)
 
         threading.Thread(target=_run, daemon=True).start()

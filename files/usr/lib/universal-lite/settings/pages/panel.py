@@ -256,7 +256,9 @@ class PanelPage(BasePage):
 
     def _show_add_pinned_dialog(self):
         dialog = Gtk.Window(title=_("Add Pinned App"), modal=True)
-        dialog.set_transient_for(self._pinned_list.get_root())
+        root = self._pinned_list.get_root()
+        if root and isinstance(root, Gtk.Window):
+            dialog.set_transient_for(root)
         dialog.set_default_size(400, 500)
         dialog.set_resizable(True)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
