@@ -65,7 +65,7 @@ echo "Configuring Flathub app store..."
 remote_ok=false
 for attempt in $(seq 1 "$RETRIES"); do
     if flatpak remote-add --system --if-not-exists flathub \
-        https://dl.flathub.org/repo/flathub.flatpakrepo 2>&1; then
+        https://dl.flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1; then
         remote_ok=true
         break
     fi
@@ -91,7 +91,10 @@ while IFS= read -r app_id; do
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
-        if flatpak install --or-update --system --noninteractive flathub "$app_id" 2>&1; then
+        # Send flatpak's verbose output to journal, not the console.
+        # Only our progress messages should show on the boot screen.
+        if flatpak install --or-update --system --noninteractive \
+                flathub "$app_id" >/dev/null 2>&1; then
             ok=true
             echo "[$current/$total_apps] $app_id installed."
             break
