@@ -34,9 +34,11 @@ class NetworkPage(BasePage):
 
         page = self.make_page_box()
 
-        # -- WiFi header with toggle --
+        # -- WiFi group (empty title — header row contains label + switch) --
         wifi_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        wifi_header.append(self.make_group_label(_("WiFi")))
+        wifi_label = Gtk.Label(label=_("WiFi"), xalign=0)
+        wifi_label.add_css_class("group-title")
+        wifi_header.append(wifi_label)
         spacer = Gtk.Box()
         spacer.set_hexpand(True)
         wifi_header.append(spacer)
@@ -44,18 +46,15 @@ class NetworkPage(BasePage):
         self._wifi_toggle.set_valign(Gtk.Align.CENTER)
         self._wifi_toggle.connect("state-set", self._on_wifi_toggled)
         wifi_header.append(self._wifi_toggle)
-        page.append(wifi_header)
 
         # Status label (for connection feedback)
         self._status_label = Gtk.Label(xalign=0)
         self._status_label.add_css_class("setting-subtitle")
         self._status_label.set_visible(False)
-        page.append(self._status_label)
 
         # WiFi networks list
         self._wifi_list = Gtk.ListBox()
         self._wifi_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        page.append(self._wifi_list)
 
         # Buttons row
         btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
@@ -65,17 +64,18 @@ class NetworkPage(BasePage):
         hidden_btn = Gtk.Button(label=_("Connect to Hidden Network..."))
         hidden_btn.connect("clicked", lambda _: self._show_hidden_dialog())
         btn_row.append(hidden_btn)
-        page.append(btn_row)
+
+        page.append(self.make_group("", [
+            wifi_header, self._status_label, self._wifi_list, btn_row,
+        ]))
 
         # -- Active Connection --
-        page.append(self.make_group_label(_("Active Connection")))
         self._active_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        page.append(self._active_box)
+        page.append(self.make_group(_("Active Connection"), [self._active_box]))
 
         # -- Wired --
-        page.append(self.make_group_label(_("Wired")))
         self._wired_label = Gtk.Label(label=_("Checking..."), xalign=0)
-        page.append(self._wired_label)
+        page.append(self.make_group(_("Wired"), [self._wired_label]))
 
         # Advanced button
         adv_btn = Gtk.Button(label=_("Advanced..."))
@@ -87,7 +87,7 @@ class NetworkPage(BasePage):
                 self.store.show_toast(_("Connection editor not found"), True)
 
         adv_btn.connect("clicked", _open_connection_editor)
-        page.append(adv_btn)
+        page.append(self.make_group("", [adv_btn]))
 
         # Subscribe to events
         self.subscribe("nm-ready", self._on_nm_ready)

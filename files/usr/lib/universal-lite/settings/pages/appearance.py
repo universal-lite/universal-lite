@@ -31,19 +31,18 @@ class AppearancePage(BasePage):
         page = self.make_page_box()
 
         # -- Theme group --
-        page.append(self.make_group_label(_("Theme")))
-        page.append(self.make_toggle_cards(
+        theme_children = [self.make_toggle_cards(
             [("light", _("Light")), ("dark", _("Dark"))],
             self.store.get("theme", "light"),
             lambda v: self.store.save_and_apply("theme", v),
-        ))
+        )]
         if self.store.get("high_contrast", False):
             note = Gtk.Label(label=_("Theme is set to Dark by High Contrast mode"), xalign=0)
             note.add_css_class("setting-subtitle")
-            page.append(note)
+            theme_children.append(note)
+        page.append(self.make_group(_("Theme"), theme_children))
 
         # -- Accent color group --
-        page.append(self.make_group_label(_("Accent color")))
         accent_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         accent_buttons: list[Gtk.ToggleButton] = []
         current_accent = self.store.get("accent", "blue")
@@ -64,10 +63,9 @@ class AppearancePage(BasePage):
             btn.connect("toggled", _on_accent_toggled, name)
             accent_buttons.append(btn)
             accent_box.append(btn)
-        page.append(accent_box)
+        page.append(self.make_group(_("Accent color"), [accent_box]))
 
         # -- Font size group --
-        page.append(self.make_group_label(_("Font size")))
         font_sizes = [("10", _("Small")), ("11", _("Default")), ("13", _("Large")), ("15", _("Larger"))]
         font_labels = [label for _, label in font_sizes]
         font_values = [val for val, _ in font_sizes]
@@ -79,10 +77,11 @@ class AppearancePage(BasePage):
             font_dd.set_selected(1)
         font_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("font_size", int(font_values[d.get_selected()])))
-        page.append(self.make_setting_row(_("Font size"), _("Affects all text throughout the interface"), font_dd))
+        page.append(self.make_group(_("Font size"), [
+            self.make_setting_row(_("Font size"), _("Affects all text throughout the interface"), font_dd),
+        ]))
 
         # -- Wallpaper group --
-        page.append(self.make_group_label(_("Wallpaper")))
         flow = Gtk.FlowBox()
         flow.set_max_children_per_line(4)
         flow.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -145,7 +144,7 @@ class AppearancePage(BasePage):
         custom_btn = Gtk.Button(label=_("Custom..."))
         custom_btn.connect("clicked", _on_custom_clicked)
         flow.append(custom_btn)
-        page.append(flow)
+        page.append(self.make_group(_("Wallpaper"), [flow]))
         return page
 
     @staticmethod

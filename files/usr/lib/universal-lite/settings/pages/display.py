@@ -43,8 +43,6 @@ class DisplayPage(BasePage):
         page = self.make_page_box()
 
         # ── Display Scale (existing) ──
-        page.append(self.make_group_label(_("Display Scale")))
-
         options = [(str(v), label) for v, label in zip(SCALE_VALUES, SCALE_OPTIONS)]
         active = str(self.store.get("scale", 1.0))
         cards_box = self.make_toggle_cards(
@@ -55,15 +53,15 @@ class DisplayPage(BasePage):
             if isinstance(child, Gtk.ToggleButton):
                 self._scale_buttons.append(child)
             child = child.get_next_sibling()
-        page.append(cards_box)
+        page.append(self.make_group(_("Display Scale"), [cards_box]))
 
         # ── Resolution & Refresh Rate ──
-        page.append(self.make_group_label(_("Resolution & Refresh Rate")))
         displays = self._get_displays()
+        res_children: list[Gtk.Widget] = []
         if not displays:
             no_display = Gtk.Label(label=_("No displays detected"), xalign=0)
             no_display.add_css_class("setting-subtitle")
-            page.append(no_display)
+            res_children.append(no_display)
         else:
             for name, current, modes in displays:
                 if not modes:
@@ -78,10 +76,10 @@ class DisplayPage(BasePage):
                     "notify::selected",
                     self._on_resolution_changed, name, modes, current,
                 )
-                page.append(self.make_setting_row(name, _("Resolution and refresh rate"), dd))
+                res_children.append(self.make_setting_row(name, _("Resolution and refresh rate"), dd))
+        page.append(self.make_group(_("Resolution & Refresh Rate"), res_children))
 
         # ── Night Light ──
-        page.append(self.make_group_label(_("Night Light")))
 
         # Enable toggle
         nl_toggle = Gtk.Switch()
@@ -92,8 +90,6 @@ class DisplayPage(BasePage):
             return False
 
         nl_toggle.connect("state-set", _on_nl_toggle)
-        page.append(self.make_setting_row(
-            _("Night Light"), _("Reduce blue light to help with sleep"), nl_toggle))
 
         # Temperature slider
         temp_scale = Gtk.Scale.new_with_range(
@@ -107,7 +103,6 @@ class DisplayPage(BasePage):
             "value-changed",
             lambda s: self.store.save_debounced("night_light_temp", int(s.get_value())),
         )
-        page.append(self.make_setting_row(_("Temperature"), _("3500K (warm) to 6500K (cool)"), temp_scale))
 
         # Schedule dropdown
         schedule_dd = Gtk.DropDown.new_from_strings(list(SCHEDULE_LABELS))
@@ -117,7 +112,6 @@ class DisplayPage(BasePage):
         except ValueError:
             schedule_dd.set_selected(0)
         schedule_dd.set_size_request(200, -1)
-        page.append(self.make_setting_row(_("Schedule"), "", schedule_dd))
 
         # Custom time entries (start / end)
         custom_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -153,7 +147,6 @@ class DisplayPage(BasePage):
         custom_box.append(self.make_setting_row(_("End time"), "", end_entry))
 
         custom_box.set_visible(current_schedule == "custom")
-        page.append(custom_box)
 
         def _on_schedule_changed(dd, _param):
             idx = dd.get_selected()
@@ -163,14 +156,22 @@ class DisplayPage(BasePage):
 
         schedule_dd.connect("notify::selected", _on_schedule_changed)
 
+        page.append(self.make_group(_("Night Light"), [
+            self.make_setting_row(_("Night Light"), _("Reduce blue light to help with sleep"), nl_toggle),
+            self.make_setting_row(_("Temperature"), _("3500K (warm) to 6500K (cool)"), temp_scale),
+            self.make_setting_row(_("Schedule"), "", schedule_dd),
+            custom_box,
+        ]))
+
         # ── Advanced ──
-        page.append(self.make_group_label(_("Advanced")))
         adv_btn = Gtk.Button(label=_("Open wdisplays"))
         adv_btn.set_halign(Gtk.Align.START)
         adv_btn.connect("clicked", lambda _: subprocess.Popen(
             ["wdisplays"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
-        page.append(self.make_setting_row(
-            _("Advanced display settings"), _("Arrange and configure displays visually"), adv_btn))
+        page.append(self.make_group(_("Advanced"), [
+            self.make_setting_row(
+                _("Advanced display settings"), _("Arrange and configure displays visually"), adv_btn),
+        ]))
 
         page.connect("unmap", lambda _: self._cleanup_dialogs())
         return page
