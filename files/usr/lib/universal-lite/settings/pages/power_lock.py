@@ -44,7 +44,6 @@ class PowerLockPage(BasePage):
         page = self.make_page_box()
 
         # ── Lock & Display ──
-        page.append(self.make_group_label(_("Lock & Display")))
         labels = [l for l, _ in TIMEOUT_OPTIONS]
         seconds = [s for _, s in TIMEOUT_OPTIONS]
 
@@ -56,7 +55,6 @@ class PowerLockPage(BasePage):
             lock_dd.set_selected(2)
         lock_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("lock_timeout", seconds[d.get_selected()]))
-        page.append(self.make_setting_row(_("Lock screen after"), "", lock_dd))
 
         dpms_dd = Gtk.DropDown.new_from_strings(labels)
         current_dpms = self.store.get("display_off_timeout", 600)
@@ -66,11 +64,13 @@ class PowerLockPage(BasePage):
             dpms_dd.set_selected(2)
         dpms_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("display_off_timeout", seconds[d.get_selected()]))
-        page.append(self.make_setting_row(_("Turn off display after"), "", dpms_dd))
+
+        page.append(self.make_group(_("Lock & Display"), [
+            self.make_setting_row(_("Lock screen after"), "", lock_dd),
+            self.make_setting_row(_("Turn off display after"), "", dpms_dd),
+        ]))
 
         # ── Power Profile ──
-        page.append(self.make_group_label(_("Power Profile")))
-
         from ..dbus_helpers import PowerProfilesHelper
         power_helper = PowerProfilesHelper(self.event_bus)
         current_profile = power_helper.get_active_profile()
@@ -85,13 +85,12 @@ class PowerLockPage(BasePage):
             if isinstance(child, Gtk.ToggleButton):
                 self._profile_buttons.append(child)
             child = child.get_next_sibling()
-        page.append(cards_box)
+
+        page.append(self.make_group(_("Power Profile"), [cards_box]))
 
         self.subscribe("power-profile-changed", self._on_profile_changed)
 
         # ── Suspend on Idle ──
-        page.append(self.make_group_label(_("Suspend on Idle")))
-
         suspend_dd = Gtk.DropDown.new_from_strings(labels)
         current_suspend = self.store.get("suspend_timeout", 0)
         try:
@@ -100,11 +99,12 @@ class PowerLockPage(BasePage):
             suspend_dd.set_selected(6)
         suspend_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("suspend_timeout", seconds[d.get_selected()]))
-        page.append(self.make_setting_row(_("Suspend after"), "", suspend_dd))
+
+        page.append(self.make_group(_("Suspend on Idle"), [
+            self.make_setting_row(_("Suspend after"), "", suspend_dd),
+        ]))
 
         # ── Lid Close Behavior ──
-        page.append(self.make_group_label(_("Lid Close Behavior")))
-
         lid_labels = [l for l, _ in LID_OPTIONS]
         lid_values = [v for _, v in LID_OPTIONS]
         lid_dd = Gtk.DropDown.new_from_strings(lid_labels)
@@ -115,7 +115,10 @@ class PowerLockPage(BasePage):
             lid_dd.set_selected(0)
         lid_dd.connect("notify::selected", lambda d, _:
             self._on_lid_action_changed(lid_values[d.get_selected()]))
-        page.append(self.make_setting_row(_("When lid is closed"), "", lid_dd))
+
+        page.append(self.make_group(_("Lid Close Behavior"), [
+            self.make_setting_row(_("When lid is closed"), "", lid_dd),
+        ]))
 
         self.setup_cleanup(page)
         return page

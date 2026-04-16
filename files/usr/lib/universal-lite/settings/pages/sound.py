@@ -38,8 +38,6 @@ class SoundPage(BasePage):
         page = self.make_page_box()
 
         # -- Output --
-        page.append(self.make_group_label(_("Output")))
-
         sinks = self._get_sinks()
         self._sink_names = [n for n, _ in sinks]
         sink_descs = [d for _, d in sinks]
@@ -55,7 +53,6 @@ class SoundPage(BasePage):
         self._sink_dd.set_selected(sink_idx)
         self._sink_dd.set_size_request(240, -1)
         self._sink_dd.connect("notify::selected", self._on_sink_selected)
-        page.append(self.make_setting_row(_("Output device"), "", self._sink_dd))
 
         self._out_vol = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
         self._out_vol.set_value(self._get_volume("@DEFAULT_SINK@"))
@@ -63,16 +60,18 @@ class SoundPage(BasePage):
         self._out_vol.set_draw_value(True)
         self._out_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
         self._out_vol.connect("value-changed", self._on_out_vol_changed)
-        page.append(self.make_setting_row(_("Volume"), "", self._out_vol))
 
         self._out_mute = Gtk.Switch()
         self._out_mute.set_active(self._get_mute("@DEFAULT_SINK@"))
         self._out_mute.connect("state-set", self._on_out_mute_set)
-        page.append(self.make_setting_row(_("Mute"), "", self._out_mute))
+
+        page.append(self.make_group(_("Output"), [
+            self.make_setting_row(_("Output device"), "", self._sink_dd),
+            self.make_setting_row(_("Volume"), "", self._out_vol),
+            self.make_setting_row(_("Mute"), "", self._out_mute),
+        ]))
 
         # -- Input --
-        page.append(self.make_group_label(_("Input")))
-
         sources = self._get_sources()
         self._source_names = [n for n, _ in sources]
         source_descs = [d for _, d in sources]
@@ -88,7 +87,6 @@ class SoundPage(BasePage):
         self._source_dd.set_selected(source_idx)
         self._source_dd.set_size_request(240, -1)
         self._source_dd.connect("notify::selected", self._on_source_selected)
-        page.append(self.make_setting_row(_("Input device"), "", self._source_dd))
 
         self._in_vol = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
         self._in_vol.set_value(self._get_volume("@DEFAULT_SOURCE@", is_source=True))
@@ -96,12 +94,16 @@ class SoundPage(BasePage):
         self._in_vol.set_draw_value(True)
         self._in_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
         self._in_vol.connect("value-changed", self._on_in_vol_changed)
-        page.append(self.make_setting_row(_("Volume"), "", self._in_vol))
 
         self._in_mute = Gtk.Switch()
         self._in_mute.set_active(self._get_mute("@DEFAULT_SOURCE@", is_source=True))
         self._in_mute.connect("state-set", self._on_in_mute_set)
-        page.append(self.make_setting_row(_("Mute"), "", self._in_mute))
+
+        page.append(self.make_group(_("Input"), [
+            self.make_setting_row(_("Input device"), "", self._source_dd),
+            self.make_setting_row(_("Volume"), "", self._in_vol),
+            self.make_setting_row(_("Mute"), "", self._in_mute),
+        ]))
 
         self._pa = PulseAudioSubscriber(self.event_bus)
         self.subscribe("audio-changed", self._on_audio_changed)

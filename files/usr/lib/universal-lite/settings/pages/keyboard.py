@@ -229,8 +229,8 @@ class KeyboardPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Layout")))
 
+        # -- Layout --
         layout_codes = self._get_layouts()
         display_names = [LAYOUT_NAMES.get(c, c) for c in layout_codes]
         current_layout = self.store.get("keyboard_layout", "us")
@@ -281,13 +281,14 @@ class KeyboardPage(BasePage):
             _build_variant_dropdown(code)
 
         layout_dropdown.connect("notify::selected", _on_layout_changed)
-        page.append(self.make_setting_row(_("Keyboard layout"), "", layout_dropdown))
         _build_variant_dropdown(current_layout)
-        page.append(variant_row)
+
+        page.append(self.make_group(_("Layout"), [
+            self.make_setting_row(_("Keyboard layout"), "", layout_dropdown),
+            variant_row,
+        ]))
 
         # -- Repeat --
-        page.append(self.make_group_label(_("Repeat")))
-
         delay_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 150, 1000, 50)
         delay_scale.set_value(self.store.get("keyboard_repeat_delay", 300))
         delay_scale.set_size_request(200, -1)
@@ -295,7 +296,6 @@ class KeyboardPage(BasePage):
         delay_scale.set_format_value_func(lambda _s, v: f"{v:.0f} ms")
         delay_scale.connect("value-changed", lambda s: self.store.save_debounced(
             "keyboard_repeat_delay", int(s.get_value())))
-        page.append(self.make_setting_row(_("Repeat delay"), "", delay_scale))
 
         rate_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 10, 80, 5)
         rate_scale.set_value(self.store.get("keyboard_repeat_rate", 40))
@@ -304,10 +304,13 @@ class KeyboardPage(BasePage):
         rate_scale.set_format_value_func(lambda _s, v: f"{v:.0f}/s")
         rate_scale.connect("value-changed", lambda s: self.store.save_debounced(
             "keyboard_repeat_rate", int(s.get_value())))
-        page.append(self.make_setting_row(_("Repeat rate"), "", rate_scale))
+
+        page.append(self.make_group(_("Repeat"), [
+            self.make_setting_row(_("Repeat delay"), "", delay_scale),
+            self.make_setting_row(_("Repeat rate"), "", rate_scale),
+        ]))
 
         # -- Caps Lock --
-        page.append(self.make_group_label(_("Caps Lock Behavior")))
         caps_options = [_("Default"), _("Ctrl"), _("Escape"), _("Disabled")]
         caps_values = ["default", "ctrl", "escape", "disabled"]
         caps_dd = Gtk.DropDown.new_from_strings(caps_options)
@@ -318,23 +321,27 @@ class KeyboardPage(BasePage):
             caps_dd.set_selected(0)
         caps_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("capslock_behavior", caps_values[d.get_selected()]))
-        page.append(self.make_setting_row(
-            _("Caps Lock key"), _("Remap Caps Lock to another function"), caps_dd))
+
+        page.append(self.make_group(_("Caps Lock Behavior"), [
+            self.make_setting_row(
+                _("Caps Lock key"), _("Remap Caps Lock to another function"), caps_dd),
+        ]))
 
         # -- Keyboard Shortcuts --
-        page.append(self.make_group_label(_("Keyboard Shortcuts")))
-
         self._shortcut_buttons.clear()
-        for i, binding in enumerate(self._bindings):
-            row = self._build_shortcut_row(i, binding)
-            page.append(row)
+        shortcut_rows = [
+            self._build_shortcut_row(i, binding)
+            for i, binding in enumerate(self._bindings)
+        ]
 
         # Reset All button
         reset_all_btn = Gtk.Button(label=_("Reset All Shortcuts"))
         reset_all_btn.set_halign(Gtk.Align.START)
         reset_all_btn.set_margin_top(8)
         reset_all_btn.connect("clicked", lambda _: self._reset_all_shortcuts())
-        page.append(reset_all_btn)
+
+        page.append(self.make_group(_("Keyboard Shortcuts"),
+                                    shortcut_rows + [reset_all_btn]))
 
         return page
 
