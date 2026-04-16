@@ -34,23 +34,22 @@ class BluetoothPage(BasePage):
 
         page = self.make_page_box()
 
-        # -- Header with toggle --
-        header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        header.append(self.make_group_label(_("Bluetooth")))
-        spacer = Gtk.Box()
-        spacer.set_hexpand(True)
-        header.append(spacer)
+        # -- Bluetooth group with inline toggle --
+        bt_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        bt_lbl = Gtk.Label(label=_("Bluetooth"), xalign=0)
+        bt_lbl.set_hexpand(True)
+        bt_header.append(bt_lbl)
         self._toggle = Gtk.Switch()
         self._toggle.set_valign(Gtk.Align.CENTER)
         self._toggle.set_active(self._bt.is_powered())
         self._toggle.connect("state-set", self._on_toggle)
-        header.append(self._toggle)
-        page.append(header)
+        bt_header.append(self._toggle)
 
         self._status_label = Gtk.Label(xalign=0)
         self._status_label.add_css_class("setting-subtitle")
         self._status_label.set_visible(False)
-        page.append(self._status_label)
+
+        page.append(self.make_group("", [bt_header, self._status_label]))
 
         if not self._bt.available:
             self._toggle.set_sensitive(False)
@@ -58,20 +57,17 @@ class BluetoothPage(BasePage):
             return page
 
         # -- Paired devices --
-        page.append(self.make_group_label(_("Paired Devices")))
         self._paired_list = Gtk.ListBox()
         self._paired_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        page.append(self._paired_list)
+        page.append(self.make_group(_("Paired Devices"), [self._paired_list]))
 
         # -- Found devices --
-        page.append(self.make_group_label(_("Available Devices")))
         self._found_list = Gtk.ListBox()
         self._found_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        page.append(self._found_list)
-
         self._scan_btn = Gtk.Button(label=_("Search for devices"))
         self._scan_btn.set_halign(Gtk.Align.START)
         self._scan_btn.connect("clicked", self._on_scan_clicked)
+        page.append(self.make_group(_("Available Devices"), [self._found_list]))
         page.append(self._scan_btn)
 
         # Advanced

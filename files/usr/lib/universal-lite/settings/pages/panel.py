@@ -60,32 +60,34 @@ class PanelPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Position")))
-        page.append(self.make_toggle_cards(
-            [("bottom", _("Bottom")), ("top", _("Top")), ("left", _("Left")), ("right", _("Right"))],
-            self.store.get("edge", "bottom"),
-            self._on_edge_changed,
-        ))
-        page.append(self.make_group_label(_("Density")))
-        page.append(self.make_toggle_cards(
-            [("normal", _("Normal")), ("compact", _("Compact"))],
-            self.store.get("density", "normal"),
-            lambda v: self.store.save_and_apply("density", v),
-        ))
+        page.append(self.make_group(_("Position"), [
+            self.make_toggle_cards(
+                [("bottom", _("Bottom")), ("top", _("Top")), ("left", _("Left")), ("right", _("Right"))],
+                self.store.get("edge", "bottom"),
+                self._on_edge_changed,
+            ),
+        ]))
+        page.append(self.make_group(_("Density"), [
+            self.make_toggle_cards(
+                [("normal", _("Normal")), ("compact", _("Compact"))],
+                self.store.get("density", "normal"),
+                lambda v: self.store.save_and_apply("density", v),
+            ),
+        ]))
 
         twilight = Gtk.Switch()
         twilight.set_active(self.store.get("panel_twilight", False))
         twilight.connect("state-set", lambda _, s: self.store.save_and_apply("panel_twilight", s) or False)
-        page.append(self.make_setting_row(
-            _("Twilight"),
-            _("Invert panel colors from the system theme"),
-            twilight,
-        ))
+        page.append(self.make_group(_("Twilight"), [
+            self.make_setting_row(
+                _("Twilight"),
+                _("Invert panel colors from the system theme"),
+                twilight,
+            ),
+        ]))
 
-        page.append(self.make_group_label(_("Module Layout")))
-        page.append(self._build_module_layout())
-        page.append(self.make_group_label(_("Pinned Apps")))
-        page.append(self._build_pinned_apps())
+        page.append(self.make_group(_("Module Layout"), [self._build_module_layout()]))
+        page.append(self.make_group(_("Pinned Apps"), [self._build_pinned_apps()]))
         reset_btn = Gtk.Button(label=_("Reset layout to defaults"))
         reset_btn.set_halign(Gtk.Align.START)
         reset_btn.connect("clicked", lambda _: self._reset_layout())
