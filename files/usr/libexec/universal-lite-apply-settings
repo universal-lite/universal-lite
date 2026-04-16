@@ -723,6 +723,7 @@ def write_gtk_settings(tokens: dict) -> None:
             handle.write("gtk-cursor-theme-name=Adwaita\n")
             handle.write(f"gtk-cursor-theme-size={tokens['cursor_size']}\n")
             handle.write(f"gtk-enable-animations={'1' if not tokens['reduce_motion'] else '0'}\n")
+            handle.write("gtk-decoration-layout=menu:minimize,maximize,close\n")
 
     gsettings_commands = [
         ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
