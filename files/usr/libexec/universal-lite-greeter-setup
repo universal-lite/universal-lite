@@ -7,6 +7,13 @@ set -euo pipefail
 
 CONFIG="/etc/greetd/config.toml"
 
+# Ensure the Xwayland socket directory exists with correct ownership.
+# cage (greeter) runs as the greetd user — if it creates /tmp/.X11-unix
+# first, the directory will be owned by greetd.  labwc (user session)
+# then fails the wlroots ownership check and crashes.  Creating it here
+# as root before greetd starts prevents the race.
+install -d -m 1777 -o root -g root /tmp/.X11-unix
+
 has_users=$(getent passwd \
   | awk -F: '$3 >= 1000 && $3 < 65534 { found=1; exit } END { print found+0 }')
 

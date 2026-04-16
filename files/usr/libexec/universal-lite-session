@@ -23,4 +23,5 @@ fi
 # Write theme configs before the compositor starts (no Wayland socket needed).
 /usr/libexec/universal-lite-apply-settings
 
-exec labwc
+# Capture labwc stderr so crash details survive the session exit.
+exec labwc 2>/tmp/labwc-crash.log
