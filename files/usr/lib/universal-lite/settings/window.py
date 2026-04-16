@@ -4,7 +4,7 @@ from gettext import gettext as _
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, Gtk
+from gi.repository import GObject, Gio, Gtk
 
 from .events import EventBus
 from .settings_store import SettingsStore
@@ -14,7 +14,7 @@ from .toast import ToastWidget
 class SettingsWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application, store: SettingsStore, event_bus: EventBus) -> None:
         super().__init__(application=app)
-        self.set_title(_("Universal-Lite Settings"))
+        self.set_title(_("Settings"))
         self.set_default_size(900, 600)
         self.set_size_request(700, 500)
 
@@ -23,37 +23,50 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self._page_names: list[str] = []
         self._pages: list = []
 
+        # HeaderBar with search toggle
+        header = Gtk.HeaderBar()
+        search_btn = Gtk.ToggleButton()
+        search_btn.set_icon_name("system-search-symbolic")
+        search_btn.set_tooltip_text(_("Search settings"))
+        header.pack_end(search_btn)
+        self.set_titlebar(header)
+
         # Toast overlay wraps everything
         overlay = Gtk.Overlay()
         self.set_child(overlay)
-
         self._toast = ToastWidget()
         overlay.add_overlay(self._toast)
         store.set_toast_callback(self._toast.show_toast)
 
-        # Main paned layout
-        paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
-        paned.set_position(220)
-        paned.set_shrink_start_child(False)
-        paned.set_shrink_end_child(False)
-        overlay.set_child(paned)
+        # Main vertical box: search bar + paned
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        overlay.set_child(main_box)
 
-        # --- Sidebar ---
-        sidebar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        sidebar_box.set_size_request(220, -1)
-
+        # Search bar (below headerbar, above paned)
         self._search_entry = Gtk.SearchEntry()
-        self._search_entry.set_placeholder_text(_("Search settings..."))
+        self._search_entry.set_placeholder_text(_("Search settings\u2026"))
         self._search_bar = Gtk.SearchBar()
         self._search_bar.set_child(self._search_entry)
         self._search_bar.connect_entry(self._search_entry)
         self._search_entry.connect("search-changed", self._on_search_changed)
-        sidebar_box.append(self._search_bar)
+        search_btn.bind_property("active", self._search_bar, "search-mode-enabled",
+                                 GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        main_box.append(self._search_bar)
 
+        # Paned layout
+        paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
+        paned.set_position(220)
+        paned.set_shrink_start_child(False)
+        paned.set_shrink_end_child(False)
+        paned.set_vexpand(True)
+        main_box.append(paned)
+
+        # Sidebar
+        sidebar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        sidebar_box.set_size_request(220, -1)
         sidebar_scroll = Gtk.ScrolledWindow()
         sidebar_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         sidebar_scroll.set_vexpand(True)
-
         self._sidebar = Gtk.ListBox()
         self._sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self._sidebar.add_css_class("sidebar")
@@ -63,21 +76,20 @@ class SettingsWindow(Gtk.ApplicationWindow):
         sidebar_box.append(sidebar_scroll)
         paned.set_start_child(sidebar_box)
 
-        # --- Content stack ---
+        # Content stack
         self._stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(150)
-
         self._content_scroll = Gtk.ScrolledWindow()
         self._content_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self._content_scroll.set_child(self._stack)
         self._content_scroll.set_hexpand(True)
         self._content_scroll.set_vexpand(True)
+        self._content_scroll.add_css_class("content-area")
         paned.set_end_child(self._content_scroll)
 
-        # Build pages from registry
+        # Build pages and wire up sidebar
         self._build_pages()
-
         self._sidebar.connect("row-selected", self._on_row_selected)
         first = self._sidebar.get_row_at_index(0)
         if first is not None:
