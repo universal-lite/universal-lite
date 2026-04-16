@@ -20,7 +20,6 @@ class LanguagePage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Language & Region")))
 
         # Info banner
         banner = Gtk.Label(
@@ -28,7 +27,6 @@ class LanguagePage(BasePage):
             xalign=0,
         )
         banner.add_css_class("setting-subtitle")
-        page.append(banner)
 
         # System language
         locales = self._get_locales()
@@ -42,7 +40,6 @@ class LanguagePage(BasePage):
         lang_dd.set_size_request(280, -1)
         lang_dd.connect("notify::selected", lambda d, _:
             self._set_locale(locales[d.get_selected()]) if locales else None)
-        page.append(self.make_setting_row(_("System language"), "", lang_dd))
 
         # Regional formats
         fmt_dd = Gtk.DropDown.new_from_strings(locales if locales else ["en_US.UTF-8"])
@@ -54,7 +51,12 @@ class LanguagePage(BasePage):
         fmt_dd.set_size_request(280, -1)
         fmt_dd.connect("notify::selected", lambda d, _:
             self._set_format(locales[d.get_selected()]) if locales else None)
-        page.append(self.make_setting_row(_("Regional formats"), _("Date, number, and currency format"), fmt_dd))
+
+        page.append(self.make_group(_("Language & Region"), [
+            banner,
+            self.make_setting_row(_("System language"), "", lang_dd),
+            self.make_setting_row(_("Regional formats"), _("Date, number, and currency format"), fmt_dd),
+        ]))
 
         return page
 

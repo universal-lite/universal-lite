@@ -73,7 +73,6 @@ class UsersPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Users")))
 
         try:
             self._ensure_dbus()
@@ -83,7 +82,7 @@ class UsersPage(BasePage):
                 xalign=0,
             )
             error_label.add_css_class("setting-subtitle")
-            page.append(error_label)
+            page.append(self.make_group(_("Users"), [error_label]))
             return page
 
         # Display name
@@ -97,12 +96,10 @@ class UsersPage(BasePage):
         name_entry.set_placeholder_text(_("Display name"))
         name_entry.set_size_request(280, -1)
         name_entry.connect("activate", self._on_name_activate)
-        page.append(self.make_setting_row(_("Display name"), _("Press Enter to apply"), name_entry))
 
         # Change Password
         pw_button = Gtk.Button(label=_("Change Password"))
         pw_button.connect("clicked", self._on_change_password)
-        page.append(self.make_setting_row(_("Password"), _("Set a new password for your account"), pw_button))
 
         # Auto-login
         auto_login = False
@@ -113,7 +110,12 @@ class UsersPage(BasePage):
         auto_switch = Gtk.Switch()
         auto_switch.set_active(auto_login)
         auto_switch.connect("state-set", self._on_autologin_set)
-        page.append(self.make_setting_row(_("Automatic login"), _("Log in without a password at startup"), auto_switch))
+
+        page.append(self.make_group(_("Users"), [
+            self.make_setting_row(_("Display name"), _("Press Enter to apply"), name_entry),
+            self.make_setting_row(_("Password"), _("Set a new password for your account"), pw_button),
+            self.make_setting_row(_("Automatic login"), _("Log in without a password at startup"), auto_switch),
+        ]))
 
         return page
 

@@ -27,7 +27,6 @@ class DateTimePage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Date & Time")))
 
         # Current time display (live updating)
         self._time_label = Gtk.Label(xalign=0)
@@ -35,7 +34,6 @@ class DateTimePage(BasePage):
         self._mapped = True
         self._update_time()
         self._timer_id = GLib.timeout_add_seconds(1, self._update_time)
-        page.append(self._time_label)
         page.connect("map", lambda _: setattr(self, "_mapped", True))
         page.connect("unmap", lambda _: self._cleanup())
 
@@ -45,19 +43,23 @@ class DateTimePage(BasePage):
         tz_entry.set_placeholder_text(_("e.g. America/New_York"))
         tz_entry.set_size_request(280, -1)
         tz_entry.connect("activate", lambda e: self._set_timezone(e.get_text().strip(), e))
-        page.append(self.make_setting_row(_("Timezone"), _("Press Enter to apply"), tz_entry))
 
         # Automatic time (NTP)
         ntp_switch = Gtk.Switch()
         ntp_switch.set_active(self._get_ntp())
         ntp_switch.connect("state-set", lambda _, s: self._set_ntp(s) or False)
-        page.append(self.make_setting_row(_("Automatic time"), _("Sync clock via network (NTP)"), ntp_switch))
 
         # 24-hour clock
         clock_switch = Gtk.Switch()
         clock_switch.set_active(self.store.get("clock_24h", False))
         clock_switch.connect("state-set", lambda _, s: self.store.save_and_apply("clock_24h", s) or False)
-        page.append(self.make_setting_row(_("24-hour clock"), _("Use 24-hour time format"), clock_switch))
+
+        page.append(self.make_group(_("Date & Time"), [
+            self._time_label,
+            self.make_setting_row(_("Timezone"), _("Press Enter to apply"), tz_entry),
+            self.make_setting_row(_("Automatic time"), _("Sync clock via network (NTP)"), ntp_switch),
+            self.make_setting_row(_("24-hour clock"), _("Use 24-hour time format"), clock_switch),
+        ]))
 
         return page
 

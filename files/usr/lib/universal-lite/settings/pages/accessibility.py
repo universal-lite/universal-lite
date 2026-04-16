@@ -26,7 +26,6 @@ class AccessibilityPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Accessibility")))
 
         # Large text toggle
         large_text = Gtk.Switch()
@@ -44,8 +43,6 @@ class AccessibilityPage(BasePage):
             return False
 
         large_text.connect("state-set", _on_large_text)
-        page.append(self.make_setting_row(
-            _("Large text"), _("Increases font size for better readability"), large_text))
 
         # Cursor size
         labels = [label for _, label in CURSOR_SIZES]
@@ -58,7 +55,6 @@ class AccessibilityPage(BasePage):
             cursor_dd.set_selected(0)
         cursor_dd.connect("notify::selected", lambda d, _:
             self.store.save_and_apply("cursor_size", int(values[d.get_selected()])))
-        page.append(self.make_setting_row(_("Cursor size"), "", cursor_dd))
 
         # High contrast
         contrast = Gtk.Switch()
@@ -69,8 +65,6 @@ class AccessibilityPage(BasePage):
             return False
 
         contrast.connect("state-set", _on_contrast)
-        page.append(self.make_setting_row(
-            _("High contrast"), _("Forces dark theme with stronger borders"), contrast))
 
         # Reduce motion
         motion = Gtk.Switch()
@@ -81,7 +75,15 @@ class AccessibilityPage(BasePage):
             return False
 
         motion.connect("state-set", _on_motion)
-        page.append(self.make_setting_row(
-            _("Reduce motion"), _("Disables animations throughout the interface"), motion))
+
+        page.append(self.make_group(_("Accessibility"), [
+            self.make_setting_row(
+                _("Large text"), _("Increases font size for better readability"), large_text),
+            self.make_setting_row(_("Cursor size"), "", cursor_dd),
+            self.make_setting_row(
+                _("High contrast"), _("Forces dark theme with stronger borders"), contrast),
+            self.make_setting_row(
+                _("Reduce motion"), _("Disables animations throughout the interface"), motion),
+        ]))
 
         return page

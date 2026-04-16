@@ -181,8 +181,8 @@ class AboutPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("About")))
 
+        # About group: system info rows
         os_name = "Universal-Lite"
         os_version = ""
         try:
@@ -191,8 +191,6 @@ class AboutPage(BasePage):
                     os_version = line.split("=", 1)[1].strip('"')
         except OSError:
             pass
-        page.append(self.make_info_row(_("Operating System"), f"{os_name} {os_version}".strip()))
-        page.append(self.make_info_row(_("Hostname"), socket.gethostname()))
 
         cpu = "Unknown"
         try:
@@ -202,7 +200,6 @@ class AboutPage(BasePage):
                     break
         except OSError:
             pass
-        page.append(self.make_info_row(_("Processor"), cpu))
 
         ram = "Unknown"
         try:
@@ -212,13 +209,13 @@ class AboutPage(BasePage):
                     break
         except (OSError, ValueError):
             pass
-        page.append(self.make_info_row(_("Memory"), ram))
 
+        disk_row = None
         try:
             st = os.statvfs("/")
             total = st.f_blocks * st.f_frsize
             used = (st.f_blocks - st.f_bfree) * st.f_frsize
-            page.append(self.make_info_row(_("Disk"), f"{used / 1073741824:.1f} GB used of {total / 1073741824:.1f} GB"))
+            disk_row = self.make_info_row(_("Disk"), f"{used / 1073741824:.1f} GB used of {total / 1073741824:.1f} GB")
         except OSError:
             pass
 
@@ -231,7 +228,6 @@ class AboutPage(BasePage):
                     break
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
-        page.append(self.make_info_row(_("Graphics"), gpu))
 
         labwc_ver = "unknown"
         try:
@@ -239,10 +235,20 @@ class AboutPage(BasePage):
             labwc_ver = (r.stderr.strip() or r.stdout.strip()) or "unknown"
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
-        page.append(self.make_info_row(_("Desktop"), f"labwc {labwc_ver}"))
 
-        # OS Updates
-        page.append(self.make_group_label(_("Updates")))
+        about_rows = [
+            self.make_info_row(_("Operating System"), f"{os_name} {os_version}".strip()),
+            self.make_info_row(_("Hostname"), socket.gethostname()),
+            self.make_info_row(_("Processor"), cpu),
+            self.make_info_row(_("Memory"), ram),
+            self.make_info_row(_("Graphics"), gpu),
+            self.make_info_row(_("Desktop"), f"labwc {labwc_ver}"),
+        ]
+        if disk_row is not None:
+            about_rows.insert(4, disk_row)
+        page.append(self.make_group(_("About"), about_rows))
+
+        # OS Updates group
         update_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         update_box.set_valign(Gtk.Align.CENTER)
         self._update_label = Gtk.Label(label=_("Click to check for updates"), xalign=0)
@@ -251,10 +257,9 @@ class AboutPage(BasePage):
         check_btn = Gtk.Button(label=_("Check for Updates"))
         check_btn.connect("clicked", lambda _: self._check_updates())
         update_box.append(check_btn)
-        page.append(update_box)
+        page.append(self.make_group(_("Updates"), [update_box]))
 
-        # Troubleshooting
-        page.append(self.make_group_label(_("Troubleshooting")))
+        # Troubleshooting group
         restore_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         restore_row.set_valign(Gtk.Align.CENTER)
         restore_desc = Gtk.Label(
@@ -267,7 +272,7 @@ class AboutPage(BasePage):
         restore_btn.add_css_class("destructive-button")
         restore_btn.connect("clicked", self._on_restore_defaults_clicked)
         restore_row.append(restore_btn)
-        page.append(restore_row)
+        page.append(self.make_group(_("Troubleshooting"), [restore_row]))
 
         return page
 

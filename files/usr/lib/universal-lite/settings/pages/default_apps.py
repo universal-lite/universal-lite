@@ -32,7 +32,7 @@ class DefaultAppsPage(BasePage):
 
     def build(self):
         page = self.make_page_box()
-        page.append(self.make_group_label(_("Default Applications")))
+        rows = []
         for label, mime_type in APP_MIME_TYPES:
             apps = self._get_apps_for_mime(mime_type)
             if not apps:
@@ -54,7 +54,8 @@ class DefaultAppsPage(BasePage):
             else:
                 dropdown.connect("notify::selected", lambda d, _, mt=mime_type, ids=desktop_ids, _l=_loading:
                     None if _l[0] else subprocess.run(["xdg-mime", "default", ids[d.get_selected()], mt], check=False))
-            page.append(self.make_setting_row(label, "", dropdown))
+            rows.append(self.make_setting_row(label, "", dropdown))
+        page.append(self.make_group(_("Default Applications"), rows))
         return page
 
     @staticmethod
