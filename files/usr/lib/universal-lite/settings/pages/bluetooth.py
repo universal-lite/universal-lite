@@ -59,7 +59,7 @@ class BluetoothPage(BasePage):
         # -- Paired devices --
         self._paired_list = Gtk.ListBox()
         self._paired_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        page.append(self.make_group(_("Paired Devices"), [self._paired_list]))
+        page.append(self.make_group(_("Paired Devices"), [], card_widget=self._paired_list))
 
         # -- Found devices --
         self._found_list = Gtk.ListBox()
@@ -67,7 +67,7 @@ class BluetoothPage(BasePage):
         self._scan_btn = Gtk.Button(label=_("Search for devices"))
         self._scan_btn.set_halign(Gtk.Align.START)
         self._scan_btn.connect("clicked", self._on_scan_clicked)
-        page.append(self.make_group(_("Available Devices"), [self._found_list]))
+        page.append(self.make_group(_("Available Devices"), [], card_widget=self._found_list))
         page.append(self._scan_btn)
 
         # Advanced

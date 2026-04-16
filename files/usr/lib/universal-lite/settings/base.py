@@ -50,23 +50,33 @@ class BasePage:
         return page
 
     @staticmethod
-    def make_group(title: str, children: list[Gtk.Widget]) -> Gtk.Box:
-        """Build an Adwaita-style boxed-list group: title label + card container."""
+    def make_group(title: str, children: list[Gtk.Widget], *,
+                   card_widget: Gtk.Widget | None = None) -> Gtk.Box:
+        """Build an Adwaita-style boxed-list group: title label + card container.
+
+        If *card_widget* is given, it is styled as the card directly (used when
+        the content is already a ListBox or ScrolledWindow that should not be
+        wrapped in another ListBox).
+        """
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         if title:
             lbl = Gtk.Label(label=title, xalign=0)
             lbl.add_css_class("group-title")
             lbl.set_margin_bottom(6)
             outer.append(lbl)
-        card = Gtk.ListBox()
-        card.set_selection_mode(Gtk.SelectionMode.NONE)
-        card.add_css_class("boxed-list")
-        for child in children:
-            row = Gtk.ListBoxRow()
-            row.set_activatable(False)
-            row.set_child(child)
-            card.append(row)
-        outer.append(card)
+        if card_widget is not None:
+            card_widget.add_css_class("boxed-list")
+            outer.append(card_widget)
+        else:
+            card = Gtk.ListBox()
+            card.set_selection_mode(Gtk.SelectionMode.NONE)
+            card.add_css_class("boxed-list")
+            for child in children:
+                row = Gtk.ListBoxRow()
+                row.set_activatable(False)
+                row.set_child(child)
+                card.append(row)
+            outer.append(card)
         return outer
 
     @staticmethod

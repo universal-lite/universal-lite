@@ -37,11 +37,8 @@ class NetworkPage(BasePage):
         # -- WiFi group (empty title — header row contains label + switch) --
         wifi_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         wifi_label = Gtk.Label(label=_("WiFi"), xalign=0)
-        wifi_label.add_css_class("group-title")
+        wifi_label.set_hexpand(True)
         wifi_header.append(wifi_label)
-        spacer = Gtk.Box()
-        spacer.set_hexpand(True)
-        wifi_header.append(spacer)
         self._wifi_toggle = Gtk.Switch()
         self._wifi_toggle.set_valign(Gtk.Align.CENTER)
         self._wifi_toggle.connect("state-set", self._on_wifi_toggled)

@@ -86,8 +86,10 @@ class PanelPage(BasePage):
             ),
         ]))
 
-        page.append(self.make_group(_("Module Layout"), [self._build_module_layout()]))
-        page.append(self.make_group(_("Pinned Apps"), [self._build_pinned_apps()]))
+        page.append(self.make_group(_("Module Layout"), [],
+                                     card_widget=self._build_module_layout()))
+        page.append(self.make_group(_("Pinned Apps"), [],
+                                     card_widget=self._build_pinned_apps()))
         reset_btn = Gtk.Button(label=_("Reset layout to defaults"))
         reset_btn.set_halign(Gtk.Align.START)
         reset_btn.connect("clicked", lambda _: self._reset_layout())
