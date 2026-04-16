@@ -70,12 +70,6 @@ class BasePage:
         return outer
 
     @staticmethod
-    def make_group_label(text: str) -> Gtk.Label:
-        lbl = Gtk.Label(label=text, xalign=0)
-        lbl.add_css_class("group-title")
-        return lbl
-
-    @staticmethod
     def make_setting_row(label: str, subtitle: str, control: Gtk.Widget) -> Gtk.Box:
         row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         row.add_css_class("setting-row")
