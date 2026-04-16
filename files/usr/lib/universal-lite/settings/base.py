@@ -46,11 +46,28 @@ class BasePage:
     @staticmethod
     def make_page_box() -> Gtk.Box:
         page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
-        page.set_margin_top(32)
-        page.set_margin_bottom(32)
-        page.set_margin_start(40)
-        page.set_margin_end(40)
+        page.add_css_class("content-page")
         return page
+
+    @staticmethod
+    def make_group(title: str, children: list[Gtk.Widget]) -> Gtk.Box:
+        """Build an Adwaita-style boxed-list group: title label + card container."""
+        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        if title:
+            lbl = Gtk.Label(label=title, xalign=0)
+            lbl.add_css_class("group-title")
+            lbl.set_margin_bottom(6)
+            outer.append(lbl)
+        card = Gtk.ListBox()
+        card.set_selection_mode(Gtk.SelectionMode.NONE)
+        card.add_css_class("boxed-list")
+        for child in children:
+            row = Gtk.ListBoxRow()
+            row.set_activatable(False)
+            row.set_child(child)
+            card.append(row)
+        outer.append(card)
+        return outer
 
     @staticmethod
     def make_group_label(text: str) -> Gtk.Label:
