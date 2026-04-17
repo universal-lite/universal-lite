@@ -1,9 +1,10 @@
+import sys
 from gettext import gettext as _
 
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
 
 from ..base import BasePage
 from ..wallpapers import Wallpaper, add_custom, list_wallpapers, remove_custom
@@ -13,6 +14,33 @@ ACCENT_COLORS = [
     ("yellow", "#c88800"), ("orange", "#ed5b00"), ("red", "#e62d42"),
     ("pink", "#d56199"), ("purple", "#9141ac"), ("slate", "#6f8396"),
 ]
+
+# Tile geometry — a compact, ChromeOS-ish grid.
+TILE_W = 160
+TILE_H = 100
+# Cap decoded pixel size so 4K WebP thumbnails don't stall the UI thread
+# on low-RAM hardware. Still 2× the display size for sharp rendering.
+THUMB_MAX = max(TILE_W, TILE_H) * 2
+
+
+def _load_thumbnail(path: str) -> Gtk.Picture | None:
+    """Load an image as a scaled thumbnail.
+
+    Uses GdkPixbuf's scale-during-decode so large wallpapers don't blow
+    through memory. Returns ``None`` if the file can't be loaded so the
+    caller can skip this tile instead of crashing the whole page.
+    """
+    try:
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, THUMB_MAX, THUMB_MAX)
+    except Exception as exc:  # GLib.Error, etc.
+        print(f"appearance: thumbnail load failed for {path}: {exc}", file=sys.stderr)
+        return None
+    texture = Gdk.Texture.new_for_pixbuf(pixbuf)
+    pic = Gtk.Picture.new_for_paintable(texture)
+    pic.set_content_fit(Gtk.ContentFit.COVER)
+    pic.set_size_request(TILE_W, TILE_H)
+    pic.set_can_shrink(True)
+    return pic
 
 
 class AppearancePage(BasePage):
@@ -85,14 +113,25 @@ class AppearancePage(BasePage):
         ]))
 
         # -- Wallpaper group --
-        flow = Gtk.FlowBox()
-        flow.set_max_children_per_line(4)
-        flow.set_selection_mode(Gtk.SelectionMode.NONE)
-        flow.set_column_spacing(8)
-        flow.set_row_spacing(8)
-        self._wallpaper_flow = flow
-        self._populate_wallpapers(page)
-        page.append(self.make_group(_("Wallpaper"), [flow]))
+        # Built inside a try/except so a broken manifest or thumbnail never
+        # takes down the whole Appearance page.
+        try:
+            flow = Gtk.FlowBox()
+            flow.set_max_children_per_line(6)
+            flow.set_min_children_per_line(2)
+            flow.set_selection_mode(Gtk.SelectionMode.NONE)
+            flow.set_homogeneous(True)
+            flow.set_column_spacing(12)
+            flow.set_row_spacing(12)
+            flow.add_css_class("wallpaper-grid")
+            self._wallpaper_flow = flow
+            self._populate_wallpapers(page)
+            page.append(self.make_group(_("Wallpaper"), [flow]))
+        except Exception as exc:
+            print(f"appearance: wallpaper grid failed: {exc!r}", file=sys.stderr)
+            err = Gtk.Label(label=_("Wallpaper picker unavailable"), xalign=0)
+            err.add_css_class("setting-subtitle")
+            page.append(self.make_group(_("Wallpaper"), [err]))
 
         return page
 
@@ -120,22 +159,21 @@ class AppearancePage(BasePage):
                     break
 
         for wp in wallpapers:
-            flow.append(self._make_wallpaper_tile(wp, current, theme, page))
+            tile = self._make_wallpaper_tile(wp, current, theme, page)
+            if tile is not None:
+                flow.append(tile)
 
-        custom_btn = Gtk.Button(label=_("Custom..."))
-        custom_btn.add_css_class("toggle-card")
-        custom_btn.connect("clicked", self._on_custom_clicked, page)
-        flow.append(custom_btn)
+        flow.append(self._make_add_tile(page))
 
     def _make_wallpaper_tile(
         self, wp: Wallpaper, current_id: str, theme: str, page: Gtk.Widget,
-    ) -> Gtk.Widget:
-        pic = Gtk.Picture.new_for_filename(wp.path_for_theme(theme))
-        pic.set_content_fit(Gtk.ContentFit.COVER)
-        pic.set_size_request(120, 80)
+    ) -> Gtk.Widget | None:
+        pic = _load_thumbnail(wp.path_for_theme(theme))
+        if pic is None:
+            return None
 
         btn = Gtk.ToggleButton()
-        btn.add_css_class("toggle-card")
+        btn.add_css_class("wallpaper-tile")
         btn.set_child(pic)
         btn.set_active(wp.id == current_id)
         btn.set_tooltip_text(wp.name)
@@ -145,20 +183,30 @@ class AppearancePage(BasePage):
         if not wp.is_custom:
             return btn
 
-        # Custom tiles get a corner remove button.
+        # Custom tiles show an always-visible × badge in the top-right corner.
         overlay = Gtk.Overlay()
         overlay.set_child(btn)
         remove = Gtk.Button.new_from_icon_name("window-close-symbolic")
         remove.add_css_class("wallpaper-remove")
-        remove.add_css_class("circular")
         remove.set_halign(Gtk.Align.END)
         remove.set_valign(Gtk.Align.START)
-        remove.set_margin_top(4)
-        remove.set_margin_end(4)
+        remove.set_margin_top(6)
+        remove.set_margin_end(6)
         remove.set_tooltip_text(_("Remove"))
         remove.connect("clicked", self._on_remove_custom, wp.id, page)
         overlay.add_overlay(remove)
         return overlay
+
+    def _make_add_tile(self, page: Gtk.Widget) -> Gtk.Widget:
+        btn = Gtk.Button()
+        btn.add_css_class("wallpaper-add")
+        btn.set_tooltip_text(_("Add picture…"))
+        btn.set_size_request(TILE_W, TILE_H)
+        icon = Gtk.Image.new_from_icon_name("list-add-symbolic")
+        icon.set_pixel_size(24)
+        btn.set_child(icon)
+        btn.connect("clicked", self._on_custom_clicked, page)
+        return btn
 
     def _on_wallpaper_toggled(self, btn: Gtk.ToggleButton, wp_id: str) -> None:
         if not btn.get_active():
@@ -201,7 +249,6 @@ class AppearancePage(BasePage):
     def _on_remove_custom(self, _btn: Gtk.Button, wp_id: str, page: Gtk.Widget) -> None:
         if not remove_custom(wp_id):
             return
-        # If the removed wallpaper was selected, fall back to the default.
         if self.store.get("wallpaper", "") == wp_id:
             defaults = self.store.get_defaults()
             self.store.save_and_apply("wallpaper", defaults.get("wallpaper", ""))

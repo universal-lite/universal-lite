@@ -84,24 +84,54 @@
     background: alpha(@accent_color, 0.08);
 }
 
-/* Remove button on custom wallpaper tiles */
-.wallpaper-remove {
-    min-width: 24px;
-    min-height: 24px;
-    padding: 2px;
+/* === Wallpaper picker === */
+.wallpaper-grid {
+    padding: 0;
+}
+.wallpaper-tile {
+    padding: 0;
+    min-width: 160px;
+    min-height: 100px;
     border-radius: 12px;
-    background-color: alpha(@window_bg_color, 0.85);
-    color: @window_fg_color;
-    opacity: 0;
-    transition: opacity 150ms ease;
+    border: 2px solid transparent;
+    background: none;
+    outline: none;
+}
+.wallpaper-tile picture {
+    border-radius: 10px;
+}
+.wallpaper-tile:hover {
+    border-color: alpha(@accent_color, 0.4);
+}
+.wallpaper-tile:checked {
+    border-color: @accent_color;
+    box-shadow: 0 0 0 1px @accent_color;
+}
+.wallpaper-add {
+    padding: 0;
+    min-width: 160px;
+    min-height: 100px;
+    border-radius: 12px;
+    border: 2px dashed alpha(@borders, 0.6);
+    background: alpha(@window_bg_color, 0.5);
+    color: alpha(@window_fg_color, 0.6);
+}
+.wallpaper-add:hover {
+    border-color: @accent_color;
+    color: @accent_color;
+    background: alpha(@accent_color, 0.06);
+}
+.wallpaper-remove {
+    min-width: 20px;
+    min-height: 20px;
+    padding: 1px;
+    border-radius: 10px;
+    background-color: alpha(black, 0.55);
+    color: #ffffff;
+    box-shadow: 0 1px 3px alpha(black, 0.3);
 }
 .wallpaper-remove:hover {
-    background-color: @destructive_color;
-    color: #ffffff;
-}
-overlay:hover > .wallpaper-remove,
-.wallpaper-remove:focus {
-    opacity: 1;
+    background-color: #c01c28;
 }
 
 /* === Accent color circles === */
