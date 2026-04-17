@@ -126,7 +126,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
     @staticmethod
     def _build_sidebar_row(icon_name: str, label: str) -> Gtk.ListBoxRow:
         row = Gtk.ListBoxRow()
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         icon = Gtk.Image.new_from_icon_name(icon_name)
         icon.set_pixel_size(16)
         icon.add_css_class("category-icon")

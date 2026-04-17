@@ -17,7 +17,6 @@
     background-color: alpha(@accent_color, 0.15);
 }
 .sidebar .category-icon {
-    margin-end: 12px;
     opacity: 0.8;
 }
 .sidebar .category-label {
