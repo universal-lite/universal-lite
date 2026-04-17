@@ -1,8 +1,9 @@
 #!/bin/bash
 # Installs Flatpak apps on first boot. Uses the wizard's selection if available,
 # otherwise falls back to a default set.
-# Called by universal-lite-flatpak-setup.service.
-# Runs Before=greetd.service so the login screen waits until apps are ready.
+# Called by universal-lite-flatpak-setup.service, which runs in the
+# background alongside greetd so login comes up immediately and
+# install progress goes to the journal.
 
 set -uo pipefail
 
@@ -54,9 +55,11 @@ while [ "$waited" -lt "$MAX_NET_WAIT" ]; do
 done
 
 if [ "$waited" -ge "$MAX_NET_WAIT" ]; then
-    echo "ERROR: Network not available after ${MAX_NET_WAIT}s, skipping app install."
-    echo "       Apps can be installed later from Bazaar or flatpak CLI."
-    touch "$STAMP"
+    echo "No network after ${MAX_NET_WAIT}s — will retry on next boot."
+    # Deliberately no STAMP touch: we never did the work, so the service
+    # should try again after the user connects. Other failure paths
+    # (bad Flathub remote, missing packages) still stamp so we don't
+    # loop pointlessly on permanent errors.
     exit 0
 fi
 
