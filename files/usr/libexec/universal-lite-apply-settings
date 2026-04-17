@@ -102,6 +102,48 @@ ADWAITA_TERMINAL = {
 }
 
 
+_ICON_SEARCH_ROOTS = (
+    Path("/var/lib/flatpak/exports/share/icons/hicolor"),
+    Path.home() / ".local/share/flatpak/exports/share/icons/hicolor",
+    Path("/usr/share/icons/hicolor"),
+)
+_ICON_SIZE_DIRS = ("scalable", "512x512", "256x256", "128x128", "96x96", "64x64", "48x48")
+_ICON_EXTS = (".svg", ".png")
+_ICON_FALLBACKS = (
+    "/usr/share/icons/Adwaita/scalable/mimetypes/application-x-executable.svg",
+    "/usr/share/icons/Adwaita/scalable/apps/application-x-executable.svg",
+    "/usr/share/icons/hicolor/scalable/apps/application-x-executable.svg",
+)
+
+
+def _resolve_icon_path(icon_name: str) -> str:
+    """Resolve a freedesktop icon name to an absolute image path.
+
+    Returns a fallback app-icon path if *icon_name* can't be found so the
+    pinned tile always renders something rather than leaving an empty cell.
+    """
+    if not icon_name:
+        icon_name = "application-x-executable"
+    if icon_name.startswith("/") and Path(icon_name).is_file():
+        return icon_name
+    for root in _ICON_SEARCH_ROOTS:
+        if not root.is_dir():
+            continue
+        for size in _ICON_SIZE_DIRS:
+            for ext in _ICON_EXTS:
+                p = root / size / "apps" / f"{icon_name}{ext}"
+                if p.is_file():
+                    return str(p)
+    for ext in (".svg", ".png", ".xpm"):
+        p = Path(f"/usr/share/pixmaps/{icon_name}{ext}")
+        if p.is_file():
+            return str(p)
+    for fallback in _ICON_FALLBACKS:
+        if Path(fallback).is_file():
+            return fallback
+    return ""
+
+
 def _run_best_effort(cmd: list[str], **kwargs) -> bool:
     """Run a command, logging failures to stderr. Returns True on success."""
     try:
@@ -471,8 +513,8 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 
     pin_css = ""
     if pinned:
-        selectors = ", ".join(f"#custom-pin-{i}" for i in range(len(pinned)))
-        hover_selectors = ", ".join(f"#custom-pin-{i}:hover" for i in range(len(pinned)))
+        selectors = ", ".join(f"#image.pin-{i}" for i in range(len(pinned)))
+        hover_selectors = ", ".join(f"#image.pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
     padding: 0 {pp}px;
@@ -519,8 +561,8 @@ def _waybar_css_vertical(tokens: dict) -> str:
 
     pin_css = ""
     if pinned:
-        selectors = ", ".join(f"#custom-pin-{i}" for i in range(len(pinned)))
-        hover_selectors = ", ".join(f"#custom-pin-{i}:hover" for i in range(len(pinned)))
+        selectors = ", ".join(f"#image.pin-{i}" for i in range(len(pinned)))
+        hover_selectors = ", ".join(f"#image.pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
     padding: {pp}px 0;
@@ -585,7 +627,7 @@ def write_waybar_config(tokens: dict) -> bool:
     modules_right = list(layout["end"])
 
     # Inject pin-N modules after custom/launcher in whichever section contains it
-    pin_ids = [f"custom/pin-{i}" for i in range(len(pinned))]
+    pin_ids = [f"image#pin-{i}" for i in range(len(pinned))]
     if pin_ids:
         injected = False
         for mlist in (modules_left, modules_center, modules_right):
@@ -692,19 +734,17 @@ def write_waybar_config(tokens: dict) -> bool:
         "spacing": 8,
     }
 
-    # Generate custom/pin-N modules for each pinned app
+    # Generate image#pin-N modules for each pinned app.
+    # Using waybar's built-in image module (not custom with format={icon},
+    # which is a format-icons lookup, not a JSON icon field — that was why
+    # the tiles were rendering empty).
     for i, app in enumerate(pinned):
-        icon = app.get("icon") or "application-x-executable"
-        name = app["name"]
-        # json.dumps handles escaping; replace ' in result for shell safety
-        exec_json = json.dumps({"icon": icon, "tooltip": name})
-        exec_cmd = "echo '" + exec_json.replace("'", "'\\''") + "'"
-        config[f"custom/pin-{i}"] = {
-            "return-type": "json",
-            "exec": exec_cmd,
-            "interval": "once",
+        icon_path = _resolve_icon_path(app.get("icon", ""))
+        config[f"image#pin-{i}"] = {
+            "path": icon_path,
+            "size": icon_size,
             "on-click": app["command"],
-            "format": "{icon}",
+            "tooltip": True,
         }
 
     new_config = json.dumps(config, indent=2) + "\n"
