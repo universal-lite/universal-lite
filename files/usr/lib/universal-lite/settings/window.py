@@ -23,8 +23,11 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self._page_names: list[str] = []
         self._pages: list = []
 
-        # HeaderBar with search toggle
+        # HeaderBar with search toggle. Explicit decoration layout so the
+        # minimize/maximize controls appear even when the GTK settings.ini
+        # default hasn't propagated into this process yet.
         header = Gtk.HeaderBar()
+        header.set_decoration_layout(":minimize,maximize,close")
         search_btn = Gtk.ToggleButton()
         search_btn.set_icon_name("system-search-symbolic")
         search_btn.set_tooltip_text(_("Search settings"))
@@ -61,15 +64,17 @@ class SettingsWindow(Gtk.ApplicationWindow):
         paned.set_vexpand(True)
         main_box.append(paned)
 
-        # Sidebar
+        # Sidebar — the `.sidebar` class lives on the outer box so the
+        # headerbar-tinted fill extends over the whole pane (no gap above
+        # or below the row list).
         sidebar_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         sidebar_box.set_size_request(220, -1)
+        sidebar_box.add_css_class("sidebar")
         sidebar_scroll = Gtk.ScrolledWindow()
         sidebar_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         sidebar_scroll.set_vexpand(True)
         self._sidebar = Gtk.ListBox()
         self._sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        self._sidebar.add_css_class("sidebar")
         self._sidebar.set_margin_top(8)
         self._sidebar.set_margin_bottom(8)
         sidebar_scroll.set_child(self._sidebar)

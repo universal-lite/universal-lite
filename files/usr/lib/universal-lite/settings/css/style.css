@@ -3,6 +3,11 @@
     background-color: @headerbar_bg_color;
     border-right: 1px solid alpha(@borders, 0.3);
 }
+.sidebar scrolledwindow,
+.sidebar list,
+.sidebar row {
+    background: transparent;
+}
 .sidebar row {
     padding: 12px 16px;
     margin: 2px 8px;
