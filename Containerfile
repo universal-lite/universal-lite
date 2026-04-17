@@ -3,6 +3,11 @@ FROM scratch AS ctx
 COPY build_files /build_files
 COPY files /files
 
+# Bluefin image used only as a source for its wallpaper art.
+# The wallpapers ship as JXL which has no pixbuf loader on Fedora, so
+# build.sh transcodes them to WebP after the copy.
+FROM ghcr.io/ublue-os/bluefin:stable AS bluefin-art
+
 # Base Image
 FROM ghcr.io/ublue-os/base-main:latest
 
@@ -31,6 +36,8 @@ RUN rm /opt && mkdir /opt
 ## the following RUN directive does all the things required to run "build.sh" as recommended.
 
 RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=bind,from=bluefin-art,source=/usr/share/backgrounds/bluefin,target=/ctx-bluefin-bg \
+    --mount=type=bind,from=bluefin-art,source=/usr/share/gnome-background-properties,target=/ctx-bluefin-meta \
     --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/log \
     --mount=type=tmpfs,dst=/tmp \
