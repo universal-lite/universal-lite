@@ -4,7 +4,7 @@ from gettext import gettext as _
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import GObject, Gio, Gtk
+from gi.repository import GLib, GObject, Gio, Gtk
 
 from .events import EventBus
 from .settings_store import SettingsStore
@@ -93,7 +93,12 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self._content_scroll.add_css_class("content-area")
         paned.set_end_child(self._content_scroll)
 
-        # Build pages and wire up sidebar
+        # Lazy-build tracking: _pages holds every page INSTANCE (cheap —
+        # just stores the store/event_bus references), but widgets are only
+        # built on first navigation. That's what lets the window map and
+        # paint its first frame without having to touch D-Bus for NM/BlueZ/
+        # power-profiles or decode wallpaper thumbnails up front.
+        self._built: set[str] = set()
         self._build_pages()
         self._sidebar.connect("row-selected", self._on_row_selected)
         first = self._sidebar.get_row_at_index(0)
@@ -110,18 +115,31 @@ class SettingsWindow(Gtk.ApplicationWindow):
         for icon_name, label, page_cls in ALL_PAGES:
             try:
                 page = page_cls(self._store, self._event_bus)
-                widget = page.build()
             except Exception as exc:
-                print(f"Settings: failed to load page {label!r}: {exc!r}", file=sys.stderr)
+                print(f"Settings: failed to instantiate {label!r}: {exc!r}", file=sys.stderr)
                 page = None
-                widget = Gtk.Label(label=_("Failed to load {label}").format(label=label), xalign=0)
-                widget.add_css_class("setting-subtitle")
 
             row = self._build_sidebar_row(icon_name, _(label))
             self._sidebar.append(row)
-            self._stack.add_named(widget, label)
             self._page_names.append(label)
             self._pages.append(page)
+
+    def _ensure_page_built(self, idx: int) -> None:
+        """Build the page's widgets the first time it's shown."""
+        label = self._page_names[idx]
+        if label in self._built:
+            return
+        self._built.add(label)
+        page = self._pages[idx]
+        try:
+            widget = page.build() if page is not None else None
+        except Exception as exc:
+            print(f"Settings: failed to build {label!r}: {exc!r}", file=sys.stderr)
+            widget = None
+        if widget is None:
+            widget = Gtk.Label(label=_("Failed to load {label}").format(label=label), xalign=0)
+            widget.add_css_class("setting-subtitle")
+        self._stack.add_named(widget, label)
 
     @staticmethod
     def _build_sidebar_row(icon_name: str, label: str) -> Gtk.ListBoxRow:
@@ -142,11 +160,27 @@ class SettingsWindow(Gtk.ApplicationWindow):
         if row is None:
             return
         idx = row.get_index()
-        if 0 <= idx < len(self._page_names):
-            self._stack.set_visible_child_name(self._page_names[idx])
-            adj = self._content_scroll.get_vadjustment()
-            if adj:
-                adj.set_value(0)
+        if not (0 <= idx < len(self._page_names)):
+            return
+        label = self._page_names[idx]
+        # Build on demand. First selection at startup is deferred one tick
+        # via GLib.idle_add so the window paints before we start decoding
+        # wallpaper thumbnails or opening D-Bus connections — that's what
+        # kills the open-time flicker.
+        if label not in self._built:
+            def _build_then_show():
+                self._ensure_page_built(idx)
+                self._stack.set_visible_child_name(label)
+                adj = self._content_scroll.get_vadjustment()
+                if adj:
+                    adj.set_value(0)
+                return GLib.SOURCE_REMOVE
+            GLib.idle_add(_build_then_show)
+            return
+        self._stack.set_visible_child_name(label)
+        adj = self._content_scroll.get_vadjustment()
+        if adj:
+            adj.set_value(0)
 
     def _on_search_changed(self, entry: Gtk.SearchEntry) -> None:
         text = entry.get_text().lower().strip()
