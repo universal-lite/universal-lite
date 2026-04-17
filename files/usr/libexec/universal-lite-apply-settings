@@ -14,7 +14,14 @@ SHARE_ROOT = Path("/usr/share")
 if not SHARE_ROOT.joinpath("universal-lite/defaults/settings.json").exists():
     SHARE_ROOT = LOCAL_FILES_ROOT / "usr/share"
 
-DEFAULT_WALLPAPER = str(SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg")
+LIB_ROOT = Path("/usr/lib")
+if not LIB_ROOT.joinpath("universal-lite/settings/__init__.py").exists():
+    LIB_ROOT = LOCAL_FILES_ROOT / "usr/lib"
+sys.path.insert(0, str(LIB_ROOT / "universal-lite"))
+from settings.wallpapers import resolve_for_theme as _resolve_wallpaper  # noqa: E402
+
+DEFAULT_WALLPAPER_ID = "universal-lite"
+DEFAULT_WALLPAPER_FALLBACK = str(SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg")
 DEFAULTS_PATH = SHARE_ROOT / "universal-lite/defaults/settings.json"
 CONFIG_HOME = Path.home() / ".config"
 SETTINGS_DIR = CONFIG_HOME / "universal-lite"
@@ -257,7 +264,7 @@ def ensure_settings() -> dict:
     edge = data.get("edge", "bottom")
     density = data.get("density", "normal")
     theme = data.get("theme", "light")
-    wallpaper = data.get("wallpaper", DEFAULT_WALLPAPER)
+    wallpaper_stored = data.get("wallpaper", DEFAULT_WALLPAPER_ID)
     accent = data.get("accent", "blue")
 
     if edge not in VALID_EDGES:
@@ -266,10 +273,17 @@ def ensure_settings() -> dict:
         density = "normal"
     if theme not in VALID_THEME:
         theme = "light"
-    if not Path(wallpaper).exists():
-        wallpaper = DEFAULT_WALLPAPER
     if accent not in VALID_ACCENT:
         accent = "blue"
+
+    # Resolve wallpaper ID (or absolute path) to a concrete file for this theme.
+    wallpaper = _resolve_wallpaper(wallpaper_stored, theme)
+    if wallpaper is None:
+        wallpaper_stored = DEFAULT_WALLPAPER_ID
+        wallpaper = (
+            _resolve_wallpaper(DEFAULT_WALLPAPER_ID, theme)
+            or DEFAULT_WALLPAPER_FALLBACK
+        )
 
     greeter_theme_path = Path("/var/lib/universal-lite/greeter-theme")
     try:
@@ -362,7 +376,7 @@ def ensure_settings() -> dict:
         "edge": edge,
         "density": density,
         "theme": theme,
-        "wallpaper": wallpaper,
+        "wallpaper": wallpaper_stored,
         "accent": accent,
         "scale": scale,
         "layout": layout,
@@ -388,6 +402,8 @@ def ensure_settings() -> dict:
         json.dump(data, handle, indent=2)
         handle.write("\n")
 
+    # Runtime consumers (swaybg, token builder) need the resolved path, not the ID.
+    data["wallpaper"] = wallpaper
     return data
 
 

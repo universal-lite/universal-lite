@@ -84,6 +84,26 @@
     background: alpha(@accent_color, 0.08);
 }
 
+/* Remove button on custom wallpaper tiles */
+.wallpaper-remove {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 2px;
+    border-radius: 12px;
+    background-color: alpha(@window_bg_color, 0.85);
+    color: @window_fg_color;
+    opacity: 0;
+    transition: opacity 150ms ease;
+}
+.wallpaper-remove:hover {
+    background-color: @destructive_color;
+    color: #ffffff;
+}
+overlay:hover > .wallpaper-remove,
+.wallpaper-remove:focus {
+    opacity: 1;
+}
+
 /* === Accent color circles === */
 .accent-circle {
     min-width: 32px;

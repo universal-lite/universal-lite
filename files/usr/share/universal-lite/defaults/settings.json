@@ -9,7 +9,7 @@
     "center": ["wlr/taskbar"],
     "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"]
   },
-  "wallpaper": "/usr/share/backgrounds/universal-lite/chrome-dawn.svg",
+  "wallpaper": "universal-lite",
   "pinned": [
     {"name": "Chrome",  "command": "flatpak run com.google.Chrome", "icon": "com.google.Chrome"},
     {"name": "Bazaar",  "command": "flatpak run io.github.kolunmi.Bazaar", "icon": "io.github.kolunmi.Bazaar"}
