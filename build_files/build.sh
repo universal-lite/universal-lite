@@ -119,39 +119,6 @@ dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
 cp -a /ctx/files/. /
 
-# ── Bluefin wallpaper art ─────────────────────────────────────────────
-# The upstream Bluefin image ships a curated wallpaper set but they're
-# JXL, which has no pixbuf loader on Fedora 43 (no thumbnails, no tiles
-# in our picker). Transcode them to WebP and rewrite the manifest
-# references so the settings app can use them normally.
-if [ -d /ctx-bluefin-bg ]; then
-    mkdir -p /usr/share/backgrounds/bluefin
-    cp -a /ctx-bluefin-bg/. /usr/share/backgrounds/bluefin/
-
-    # Only the Bluefin-branded manifest files — avoid clobbering Fedora's.
-    find /ctx-bluefin-meta -maxdepth 1 -type f \( -name '*bluefin*.xml' -o -name 'chicken.xml' \) \
-        -exec cp -an {} /usr/share/gnome-background-properties/ \;
-
-    dnf5 install -y --setopt=install_weak_deps=False libjxl-utils libwebp-tools
-    for jxl in /usr/share/backgrounds/bluefin/*.jxl; do
-        [ -e "$jxl" ] || continue
-        webp="${jxl%.jxl}.webp"
-        if djxl "$jxl" /tmp/_conv.png >/dev/null 2>&1 \
-            && cwebp -quiet -q 88 /tmp/_conv.png -o "$webp"; then
-            rm -f "$jxl"
-        fi
-    done
-    rm -f /tmp/_conv.png
-
-    # Rewrite references in both the slideshow XMLs and the manifest entries.
-    sed -i 's/\.jxl/\.webp/g' /usr/share/backgrounds/bluefin/*.xml 2>/dev/null || true
-    for f in /usr/share/gnome-background-properties/*bluefin*.xml \
-             /usr/share/gnome-background-properties/chicken.xml; do
-        [ -e "$f" ] && sed -i 's/\.jxl/\.webp/g' "$f"
-    done
-    dnf5 remove -y libjxl-utils libwebp-tools
-fi
-
 # Language name matrix and all MO files (wizard + settings) are
 # pre-compiled and shipped in files/, installed by the cp above.
 
