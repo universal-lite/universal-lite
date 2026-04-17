@@ -117,6 +117,33 @@ dnf5 install -y --setopt=install_weak_deps=False \
 
 dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
+# Transcode vendor-shipped JXL wallpapers to WebP so they render in the
+# picker. Fedora 43 has no JXL pixbuf loader, which means every JXL in
+# /usr/share/backgrounds (GNOME, f43 annual, etc.) would otherwise be
+# invisible. Do this in-place and rewrite the slideshow / manifest XMLs
+# to match. Tools are installed and removed inside this single layer so
+# they don't end up in the final image.
+if find /usr/share/backgrounds -name '*.jxl' -print -quit | grep -q .; then
+    dnf5 install -y --setopt=install_weak_deps=False libjxl-utils libwebp-tools
+    while IFS= read -r jxl; do
+        webp="${jxl%.jxl}.webp"
+        if djxl "$jxl" /tmp/_conv.png >/dev/null 2>&1 \
+            && cwebp -quiet -q 88 /tmp/_conv.png -o "$webp"; then
+            rm -f "$jxl"
+        fi
+    done < <(find /usr/share/backgrounds -name '*.jxl')
+    rm -f /tmp/_conv.png
+
+    # Rewrite references in every background slideshow XML and every
+    # gnome-background-properties manifest — safe because no non-JXL
+    # asset has ".jxl" in its name.
+    find /usr/share/backgrounds -name '*.xml' -exec sed -i 's/\.jxl/\.webp/g' {} +
+    find /usr/share/gnome-background-properties -maxdepth 1 -name '*.xml' \
+        -exec sed -i 's/\.jxl/\.webp/g' {} +
+
+    dnf5 remove -y libjxl-utils libwebp-tools
+fi
+
 cp -a /ctx/files/. /
 
 # Language name matrix and all MO files (wizard + settings) are
