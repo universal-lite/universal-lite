@@ -1,8 +1,11 @@
 [Unit]
 Description=Install Flatpak apps selected during setup wizard
-Wants=NetworkManager-wait-online.service network-online.target
-After=NetworkManager-wait-online.service network-online.target universal-lite-first-boot.service
-Before=greetd.service
+# Deliberately NOT Before=greetd.service: login should come up
+# immediately and flatpak installs run in the background.
+# Deliberately no NetworkManager-wait-online dep: the script polls
+# dl.flathub.org DNS itself, which is both more accurate and doesn't
+# delay login on offline boots (wait-online times out at 30s).
+After=universal-lite-first-boot.service NetworkManager.service
 # Only run after the wizard has completed (setup-done exists) and
 # only once (flatpak-setup.done prevents re-runs on every boot).
 ConditionPathExists=/var/lib/universal-lite/setup-done

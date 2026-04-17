@@ -53,7 +53,20 @@ for line in r.stdout.splitlines():
 
 waybar >/dev/null 2>&1 &
 mako >/dev/null 2>&1 &
-pgrep -x nm-applet  >/dev/null 2>&1 || nm-applet --indicator >/dev/null 2>&1 &
+
+# nm-applet exits immediately if NetworkManager isn't on the system bus
+# yet — which happens on boots where NM is slightly late registering its
+# D-Bus name. Wait up to ~5 s for NM before launching the applet so the
+# tray icon shows up reliably. Backgrounded so it doesn't delay anything
+# else in autostart.
+(
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+        busctl --system status org.freedesktop.NetworkManager >/dev/null 2>&1 && break
+        sleep 0.5
+    done
+    pgrep -x nm-applet >/dev/null 2>&1 || exec nm-applet --indicator >/dev/null 2>&1
+) &
+
 # Only start blueman if Bluetooth hardware is present (saves ~50 MB on most Chromebooks)
 [ -d /sys/class/bluetooth ] && ! pgrep -x blueman-applet >/dev/null 2>&1 && blueman-applet >/dev/null 2>&1 &
 pgrep -x xfce-polkit >/dev/null 2>&1 || xfce-polkit >/dev/null 2>&1 &

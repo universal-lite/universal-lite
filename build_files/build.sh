@@ -185,6 +185,13 @@ systemctl enable power-profiles-daemon.service
 systemctl enable accounts-daemon.service
 systemctl enable cups.service
 systemctl enable bluetooth.service
+# Explicit: NM is enabled by the base image, but re-enabling is a cheap
+# safeguard against any preset drift.
+systemctl enable NetworkManager.service
+# Nothing on this image needs network-online.target synchronously at
+# boot any more (flatpak-setup does its own DNS poll), so skip the up-
+# to-30-second wait on offline Chromebook boots.
+systemctl disable NetworkManager-wait-online.service
 systemctl enable universal-lite-first-boot.service
 systemctl enable universal-lite-flatpak-setup.service
 
