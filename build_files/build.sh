@@ -127,8 +127,11 @@ if find /usr/share/backgrounds -name '*.jxl' -print -quit | grep -q .; then
     dnf5 install -y --setopt=install_weak_deps=False libjxl-utils libwebp-tools
     while IFS= read -r jxl; do
         webp="${jxl%.jxl}.webp"
+        # -lossless preserves whatever djxl decoded pixel-for-pixel.
+        # -z 9 picks the slowest/best compression preset (build-time only,
+        # runtime cost is just the decode). -m 6 forces highest method.
         if djxl "$jxl" /tmp/_conv.png >/dev/null 2>&1 \
-            && cwebp -quiet -q 88 /tmp/_conv.png -o "$webp"; then
+            && cwebp -quiet -lossless -z 9 -m 6 /tmp/_conv.png -o "$webp"; then
             rm -f "$jxl"
         fi
     done < <(find /usr/share/backgrounds -name '*.jxl')
