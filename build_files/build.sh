@@ -94,6 +94,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     swaybg \
     swayidle \
     swaylock \
+    systemd-oomd-defaults \
     wlopm \
     Thunar \
     tumbler \
@@ -224,6 +225,10 @@ systemctl enable NetworkManager.service
 systemctl disable NetworkManager-wait-online.service
 systemctl enable universal-lite-first-boot.service
 systemctl enable universal-lite-flatpak-setup.service
+# OOM protection on 2 GB hardware — oomd kills the heaviest cgroup under
+# memory/swap pressure before the kernel OOM killer engages and freezes
+# the whole machine.
+systemctl enable systemd-oomd.service
 
 # Add ublue-os COPR for uupd (unified updater with hardware safety checks).
 dnf5 copr enable -y ublue-os/packages fedora-"${FEDORA_MAJOR}"-x86_64
@@ -248,6 +253,14 @@ install -Dm644 /usr/share/fedora-logos/fedora_logo.svg \
 # Rebuild icon caches so waybar/GTK can find symbolic icons
 gtk-update-icon-cache -f /usr/share/icons/Adwaita 2>/dev/null || true
 gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
+
+# Regenerate initramfs so /usr/lib/modprobe.d/universal-lite-i915.conf
+# reaches the early-KMS load of i915. Without this step the options only
+# take effect after the first kernel update triggers its own regen.
+if command -v dracut >/dev/null 2>&1; then
+    KVER=$(rpm -q --qf '%{version}-%{release}.%{arch}' kernel-core | head -1)
+    [ -n "$KVER" ] && dracut --force --kver "$KVER" || true
+fi
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service
