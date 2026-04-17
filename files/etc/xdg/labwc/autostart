@@ -24,9 +24,18 @@ export SSH_AUTH_SOCK GNOME_KEYRING_CONTROL
 # Only start Universal-Lite daemons in a Universal-Lite session.
 [ "${UNIVERSAL_LITE:-}" = "1" ] || exit 0
 
-# Read wallpaper path from user settings and start the wallpaper daemon.
+# Resolve the wallpaper through the same manifest lookup apply-settings
+# uses. settings.json stores a manifest ID ("universal-lite", "flight",
+# etc.) or an absolute path for ad-hoc selections — swaybg only takes
+# paths, so we always have to resolve here.
 _settings="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
-_wallpaper=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('wallpaper',''))" "$_settings" 2>/dev/null || true)
+_wallpaper=$(python3 -c "
+import json, sys
+sys.path.insert(0, '/usr/lib/universal-lite')
+from settings.wallpapers import resolve_for_theme
+d = json.load(open(sys.argv[1]))
+print(resolve_for_theme(d.get('wallpaper', ''), d.get('theme', 'light')) or '')
+" "$_settings" 2>/dev/null || true)
 [ -n "$_wallpaper" ] && swaybg -i "$_wallpaper" -m fill >/dev/null 2>&1 &
 
 # Apply display scale and saved resolutions to all active outputs.
