@@ -34,7 +34,9 @@ concurrency:
 jobs:
   build:
     name: Build disk images
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    # Only auto-build disks after the *scheduled* (daily) container build.
+    # Manual dispatch and disk-config PRs still run via their own triggers.
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'schedule') }}
     runs-on: ubicloud-premium-4-ubuntu-2404
     strategy:
       fail-fast: false
