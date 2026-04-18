@@ -206,16 +206,21 @@ class DisplayPage(BasePage):
 
     def _set_scale(self, scale):
         try:
-            result = subprocess.run(["wlr-randr"], capture_output=True, text=True)
-            for line in result.stdout.splitlines():
-                if line and not line[0].isspace():
-                    output_name = line.split()[0]
+            result = subprocess.run(
+                ["wlr-randr"], capture_output=True, text=True, timeout=5,
+            )
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            return
+        for line in result.stdout.splitlines():
+            if line and not line[0].isspace():
+                output_name = line.split()[0]
+                try:
                     subprocess.run(
                         ["wlr-randr", "--output", output_name, "--scale", str(scale)],
-                        check=False,
+                        check=False, timeout=5,
                     )
-        except FileNotFoundError:
-            pass
+                except (FileNotFoundError, subprocess.TimeoutExpired):
+                    pass
 
     def _show_revert_dialog(self, old_scale, new_scale):
         dialog = Gtk.Window(title=_("Confirm Scale"), modal=True)
@@ -290,8 +295,10 @@ class DisplayPage(BasePage):
     @staticmethod
     def _get_displays():
         try:
-            result = subprocess.run(["wlr-randr"], capture_output=True, text=True)
-        except FileNotFoundError:
+            result = subprocess.run(
+                ["wlr-randr"], capture_output=True, text=True, timeout=5,
+            )
+        except (FileNotFoundError, subprocess.TimeoutExpired):
             return []
         displays = []
         name = None
@@ -336,10 +343,13 @@ class DisplayPage(BasePage):
     def _apply_resolution(output_name, mode_str):
         # mode_str: "1920x1080@60.0Hz" — strip "Hz" for wlr-randr's --mode flag
         mode_arg = mode_str.replace("Hz", "")
-        subprocess.run(
-            ["wlr-randr", "--output", output_name, "--mode", mode_arg],
-            check=False,
-        )
+        try:
+            subprocess.run(
+                ["wlr-randr", "--output", output_name, "--mode", mode_arg],
+                check=False, timeout=5,
+            )
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
 
     def _show_res_revert_dialog(self, dropdown, output_name, modes, old_mode, new_mode):
         dialog = Gtk.Window(title=_("Confirm Resolution"), modal=True)
