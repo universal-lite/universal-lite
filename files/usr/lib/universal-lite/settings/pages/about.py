@@ -158,10 +158,22 @@ class RestoreDefaultsDialog(Gtk.Window):
 
         def _restart():
             os.execv(sys.executable, [sys.executable] + sys.argv)
+            return GLib.SOURCE_REMOVE
 
-        self._store.wait_for_apply(_restart)
-        # Safety net: restart after 10s even if apply hasn't finished
-        GLib.timeout_add_seconds(10, _restart)
+        # Defer restart one idle tick so GTK finishes unmapping the
+        # dialog. Fallback timeout guards against wait_for_apply never
+        # firing if apply-settings has already raced to completion by
+        # the time we call it.
+        restarted = [False]
+        def _do_restart():
+            if restarted[0]:
+                return GLib.SOURCE_REMOVE
+            restarted[0] = True
+            GLib.idle_add(_restart)
+            return GLib.SOURCE_REMOVE
+
+        self._store.wait_for_apply(_do_restart)
+        GLib.timeout_add_seconds(10, _do_restart)
 
 
 class AboutPage(BasePage):
