@@ -10,6 +10,8 @@ from gi.repository import GLib
 class SettingsStore:
     """JSON settings persistence with atomic writes, debounce, and apply feedback."""
 
+    APPLY_TIMEOUT_SEC = 30
+
     def __init__(self, settings_path=None, defaults_path=None, apply_script=None):
         self._path = Path(
             settings_path
@@ -136,8 +138,17 @@ class SettingsStore:
             return
 
         def _wait():
-            _, stderr = proc.communicate()
-            GLib.idle_add(self._on_apply_done, proc.returncode, stderr)
+            try:
+                _, stderr = proc.communicate(timeout=self.APPLY_TIMEOUT_SEC)
+                rc = proc.returncode
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                try:
+                    _, stderr = proc.communicate(timeout=2)
+                except subprocess.TimeoutExpired:
+                    stderr = b""
+                rc = -1  # sentinel for timeout
+            GLib.idle_add(self._on_apply_done, rc, stderr)
 
         threading.Thread(target=_wait, daemon=True).start()
 
@@ -146,6 +157,8 @@ class SettingsStore:
         if self._toast_callback is not None:
             if returncode == 0:
                 self._toast_callback("Settings applied", False)
+            elif returncode == -1:
+                self._toast_callback(f"Apply timed out after {self.APPLY_TIMEOUT_SEC}s", True)
             else:
                 err = stderr_bytes.decode("utf-8", errors="replace").strip()
                 msg = f"Failed to apply: {err[:80]}" if err else "Failed to apply settings"
