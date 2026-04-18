@@ -281,16 +281,23 @@ class AboutPage(BasePage):
         import threading
         def _check():
             try:
-                r = subprocess.run(["bootc", "status", "--json"],
-                                   capture_output=True, text=True)
+                r = subprocess.run(
+                    ["bootc", "status", "--json"],
+                    capture_output=True, text=True, timeout=30,
+                )
                 import json as _json
                 status = _json.loads(r.stdout)
                 staged = status.get("status", {}).get("staged", None)
                 if staged:
                     version = staged.get("image", {}).get("version", "unknown")
-                    GLib.idle_add(self._update_label.set_text, _("Update available: {version}").format(version=version))
+                    GLib.idle_add(
+                        self._update_label.set_text,
+                        _("Update available: {version}").format(version=version),
+                    )
                 else:
                     GLib.idle_add(self._update_label.set_text, _("System is up to date"))
+            except subprocess.TimeoutExpired:
+                GLib.idle_add(self._update_label.set_text, _("Update check timed out"))
             except Exception:
                 GLib.idle_add(self._update_label.set_text, _("Could not check for updates"))
         threading.Thread(target=_check, daemon=True).start()
