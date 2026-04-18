@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-15 16:38-0400\n"
+"POT-Creation-Date: 2026-04-18 13:06-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -32,10 +32,10 @@ msgstr "Nazwa użytkownika"
 
 #: ../files/usr/bin/universal-lite-greeter:413
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:201
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:248
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:198
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:245
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
 msgid "Password"
 msgstr "Hasło"
 
@@ -119,14 +119,18 @@ msgid "Failed to start session."
 msgstr "Nie udało się uruchomić sesji."
 
 #: ../files/usr/lib/universal-lite/settings/window.py:17
-msgid "Universal-Lite Settings"
-msgstr "Ustawienia Universal-Lite"
+msgid "Settings"
+msgstr "Ustawienia"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:46
-msgid "Search settings..."
-msgstr "Szukaj ustawień..."
+#: ../files/usr/lib/universal-lite/settings/window.py:33
+msgid "Search settings"
+msgstr "Wyszukaj ustawienia"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:100
+#: ../files/usr/lib/universal-lite/settings/window.py:50
+msgid "Search settings…"
+msgstr "Wyszukaj ustawienia…"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:140
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "Nie udało się wczytać {label}"
@@ -141,7 +145,7 @@ msgstr "Ekran"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:293
 msgid "Network"
 msgstr "Sieć"
 
@@ -174,20 +178,20 @@ msgid "Power & Lock"
 msgstr "Zasilanie i blokada"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:87
 msgid "Accessibility"
 msgstr "Dostępność"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:58
 msgid "Date & Time"
 msgstr "Data i czas"
 
@@ -196,7 +200,8 @@ msgstr "Data i czas"
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:40
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:41
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:42
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:76
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:85
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:114
 msgid "Users"
 msgstr "Użytkownicy"
 
@@ -204,7 +209,7 @@ msgstr "Użytkownicy"
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/language.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:58
 msgid "Language & Region"
 msgstr "Język i region"
 
@@ -213,17 +218,17 @@ msgid "Default Apps"
 msgstr "Domyślne aplikacje"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:184
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:188
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:191
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:192
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:262
 msgid "About"
 msgstr "O systemie"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:74
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:179
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:192
 msgid "Restore Defaults"
 msgstr "Przywróć ustawienia domyślne"
 
@@ -236,11 +241,11 @@ msgid "Select All"
 msgstr "Zaznacz wszystko"
 
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:107
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:253
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:335
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:504
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:203
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:250
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:339
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:183
 msgid "Cancel"
 msgstr "Anuluj"
 
@@ -252,87 +257,102 @@ msgstr "Resetuj"
 msgid "Could not read defaults file"
 msgstr "Nie można odczytać pliku ustawień domyślnych"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:194
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:188
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:253
 msgid "Operating System"
 msgstr "System operacyjny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:175
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:195
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:188
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:254
 msgid "Hostname"
 msgstr "Nazwa hosta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:205
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:255
 msgid "Processor"
 msgstr "Procesor"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:215
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:256
 msgid "Memory"
 msgstr "Pamięć"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:176
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:221
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:231
 msgid "Disk"
 msgstr "Dysk"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:242
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:258
 msgid "Desktop"
 msgstr "Pulpit"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:234
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:257
 msgid "Graphics"
 msgstr "Grafika"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
 msgid "GPU"
 msgstr "GPU"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:178
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:245
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:191
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:278
 msgid "Updates"
 msgstr "Aktualizacje"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:248
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:267
 msgid "Click to check for updates"
 msgstr "Kliknij, aby sprawdzić aktualizacje"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:251
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:270
 msgid "Check for Updates"
 msgstr "Sprawdź aktualizacje"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:257
-msgid "Troubleshooting"
-msgstr "Rozwiązywanie problemów"
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:273
+msgid "Update now..."
+msgstr "Zaktualizuj teraz..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:261
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:284
 msgid "Reset settings to factory defaults"
 msgstr "Przywróć ustawienia do wartości fabrycznych"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:266
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:289
 msgid "Restore Defaults..."
 msgstr "Przywróć ustawienia domyślne..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:275
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:77
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:293
+msgid "Troubleshooting"
+msgstr "Rozwiązywanie problemów"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:298
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:74
 msgid "Checking..."
 msgstr "Sprawdzanie..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:286
-#, python-brace-format
-msgid "Update available: {version}"
-msgstr "Dostępna aktualizacja: {version}"
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:307
+msgid "Update check timed out"
+msgstr "Przekroczono limit czasu sprawdzania aktualizacji"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:288
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:310
+msgid "uupd not available"
+msgstr "uupd jest niedostępne"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:313
+msgid "Update available"
+msgstr "Dostępna aktualizacja"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:316
 msgid "System is up to date"
 msgstr "System jest aktualny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:290
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:319
 msgid "Could not check for updates"
 msgstr "Nie udało się sprawdzić aktualizacji"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:336
+msgid "Terminal not available"
+msgstr "Terminal jest niedostępny"
 
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
 msgid "Default (24px)"
@@ -346,120 +366,134 @@ msgstr "Duży (32px)"
 msgid "Larger (48px)"
 msgstr "Większy (48px)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:21
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:89
 msgid "Large text"
 msgstr "Duży tekst"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:90
 msgid "Cursor size"
 msgstr "Rozmiar kursora"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:92
 msgid "High contrast"
 msgstr "Wysoki kontrast"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:94
 msgid "Reduce motion"
 msgstr "Ogranicz animacje"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:48
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:89
 msgid "Increases font size for better readability"
 msgstr "Zwiększa rozmiar czcionki dla lepszej czytelności"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:73
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:92
 msgid "Forces dark theme with stronger borders"
 msgstr "Wymusza ciemny motyw z wyraźniejszymi obramowaniami"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:85
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:94
 msgid "Disables animations throughout the interface"
 msgstr "Wyłącza animacje w całym interfejsie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:74
 msgid "Theme"
 msgstr "Motyw"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:66
 msgid "Light"
 msgstr "Jasny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:66
 msgid "Dark"
 msgstr "Ciemny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:46
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:97
 msgid "Accent color"
 msgstr "Kolor akcentu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:56
 msgid "Color"
 msgstr "Kolor"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:70
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:111
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:112
 msgid "Font size"
 msgstr "Rozmiar czcionki"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
 msgid "Font"
 msgstr "Czcionka"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:129
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:134
 msgid "Wallpaper"
 msgstr "Tapeta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:58
 msgid "Background"
 msgstr "Tło"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
 msgid "Theme is set to Dark by High Contrast mode"
 msgstr "Motyw jest ustawiony na Ciemny przez tryb Wysokiego kontrastu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
 msgid "Small"
 msgstr "Mały"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
 msgid "Default"
 msgstr "Domyślny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
 msgid "Large"
 msgstr "Duży"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
 msgid "Larger"
 msgstr "Większy"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:82
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:112
 msgid "Affects all text throughout the interface"
 msgstr "Wpływa na cały tekst w interfejsie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:122
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:132
+msgid "Wallpaper picker unavailable"
+msgstr "Wybór tapety jest niedostępny"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:196
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:260
+msgid "Remove"
+msgstr "Usuń"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:204
+msgid "Add picture…"
+msgstr "Dodaj obraz…"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:222
 msgid "Choose Wallpaper"
 msgstr "Wybierz tapetę"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:124
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:224
 msgid "Images"
 msgstr "Obrazy"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:145
-msgid "Custom..."
-msgstr "Własna..."
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:243
+msgid "Could not add wallpaper"
+msgstr "Nie udało się dodać tapety"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:169
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:165
 msgid "Pair"
 msgstr "Sparuj"
 
@@ -472,111 +506,123 @@ msgstr "Bezprzewodowe"
 msgid "Device"
 msgstr "Urządzenie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:56
 msgid "No Bluetooth adapter found"
 msgstr "Nie znaleziono adaptera Bluetooth"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:62
 msgid "Paired Devices"
 msgstr "Sparowane urządzenia"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
-msgid "Available Devices"
-msgstr "Dostępne urządzenia"
-
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:72
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:116
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:197
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:112
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:193
 msgid "Search for devices"
 msgstr "Szukaj urządzeń"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:78
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:70
+msgid "Available Devices"
+msgstr "Dostępne urządzenia"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:78
 msgid "Advanced..."
 msgstr "Zaawansowane..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:109
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:105
 msgid "Scanning..."
 msgstr "Skanowanie..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:155
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:166
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:308
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:151
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:305
 msgid "Connected"
 msgstr "Połączono"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:158
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:154
 msgid "Disconnect"
 msgstr "Rozłącz"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:162
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:173
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:209
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:256
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:158
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:170
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:253
 msgid "Connect"
 msgstr "Połącz"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:165
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:169
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:161
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:166
 msgid "Forget"
 msgstr "Zapomnij"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:177
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:173
 msgid "Pairing..."
 msgstr "Parowanie..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:178
 msgid "Paired successfully"
 msgstr "Sparowano pomyślnie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:187
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:183
 #, python-brace-format
 msgid "Pairing failed: {message}"
 msgstr "Parowanie nie powiodło się: {message}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:22
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
 msgid "Timezone"
 msgstr "Strefa czasowa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:61
 msgid "Automatic time"
 msgstr "Automatyczny czas"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
 msgid "NTP"
 msgstr "NTP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:62
 msgid "24-hour clock"
 msgstr "Zegar 24-godzinny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:44
 msgid "e.g. America/New_York"
 msgstr "np. America/New_York"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:48
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:115
 msgid "Press Enter to apply"
 msgstr "Naciśnij Enter, aby zastosować"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:54
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:61
 msgid "Sync clock via network (NTP)"
 msgstr "Synchronizuj zegar przez sieć (NTP)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:62
 msgid "Use 24-hour time format"
 msgstr "Używaj formatu 24-godzinnego"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:102
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:105
 msgid "Failed to set timezone"
 msgstr "Nie udało się ustawić strefy czasowej"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:109
 msgid "Invalid timezone"
 msgstr "Nieprawidłowa strefa czasowa"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:137
+msgid "Automatic time change timed out"
+msgstr "Przekroczono limit czasu zmiany automatycznego czasu"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:141
+msgid "timedatectl not available"
+msgstr "timedatectl jest niedostępne"
+
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:145
+msgid "Failed to change automatic time"
+msgstr "Nie udało się zmienić automatycznego czasu"
 
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
 msgid "Web Browser"
@@ -617,7 +663,7 @@ msgstr "Klient poczty"
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
 #: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:58
 msgid "Default Applications"
 msgstr "Domyślne aplikacje"
 
@@ -631,7 +677,7 @@ msgstr "Własny"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:46
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:56
 msgid "Display Scale"
 msgstr "Skalowanie ekranu"
 
@@ -646,7 +692,7 @@ msgstr "Rozdzielczość"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:80
 msgid "Resolution & Refresh Rate"
 msgstr "Rozdzielczość i częstotliwość odświeżania"
 
@@ -657,13 +703,13 @@ msgstr "Odświeżanie"
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:37
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:84
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:159
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:160
 msgid "Night Light"
 msgstr "Podświetlenie nocne"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:161
 msgid "Temperature"
 msgstr "Temperatura"
 
@@ -671,46 +717,46 @@ msgstr "Temperatura"
 msgid "Blue light"
 msgstr "Niebieskie światło"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:64
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:62
 msgid "No displays detected"
 msgstr "Nie wykryto ekranów"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:79
 msgid "Resolution and refresh rate"
 msgstr "Rozdzielczość i częstotliwość odświeżania"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:96
-msgid "Reduce blue light to help with sleep"
-msgstr "Ogranicz niebieskie światło, aby ułatwić zasypianie"
-
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:110
-msgid "3500K (warm) to 6500K (cool)"
-msgstr "3500K (ciepłe) do 6500K (zimne)"
-
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:120
-msgid "Schedule"
-msgstr "Harmonogram"
-
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:137
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:147
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:131
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:141
 msgid "HH:MM"
 msgstr "GG:MM"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:143
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:137
 msgid "Start time"
 msgstr "Czas rozpoczęcia"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:153
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:147
 msgid "End time"
 msgstr "Czas zakończenia"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:167
-msgid "Advanced"
-msgstr "Zaawansowane"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:160
+msgid "Reduce blue light to help with sleep"
+msgstr "Ogranicz niebieskie światło, aby ułatwić zasypianie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:168
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:161
+msgid "3500K (warm) to 6500K (cool)"
+msgstr "3500K (ciepłe) do 6500K (zimne)"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:162
+msgid "Schedule"
+msgstr "Harmonogram"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:167
 msgid "Open wdisplays"
 msgstr "Otwórz wdisplays"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:171
+msgid "Advanced"
+msgstr "Zaawansowane"
 
 #: ../files/usr/lib/universal-lite/settings/pages/display.py:173
 msgid "Advanced display settings"
@@ -720,12 +766,12 @@ msgstr "Zaawansowane ustawienia ekranu"
 msgid "Arrange and configure displays visually"
 msgstr "Rozmieść i skonfiguruj ekrany wizualnie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:220
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:226
 msgid "Confirm Scale"
 msgstr "Potwierdź skalowanie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:231
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:257
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:237
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:263
 #, python-brace-format
 msgid ""
 "Keep this display scale?\n"
@@ -734,22 +780,22 @@ msgstr ""
 "Zachować to skalowanie ekranu?\n"
 "Przywracanie za {seconds}s..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:236
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:361
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:242
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:372
 msgid "Revert"
 msgstr "Przywróć"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:239
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:367
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:245
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:378
 msgid "Keep"
 msgstr "Zachowaj"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:344
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:355
 msgid "Confirm Resolution"
 msgstr "Potwierdź rozdzielczość"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:355
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:388
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:366
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:399
 #, python-brace-format
 msgid ""
 "Keep this resolution?\n"
@@ -759,12 +805,12 @@ msgstr ""
 "Przywracanie za {seconds}s..."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:232
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:286
 msgid "Layout"
 msgstr "Układ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:284
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:287
 msgid "Keyboard layout"
 msgstr "Układ klawiatury"
 
@@ -774,17 +820,17 @@ msgid "Variant"
 msgstr "Wariant"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:289
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:308
 msgid "Repeat"
 msgstr "Powtarzanie"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:298
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:309
 msgid "Repeat delay"
 msgstr "Opóźnienie powtarzania"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:307
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
 msgid "Repeat rate"
 msgstr "Szybkość powtarzania"
 
@@ -826,51 +872,51 @@ msgstr "Kombinacja klawiszy"
 msgid "(Default)"
 msgstr "(Domyślny)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
-msgid "Caps Lock Behavior"
-msgstr "Zachowanie Caps Lock"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
 msgid "Ctrl"
 msgstr "Ctrl"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
 msgid "Escape"
 msgstr "Escape"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:311
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
 msgid "Disabled"
 msgstr "Wyłączony"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
+msgid "Caps Lock Behavior"
+msgstr "Zachowanie Caps Lock"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:327
 msgid "Caps Lock key"
 msgstr "Klawisz Caps Lock"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:322
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:327
 msgid "Remap Caps Lock to another function"
 msgstr "Przemapuj Caps Lock na inną funkcję"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
-msgid "Keyboard Shortcuts"
-msgstr "Skróty klawiszowe"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:333
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:338
 msgid "Reset All Shortcuts"
 msgstr "Zresetuj wszystkie skróty"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:357
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:343
+msgid "Keyboard Shortcuts"
+msgstr "Skróty klawiszowe"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:364
 msgid "Reset to default"
 msgstr "Przywróć domyślne"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:406
 msgid "Press new shortcut..."
 msgstr "Naciśnij nowy skrót..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:489
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:496
 msgid "Shortcut Conflict"
 msgstr "Konflikt skrótów"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:491
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:498
 #, python-brace-format
 msgid ""
 "\"{key}\" is already assigned to \"{conflict}\".\n"
@@ -881,7 +927,7 @@ msgstr ""
 "\n"
 "Przypisać do \"{target}\"?"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:497
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:504
 msgid "Reassign"
 msgstr "Przypisz ponownie"
 
@@ -897,65 +943,65 @@ msgstr "Ustawienia regionalne"
 msgid "Regional format"
 msgstr "Format regionalny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:26
 msgid "Changes take effect after logging out"
 msgstr "Zmiany zostaną zastosowane po wylogowaniu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:60
 msgid "System language"
 msgstr "Język systemu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:61
 msgid "Regional formats"
 msgstr "Formaty regionalne"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:61
 msgid "Date, number, and currency format"
 msgstr "Format daty, liczb i waluty"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:113
 msgid "Failed to set language"
 msgstr "Nie udało się ustawić języka"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:107
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:121
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:115
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:129
 msgid "localectl not found"
 msgstr "Nie znaleziono localectl"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:109
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:117
 msgid "Language change timed out"
 msgstr "Przekroczono czas zmiany języka"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:119
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:127
 msgid "Failed to set regional format"
 msgstr "Nie udało się ustawić formatu regionalnego"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:123
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:131
 msgid "Format change timed out"
 msgstr "Przekroczono czas zmiany formatu"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:47
 msgid "Touchpad"
 msgstr "Touchpad"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:48
 msgid "Tap to click"
 msgstr "Stuknij, aby kliknąć"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:59
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:49
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
 msgid "Natural scrolling"
 msgstr "Naturalne przewijanie"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:43
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:50
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:68
 msgid "Pointer speed"
 msgstr "Szybkość wskaźnika"
 
@@ -966,7 +1012,7 @@ msgstr "Szybkość przewijania"
 
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
 #: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:66
 msgid "Mouse"
 msgstr "Mysz"
 
@@ -975,7 +1021,7 @@ msgstr "Mysz"
 msgid "Acceleration"
 msgstr "Przyspieszenie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:49
 msgid "Content moves with your fingers"
 msgstr "Zawartość przesuwa się z ruchem palców"
 
@@ -998,7 +1044,7 @@ msgid "Hidden network"
 msgstr "Ukryta sieć"
 
 #: ../files/usr/lib/universal-lite/settings/pages/network.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:76
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:75
 msgid "Wired"
 msgstr "Przewodowe"
 
@@ -1014,11 +1060,11 @@ msgstr "Połączenie"
 msgid "IP address"
 msgstr "Adres IP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:58
 msgid "Scan"
 msgstr "Skanuj"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:65
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:61
 msgid "Connect to Hidden Network..."
 msgstr "Połącz z ukrytą siecią..."
 
@@ -1026,75 +1072,75 @@ msgstr "Połącz z ukrytą siecią..."
 msgid "Active Connection"
 msgstr "Aktywne połączenie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:87
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:84
 msgid "Connection editor not found"
-msgstr ""
+msgstr "Nie znaleziono edytora połączeń"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:184
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:216
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:264
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:181
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:213
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:261
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "Łączenie z {ssid}..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:189
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:186
 #, python-brace-format
 msgid "Connect to {ssid}"
 msgstr "Połącz z {ssid}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:229
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:226
 msgid "Connect to Hidden Network"
 msgstr "Połącz z ukrytą siecią"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:237
 msgid "Network name (SSID)"
 msgstr "Nazwa sieci (SSID)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
 msgid "None"
 msgstr "Brak"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
 msgid "WPA/WPA2"
 msgstr "WPA/WPA2"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
 msgid "WPA3"
 msgstr "WPA3"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:244
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:241
 msgid "Security"
 msgstr "Zabezpieczenia"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:279
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:276
 msgid "Connected successfully"
 msgstr "Połączono pomyślnie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:294
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:291
 msgid "Not connected"
 msgstr "Brak połączenia"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:297
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:294
 msgid "Type"
 msgstr "Typ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:298
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:295
 msgid "IP Address"
 msgstr "Adres IP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:299
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
 msgid "Gateway"
 msgstr "Brama"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:300
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:297
 msgid "DNS"
 msgstr "DNS"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:306
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:303
 msgid "No wired adapter detected"
 msgstr "Nie wykryto adaptera przewodowego"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:310
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:307
 msgid "Disconnected"
 msgstr "Rozłączono"
 
@@ -1108,8 +1154,8 @@ msgstr "Lista okien"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:66
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:99
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
 msgid "Volume"
 msgstr "Głośność"
 
@@ -1166,17 +1212,18 @@ msgid "Position"
 msgstr "Pozycja"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:69
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:70
 msgid "Density"
 msgstr "Gęstość"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:72
 msgid "Compact"
 msgstr "Kompaktowy"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:80
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:83
 msgid "Twilight"
 msgstr "Zmierzch"
 
@@ -1185,7 +1232,7 @@ msgid "Invert"
 msgstr "Odwróć"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:85
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:89
 msgid "Module Layout"
 msgstr "Układ modułów"
 
@@ -1194,7 +1241,7 @@ msgid "Modules"
 msgstr "Moduły"
 
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:87
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:91
 msgid "Pinned Apps"
 msgstr "Przypięte aplikacje"
 
@@ -1202,51 +1249,52 @@ msgstr "Przypięte aplikacje"
 msgid "Pinned"
 msgstr "Przypięte"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:72
 msgid "Normal"
 msgstr "Normalny"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:84
 msgid "Invert panel colors from the system theme"
 msgstr "Odwróć kolory panelu względem motywu systemowego"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:93
 msgid "Reset layout to defaults"
 msgstr "Przywróć domyślny układ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:176
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:182
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:180
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:186
 #, python-brace-format
 msgid "Move to {section}"
 msgstr "Przenieś do {section}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:188
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:192
 msgid "Move up in section"
 msgstr "Przenieś wyżej w sekcji"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:193
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:197
 msgid "Move down in section"
 msgstr "Przenieś niżej w sekcji"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
 msgid "Add pinned app"
 msgstr "Dodaj przypiętą aplikację"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:256
-msgid "Remove"
-msgstr "Usuń"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:269
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:273
 msgid "Add Pinned App"
 msgstr "Dodaj przypiętą aplikację"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:282
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:286
 msgid "Search apps…"
 msgstr "Szukaj aplikacji..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:315
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:319
 msgid "Add"
 msgstr "Dodaj"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:353
+#, python-brace-format
+msgid "{app} has no launch command"
+msgstr "Brak polecenia uruchamiającego dla {app}"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
 msgid "1 minute"
@@ -1277,17 +1325,17 @@ msgid "Never"
 msgstr "Nigdy"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:125
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:128
 msgid "Balanced"
 msgstr "Zrównoważony"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:126
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:129
 msgid "Power Saver"
 msgstr "Oszczędzanie energii"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:127
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:130
 msgid "Performance"
 msgstr "Wydajność"
 
@@ -1306,7 +1354,7 @@ msgstr "Nic nie rób"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:47
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:68
 msgid "Lock & Display"
 msgstr "Blokada i ekran"
 
@@ -1320,13 +1368,13 @@ msgstr "Wyłączenie ekranu"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:89
 msgid "Power Profile"
 msgstr "Profil zasilania"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:93
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
 msgid "Suspend on Idle"
 msgstr "Uśpij przy bezczynności"
 
@@ -1335,7 +1383,7 @@ msgid "Idle"
 msgstr "Bezczynność"
 
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:106
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:119
 msgid "Lid Close Behavior"
 msgstr "Zachowanie przy zamykaniu pokrywy"
 
@@ -1343,49 +1391,57 @@ msgstr "Zachowanie przy zamykaniu pokrywy"
 msgid "Lid"
 msgstr "Pokrywa"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:59
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
 msgid "Lock screen after"
 msgstr "Zablokuj ekran po"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:70
 msgid "Turn off display after"
 msgstr "Wyłącz ekran po"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:104
 msgid "Suspend after"
 msgstr "Uśpij po"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:118
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:120
 msgid "When lid is closed"
 msgstr "Gdy pokrywa jest zamknięta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:145
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:147
+msgid "Lid action change timed out"
+msgstr "Przekroczono limit czasu zmiany działania pokrywy"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:151
+msgid "pkexec not available"
+msgstr "pkexec jest niedostępne"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:161
 msgid "Failed to change lid close action"
-msgstr ""
+msgstr "Nie udało się zmienić działania zamknięcia pokrywy"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:68
 msgid "Output"
 msgstr "Wyjście"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:69
 msgid "Output device"
 msgstr "Urządzenie wyjściowe"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:105
 msgid "Mute"
 msgstr "Wycisz"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:102
 msgid "Input"
 msgstr "Wejście"
 
 #: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:91
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:103
 msgid "Input device"
 msgstr "Urządzenie wejściowe"
 
@@ -1393,19 +1449,19 @@ msgstr "Urządzenie wejściowe"
 msgid "Microphone"
 msgstr "Mikrofon"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:53
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:209
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:219
 msgid "(No output devices)"
 msgstr "(Brak urządzeń wyjściowych)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:233
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:85
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:243
 msgid "(No input devices)"
 msgstr "(Brak urządzeń wejściowych)"
 
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:97
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:96
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:115
 msgid "Display name"
 msgstr "Nazwa wyświetlana"
 
@@ -1417,48 +1473,61 @@ msgstr "Automatyczne logowanie"
 msgid "Account"
 msgstr "Konto"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:82
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:81
 msgid "Could not connect to AccountsService"
 msgstr "Nie udało się połączyć z AccountsService"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:103
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:147
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:160
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:101
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:149
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:162
 msgid "Change Password"
 msgstr "Zmień hasło"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
 msgid "Set a new password for your account"
 msgstr "Ustaw nowe hasło dla swojego konta"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:117
 msgid "Automatic login"
 msgstr "Automatyczne logowanie"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:117
 msgid "Log in without a password at startup"
 msgstr "Logowanie bez hasła przy uruchomieniu"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:166
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:168
 msgid "New password"
 msgstr "Nowe hasło"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:171
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:173
 msgid "Confirm password"
 msgstr "Potwierdź hasło"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:185
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:187
 msgid "Apply"
 msgstr "Zastosuj"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:192
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:194
 msgid "Password cannot be empty"
 msgstr "Hasło nie może być puste"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:195
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:197
 msgid "Passwords do not match"
 msgstr "Hasła nie są zgodne"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:207
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:209
 msgid "Failed to set password"
 msgstr "Nie udało się ustawić hasła"
+
+#~ msgid "Universal-Lite Settings"
+#~ msgstr "Ustawienia Universal-Lite"
+
+#~ msgid "Search settings..."
+#~ msgstr "Szukaj ustawień..."
+
+#, python-brace-format
+#~ msgid "Update available: {version}"
+#~ msgstr "Dostępna aktualizacja: {version}"
+
+#~ msgid "Custom..."
+#~ msgstr "Własna..."
