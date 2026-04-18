@@ -1,4 +1,5 @@
 import subprocess
+import threading
 from gettext import gettext as _
 
 import gi
@@ -93,22 +94,27 @@ class DateTimePage(BasePage):
             return "UTC"
 
     def _set_timezone(self, tz, entry=None):
-        try:
-            result = subprocess.run(
-                ["timedatectl", "set-timezone", tz],
-                capture_output=True,
-                text=True,
-                timeout=5,
-            )
-        except (subprocess.TimeoutExpired, OSError):
-            self.store.show_toast(_("Failed to set timezone"), True)
-            return
-        if result.returncode != 0:
-            self.store.show_toast(_("Invalid timezone"), True)
-            if entry is not None:
-                entry.add_css_class("error")
-        elif entry is not None:
-            entry.remove_css_class("error")
+        def _run():
+            try:
+                result = subprocess.run(
+                    ["timedatectl", "set-timezone", tz],
+                    capture_output=True, text=True, timeout=60,
+                )
+            except (subprocess.TimeoutExpired, OSError):
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Failed to set timezone"), True) or False)
+                return
+            if result.returncode != 0:
+                def _on_fail():
+                    self.store.show_toast(_("Invalid timezone"), True)
+                    if entry is not None:
+                        entry.add_css_class("error")
+                    return False
+                GLib.idle_add(_on_fail)
+            elif entry is not None:
+                GLib.idle_add(lambda: entry.remove_css_class("error") or False)
+
+        threading.Thread(target=_run, daemon=True).start()
 
     @staticmethod
     def _get_ntp():
@@ -120,16 +126,22 @@ class DateTimePage(BasePage):
             return False
 
     def _set_ntp(self, enabled):
-        try:
-            result = subprocess.run(
-                ["timedatectl", "set-ntp", "true" if enabled else "false"],
-                capture_output=True, text=True, timeout=60,
-            )
-        except subprocess.TimeoutExpired:
-            self.store.show_toast(_("Automatic time change timed out"), True)
-            return
-        except FileNotFoundError:
-            self.store.show_toast(_("timedatectl not available"), True)
-            return
-        if result.returncode != 0:
-            self.store.show_toast(_("Failed to change automatic time"), True)
+        def _run():
+            try:
+                result = subprocess.run(
+                    ["timedatectl", "set-ntp", "true" if enabled else "false"],
+                    capture_output=True, text=True, timeout=60,
+                )
+            except subprocess.TimeoutExpired:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Automatic time change timed out"), True) or False)
+                return
+            except FileNotFoundError:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("timedatectl not available"), True) or False)
+                return
+            if result.returncode != 0:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Failed to change automatic time"), True) or False)
+
+        threading.Thread(target=_run, daemon=True).start()
