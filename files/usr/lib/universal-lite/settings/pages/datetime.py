@@ -119,10 +119,17 @@ class DateTimePage(BasePage):
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
 
-    @staticmethod
-    def _set_ntp(enabled):
+    def _set_ntp(self, enabled):
         try:
-            subprocess.run(["timedatectl", "set-ntp", "true" if enabled else "false"],
-                           check=False, capture_output=True, timeout=5)
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
+            result = subprocess.run(
+                ["timedatectl", "set-ntp", "true" if enabled else "false"],
+                capture_output=True, text=True, timeout=60,
+            )
+        except subprocess.TimeoutExpired:
+            self.store.show_toast(_("Automatic time change timed out"), True)
+            return
+        except FileNotFoundError:
+            self.store.show_toast(_("timedatectl not available"), True)
+            return
+        if result.returncode != 0:
+            self.store.show_toast(_("Failed to change automatic time"), True)
