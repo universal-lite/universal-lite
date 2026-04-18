@@ -564,10 +564,10 @@ class KeyboardPage(BasePage):
                 USER_KEYBINDINGS.unlink()
         except OSError:
             pass
-        # Trigger apply-settings to regenerate rc.xml without custom keybindings
-        self.store.save_and_apply(
-            "keyboard_repeat_delay",
-            self.store.get("keyboard_repeat_delay", 300))
+        # Out-of-band: the keybindings JSON lives outside settings.json,
+        # so there's no key to save. Just kick apply-settings so it
+        # re-reads the JSON and regenerates rc.xml.
+        self.store.apply()
 
     def _save_and_reconfigure(self) -> None:
         """Save keybindings to JSON and trigger apply-settings + labwc reconfigure."""
@@ -583,10 +583,8 @@ class KeyboardPage(BasePage):
             })
         _save_user_keybindings(save_data)
 
-        # Trigger apply-settings to rebuild rc.xml with keybindings
-        self.store.save_and_apply(
-            "keyboard_repeat_delay",
-            self.store.get("keyboard_repeat_delay", 300))
+        # Out-of-band: see note in _reset_all_shortcuts.
+        self.store.apply()
 
     @staticmethod
     def _get_layouts():
