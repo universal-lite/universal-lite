@@ -80,9 +80,12 @@ class DefaultAppsPage(BasePage):
 
         desktop_dir = Path.home() / ".local/share/applications"
         desktop_dir.mkdir(parents=True, exist_ok=True)
-        (desktop_dir / "terminal.desktop").write_text(
+        dest = desktop_dir / "terminal.desktop"
+        tmp = dest.with_suffix(".desktop.tmp")
+        tmp.write_text(
             f"[Desktop Entry]\nName={name}\nExec={cmd}\nType=Application\nTerminal=false\nCategories=TerminalEmulator;\n"
         )
+        tmp.rename(dest)
 
     @staticmethod
     def _get_apps_for_mime(mime_type):
