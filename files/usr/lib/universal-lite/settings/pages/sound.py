@@ -105,15 +105,23 @@ class SoundPage(BasePage):
             self.make_setting_row(_("Mute"), "", self._in_mute),
         ]))
 
-        self._pa = PulseAudioSubscriber(self.event_bus)
         self.subscribe("audio-changed", self._on_audio_changed)
 
-        def _on_pa_map(_widget):
-            self._pa = PulseAudioSubscriber(self.event_bus)
-            self._refresh()
+        def _on_map(_widget):
+            # Lazy start: only subscribe to pactl events while the page is
+            # mapped. Avoids a persistent `pactl subscribe` thread on
+            # 2 GB Chromebooks where the sound page is rarely visible.
+            if self._pa is None:
+                self._pa = PulseAudioSubscriber(self.event_bus)
+                self._refresh()
 
-        page.connect("map", _on_pa_map)
-        page.connect("unmap", lambda _: self._pa.stop() if self._pa else None)
+        def _on_unmap(_widget):
+            if self._pa is not None:
+                self._pa.stop()
+                self._pa = None
+
+        page.connect("map", _on_map)
+        page.connect("unmap", _on_unmap)
 
         self.setup_cleanup(page)
         return page
