@@ -212,8 +212,8 @@ def _build_tokens(settings: dict) -> dict:
     panel_bar_inset = round(4 * size_scale)
     panel_pad_module = round(8 * size_scale)
     panel_pad_launcher = round(12 * size_scale)
-    panel_pad_clock = round(12 * size_scale)
-    panel_pad_tray = round(6 * size_scale)
+    panel_pad_clock = panel_pad_module
+    panel_pad_tray = panel_pad_module
     panel_pad_pin = round(8 * size_scale)
 
     if edge == "top":
@@ -506,8 +506,6 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     h = tokens["panel_height"]
     pl = tokens["panel_pad_launcher"]
     pm = tokens["panel_pad_module"]
-    pc = tokens["panel_pad_clock"]
-    pt = tokens["panel_pad_tray"]
     pp = tokens["panel_pad_pin"]
     pinned = tokens.get("pinned", [])
 
@@ -545,8 +543,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     border-radius: 999px;
 }}
 
-#clock {{ font-weight: bold; padding: 0 {pc}px; }}
-#tray  {{ padding: 0 {pt}px; }}
+#clock {{ font-weight: bold; }}
 """
 
 
@@ -554,7 +551,6 @@ def _waybar_css_vertical(tokens: dict) -> str:
     w = tokens["panel_width"]
     pl = tokens["panel_pad_launcher"]
     pm = tokens["panel_pad_module"]
-    pt = tokens["panel_pad_tray"]
     pp = tokens["panel_pad_pin"]
     pinned = tokens.get("pinned", [])
     active_border = "border-right" if tokens["edge"] == "left" else "border-left"
@@ -599,7 +595,6 @@ window#waybar {{ min-width: {w}px; }}
 }}
 
 #clock {{ font-weight: bold; }}
-#tray  {{ padding: {pt}px 0; }}
 """
 
 
