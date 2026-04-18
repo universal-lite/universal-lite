@@ -144,7 +144,8 @@ install -Dm644 "$_jxl_src/plugins/gdk-pixbuf/jxl.thumbnailer" \
     /usr/share/thumbnailers/jxl.thumbnailer
 # Refresh the system loader cache so swaybg and gdk-pixbuf-based
 # thumbnailers see the new .jxl loader immediately at first boot.
-gdk-pixbuf-query-loaders --update-cache
+# Fedora ships the tool name-mangled by word size (-64 on x86_64).
+gdk-pixbuf-query-loaders-64 --update-cache
 rm -rf "$_jxl_src"
 dnf5 remove -y gcc libjxl-devel gdk-pixbuf2-devel git-core
 
