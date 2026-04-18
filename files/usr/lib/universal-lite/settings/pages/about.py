@@ -180,6 +180,7 @@ class AboutPage(BasePage):
     def __init__(self, store, event_bus):
         super().__init__(store, event_bus)
         self._update_label = None
+        self._update_btn = None
 
     @property
     def search_keywords(self):
@@ -269,6 +270,11 @@ class AboutPage(BasePage):
         check_btn = Gtk.Button(label=_("Check for Updates"))
         check_btn.connect("clicked", lambda _: self._check_updates())
         update_box.append(check_btn)
+        self._update_btn = Gtk.Button(label=_("Update now..."))
+        self._update_btn.add_css_class("suggested-action")
+        self._update_btn.set_visible(False)
+        self._update_btn.connect("clicked", lambda _: self._run_update())
+        update_box.append(self._update_btn)
         page.append(self.make_group(_("Updates"), [update_box]))
 
         # Troubleshooting group
@@ -294,25 +300,40 @@ class AboutPage(BasePage):
         def _check():
             try:
                 r = subprocess.run(
-                    ["bootc", "status", "--json"],
-                    capture_output=True, text=True, timeout=30,
+                    ["uupd", "update-check"],
+                    capture_output=True, text=True, timeout=60,
                 )
-                import json as _json
-                status = _json.loads(r.stdout)
-                staged = status.get("status", {}).get("staged", None)
-                if staged:
-                    version = staged.get("image", {}).get("version", "unknown")
-                    GLib.idle_add(
-                        self._update_label.set_text,
-                        _("Update available: {version}").format(version=version),
-                    )
-                else:
-                    GLib.idle_add(self._update_label.set_text, _("System is up to date"))
             except subprocess.TimeoutExpired:
                 GLib.idle_add(self._update_label.set_text, _("Update check timed out"))
-            except Exception:
+                return
+            except FileNotFoundError:
+                GLib.idle_add(self._update_label.set_text, _("uupd not available"))
+                return
+            if r.returncode == 77:
+                GLib.idle_add(self._update_label.set_text, _("Update available"))
+                GLib.idle_add(self._set_update_button_visible, True)
+            elif r.returncode == 0:
+                GLib.idle_add(self._update_label.set_text, _("System is up to date"))
+                GLib.idle_add(self._set_update_button_visible, False)
+            else:
                 GLib.idle_add(self._update_label.set_text, _("Could not check for updates"))
         threading.Thread(target=_check, daemon=True).start()
+
+    def _set_update_button_visible(self, visible: bool) -> bool:
+        if self._update_btn is not None:
+            self._update_btn.set_visible(visible)
+        return False
+
+    def _run_update(self) -> None:
+        # Spawn a foot terminal so the user sees the ujust update
+        # progress and can respond to the sudo prompt.
+        try:
+            subprocess.Popen(
+                ["foot", "-e", "ujust", "update"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+        except FileNotFoundError:
+            self.store.show_toast(_("Terminal not available"), True)
 
     def _on_restore_defaults_clicked(self, _btn: Gtk.Button) -> None:
         window = _btn.get_root()
