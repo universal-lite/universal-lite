@@ -15,6 +15,10 @@ CURSOR_SIZES = [
 
 
 class AccessibilityPage(BasePage):
+    def __init__(self, store, event_bus):
+        super().__init__(store, event_bus)
+        self._prev_font_size = 11
+
     @property
     def search_keywords(self):
         return [
@@ -30,15 +34,19 @@ class AccessibilityPage(BasePage):
         # Large text toggle
         large_text = Gtk.Switch()
         large_text.set_active(self.store.get("font_size", 11) >= 15)
+        # Remember the font size at page-load time so toggling off
+        # restores the user's previous choice without round-tripping
+        # through settings.json.
+        self._prev_font_size = self.store.get("font_size", 11)
 
         def _on_large_text(_, state):
             if state:
-                prev = self.store.get("font_size", 11)
-                if prev < 15:
-                    self.store.save_and_apply("_large_text_prev_font", prev)
+                current = self.store.get("font_size", 11)
+                if current < 15:
+                    self._prev_font_size = current
                 self.store.save_and_apply("font_size", 15)
             else:
-                prev = self.store.get("_large_text_prev_font", 11)
+                prev = self._prev_font_size if self._prev_font_size < 15 else 11
                 self.store.save_and_apply("font_size", prev)
             return False
 
