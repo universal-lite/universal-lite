@@ -205,7 +205,7 @@ class UsersPage(BasePage):
                     None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
                 )
                 dialog.close()
-            except (GLib.Error, subprocess.CalledProcessError):
+            except (GLib.Error, subprocess.CalledProcessError, subprocess.TimeoutExpired):
                 error_label.set_text(_("Failed to set password"))
 
         apply_btn.connect("clicked", _apply)
