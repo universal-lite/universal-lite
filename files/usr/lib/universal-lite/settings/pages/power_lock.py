@@ -137,12 +137,25 @@ class PowerLockPage(BasePage):
 
     def _on_lid_action_changed(self, action):
         def _run():
-            result = subprocess.run(
-                ["pkexec", "/usr/libexec/universal-lite-lid-action", action],
-                capture_output=True,
-            )
+            try:
+                result = subprocess.run(
+                    ["pkexec", "/usr/libexec/universal-lite-lid-action", action],
+                    capture_output=True, timeout=60,
+                )
+            except subprocess.TimeoutExpired:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Lid action change timed out"), True) or False)
+                return
+            except OSError:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("pkexec not available"), True) or False)
+                return
+
             if result.returncode == 0:
                 GLib.idle_add(lambda: self.store.save_and_apply("lid_close_action", action) or False)
+            elif result.returncode == 126:
+                # Polkit auth declined — silent, user already knows
+                pass
             else:
                 GLib.idle_add(lambda: self.store.show_toast(
                     _("Failed to change lid close action"), True) or False)
