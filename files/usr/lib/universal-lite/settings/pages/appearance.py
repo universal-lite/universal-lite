@@ -147,7 +147,8 @@ class AppearancePage(BasePage):
         self._wallpaper_buttons = []
 
         theme = self.store.get("theme", "light")
-        current = self.store.get("wallpaper", "")
+        current_raw = self.store.get("wallpaper", "")
+        current = current_raw if isinstance(current_raw, str) else ""
 
         wallpapers = list_wallpapers()
         # Map a stored absolute path (legacy settings) onto the matching manifest ID
