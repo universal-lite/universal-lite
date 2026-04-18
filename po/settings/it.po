@@ -117,6 +117,11 @@ msgstr "Impossibile avviare la sessione: {exc}"
 msgid "Failed to start session."
 msgstr "Impossibile avviare la sessione."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Timeout dell'applicazione dopo {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Impostazioni"

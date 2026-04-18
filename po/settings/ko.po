@@ -117,6 +117,11 @@ msgstr "세션을 시작하지 못했습니다: {exc}"
 msgid "Failed to start session."
 msgstr "세션을 시작하지 못했습니다."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "{n}s 후 적용 시간이 초과되었습니다"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "설정"

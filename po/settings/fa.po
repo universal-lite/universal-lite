@@ -116,6 +116,11 @@ msgstr "شروع نشست ناموفق بود: {exc}"
 msgid "Failed to start session."
 msgstr "شروع نشست ناموفق بود."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "زمان اعمال پس از {n}s به پایان رسید"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "تنظیمات"

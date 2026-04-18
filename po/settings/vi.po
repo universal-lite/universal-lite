@@ -117,6 +117,11 @@ msgstr "Không thể khởi động phiên: {exc}"
 msgid "Failed to start session."
 msgstr "Không thể khởi động phiên."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Hết thời gian chờ áp dụng sau {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Cài đặt"

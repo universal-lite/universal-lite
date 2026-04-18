@@ -117,6 +117,11 @@ msgstr "Oturum başlatılamadı: {exc}"
 msgid "Failed to start session."
 msgstr "Oturum başlatılamadı."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Uygulama {n}s sonra zaman aşımına uğradı"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Ayarlar"

@@ -116,6 +116,11 @@ msgstr "ไม่สามารถเริ่มเซสชันได้: {
 msgid "Failed to start session."
 msgstr "ไม่สามารถเริ่มเซสชันได้"
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "การนำไปใช้หมดเวลาหลังจาก {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "การตั้งค่า"

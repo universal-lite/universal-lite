@@ -116,6 +116,11 @@ msgstr "Imeshindwa kuanzisha kipindi: {exc}"
 msgid "Failed to start session."
 msgstr "Imeshindwa kuanzisha kipindi."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Muda wa kutumia umekwisha baada ya {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Mipangilio"

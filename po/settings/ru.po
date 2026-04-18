@@ -118,6 +118,11 @@ msgstr "Не удалось запустить сессию: {exc}"
 msgid "Failed to start session."
 msgstr "Не удалось запустить сессию."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Истекло время ожидания применения через {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Параметры"

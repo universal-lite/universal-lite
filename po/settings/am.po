@@ -116,6 +116,11 @@ msgstr "ክፍለ ጊዜ ለመጀመር አልተሳካም: {exc}"
 msgid "Failed to start session."
 msgstr "ክፍለ ጊዜ ለመጀመር አልተሳካም።"
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "ማመልከቻ ከ{n}s በኋላ ጊዜው አልፏል"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "ቅንብሮች"

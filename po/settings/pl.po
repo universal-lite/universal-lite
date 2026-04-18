@@ -118,6 +118,11 @@ msgstr "Nie udało się uruchomić sesji: {exc}"
 msgid "Failed to start session."
 msgstr "Nie udało się uruchomić sesji."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Przekroczono limit czasu zastosowania po {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Ustawienia"

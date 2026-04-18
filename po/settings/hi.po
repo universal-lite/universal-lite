@@ -116,6 +116,11 @@ msgstr "सत्र प्रारंभ करने में विफल: 
 msgid "Failed to start session."
 msgstr "सत्र प्रारंभ करने में विफल।"
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "{n}s के बाद लागू करने का समय समाप्त हो गया"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "सेटिंग्स"

@@ -116,6 +116,11 @@ msgstr "Fara zama ya gaza: {exc}"
 msgid "Failed to start session."
 msgstr "Fara zama ya gaza."
 
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#, python-brace-format
+msgid "Apply timed out after {n}s"
+msgstr "Lokacin aiwatarwa ya ƙare bayan {n}s"
+
 #: ../files/usr/lib/universal-lite/settings/window.py:17
 msgid "Settings"
 msgstr "Saituna"
