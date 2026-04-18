@@ -277,10 +277,10 @@ class PanelPage(BasePage):
         dialog.set_default_size(400, 500)
         dialog.set_resizable(True)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        outer.set_margin_top(12)
-        outer.set_margin_bottom(12)
-        outer.set_margin_start(12)
-        outer.set_margin_end(12)
+        outer.set_margin_top(24)
+        outer.set_margin_bottom(24)
+        outer.set_margin_start(24)
+        outer.set_margin_end(24)
 
         search_entry = Gtk.SearchEntry()
         search_entry.set_placeholder_text(_("Search apps\u2026"))
@@ -343,6 +343,8 @@ class PanelPage(BasePage):
         outer.append(cancel_btn)
 
         dialog.set_child(outer)
+        BasePage.enable_escape_close(dialog)
+        search_entry.grab_focus()
         dialog.present()
 
     def _add_app_from_info(self, app_info, dialog):

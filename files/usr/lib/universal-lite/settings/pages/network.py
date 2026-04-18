@@ -220,6 +220,10 @@ class NetworkPage(BasePage):
         btn_box.append(connect)
         box.append(btn_box)
         dialog.set_child(box)
+        connect.set_receives_default(True)
+        dialog.set_default_widget(connect)
+        pw_entry.grab_focus()
+        BasePage.enable_escape_close(dialog)
         dialog.present()
 
     def _show_hidden_dialog(self):
@@ -267,6 +271,10 @@ class NetworkPage(BasePage):
         btn_box.append(connect)
         box.append(btn_box)
         dialog.set_child(box)
+        connect.set_receives_default(True)
+        dialog.set_default_widget(connect)
+        ssid_entry.grab_focus()
+        BasePage.enable_escape_close(dialog)
         dialog.present()
 
     def _forget(self, ssid):

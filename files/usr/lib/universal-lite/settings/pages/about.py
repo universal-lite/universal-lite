@@ -109,12 +109,16 @@ class RestoreDefaultsDialog(Gtk.Window):
         btn_row.append(cancel_btn)
 
         self._reset_btn = Gtk.Button(label=_("Reset"))
-        self._reset_btn.add_css_class("destructive-button")
+        self._reset_btn.add_css_class("destructive-action")
         self._reset_btn.set_sensitive(False)
         self._reset_btn.connect("clicked", self._on_reset_clicked)
         btn_row.append(self._reset_btn)
+        self._reset_btn.set_receives_default(True)
+        self.set_default_widget(self._reset_btn)
 
         card.append(btn_row)
+
+        BasePage.enable_escape_close(self)
 
         # Fullscreen so the overlay covers the parent
         self.fullscreen()
@@ -287,7 +291,7 @@ class AboutPage(BasePage):
         restore_desc.set_hexpand(True)
         restore_row.append(restore_desc)
         restore_btn = Gtk.Button(label=_("Restore Defaults..."))
-        restore_btn.add_css_class("destructive-button")
+        restore_btn.add_css_class("destructive-action")
         restore_btn.connect("clicked", self._on_restore_defaults_clicked)
         restore_row.append(restore_btn)
         page.append(self.make_group(_("Troubleshooting"), [restore_row]))

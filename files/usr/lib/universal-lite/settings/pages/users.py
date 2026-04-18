@@ -149,6 +149,7 @@ class UsersPage(BasePage):
         dialog = Gtk.Window(title=_("Change Password"))
         dialog.set_default_size(400, -1)
         dialog.set_modal(True)
+        dialog.set_resizable(False)
         root = button.get_root()
         if root:
             dialog.set_transient_for(root)
@@ -213,4 +214,8 @@ class UsersPage(BasePage):
         box.append(button_box)
 
         dialog.set_child(box)
+        apply_btn.set_receives_default(True)
+        dialog.set_default_widget(apply_btn)
+        new_pw.grab_focus()
+        BasePage.enable_escape_close(dialog)
         dialog.present()

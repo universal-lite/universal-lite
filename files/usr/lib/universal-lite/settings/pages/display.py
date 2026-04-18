@@ -245,6 +245,8 @@ class DisplayPage(BasePage):
         keep_btn = Gtk.Button(label=_("Keep"))
         keep_btn.add_css_class("suggested-action")
         keep_btn.connect("clicked", lambda _: self._keep(dialog, new_scale))
+        keep_btn.set_receives_default(True)
+        dialog.set_default_widget(keep_btn)
         btn_box.append(keep_btn)
         box.append(btn_box)
         dialog.set_child(box)
@@ -253,6 +255,7 @@ class DisplayPage(BasePage):
             1, self._tick_revert, label, dialog, old_scale,
         )
         dialog.connect("close-request", lambda _: self._revert(dialog, old_scale) or True)
+        BasePage.enable_escape_close(dialog)
         dialog.present()
 
     def _tick_revert(self, label, dialog, old_scale):
@@ -378,6 +381,8 @@ class DisplayPage(BasePage):
         keep_btn = Gtk.Button(label=_("Keep"))
         keep_btn.add_css_class("suggested-action")
         keep_btn.connect("clicked", lambda _: self._res_keep(dialog, output_name, new_mode))
+        keep_btn.set_receives_default(True)
+        dialog.set_default_widget(keep_btn)
         btn_box.append(keep_btn)
         box.append(btn_box)
         dialog.set_child(box)
@@ -389,6 +394,7 @@ class DisplayPage(BasePage):
             "close-request",
             lambda _: self._res_revert(dialog, dropdown, output_name, modes, old_mode) or True,
         )
+        BasePage.enable_escape_close(dialog)
         dialog.present()
 
     def _tick_res_revert(self, label, dialog, dropdown, output_name, modes, old_mode):

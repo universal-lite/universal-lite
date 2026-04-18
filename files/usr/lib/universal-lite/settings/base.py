@@ -3,7 +3,7 @@ from gettext import gettext as _
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Gdk, Gtk
 
 from .events import EventBus
 from .settings_store import SettingsStore
@@ -42,6 +42,25 @@ class BasePage:
         """Connect unmap signal to unsubscribe all event callbacks.
         Call this in build() with the page's root widget."""
         widget.connect("unmap", lambda _: self.unsubscribe_all())
+
+    @staticmethod
+    def enable_escape_close(dialog: Gtk.Window) -> None:
+        """Close *dialog* when the user presses Escape.
+
+        GTK4's Gtk.Window doesn't wire Escape -> close by default (only
+        Gtk.Dialog did). This matches the GNOME HIG expectation that
+        every dialog is dismissible via the keyboard.
+        """
+        controller = Gtk.EventControllerKey()
+
+        def _on_key(_c, keyval, _kc, _state):
+            if keyval == Gdk.KEY_Escape:
+                dialog.close()
+                return True
+            return False
+
+        controller.connect("key-pressed", _on_key)
+        dialog.add_controller(controller)
 
     @staticmethod
     def make_page_box() -> Gtk.Box:
