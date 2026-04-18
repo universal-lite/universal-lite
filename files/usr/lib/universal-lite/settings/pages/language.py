@@ -31,6 +31,8 @@ class LanguagePage(BasePage):
         # System language
         locales = self._get_locales()
         current_locale = self._get_current_locale()
+        current_fmt = self._get_current_format()
+        loaded = [False]  # mutable so nested lambdas can read it
 
         lang_dd = Gtk.DropDown.new_from_strings(locales if locales else ["en_US.UTF-8"])
         try:
@@ -39,18 +41,19 @@ class LanguagePage(BasePage):
             lang_dd.set_selected(0)
         lang_dd.set_size_request(280, -1)
         lang_dd.connect("notify::selected", lambda d, _:
-            self._set_locale(locales[d.get_selected()]) if locales else None)
+            None if not loaded[0] or not locales
+            else self._set_locale(locales[d.get_selected()]))
 
         # Regional formats
         fmt_dd = Gtk.DropDown.new_from_strings(locales if locales else ["en_US.UTF-8"])
-        current_fmt = self._get_current_format()
         try:
             fmt_dd.set_selected(locales.index(current_fmt))
         except (ValueError, IndexError):
             fmt_dd.set_selected(0)
         fmt_dd.set_size_request(280, -1)
         fmt_dd.connect("notify::selected", lambda d, _:
-            self._set_format(locales[d.get_selected()]) if locales else None)
+            None if not loaded[0] or not locales
+            else self._set_format(locales[d.get_selected()]))
 
         page.append(self.make_group(_("Language & Region"), [
             banner,
@@ -58,6 +61,9 @@ class LanguagePage(BasePage):
             self.make_setting_row(_("Regional formats"), _("Date, number, and currency format"), fmt_dd),
         ]))
 
+        # Flip the flag AFTER both initial selections have fired so the
+        # page-load set_selected calls don't trigger localectl/polkit.
+        loaded[0] = True
         return page
 
     @staticmethod
