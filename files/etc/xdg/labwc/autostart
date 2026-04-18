@@ -24,11 +24,22 @@ export SSH_AUTH_SOCK GNOME_KEYRING_CONTROL
 # Only start Universal-Lite daemons in a Universal-Lite session.
 [ "${UNIVERSAL_LITE:-}" = "1" ] || exit 0
 
+# Seed settings.json from image defaults on first login. The autostart
+# helpers below (wallpaper, idle timeouts) all parse this file and need
+# it to exist — apply-settings only runs when settings change, not at
+# login, so we can't rely on it to create the file.
+_settings_dir="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite"
+_defaults="/usr/share/universal-lite/defaults/settings.json"
+if [ ! -f "$_settings_dir/settings.json" ] && [ -f "$_defaults" ]; then
+    mkdir -p "$_settings_dir"
+    cp "$_defaults" "$_settings_dir/settings.json" 2>/dev/null || true
+fi
+
 # Resolve the wallpaper through the same manifest lookup apply-settings
 # uses. settings.json stores a manifest ID ("universal-lite", "flight",
 # etc.) or an absolute path for ad-hoc selections — swaybg only takes
 # paths, so we always have to resolve here.
-_settings="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
+_settings="$_settings_dir/settings.json"
 _wallpaper=$(python3 -c "
 import json, sys
 sys.path.insert(0, '/usr/lib/universal-lite')
