@@ -45,6 +45,24 @@ class Wallpaper:
         return self.dark_path if theme == "dark" else self.light_path
 
 
+# Cache for list_wallpapers(). Keyed on (path, mtime_ns) for every
+# manifest directory so it invalidates when the user adds/removes a
+# custom wallpaper or the image is updated via bootc (which touches
+# the parent dir's mtime when entries are added or removed).
+_LIST_CACHE: list[Wallpaper] | None = None
+_LIST_CACHE_KEY: tuple | None = None
+
+
+def _cache_key() -> tuple:
+    entries = []
+    for d in (*SYSTEM_MANIFEST_DIRS, USER_MANIFEST_DIR):
+        try:
+            entries.append((str(d), d.stat().st_mtime_ns))
+        except OSError:
+            entries.append((str(d), None))
+    return tuple(entries)
+
+
 def _resolve_slideshow(xml_path: Path) -> tuple[str, str] | None:
     """Return ``(first_static_file, last_static_file)`` from a GNOME slideshow.
 
@@ -115,6 +133,12 @@ def _parse_manifest(xml_path: Path, *, is_custom: bool) -> list[Wallpaper]:
 
 def list_wallpapers() -> list[Wallpaper]:
     """Enumerate known wallpapers, sorted: system first (alphabetical), then custom."""
+    global _LIST_CACHE, _LIST_CACHE_KEY
+
+    key = _cache_key()
+    if _LIST_CACHE is not None and _LIST_CACHE_KEY == key:
+        return _LIST_CACHE
+
     seen: set[str] = set()
     system: list[Wallpaper] = []
     custom: list[Wallpaper] = []
@@ -139,7 +163,9 @@ def list_wallpapers() -> list[Wallpaper]:
 
     system.sort(key=lambda w: w.name.casefold())
     custom.sort(key=lambda w: w.name.casefold())
-    return system + custom
+    _LIST_CACHE = system + custom
+    _LIST_CACHE_KEY = key
+    return _LIST_CACHE
 
 
 def get_wallpaper(wp_id: str) -> Wallpaper | None:
