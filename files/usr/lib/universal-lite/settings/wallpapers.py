@@ -26,10 +26,10 @@ CUSTOM_WALLPAPER_DIR = Path.home() / ".local/share/universal-lite/custom-wallpap
 # (tiny logo-on-solid-color placeholders used by gdm / VNC fallback).
 EXCLUDED_NAMES = frozenset({"Symbolics", "VNC"})
 
-# Formats GdkPixbuf can render out-of-the-box on a stock Fedora image.
-# JXL is intentionally excluded: Fedora 43 ships no pixbuf loader for it,
-# so Bluefin's .jxl wallpapers would render as broken tiles in the picker.
-THUMBNAIL_EXTS = frozenset({".svg", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tiff"})
+# Formats GdkPixbuf can render on the Universal-Lite image.
+# JXL support is provided by the in-image libpixbufloader-jxl.so we build
+# from libjxl upstream (see build_files/build.sh).
+THUMBNAIL_EXTS = frozenset({".svg", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tiff", ".jxl"})
 
 
 @dataclass(frozen=True)

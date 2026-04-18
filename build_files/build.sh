@@ -63,6 +63,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-zh \
     gnome-backgrounds \
     fedora-workstation-backgrounds \
+    libjxl \
     webp-pixbuf-loader \
     google-roboto-fonts \
     google-roboto-mono-fonts \
@@ -118,35 +119,34 @@ dnf5 install -y --setopt=install_weak_deps=False \
 
 dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
 
-# Transcode vendor-shipped JXL wallpapers to WebP so they render in the
-# picker. Fedora 43 has no JXL pixbuf loader, which means every JXL in
-# /usr/share/backgrounds (GNOME, f43 annual, etc.) would otherwise be
-# invisible. Do this in-place and rewrite the slideshow / manifest XMLs
-# to match. Tools are installed and removed inside this single layer so
-# they don't end up in the final image.
-if find /usr/share/backgrounds -name '*.jxl' -print -quit | grep -q .; then
-    dnf5 install -y --setopt=install_weak_deps=False libjxl-utils libwebp-tools
-    while IFS= read -r jxl; do
-        webp="${jxl%.jxl}.webp"
-        # -lossless preserves whatever djxl decoded pixel-for-pixel.
-        # -z 9 picks the slowest/best compression preset (build-time only,
-        # runtime cost is just the decode). -m 6 forces highest method.
-        if djxl "$jxl" /tmp/_conv.png >/dev/null 2>&1 \
-            && cwebp -quiet -lossless -z 9 -m 6 /tmp/_conv.png -o "$webp"; then
-            rm -f "$jxl"
-        fi
-    done < <(find /usr/share/backgrounds -name '*.jxl')
-    rm -f /tmp/_conv.png
-
-    # Rewrite references in every background slideshow XML and every
-    # gnome-background-properties manifest — safe because no non-JXL
-    # asset has ".jxl" in its name.
-    find /usr/share/backgrounds -name '*.xml' -exec sed -i 's/\.jxl/\.webp/g' {} +
-    find /usr/share/gnome-background-properties -maxdepth 1 -name '*.xml' \
-        -exec sed -i 's/\.jxl/\.webp/g' {} +
-
-    dnf5 remove -y libjxl-utils libwebp-tools
-fi
+# Build a GdkPixbuf loader for JPEG-XL so swaybg and the settings
+# picker can display vendor .jxl wallpapers directly. Fedora 43
+# doesn't package the loader, but libjxl upstream ships the plugin
+# source alongside the library. Compile it against the already-
+# installed libjxl, drop the .so into the system loader dir, and
+# refresh the cache so every gdk-pixbuf consumer picks it up.
+# Pinned to v0.11.1 to match libjxl-0.11.1-*.fc43 and avoid ABI drift.
+dnf5 install -y --setopt=install_weak_deps=False \
+    gcc libjxl-devel gdk-pixbuf2-devel git-core
+_jxl_src=/tmp/libjxl-src
+git clone --depth 1 --branch v0.11.1 \
+    https://github.com/libjxl/libjxl.git "$_jxl_src"
+# Upstream plugins/gdk-pixbuf/CMakeLists.txt assumes it's included from
+# the full libjxl tree (references in-tree `jxl`/`jxl_threads` targets),
+# so we compile the single source file directly against the system libs.
+_gdk_moddir=$(pkg-config --variable=gdk_pixbuf_moduledir gdk-pixbuf-2.0)
+install -d "$_gdk_moddir"
+gcc -shared -fPIC -O2 -Wl,--as-needed \
+    -o "$_gdk_moddir/libpixbufloader-jxl.so" \
+    "$_jxl_src/plugins/gdk-pixbuf/pixbufloader-jxl.c" \
+    $(pkg-config --cflags --libs gdk-pixbuf-2.0 libjxl libjxl_threads)
+install -Dm644 "$_jxl_src/plugins/gdk-pixbuf/jxl.thumbnailer" \
+    /usr/share/thumbnailers/jxl.thumbnailer
+# Refresh the system loader cache so swaybg and gdk-pixbuf-based
+# thumbnailers see the new .jxl loader immediately at first boot.
+gdk-pixbuf-query-loaders --update-cache
+rm -rf "$_jxl_src"
+dnf5 remove -y gcc libjxl-devel gdk-pixbuf2-devel git-core
 
 cp -a /ctx/files/. /
 
