@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import threading
+from gettext import gettext as _
 from pathlib import Path
 
 from gi.repository import GLib
@@ -158,7 +159,8 @@ class SettingsStore:
             if returncode == 0:
                 self._toast_callback("Settings applied", False)
             elif returncode == -1:
-                self._toast_callback(f"Apply timed out after {self.APPLY_TIMEOUT_SEC}s", True)
+                msg = _("Apply timed out after {n}s").format(n=self.APPLY_TIMEOUT_SEC)
+                self._toast_callback(msg, True)
             else:
                 err = stderr_bytes.decode("utf-8", errors="replace").strip()
                 msg = f"Failed to apply: {err[:80]}" if err else "Failed to apply settings"
