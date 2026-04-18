@@ -348,8 +348,29 @@ class PanelPage(BasePage):
     def _add_app_from_info(self, app_info, dialog):
         name = app_info.get_display_name()
         cmd = re.sub(r'\s*%[uUfFdDnNickvm]', '', app_info.get_commandline() or "").strip()
+        if not cmd:
+            self.store.show_toast(
+                _("{app} has no launch command").format(app=name), True)
+            dialog.destroy()
+            return
+
         icon_gicon = app_info.get_icon()
-        icon = icon_gicon.to_string() if icon_gicon else "application-x-executable-symbolic"
+        icon = ""
+        if icon_gicon is not None:
+            # Prefer simple themed-icon names (first name in a GThemedIcon) over
+            # the full GIcon serialization — downstream waybar and Gtk.Image
+            # both accept icon *names*, not serialized GIcon strings.
+            if isinstance(icon_gicon, Gio.ThemedIcon):
+                names = icon_gicon.get_names() or []
+                icon = names[0] if names else ""
+            elif isinstance(icon_gicon, Gio.FileIcon):
+                f = icon_gicon.get_file()
+                icon = f.get_path() if f else ""
+            else:
+                icon = icon_gicon.to_string() or ""
+        if not icon:
+            icon = "application-x-executable-symbolic"
+
         self._pinned_data.append({"name": name, "command": cmd, "icon": icon})
         self._refresh_pinned_list()
         self.store.save_and_apply("pinned", self._pinned_data)
