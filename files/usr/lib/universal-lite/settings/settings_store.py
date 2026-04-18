@@ -80,6 +80,17 @@ class SettingsStore:
         self._write()
         self._run_apply()
 
+    def apply(self) -> None:
+        """Trigger apply-settings without modifying stored values.
+
+        Used when a page writes to an out-of-band file (e.g. user
+        keybindings JSON) and needs the reconciler to re-read it.
+
+        On completion, fires the toast callback ("Settings applied" or an
+        error message) exactly as save_and_apply() would.
+        """
+        self._run_apply()
+
     def save_debounced(self, key: str, value, delay_ms: int = 300) -> None:
         if key in self._debounce_timers:
             GLib.source_remove(self._debounce_timers[key])
