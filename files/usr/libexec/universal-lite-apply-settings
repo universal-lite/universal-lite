@@ -43,8 +43,8 @@ VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 
 # Validation fallback — canonical source is defaults/settings.json
 DEFAULT_LAYOUT = {
-    "start": ["custom/launcher", "wlr/taskbar"],
-    "center": [],
+    "start": ["custom/launcher"],
+    "center": ["wlr/taskbar"],
     "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"],
 }
 
@@ -450,11 +450,6 @@ def _waybar_css_common(tokens: dict) -> str:
     m = tokens["panel_margin"]
     inset = tokens["panel_bar_inset"]
     icon_sz = tokens["panel_icon_size"]
-    # Material Icons Outlined glyphs have ~75% optical coverage of their em-box,
-    # so font-size 24 renders ~18 visible px — much smaller than a 24×24 bitmap
-    # icon. Scale glyph font-size up so the system icons visually match the
-    # pinned-app bitmaps and tray icons.
-    glyph_sz = round(icon_sz * 1.25)
     bar_pad = f"padding: {inset}px 0;" if tokens["is_vertical"] else f"padding: 0 {inset}px;"
     return f"""\
 * {{
@@ -472,10 +467,10 @@ window#waybar {{
     {bar_pad}
 }}
 
-/* Material Icons glyphs sized to optically match {icon_sz}px bitmap icons */
+/* Material Icons glyphs sized to match theme icons (standard {icon_sz}px) */
 #custom-launcher,
 #pulseaudio, #backlight, #battery, #custom-power {{
-    font-size: {glyph_sz}px;
+    font-size: {icon_sz}px;
 }}
 
 #custom-launcher {{
@@ -562,7 +557,6 @@ def _waybar_css_vertical(tokens: dict) -> str:
 {selectors} {{
     padding: {pm}px 0;
     min-width: {w}px;
-    min-height: {w}px;
     border-radius: 999px;
 }}
 {hover_selectors} {{ background: {tokens["panel_hover"]}; }}
@@ -574,7 +568,6 @@ window#waybar {{ min-width: {w}px; }}
 #custom-launcher {{
     padding: {pm}px 0;
     min-width: {w}px;
-    min-height: {w}px;
     border-radius: 999px;
 }}
 
@@ -583,7 +576,6 @@ window#waybar {{ min-width: {w}px; }}
     padding: {pm}px 0;
     border-radius: 999px;
     min-width: {w}px;
-    min-height: {w}px;
 }}
 #taskbar button.active {{
     background: {tokens["accent_rgba_15"]};
@@ -594,7 +586,6 @@ window#waybar {{ min-width: {w}px; }}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
     padding: {pm}px 0;
     min-width: {w}px;
-    min-height: {w}px;
     border-radius: 999px;
 }}
 
@@ -716,9 +707,14 @@ def write_waybar_config(tokens: dict) -> bool:
         "tooltip-format": "{capacity}%",
     }
 
+    # Clock format strings must use POSIX strftime specifiers only. The GNU
+    # `%-I` / `%-d` "strip leading zero" modifiers are not recognised by
+    # waybar's fmt-based formatter, and a single unrecognised specifier
+    # makes the whole clock module fail to render with no error in the
+    # default logs. Pad with zeros instead (`%I:%M` → "09:30 AM").
     config["clock"] = {
-        "format": "{:%H:%M}" if tokens.get("clock_24h", False) else "{:%-I:%M %p}",
-        "tooltip-format": "{:%A, %B %-d, %Y}",
+        "format": "{:%H:%M}" if tokens.get("clock_24h", False) else "{:%I:%M %p}",
+        "tooltip-format": "{:%A, %B %d, %Y}",
         "interval": 60,
     }
 

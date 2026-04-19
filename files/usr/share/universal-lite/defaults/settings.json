@@ -5,8 +5,8 @@
   "accent": "blue",
   "scale": 1.0,
   "layout": {
-    "start": ["custom/launcher", "wlr/taskbar"],
-    "center": [],
+    "start": ["custom/launcher"],
+    "center": ["wlr/taskbar"],
     "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"]
   },
   "wallpaper": "universal-lite",

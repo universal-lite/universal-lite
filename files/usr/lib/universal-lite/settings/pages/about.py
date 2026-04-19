@@ -23,6 +23,7 @@ CATEGORY_KEYS = {
     ],
     "Panel": [
         "edge", "layout", "pinned", "clock_24h", "density",
+        "panel_twilight",
     ],
     "Mouse & Touchpad": [
         "touchpad_tap_to_click", "touchpad_natural_scroll",
@@ -37,6 +38,7 @@ CATEGORY_KEYS = {
     "Power & Lock": [
         "lock_timeout", "display_off_timeout",
         "suspend_timeout", "lid_close_action",
+        "power_profile",
     ],
 }
 
