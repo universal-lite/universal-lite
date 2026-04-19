@@ -71,8 +71,13 @@ for line in r.stdout.splitlines():
                            capture_output=True)
 " "$_settings" 2>/dev/null || true
 
-waybar >/dev/null 2>&1 &
-mako >/dev/null 2>&1 &
+# Route waybar/mako stderr into XDG_RUNTIME_DIR so panel module errors
+# (chrono format_error from the clock, tray dbus hiccups, etc.) are
+# recoverable after the fact. stderr was previously discarded, which
+# masked a silent clock-module failure for months.
+_logdir="${XDG_RUNTIME_DIR:-/tmp}"
+waybar >/dev/null 2>"$_logdir/waybar.log" &
+mako >/dev/null 2>"$_logdir/mako.log" &
 
 # nm-applet exits immediately if NetworkManager isn't on the system bus
 # yet — which happens on boots where NM is slightly late registering its

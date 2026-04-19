@@ -1334,6 +1334,51 @@ def _current_swaybg_wallpaper() -> str:
     return ""
 
 
+def _sync_power_profile(settings: dict) -> None:
+    """Push settings.json ``power_profile`` to power-profiles-daemon if out of sync.
+
+    The Power & Lock page mutates the daemon directly via D-Bus and never
+    writes the key through save_and_apply, so settings.json and the running
+    profile can drift. Restore Defaults writes to the JSON only, which left
+    the daemon untouched. This closes that gap.
+    """
+    target = settings.get("power_profile", "balanced")
+    try:
+        current = subprocess.check_output(
+            ["powerprofilesctl", "get"], text=True, timeout=5,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (FileNotFoundError, subprocess.CalledProcessError,
+            subprocess.TimeoutExpired):
+        return
+    if current == target:
+        return
+    _run_best_effort(["powerprofilesctl", "set", target], timeout=5)
+
+
+def _sync_lid_action(settings: dict) -> None:
+    """Push settings.json ``lid_close_action`` to systemd-logind if out of sync.
+
+    Writes live in /etc/systemd/logind.conf.d/lid-action.conf (root-only),
+    so we re-invoke the pkexec helper. Polkit grants ``allow_active: yes``
+    to the current session without prompting.
+    """
+    target = settings.get("lid_close_action", "suspend")
+    logind_value = {"suspend": "suspend", "lock": "lock",
+                    "nothing": "ignore"}.get(target, "suspend")
+    try:
+        body = Path("/etc/systemd/logind.conf.d/lid-action.conf").read_text(
+            encoding="utf-8")
+    except OSError:
+        body = ""
+    if f"HandleLidSwitch={logind_value}" in body:
+        return
+    _run_best_effort(
+        ["pkexec", "/usr/libexec/universal-lite-lid-action", target],
+        timeout=30,
+    )
+
+
 def main() -> int:
     settings = ensure_settings()
     tokens = _build_tokens(settings)
@@ -1345,6 +1390,8 @@ def main() -> int:
     write_labwc_themerc(tokens)
     write_swaylock_config(tokens)
     write_labwc_rc_overrides(settings)
+    _sync_power_profile(settings)
+    _sync_lid_action(settings)
 
     if os.environ.get("WAYLAND_DISPLAY"):
         # Only restart swaybg when the effective wallpaper path changed.

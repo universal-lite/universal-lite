@@ -73,6 +73,16 @@ class SettingsStore:
         self._write()
         self._run_apply()
 
+    def remove_keys_matching(self, predicate) -> None:
+        """Drop every key for which *predicate* returns True. No apply side-effect.
+
+        Intended for Restore Defaults to clear runtime-discovered keys
+        (e.g. per-output ``resolution_*`` entries) that aren't listed in
+        CATEGORY_KEYS. The caller triggers apply via restore_keys.
+        """
+        for key in [k for k in self._data if predicate(k)]:
+            self._data.pop(key, None)
+
     def save_and_apply(self, key: str, value) -> None:
         self._data[key] = value
         self._write()

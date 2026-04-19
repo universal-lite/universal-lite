@@ -156,6 +156,22 @@ class RestoreDefaultsDialog(Gtk.Window):
         for category in selected:
             keys.extend(CATEGORY_KEYS.get(category, []))
 
+        # Out-of-band state that lives outside settings.json must be
+        # cleared explicitly — restore_keys only merges JSON keys.
+        config_dir = Path.home() / ".config/universal-lite"
+        if "Keyboard" in selected:
+            # User keybinding overrides live in keybindings.json. Without
+            # this, a Keyboard-category reset leaves custom shortcuts in
+            # place and only the repeat/layout/capslock keys inside
+            # settings.json revert.
+            (config_dir / "keybindings.json").unlink(missing_ok=True)
+        if "Display" in selected:
+            # Per-output resolution picks are stored as ``resolution_<name>``
+            # keys in settings.json but are never listed in CATEGORY_KEYS
+            # (outputs are discovered at runtime). Drop them so the display
+            # reverts to the compositor's preferred mode on restart.
+            self._store.remove_keys_matching(lambda k: k.startswith("resolution_"))
+
         # Write merged settings and apply
         self._store.restore_keys(keys, defaults)
 
