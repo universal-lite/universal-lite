@@ -43,12 +43,12 @@ VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 
 # Validation fallback — canonical source is defaults/settings.json
 DEFAULT_LAYOUT = {
-    "start": ["custom/launcher"],
-    "center": ["wlr/taskbar"],
-    "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
+    "start": ["custom/launcher", "wlr/taskbar"],
+    "center": [],
+    "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"],
 }
 
-ALL_MODULES_ORDER = ["custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"]
+ALL_MODULES_ORDER = ["custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"]
 ALL_MODULES = set(ALL_MODULES_ORDER)
 
 _PALETTE_PATH = SHARE_ROOT / "universal-lite/palette.json"
@@ -212,8 +212,6 @@ def _build_tokens(settings: dict) -> dict:
     panel_bar_inset = round(4 * size_scale)
     panel_pad_module = round(8 * size_scale)
     panel_pad_launcher = round(12 * size_scale)
-    panel_pad_clock = panel_pad_module
-    panel_pad_tray = panel_pad_module
     panel_pad_pin = round(8 * size_scale)
 
     if edge == "top":
@@ -278,8 +276,6 @@ def _build_tokens(settings: dict) -> dict:
         "panel_margin": panel_margin,
         "panel_pad_module": panel_pad_module,
         "panel_pad_launcher": panel_pad_launcher,
-        "panel_pad_clock": panel_pad_clock,
-        "panel_pad_tray": panel_pad_tray,
         "panel_pad_pin": panel_pad_pin,
         "panel_bar_inset": panel_bar_inset,
         # Panel colors (may differ from system theme in twilight mode)
@@ -454,6 +450,11 @@ def _waybar_css_common(tokens: dict) -> str:
     m = tokens["panel_margin"]
     inset = tokens["panel_bar_inset"]
     icon_sz = tokens["panel_icon_size"]
+    # Material Icons Outlined glyphs have ~75% optical coverage of their em-box,
+    # so font-size 24 renders ~18 visible px — much smaller than a 24×24 bitmap
+    # icon. Scale glyph font-size up so the system icons visually match the
+    # pinned-app bitmaps and tray icons.
+    glyph_sz = round(icon_sz * 1.25)
     bar_pad = f"padding: {inset}px 0;" if tokens["is_vertical"] else f"padding: 0 {inset}px;"
     return f"""\
 * {{
@@ -471,10 +472,10 @@ window#waybar {{
     {bar_pad}
 }}
 
-/* Material Icons glyphs sized to match theme icons (standard {icon_sz}px) */
+/* Material Icons glyphs sized to optically match {icon_sz}px bitmap icons */
 #custom-launcher,
 #pulseaudio, #backlight, #battery, #custom-power {{
-    font-size: {icon_sz}px;
+    font-size: {glyph_sz}px;
 }}
 
 #custom-launcher {{
@@ -549,9 +550,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 
 def _waybar_css_vertical(tokens: dict) -> str:
     w = tokens["panel_width"]
-    pl = tokens["panel_pad_launcher"]
     pm = tokens["panel_pad_module"]
-    pp = tokens["panel_pad_pin"]
     pinned = tokens.get("pinned", [])
     active_border = "border-right" if tokens["edge"] == "left" else "border-left"
 
@@ -561,8 +560,9 @@ def _waybar_css_vertical(tokens: dict) -> str:
         hover_selectors = ", ".join(f"#image.pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
-    padding: {pp}px 0;
+    padding: {pm}px 0;
     min-width: {w}px;
+    min-height: {w}px;
     border-radius: 999px;
 }}
 {hover_selectors} {{ background: {tokens["panel_hover"]}; }}
@@ -572,15 +572,18 @@ def _waybar_css_vertical(tokens: dict) -> str:
 window#waybar {{ min-width: {w}px; }}
 
 #custom-launcher {{
-    padding: {pl}px 0;
+    padding: {pm}px 0;
     min-width: {w}px;
+    min-height: {w}px;
+    border-radius: 999px;
 }}
 
 #taskbar {{ padding: 0; }}
 #taskbar button {{
-    padding: {pp}px 0;
+    padding: {pm}px 0;
     border-radius: 999px;
     min-width: {w}px;
+    min-height: {w}px;
 }}
 #taskbar button.active {{
     background: {tokens["accent_rgba_15"]};
@@ -591,6 +594,7 @@ window#waybar {{ min-width: {w}px; }}
 #clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
     padding: {pm}px 0;
     min-width: {w}px;
+    min-height: {w}px;
     border-radius: 999px;
 }}
 

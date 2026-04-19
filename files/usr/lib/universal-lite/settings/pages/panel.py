@@ -30,9 +30,9 @@ def _load_default_layout():
     except (OSError, json.JSONDecodeError, KeyError):
         pass
     return {
-        "start": ["custom/launcher"],
-        "center": ["wlr/taskbar"],
-        "end": ["pulseaudio", "backlight", "battery", "clock", "custom/power", "tray"],
+        "start": ["custom/launcher", "wlr/taskbar"],
+        "center": [],
+        "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"],
     }
 
 DEFAULT_LAYOUT = _load_default_layout()
