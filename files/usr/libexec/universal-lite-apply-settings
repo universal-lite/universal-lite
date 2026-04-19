@@ -647,10 +647,19 @@ def write_waybar_config(tokens: dict) -> bool:
     # Material Icons Outlined codepoints for waybar modules.
     # Waybar format-icons are literal text, not icon theme lookups.
     # Font set via CSS: font-family includes "Material Icons Outlined".
+    # Click the launcher → fuzzel (already bound to Super+Space too). We
+    # used to synthesise Ctrl+F12 via `wtype` to trigger a labwc keybind,
+    # but any wtype-based synthetic modifier input on labwc 0.9.6 is prone
+    # to latching: if keyboard focus shifts between waybar's virtual
+    # keyboard and a real surface during the Ctrl-press/release pair, the
+    # release can land on a different seat state and leave Ctrl logically
+    # down, causing labwc to re-fire Ctrl+F12 on unrelated pointer events.
+    # That's how a launcher click made *every* subsequent panel click look
+    # like it was opening the root-menu.
     config["custom/launcher"] = {
         "format": "\ue5c3",  # apps (2x2 grid)
         "tooltip-format": "Applications",
-        "on-click": "wtype -M ctrl -k F12 -m ctrl",
+        "on-click": "fuzzel",
     }
 
     config["wlr/taskbar"] = {
@@ -1174,11 +1183,6 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     </keybind>
     <keybind key="W-Down">
       <action name="Iconify"/>
-    </keybind>
-
-    <!-- Hidden keybind for waybar launcher to trigger the app menu -->
-    <keybind key="C-F12">
-      <action name="ShowMenu" menu="root-menu"/>
     </keybind>
 
     <!-- User custom keybinds -->

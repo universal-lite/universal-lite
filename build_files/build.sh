@@ -106,7 +106,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     wlr-randr \
     wireplumber \
     wl-clipboard \
-    wtype \
     xfce-polkit \
     xorg-x11-server-Xwayland \
     xdg-desktop-portal \
