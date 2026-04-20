@@ -593,16 +593,20 @@ class AppMenu(Gtk.Window):
             LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
             LayerShell.set_namespace(self, "universal-lite-app-menu")
             LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.EXCLUSIVE)
-            # Anchor to all four edges + exclusive_zone=-1 so the
-            # compositor doesn't trim us around waybar. The whole
-            # screen becomes a click target; our capture-phase
-            # gesture (see __init__) decides whether a given click
-            # hits the menu or dismisses it.
+            # Anchor to all four edges, but with exclusive_zone=0
+            # (respect other surfaces' exclusive zones). The
+            # compositor shrinks our overlay to the non-panel area,
+            # which means halign/valign on the inner surface naturally
+            # align it against whichever edge the panel isn't on -
+            # works for every edge+section combination, not just
+            # bottom+start. The menu never visually overlaps the
+            # panel. Launcher clicks fall through to waybar; the PID
+            # lock (see _toggle_or_lock) handles toggle-on-re-click.
             for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
                          LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
                 LayerShell.set_anchor(self, side, True)
                 LayerShell.set_margin(self, side, 0)
-            LayerShell.set_exclusive_zone(self, -1)
+            LayerShell.set_exclusive_zone(self, 0)
         except Exception as exc:
             print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
                   file=sys.stderr)
