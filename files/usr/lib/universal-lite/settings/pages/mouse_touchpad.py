@@ -2,13 +2,23 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Adw, Gtk
 
 from ..base import BasePage
 
+ACCEL_OPTIONS: list[tuple[str, str]] = [
+    ("adaptive", _("Adaptive")),
+    ("flat", _("Flat")),
+]
 
-class MouseTouchpadPage(BasePage):
+
+class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
+    def __init__(self, store, event_bus):
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
+
     @property
     def search_keywords(self):
         return [
@@ -19,57 +29,125 @@ class MouseTouchpadPage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
+        self.add(self._build_touchpad_group())
+        self.add(self._build_mouse_group())
+        return self
 
-        # -- Touchpad --
-        tp_tap = Gtk.Switch()
-        tp_tap.set_active(self.store.get("touchpad_tap_to_click", True))
-        tp_tap.connect("state-set", lambda _, s: self.store.save_and_apply("touchpad_tap_to_click", s) or False)
+    # -- group builders -------------------------------------------------
 
-        tp_natural = Gtk.Switch()
-        tp_natural.set_active(self.store.get("touchpad_natural_scroll", False))
-        tp_natural.connect("state-set", lambda _, s: self.store.save_and_apply("touchpad_natural_scroll", s) or False)
+    def _build_touchpad_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Touchpad"))
 
-        tp_speed = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
-        tp_speed.set_value(self.store.get("touchpad_pointer_speed", 0.0))
-        tp_speed.set_size_request(200, -1)
-        tp_speed.set_draw_value(False)
-        tp_speed.connect("value-changed", lambda s: self.store.save_debounced(
-            "touchpad_pointer_speed", round(s.get_value(), 1)))
+        # Tap to click
+        tap_row = Adw.SwitchRow()
+        tap_row.set_title(_("Tap to click"))
+        tap_row.set_active(self.store.get("touchpad_tap_to_click", True))
+        tap_row.connect("notify::active", self._on_tap_to_click)
+        group.add(tap_row)
 
-        tp_scroll = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 1.0, 10.0, 1.0)
-        tp_scroll.set_value(self.store.get("touchpad_scroll_speed", 5))
-        tp_scroll.set_size_request(200, -1)
-        tp_scroll.set_draw_value(False)
-        tp_scroll.connect("value-changed", lambda s: self.store.save_debounced(
-            "touchpad_scroll_speed", int(s.get_value())))
+        # Natural scrolling (with subtitle preserved from pre-migration)
+        natural_row = Adw.SwitchRow()
+        natural_row.set_title(_("Natural scrolling"))
+        natural_row.set_subtitle(_("Content moves with your fingers"))
+        natural_row.set_active(self.store.get("touchpad_natural_scroll", False))
+        natural_row.connect("notify::active", self._on_touchpad_natural_scroll)
+        group.add(natural_row)
 
-        page.append(self.make_group(_("Touchpad"), [
-            self.make_setting_row(_("Tap to click"), "", tp_tap),
-            self.make_setting_row(_("Natural scrolling"), _("Content moves with your fingers"), tp_natural),
-            self.make_setting_row(_("Pointer speed"), "", tp_speed),
-            self.make_setting_row(_("Scroll speed"), "", tp_scroll),
-        ]))
+        # Pointer speed
+        tp_speed_scale = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
+        tp_speed_scale.set_value(self.store.get("touchpad_pointer_speed", 0.0))
+        tp_speed_scale.set_size_request(200, -1)
+        tp_speed_scale.set_draw_value(False)
+        tp_speed_scale.set_valign(Gtk.Align.CENTER)
+        tp_speed_scale.connect("value-changed", self._on_touchpad_pointer_speed)
 
-        # -- Mouse --
-        mouse_natural = Gtk.Switch()
-        mouse_natural.set_active(self.store.get("mouse_natural_scroll", False))
-        mouse_natural.connect("state-set", lambda _, s: self.store.save_and_apply("mouse_natural_scroll", s) or False)
+        tp_speed_row = Adw.ActionRow()
+        tp_speed_row.set_title(_("Pointer speed"))
+        tp_speed_row.add_suffix(tp_speed_scale)
+        group.add(tp_speed_row)
 
-        mouse_speed = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
-        mouse_speed.set_value(self.store.get("mouse_pointer_speed", 0.0))
-        mouse_speed.set_size_request(200, -1)
-        mouse_speed.set_draw_value(False)
-        mouse_speed.connect("value-changed", lambda s: self.store.save_debounced(
-            "mouse_pointer_speed", round(s.get_value(), 1)))
+        # Scroll speed
+        tp_scroll_scale = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, 1.0, 10.0, 1.0)
+        tp_scroll_scale.set_value(self.store.get("touchpad_scroll_speed", 5))
+        tp_scroll_scale.set_size_request(200, -1)
+        tp_scroll_scale.set_draw_value(False)
+        tp_scroll_scale.set_valign(Gtk.Align.CENTER)
+        tp_scroll_scale.connect("value-changed", self._on_touchpad_scroll_speed)
 
-        page.append(self.make_group(_("Mouse"), [
-            self.make_setting_row(_("Natural scrolling"), "", mouse_natural),
-            self.make_setting_row(_("Pointer speed"), "", mouse_speed),
-            self.make_setting_row(_("Acceleration"), "", self.make_toggle_cards(
-                [("adaptive", _("Adaptive")), ("flat", _("Flat"))],
-                self.store.get("mouse_accel_profile", "adaptive"),
-                lambda v: self.store.save_and_apply("mouse_accel_profile", v),
-            )),
-        ]))
-        return page
+        tp_scroll_row = Adw.ActionRow()
+        tp_scroll_row.set_title(_("Scroll speed"))
+        tp_scroll_row.add_suffix(tp_scroll_scale)
+        group.add(tp_scroll_row)
+
+        return group
+
+    def _build_mouse_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Mouse"))
+
+        # Natural scrolling
+        mouse_natural_row = Adw.SwitchRow()
+        mouse_natural_row.set_title(_("Natural scrolling"))
+        mouse_natural_row.set_active(self.store.get("mouse_natural_scroll", False))
+        mouse_natural_row.connect("notify::active", self._on_mouse_natural_scroll)
+        group.add(mouse_natural_row)
+
+        # Pointer speed
+        mouse_speed_scale = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
+        mouse_speed_scale.set_value(self.store.get("mouse_pointer_speed", 0.0))
+        mouse_speed_scale.set_size_request(200, -1)
+        mouse_speed_scale.set_draw_value(False)
+        mouse_speed_scale.set_valign(Gtk.Align.CENTER)
+        mouse_speed_scale.connect("value-changed", self._on_mouse_pointer_speed)
+
+        mouse_speed_row = Adw.ActionRow()
+        mouse_speed_row.set_title(_("Pointer speed"))
+        mouse_speed_row.add_suffix(mouse_speed_scale)
+        group.add(mouse_speed_row)
+
+        # Acceleration profile (replaces toggle-cards)
+        accel_row = Adw.ComboRow()
+        accel_row.set_title(_("Acceleration"))
+
+        labels = [label for _value, label in ACCEL_OPTIONS]
+        values = [value for value, _label in ACCEL_OPTIONS]
+        accel_row.set_model(Gtk.StringList.new(labels))
+
+        current = self.store.get("mouse_accel_profile", "adaptive")
+        accel_row.set_selected(values.index(current) if current in values else 0)
+        accel_row.connect("notify::selected", self._on_accel_profile)
+        group.add(accel_row)
+
+        # Store values list for use in handler
+        self._accel_values = values
+
+        return group
+
+    # -- event handlers -------------------------------------------------
+
+    def _on_tap_to_click(self, row: Adw.SwitchRow, _pspec) -> None:
+        self.store.save_and_apply("touchpad_tap_to_click", row.get_active())
+
+    def _on_touchpad_natural_scroll(self, row: Adw.SwitchRow, _pspec) -> None:
+        self.store.save_and_apply("touchpad_natural_scroll", row.get_active())
+
+    def _on_touchpad_pointer_speed(self, scale: Gtk.Scale) -> None:
+        self.store.save_debounced("touchpad_pointer_speed", round(scale.get_value(), 1))
+
+    def _on_touchpad_scroll_speed(self, scale: Gtk.Scale) -> None:
+        self.store.save_debounced("touchpad_scroll_speed", int(scale.get_value()))
+
+    def _on_mouse_natural_scroll(self, row: Adw.SwitchRow, _pspec) -> None:
+        self.store.save_and_apply("mouse_natural_scroll", row.get_active())
+
+    def _on_mouse_pointer_speed(self, scale: Gtk.Scale) -> None:
+        self.store.save_debounced("mouse_pointer_speed", round(scale.get_value(), 1))
+
+    def _on_accel_profile(self, row: Adw.ComboRow, _pspec) -> None:
+        idx = row.get_selected()
+        if 0 <= idx < len(self._accel_values):
+            self.store.save_and_apply("mouse_accel_profile", self._accel_values[idx])
