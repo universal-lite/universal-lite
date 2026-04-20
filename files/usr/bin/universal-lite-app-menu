@@ -423,7 +423,13 @@ class AppMenu(Gtk.Window):
         dismiss.connect("pressed", self._on_dismiss_press)
         self.add_controller(dismiss)
 
-        self.connect("notify::is-active", self._on_active_changed)
+        # Note: we intentionally don't listen to notify::is-active.
+        # Transient child surfaces (the filter DropDown's popover, the
+        # search entry's peek menu) toggle the window's active state
+        # while they're open; closing on that signal closes the menu
+        # the instant the user clicks the dropdown button. Click-
+        # outside dismissal via the capture gesture above handles every
+        # real focus-loss case.
         self._search.grab_focus()
 
     # -- geometry helpers --
@@ -744,10 +750,6 @@ class AppMenu(Gtk.Window):
             self.close()
             return True
         return False
-
-    def _on_active_changed(self, window: Gtk.Window, _pspec) -> None:
-        if not window.is_active():
-            window.close()
 
     def _on_dismiss_press(self, gesture: Gtk.GestureClick,
                           _n_press: int, x: float, y: float) -> None:
