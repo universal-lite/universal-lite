@@ -242,24 +242,24 @@ systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
 systemctl --global disable flatpak-user-update.timer
 
-# Strip apps that don't make sense in this distro's UX:
+# Hide launcher entries that show up in the start menu but don't
+# belong in this distro's UX:
+#
+#   - xfce4-panel: pulled in as a transitive dependency of our
+#     XFCE-flavoured userland (Thunar, Ristretto, Mousepad, tumbler,
+#     xfce-polkit). The standalone "Panel" app it launches doesn't
+#     run under labwc + waybar, so clicking it produces an immediate
+#     error. We can't safely `dnf remove` the package without risking
+#     a cascade that removes something we actually want, so just
+#     delete the .desktop entry - the library/binary bits stay on
+#     disk but the menu stays clean.
+#
 #   - nvtop: GPU process viewer aimed at developers, inherited from
-#     the ublue-os base. Irrelevant for end users.
-#   - Any stray .desktop whose display Name is literally "Panel":
-#     there's an entry that crashes in labwc on click; we don't know
-#     which package ships it (it's not xfce4-panel, which isn't
-#     installed here), so match by Name= and delete. The echo logs
-#     the path so future-us knows which package to track down.
+#     the ublue-os base. It isn't a dependency of anything we want,
+#     so we can remove the package cleanly.
+rm -f /usr/share/applications/xfce4-panel.desktop
 dnf5 remove -y nvtop || true
 rm -f /usr/share/applications/nvtop.desktop
-
-for f in /usr/share/applications/*.desktop; do
-    [ -f "$f" ] || continue
-    if grep -qE '^Name=Panel[[:space:]]*$' "$f"; then
-        echo "Removing stray 'Panel' .desktop: $f"
-        rm -f "$f"
-    fi
-done
 
 # Flatpak apps are installed by the first-boot service from Flathub —
 # not pre-installed in the image.  This keeps the raw image small for
