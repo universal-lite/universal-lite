@@ -501,6 +501,14 @@ class AppMenu(Gtk.Window):
     # 12 px) with room to spare.
     _SHADOW_PAD = 20
 
+    # Visible gap between the menu and the panel it anchors to -
+    # ChromeOS-style breathing room, applied as a layer-shell margin
+    # so the compositor pushes the whole window off the panel edge.
+    _PANEL_GAP = 8
+    # Visible gap between the menu and the screen edge on the
+    # launcher-section side (the corner the menu is tucked into).
+    _EDGE_INSET = 8
+
     # -- layer-shell / surface setup --
 
     def _setup_surface(self, edge: str) -> None:
@@ -551,32 +559,48 @@ class AppMenu(Gtk.Window):
             LayerShell.set_exclusive_zone(self, 0)
 
             # Anchor to the panel edge + its section corner. Margins
-            # are zero; waybar's exclusive zone already provides the
-            # visual gap between the menu and the panel itself.
+            # give the menu a ChromeOS-style breathing gap rather than
+            # sitting flush against the panel and the screen edge.
+            # The shadow-pad inside the window is separate (shadow
+            # clearance); this is visible empty space.
+            panel_gap = self._PANEL_GAP
+            edge_inset = self._EDGE_INSET
             if edge == "bottom":
                 LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+                LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, panel_gap)
                 if section == "start":
                     LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.LEFT, edge_inset)
                 elif section == "end":
                     LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.RIGHT, edge_inset)
             elif edge == "top":
                 LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+                LayerShell.set_margin(self, LayerShell.Edge.TOP, panel_gap)
                 if section == "start":
                     LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.LEFT, edge_inset)
                 elif section == "end":
                     LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.RIGHT, edge_inset)
             elif edge == "left":
                 LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
+                LayerShell.set_margin(self, LayerShell.Edge.LEFT, panel_gap)
                 if section == "start":
                     LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.TOP, edge_inset)
                 elif section == "end":
                     LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, edge_inset)
             elif edge == "right":
                 LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
+                LayerShell.set_margin(self, LayerShell.Edge.RIGHT, panel_gap)
                 if section == "start":
                     LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.TOP, edge_inset)
                 elif section == "end":
                     LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+                    LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, edge_inset)
         except Exception as exc:
             print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
                   file=sys.stderr)
