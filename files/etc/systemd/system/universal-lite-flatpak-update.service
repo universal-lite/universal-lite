@@ -1,0 +1,19 @@
+[Unit]
+Description=Keep Flatpak apps up to date on every boot
+# Runs AFTER greetd — the user is already in or at the login screen;
+# update traffic is pure background work. No reason to block login.
+After=universal-lite-first-boot.service NetworkManager.service greetd.service
+# Opposite of -install: we only want this unit after initial setup
+# has completed (stamp present).
+ConditionPathExists=/var/lib/universal-lite/flatpak-setup.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/universal-lite-flatpak-setup
+RemainAfterExit=yes
+TimeoutStartSec=1800
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical.target

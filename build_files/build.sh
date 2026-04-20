@@ -226,7 +226,8 @@ systemctl enable NetworkManager.service
 # to-30-second wait on offline Chromebook boots.
 systemctl disable NetworkManager-wait-online.service
 systemctl enable universal-lite-first-boot.service
-systemctl enable universal-lite-flatpak-setup.service
+systemctl enable universal-lite-flatpak-install.service
+systemctl enable universal-lite-flatpak-update.service
 # OOM protection on 2 GB hardware — oomd kills the heaviest cgroup under
 # memory/swap pressure before the kernel OOM killer engages and freezes
 # the whole machine.
