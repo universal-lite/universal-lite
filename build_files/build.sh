@@ -70,6 +70,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     greetd \
     grubby \
     grim \
+    gtk4-layer-shell \
     gvfs \
     gvfs-gphoto2 \
     gvfs-mtp \
