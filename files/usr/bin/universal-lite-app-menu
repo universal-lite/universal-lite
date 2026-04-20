@@ -79,7 +79,12 @@ POWER_ACTIONS = [
 ]
 
 # CSS — no libadwaita. Uses Adwaita colour vars so the menu tracks
-# whichever accent / theme apply-settings has set.
+# whichever accent / theme apply-settings has set. The surface box
+# carries both the rounded corners and the drop shadow; the surface
+# needs enough room around it inside the (transparent) window for
+# the shadow to render without clipping, which is why the window is
+# larger than the surface and every content edge has a sizeable
+# margin.
 CSS = b"""
 window.app-menu {
     background: transparent;
@@ -88,7 +93,12 @@ window.app-menu {
     background: @window_bg_color;
     color: @window_fg_color;
     border-radius: 14px;
-    box-shadow: 0 12px 40px 0 alpha(black, 0.35);
+    box-shadow: 0 14px 36px 2px alpha(black, 0.38);
+}
+.app-menu-tail {
+    /* Single solid shape; Cairo paints the triangle. Needs background
+       set so GTK honours the widget size; actual drawing is custom. */
+    background: transparent;
 }
 .app-menu-search {
     min-height: 40px;
@@ -184,18 +194,25 @@ class AppMenu(Gtk.Window):
         self.add_css_class("app-menu")
         self.set_decorated(False)
 
-        edge = _load_edge()
-        self._setup_surface(edge)
+        self._edge = _load_edge()
+        self._setup_surface(self._edge)
 
-        # The visible surface inside the (transparent) window — lets us
-        # paint a real drop shadow via CSS padding.
+        # Window holds an Overlay: surface as the main child, chat-
+        # bubble tail as an overlaid widget so we can position it
+        # precisely relative to the surface without GTK box-packing
+        # squeezing it against the edge.
+        overlay = Gtk.Overlay()
+        self.set_child(overlay)
+
         surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         surface.add_css_class("app-menu-surface")
-        surface.set_margin_top(6)
-        surface.set_margin_bottom(6)
-        surface.set_margin_start(6)
-        surface.set_margin_end(6)
-        self.set_child(surface)
+        # Generous margin inside the window so the drop shadow has
+        # room to fade out without clipping against the window bounds.
+        # An extra pad on the panel-facing side leaves space for the
+        # tail without stealing visible content area.
+        self._apply_shadow_margins(surface, self._edge)
+        overlay.set_child(surface)
+        overlay.add_overlay(self._build_tail(self._edge))
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         root.set_margin_top(14)
@@ -233,10 +250,139 @@ class AppMenu(Gtk.Window):
         self.connect("notify::is-active", self._on_active_changed)
         self._search.grab_focus()
 
+    # -- geometry helpers --
+
+    # Shadow radius + tail geometry. Shadow needs ~30 px room on every
+    # non-panel side to render without clipping. Tail takes tail_h on
+    # the panel-facing side and is 28 px wide (or 14 px for vertical
+    # panels, where its long axis runs vertically).
+    _SHADOW_PAD = 30
+    _TAIL_W = 28
+    _TAIL_H = 14
+
+    # Approximate launcher centre in the panel's own coordinate system
+    # (padding + icon half-width). Used to align the tail horizontally
+    # (for top/bottom panels) or vertically (for left/right panels).
+    _LAUNCHER_CENTRE = 36
+
+    def _apply_shadow_margins(self, surface: Gtk.Box, edge: str) -> None:
+        pad = self._SHADOW_PAD
+        tail = self._TAIL_H
+        # Three sides get full shadow room; the panel-facing side only
+        # needs clearance for the tail itself (the shadow fades into
+        # the panel gap there, which looks natural).
+        if edge == "bottom":
+            surface.set_margin_top(pad)
+            surface.set_margin_bottom(tail)
+            surface.set_margin_start(pad)
+            surface.set_margin_end(pad)
+        elif edge == "top":
+            surface.set_margin_top(tail)
+            surface.set_margin_bottom(pad)
+            surface.set_margin_start(pad)
+            surface.set_margin_end(pad)
+        elif edge == "left":
+            surface.set_margin_top(pad)
+            surface.set_margin_bottom(pad)
+            surface.set_margin_start(tail)
+            surface.set_margin_end(pad)
+        elif edge == "right":
+            surface.set_margin_top(pad)
+            surface.set_margin_bottom(pad)
+            surface.set_margin_start(pad)
+            surface.set_margin_end(tail)
+
+    def _build_tail(self, edge: str) -> Gtk.Widget:
+        """Cairo-drawn chat-bubble tail pointing at the launcher."""
+        tail = Gtk.DrawingArea()
+        tail.add_css_class("app-menu-tail")
+        tail.set_can_target(False)
+
+        if edge in ("top", "bottom"):
+            tail_w, tail_h = self._TAIL_W, self._TAIL_H
+        else:
+            tail_w, tail_h = self._TAIL_H, self._TAIL_W
+        tail.set_content_width(tail_w)
+        tail.set_content_height(tail_h)
+        tail.set_size_request(tail_w, tail_h)
+
+        # Position the tail flush with the window's panel-facing edge
+        # so its tip touches the panel, and offset along the cross-axis
+        # so its midpoint lines up with the launcher centre.
+        off_cross = self._LAUNCHER_CENTRE - tail_w // 2
+        off_main = self._LAUNCHER_CENTRE - tail_h // 2
+
+        if edge == "bottom":
+            tail.set_halign(Gtk.Align.START)
+            tail.set_valign(Gtk.Align.END)
+            tail.set_margin_start(off_cross)
+            tail.set_margin_bottom(0)
+        elif edge == "top":
+            tail.set_halign(Gtk.Align.START)
+            tail.set_valign(Gtk.Align.START)
+            tail.set_margin_start(off_cross)
+            tail.set_margin_top(0)
+        elif edge == "left":
+            tail.set_halign(Gtk.Align.START)
+            tail.set_valign(Gtk.Align.START)
+            tail.set_margin_start(0)
+            tail.set_margin_top(off_main)
+        elif edge == "right":
+            tail.set_halign(Gtk.Align.END)
+            tail.set_valign(Gtk.Align.START)
+            tail.set_margin_end(0)
+            tail.set_margin_top(off_main)
+
+        tail.set_draw_func(self._draw_tail, edge)
+        return tail
+
+    def _draw_tail(self, area: Gtk.DrawingArea, cr,
+                   width: int, height: int, edge: str) -> None:
+        # Pick up the theme's window background so the tail blends
+        # seamlessly into the surface.
+        ctx = self.get_style_context()
+        found, rgba = ctx.lookup_color("window_bg_color")
+        if not found:
+            rgba = Gdk.RGBA()
+            rgba.parse("#ffffff")
+        cr.set_source_rgba(rgba.red, rgba.green, rgba.blue, rgba.alpha)
+
+        # Triangle whose point faces the panel.
+        if edge == "bottom":
+            cr.move_to(0, 0)
+            cr.line_to(width, 0)
+            cr.line_to(width / 2, height)
+        elif edge == "top":
+            cr.move_to(0, height)
+            cr.line_to(width, height)
+            cr.line_to(width / 2, 0)
+        elif edge == "left":
+            cr.move_to(width, 0)
+            cr.line_to(width, height)
+            cr.line_to(0, height / 2)
+        elif edge == "right":
+            cr.move_to(0, 0)
+            cr.line_to(0, height)
+            cr.line_to(width, height / 2)
+        cr.close_path()
+        cr.fill()
+
+    # -- layer-shell / surface setup --
+
     def _setup_surface(self, edge: str) -> None:
         """Configure either a layer-shell surface (preferred) or a fallback toplevel."""
-        self.set_default_size(520, 640)
-        self.set_size_request(520, 640)
+        # Window must be big enough to hold surface + shadow clearance
+        # on three sides + tail clearance on the panel-facing side.
+        pad = self._SHADOW_PAD
+        tail = self._TAIL_H
+        if edge in ("top", "bottom"):
+            win_w = 520 + 2 * pad
+            win_h = 620 + pad + tail
+        else:
+            win_w = 520 + pad + tail
+            win_h = 620 + 2 * pad
+        self.set_default_size(win_w, win_h)
+        self.set_size_request(win_w, win_h)
 
         if not _HAVE_LAYER_SHELL:
             # No layer-shell → best we can do is a centred, decoration-
@@ -271,34 +417,35 @@ class AppMenu(Gtk.Window):
                   file=sys.stderr)
             return
 
-        # Anchor to the panel's edge + the corner where the launcher
-        # lives (modules-start = top-of-panel for vertical, left-of-
-        # panel for horizontal). Margins clear the panel's outer size
-        # so the menu sits flush against but does not overlap it.
-        panel_h = 54  # rough panel outer height (margin + bar + margin)
-        panel_w = 70
-        gap = 12
+        # Anchor to the panel's edge + the corner the launcher sits in.
+        # Panel outer size approximated from apply-settings default
+        # density (panel_margin=8 + panel_bar=40-48 + panel_margin=8).
+        # The window's panel-facing edge sits FLUSH with the panel's
+        # outer edge — no gap — so the tail can physically touch the
+        # panel. The other anchor uses a zero margin so offsets within
+        # the window line up with the launcher in screen coords.
+        panel_size = 56
 
         if edge == "bottom":
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
             LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, panel_h)
-            LayerShell.set_margin(self, LayerShell.Edge.LEFT, gap)
+            LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
         elif edge == "top":
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
             LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.TOP, panel_h)
-            LayerShell.set_margin(self, LayerShell.Edge.LEFT, gap)
+            LayerShell.set_margin(self, LayerShell.Edge.TOP, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
         elif edge == "left":
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
             LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.LEFT, panel_w)
-            LayerShell.set_margin(self, LayerShell.Edge.TOP, gap)
+            LayerShell.set_margin(self, LayerShell.Edge.LEFT, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
         elif edge == "right":
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
             LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.RIGHT, panel_w)
-            LayerShell.set_margin(self, LayerShell.Edge.TOP, gap)
+            LayerShell.set_margin(self, LayerShell.Edge.RIGHT, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
 
     # -- content --
 
