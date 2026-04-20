@@ -9,13 +9,34 @@ Gtk4LayerShell isn't available for some reason.
 """
 from __future__ import annotations
 
-import json
+import os
 import sys
+
+# gtk4-layer-shell must be present in LD_PRELOAD before the Python
+# interpreter loads libwayland-client (which happens the moment we
+# import gi.repository.Gtk). If it isn't, `gtk_layer_init_for_window`
+# no-ops and every subsequent call warns "GtkWindow is not a layer
+# surface" — the window renders as a regular toplevel. Re-exec with
+# LD_PRELOAD set to close that ordering race. A sentinel env var
+# prevents infinite re-exec loops if the library is missing.
+_LAYER_SHELL_LIB = "/usr/lib64/libgtk4-layer-shell.so.0"
+if (os.environ.get("UL_APP_MENU_PRELOADED") != "1"
+        and os.path.exists(_LAYER_SHELL_LIB)):
+    preload = os.environ.get("LD_PRELOAD", "")
+    if _LAYER_SHELL_LIB not in preload:
+        os.environ["LD_PRELOAD"] = (
+            _LAYER_SHELL_LIB + (":" + preload if preload else "")
+        )
+    os.environ["UL_APP_MENU_PRELOADED"] = "1"
+    os.execv(sys.executable, [sys.executable, __file__] + sys.argv[1:])
+
+import json
 from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Gdk", "4.0")
 from gi.repository import Gdk, Gio, GLib, Gtk
 
 try:
@@ -227,6 +248,13 @@ class AppMenu(Gtk.Window):
 
         try:
             LayerShell.init_for_window(self)
+            # init_for_window is void in C; verify success explicitly.
+            if not LayerShell.is_layer_window(self):
+                print("universal-lite-app-menu: layer-shell init returned "
+                      "without error but window is not a layer surface — "
+                      "library probably loaded after libwayland-client",
+                      file=sys.stderr)
+                return
             print(f"universal-lite-app-menu: layer-shell active (edge={edge})",
                   file=sys.stderr)
             LayerShell.set_layer(self, LayerShell.Layer.TOP)
