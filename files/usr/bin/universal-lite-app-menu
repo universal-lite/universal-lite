@@ -112,8 +112,7 @@ POWER_ACTIONS = [
 # larger than the surface and every content edge has a sizeable
 # margin.
 CSS = b"""
-window.app-menu,
-window.app-menu-backdrop {
+window.app-menu {
     background: transparent;
 }
 .app-menu-surface {
@@ -382,69 +381,6 @@ def _record_launch(desktop_id: str) -> None:
               file=sys.stderr)
 
 
-class Backdrop(Gtk.Window):
-    """Fullscreen transparent layer surface that catches every pointer
-    click outside the menu and dismisses it.
-
-    Panel-anchored layer surfaces can't detect click-outside via
-    keyboard focus events: EXCLUSIVE keyboard mode keeps the
-    compositor sending keys to us regardless of pointer activity,
-    and ON_DEMAND often never grants us compositor focus in the
-    first place. The only reliable way is a separate click-catcher
-    surface underneath the menu.
-
-    The backdrop sits on the TOP layer with anchor-all-four +
-    exclusive_zone=-1 so it spans the whole screen including waybar's
-    strip. The menu itself lives on OVERLAY (one layer up), so any
-    click on the menu hits the menu and clicks anywhere else land
-    here. KeyboardMode.NONE - we don't need input routed to us.
-    """
-
-    def __init__(self, app: Gtk.Application, on_dismiss) -> None:
-        super().__init__()
-        app.add_window(self)
-        self.set_decorated(False)
-        self.add_css_class("app-menu-backdrop")
-
-        # Transparent fill so the backdrop is invisible; the click
-        # gesture is what matters. Gtk.Window needs a non-null child
-        # to measure and render.
-        filler = Gtk.Box()
-        filler.set_hexpand(True)
-        filler.set_vexpand(True)
-        self.set_child(filler)
-
-        click = Gtk.GestureClick()
-        click.set_button(0)  # any button
-        click.connect("pressed", lambda *_: on_dismiss())
-        self.add_controller(click)
-
-        if not _HAVE_LAYER_SHELL:
-            # Without layer-shell we have no way to render a
-            # fullscreen transparent click-catcher reliably - skip
-            # init and let the menu fall back to whatever dismissal
-            # paths it has (Escape, in-menu actions).
-            return
-        try:
-            LayerShell.init_for_window(self)
-            if not LayerShell.is_layer_window(self):
-                return
-            LayerShell.set_layer(self, LayerShell.Layer.TOP)
-            LayerShell.set_namespace(self, "universal-lite-app-menu-backdrop")
-            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.NONE)
-            for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
-                         LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
-                LayerShell.set_anchor(self, side, True)
-                LayerShell.set_margin(self, side, 0)
-            # -1: cover the full screen including waybar's exclusive
-            # zone, so launcher clicks while the menu is open hit us
-            # and dismiss.
-            LayerShell.set_exclusive_zone(self, -1)
-        except Exception as exc:
-            print(f"universal-lite-app-menu: backdrop layer-shell init failed: {exc}",
-                  file=sys.stderr)
-
-
 class AppMenu(Gtk.Window):
     """Plain Gtk.Window, not ApplicationWindow.
 
@@ -469,20 +405,23 @@ class AppMenu(Gtk.Window):
         self._has_frequent = False
         self._apps: list[Gio.AppInfo] = []
 
-        # Rounded surface with shadow-clearance margins. The window
-        # itself is pinned to the panel's edge + section corner by
-        # layer-shell (see _setup_surface), so the surface just fills
-        # the window's content area - no halign/valign juggling, and
-        # no fullscreen overlay needed.
+        # Rounded surface inside a fullscreen OVERLAY window. Pinned
+        # to the panel's launcher corner via halign/valign with
+        # shadow-clearance + panel-gap margins. hexpand/vexpand=False
+        # is critical: without that the Gtk.Window would stretch the
+        # surface to fill the whole overlay.
         surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         surface.add_css_class("app-menu-surface")
-        surface.set_hexpand(True)
-        surface.set_vexpand(True)
-        pad = self._SHADOW_PAD
-        surface.set_margin_top(pad)
-        surface.set_margin_bottom(pad)
-        surface.set_margin_start(pad)
-        surface.set_margin_end(pad)
+        surface.set_hexpand(False)
+        surface.set_vexpand(False)
+        surface.set_size_request(640, 540)
+        outer = self._SHADOW_PAD + self._PANEL_GAP
+        surface.set_margin_top(outer)
+        surface.set_margin_bottom(outer)
+        surface.set_margin_start(outer)
+        surface.set_margin_end(outer)
+        surface.set_halign(self._resolve_halign())
+        surface.set_valign(self._resolve_valign())
         self.set_child(surface)
         self._surface = surface
 
@@ -543,15 +482,18 @@ class AppMenu(Gtk.Window):
         key.connect("key-pressed", self._on_key)
         self.add_controller(key)
 
-        # Click-outside dismissal is handled by the separate Backdrop
-        # layer surface (see Backdrop class + main()); the menu itself
-        # doesn't listen for is-active changes. notify::is-active is
-        # unreliable here anyway - with EXCLUSIVE keyboard the
-        # compositor keeps focus on us no matter where the user
-        # clicks, and with ON_DEMAND the compositor often never grants
-        # us keyboard focus in the first place, so the signal either
-        # never fires or misses the cases we need (clicks inside
-        # another app, clicks on the desktop).
+        # Click-outside dismissal: capture-phase gesture on the
+        # fullscreen window. Runs before descendant row gestures,
+        # checks whether the press landed inside the surface's
+        # window-local bounds, and only claims the sequence (closing
+        # the menu) when it did not. Clicks inside the surface return
+        # without claiming so row/power-button gestures still fire.
+        dismiss = Gtk.GestureClick()
+        dismiss.set_button(0)  # any button
+        dismiss.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        dismiss.connect("pressed", self._on_dismiss_press)
+        self.add_controller(dismiss)
+
         self._search.grab_focus()
 
     # -- geometry helpers --
@@ -564,45 +506,55 @@ class AppMenu(Gtk.Window):
     _SHADOW_PAD = 20
 
     # Visible gap between the menu and the panel it anchors to -
-    # ChromeOS-style breathing room, applied as a layer-shell margin
-    # so the compositor pushes the whole window off the panel edge.
+    # ChromeOS-style breathing room. Combined with _SHADOW_PAD as
+    # the surface's outer margin inside a fullscreen overlay window.
     _PANEL_GAP = 8
-    # Visible gap between the menu and the screen edge on the
-    # launcher-section side (the corner the menu is tucked into).
-    _EDGE_INSET = 8
+
+    def _resolve_halign(self) -> Gtk.Align:
+        edge, section = self._edge, self._geom["section"]
+        if edge in ("top", "bottom"):
+            if section == "start":
+                return Gtk.Align.START
+            if section == "end":
+                return Gtk.Align.END
+            return Gtk.Align.CENTER
+        return Gtk.Align.START if edge == "left" else Gtk.Align.END
+
+    def _resolve_valign(self) -> Gtk.Align:
+        edge, section = self._edge, self._geom["section"]
+        if edge in ("left", "right"):
+            if section == "start":
+                return Gtk.Align.START
+            if section == "end":
+                return Gtk.Align.END
+            return Gtk.Align.CENTER
+        return Gtk.Align.END if edge == "bottom" else Gtk.Align.START
 
     # -- layer-shell / surface setup --
 
     def _setup_surface(self, edge: str) -> None:
-        """Anchor the window to the panel's launcher corner via layer-shell.
+        """Configure a fullscreen OVERLAY layer-shell surface.
 
-        Instead of a fullscreen overlay with halign/valign juggling,
-        we anchor to two of the four edges (the panel's edge plus the
-        cross-axis edge matching the launcher section). The compositor
-        then places the window flush against those edges and sizes it
-        to our set_default_size, so positioning is pixel-exact and
-        independent of anything inside the surface. Waybar's own
-        exclusive zone is respected (exclusive_zone=0 on our side), so
-        the menu sits adjacent to the panel rather than overlapping it.
+        Anchors to all four screen edges with exclusive_zone=-1 so
+        the window covers the entire display including waybar's
+        strip. The menu surface itself is positioned inside via
+        halign/valign on the surface widget; the transparent area
+        around the surface is what catches click-outside-to-dismiss.
 
-        Dismissal paths with a panel-anchored (not fullscreen) menu:
-          - Escape - via _on_key
-          - clicking anywhere outside the menu - caught by the
-            Backdrop layer surface (see Backdrop class), which sits
-            on the TOP layer and intercepts every pointer event in
-            the screen area not covered by the menu itself
-          - clicking the launcher again - Backdrop swallows the click
-            so the launcher never fires; user clicks launcher a
-            second time to reopen. Also backed up by the PID lock
-            (see _toggle_or_lock) in case the Backdrop fails to map.
+        Why fullscreen and not panel-anchored: reliable click-outside
+        dismissal. A panel-anchored layer surface can't detect clicks
+        on apps or the desktop - the clicks go to whatever surface is
+        under them - and a separate backdrop layer surface turns out
+        to be unreliable under labwc + gtk4-layer-shell when two
+        layer-shell windows share one process.
+
+        Why OVERLAY and not TOP: waybar lives on TOP. Clicking the
+        launcher icon while the menu is open has to hit us (dismiss)
+        instead of waybar (spawn a second instance).
         """
-        pad = self._SHADOW_PAD
-        # Window size = menu surface (640x540) plus shadow-clearance
-        # margins on every side. Layer-shell uses this as the fixed
-        # allocation for the window.
-        self.set_default_size(640 + 2 * pad, 540 + 2 * pad)
-
         if not _HAVE_LAYER_SHELL:
+            pad = self._SHADOW_PAD + self._PANEL_GAP
+            self.set_default_size(640 + 2 * pad, 540 + 2 * pad)
             print("universal-lite-app-menu: layer-shell unavailable, "
                   "using fallback toplevel", file=sys.stderr)
             return
@@ -617,64 +569,21 @@ class AppMenu(Gtk.Window):
                 return
             section = self._geom["section"]
             print(f"universal-lite-app-menu: layer-shell active "
-                  f"(edge={edge}, section={section})",
+                  f"(edge={edge}, section={section}, fullscreen overlay)",
                   file=sys.stderr)
-            # OVERLAY (above TOP) so the menu stacks above our
-            # click-catcher Backdrop, which lives on the TOP layer.
             LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
             LayerShell.set_namespace(self, "universal-lite-app-menu")
-            # EXCLUSIVE so keys go to the search entry immediately on
-            # open without needing a click to focus. The Backdrop
-            # handles click-outside dismissal - we no longer rely on
-            # is-active flipping, so EXCLUSIVE's behaviour of keeping
-            # keyboard focus on us regardless of pointer clicks is
-            # fine.
             LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.EXCLUSIVE)
-            LayerShell.set_exclusive_zone(self, 0)
-
-            # Anchor to the panel edge + its section corner. Margins
-            # give the menu a ChromeOS-style breathing gap rather than
-            # sitting flush against the panel and the screen edge.
-            # The shadow-pad inside the window is separate (shadow
-            # clearance); this is visible empty space.
-            panel_gap = self._PANEL_GAP
-            edge_inset = self._EDGE_INSET
-            if edge == "bottom":
-                LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
-                LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, panel_gap)
-                if section == "start":
-                    LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.LEFT, edge_inset)
-                elif section == "end":
-                    LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.RIGHT, edge_inset)
-            elif edge == "top":
-                LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-                LayerShell.set_margin(self, LayerShell.Edge.TOP, panel_gap)
-                if section == "start":
-                    LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.LEFT, edge_inset)
-                elif section == "end":
-                    LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.RIGHT, edge_inset)
-            elif edge == "left":
-                LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-                LayerShell.set_margin(self, LayerShell.Edge.LEFT, panel_gap)
-                if section == "start":
-                    LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.TOP, edge_inset)
-                elif section == "end":
-                    LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, edge_inset)
-            elif edge == "right":
-                LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-                LayerShell.set_margin(self, LayerShell.Edge.RIGHT, panel_gap)
-                if section == "start":
-                    LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.TOP, edge_inset)
-                elif section == "end":
-                    LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
-                    LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, edge_inset)
+            # Anchor to all four edges + exclusive_zone=-1 so the
+            # compositor doesn't trim us around waybar. The whole
+            # screen becomes a click target; our capture-phase
+            # gesture (see __init__) decides whether a given click
+            # hits the menu or dismisses it.
+            for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
+                         LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
+                LayerShell.set_anchor(self, side, True)
+                LayerShell.set_margin(self, side, 0)
+            LayerShell.set_exclusive_zone(self, -1)
         except Exception as exc:
             print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
                   file=sys.stderr)
@@ -764,6 +673,15 @@ class AppMenu(Gtk.Window):
         btn = Gtk.Button()
         btn.add_css_class("app-menu-tile")
         btn.set_has_frame(False)
+        # Pin the tile's natural size so longer-named apps
+        # (e.g. "Google Chrome" with generic "Web Browser") don't
+        # stretch the homogeneous FlowBox's column width and thereby
+        # the whole surface. Width = 640 surface - 24 root margins -
+        # flowbox column spacings, divided by GRID_COLUMNS; height
+        # = 48 icon + two ellipsised label lines + a little padding.
+        btn.set_hexpand(False)
+        btn.set_vexpand(False)
+        btn.set_size_request(92, 82)
 
         display = app.get_display_name() or ""
         generic = _generic_name_for(app)
@@ -984,6 +902,26 @@ class AppMenu(Gtk.Window):
             return True
         return False
 
+    def _on_dismiss_press(self, gesture: Gtk.GestureClick,
+                          _n_press: int, x: float, y: float) -> None:
+        """Close the menu if the click landed outside the surface rect.
+
+        compute_bounds with the window as the 'out' parent returns the
+        surface's window-local rectangle, which matches the coordinate
+        space of the gesture's (x, y). Inside → return without
+        claiming so clicks propagate to rows and power buttons.
+        Outside → close and claim the sequence.
+        """
+        ok, bounds = self._surface.compute_bounds(self)
+        if ok:
+            min_x = bounds.origin.x
+            min_y = bounds.origin.y
+            max_x = min_x + bounds.size.width
+            max_y = min_y + bounds.size.height
+            if min_x <= x <= max_x and min_y <= y <= max_y:
+                return
+        self.close()
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
 
 def _install_css() -> None:
@@ -1018,23 +956,12 @@ def main() -> None:
 
     def _activate(a: Gtk.Application) -> None:
         _install_css()
-        menu = AppMenu(a)
-        backdrop = Backdrop(a, on_dismiss=menu.close)
-        # When the menu goes away (any dismissal path - click-outside,
-        # Escape, app launch, power action), tear down the backdrop
-        # too so the app's window count drops to zero and the process
-        # exits cleanly. Without this the invisible backdrop keeps
-        # the GLib main loop running and stays on screen catching
-        # clicks forever.
-        menu.connect("destroy", lambda *_: backdrop.destroy())
-        # Map backdrop first so it sits beneath the menu in map order
-        # (wlroots stacks by map time within a layer). Layer-shell
-        # surfaces prefer set_visible(True) over present() - present()
-        # requests an activation token from the compositor that layer
-        # surfaces don't need and some versions of wlroots handle
-        # quirkily.
-        backdrop.set_visible(True)
-        menu.set_visible(True)
+        win = AppMenu(a)
+        # Layer-shell surfaces prefer set_visible(True) over present() -
+        # present() requests an activation token from the compositor
+        # that layer surfaces don't need and some versions of wlroots
+        # handle quirkily.
+        win.set_visible(True)
 
     app.connect("activate", _activate)
     sys.exit(app.run([]))
