@@ -1,9 +1,18 @@
 #!/bin/bash
-# Installs Flatpak apps on first boot. Uses the wizard's selection if available,
-# otherwise falls back to a default set.
-# Called by universal-lite-flatpak-setup.service, which runs in the
-# background alongside greetd so login comes up immediately and
-# install progress goes to the journal.
+# Two-mode Flatpak service, driven by the presence of the done-stamp:
+#
+#   1. First run (stamp absent) — install each app in /var/lib/universal-lite/
+#      flatpak-apps (written by the setup wizard; falls back to a default
+#      list if missing). Stamp is only written once every requested app is
+#      actually present on the system; otherwise the service re-runs on
+#      the next boot and picks up where it left off.
+#
+#   2. Every subsequent boot (stamp present) — refresh system Flatpaks via
+#      `flatpak update` so the user always has current software. Ends
+#      quietly on offline boots and retries on the next boot.
+#
+# Called by universal-lite-flatpak-setup.service. Runs alongside greetd —
+# login comes up immediately; progress goes to the journal.
 
 set -uo pipefail
 
@@ -13,9 +22,46 @@ MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
 
-# If the wizard didn't write an apps list, use defaults (one per line)
-# The wizard always writes this file (even if empty = no apps selected).
-# Only use the default list if the file is missing entirely (edge case).
+wait_for_network() {
+    local waited=0
+    while [ "$waited" -lt "$MAX_NET_WAIT" ]; do
+        if getent hosts dl.flathub.org >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 5
+        waited=$((waited + 5))
+    done
+    return 1
+}
+
+# -----------------------------------------------------------------
+# Mode 2: update existing Flatpaks on every boot after initial setup
+# -----------------------------------------------------------------
+if [ -f "$STAMP" ]; then
+    echo "Checking for Flatpak updates..."
+    if ! wait_for_network; then
+        echo "No network after ${MAX_NET_WAIT}s - skipping update this boot."
+        exit 0
+    fi
+    for attempt in $(seq 1 "$RETRIES"); do
+        if flatpak update --system --noninteractive >/dev/null 2>&1; then
+            echo "Flatpak update complete."
+            exit 0
+        fi
+        echo "  Update attempt $attempt/$RETRIES failed, retrying in ${RETRY_DELAY}s..."
+        sleep "$RETRY_DELAY"
+    done
+    echo "Flatpak update failed after $RETRIES attempts - will retry next boot."
+    exit 0
+fi
+
+# -----------------------------------------------------------------
+# Mode 1: initial install (stamp absent)
+# -----------------------------------------------------------------
+
+# If the wizard didn't write an apps list, fall back to the defaults
+# (one per line). The wizard always writes the file even when empty,
+# so we only hit this branch on edge cases (e.g. hand-rolled images).
 if [ ! -f "$APPS_FILE" ]; then
     mkdir -p "$(dirname "$APPS_FILE")"
     cat > "$APPS_FILE" <<'EOF'
@@ -26,44 +72,31 @@ org.gtk.Gtk3theme.adw-gtk3-dark
 EOF
 fi
 
-# If the file is empty, the user chose no apps — skip install
+# Empty file = user chose no apps during the wizard. Stamp so this
+# never runs the install path again (future boots go to update mode),
+# but nothing to install today.
 if [ ! -s "$APPS_FILE" ]; then
     echo "No apps selected. Skipping app install."
     touch "$STAMP"
     exit 0
 fi
 
-# Count total apps for progress
 total_apps=$(grep -c . "$APPS_FILE" 2>/dev/null || echo 0)
 
 echo ""
 echo "========================================"
-echo "  Universal-Lite — First Boot Setup"
+echo "  Universal-Lite - First Boot Setup"
 echo "========================================"
 echo ""
 
-# Wait for actual network connectivity (DNS must resolve Flathub)
 echo "Waiting for network connection..."
-waited=0
-while [ "$waited" -lt "$MAX_NET_WAIT" ]; do
-    if getent hosts dl.flathub.org >/dev/null 2>&1; then
-        echo "Network connected."
-        break
-    fi
-    sleep 5
-    waited=$((waited + 5))
-done
-
-if [ "$waited" -ge "$MAX_NET_WAIT" ]; then
-    echo "No network after ${MAX_NET_WAIT}s — will retry on next boot."
-    # Deliberately no STAMP touch: we never did the work, so the service
-    # should try again after the user connects. Other failure paths
-    # (bad Flathub remote, missing packages) still stamp so we don't
-    # loop pointlessly on permanent errors.
+if ! wait_for_network; then
+    echo "No network after ${MAX_NET_WAIT}s - will retry on next boot."
+    # No stamp: service reruns next boot until initial install succeeds.
     exit 0
 fi
+echo "Network connected."
 
-# Add Flathub remote (retry if needed)
 echo "Configuring Flathub app store..."
 remote_ok=false
 for attempt in $(seq 1 "$RETRIES"); do
@@ -77,18 +110,15 @@ for attempt in $(seq 1 "$RETRIES"); do
 done
 
 if ! "$remote_ok"; then
-    echo "ERROR: Could not configure Flathub. Apps can be installed later."
-    touch "$STAMP"
+    echo "ERROR: Could not configure Flathub. Will retry on next boot."
+    # No stamp: retry; without Flathub, nothing in apps file can install.
     exit 0
 fi
 
-# Snapshot what's already installed system-wide so repeat boots skip
-# anything that's already present — no network needed, no re-download.
+# Snapshot what's already installed system-wide so repeat runs skip
+# anything that's already there — no network needed for the skip.
 installed_ids=$(flatpak list --system --app --columns=application 2>/dev/null || true)
 
-# Install each missing app with per-app retry. Track whether the end
-# state matches the requested list so we can decide whether to stamp
-# the service complete or let it retry on the next boot.
 current=0
 missing=0
 while IFS= read -r app_id; do
@@ -105,8 +135,6 @@ while IFS= read -r app_id; do
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
-        # Send flatpak's verbose output to the journal only; the boot
-        # console just sees our progress lines.
         if flatpak install --or-update --system --noninteractive \
                 flathub "$app_id" >/dev/null 2>&1; then
             ok=true
@@ -130,10 +158,10 @@ if [ "$missing" -eq 0 ]; then
 else
     echo "$missing app(s) still missing. Service will retry on next boot."
     echo "Missing apps can also be installed manually via Bazaar or flatpak CLI."
-    # Deliberately no stamp: without it the service re-runs on the next
-    # boot, picks up where we left off (already-installed apps are
-    # skipped cheaply via `flatpak list`), and only stamps done once
-    # every requested app is actually present on the system.
+    # Deliberately no stamp: next boot re-runs and picks up where we
+    # left off (already-installed apps are skipped cheaply via
+    # `flatpak list`), and only stamps complete once every requested
+    # app is actually on the system.
 fi
 
 exit 0
