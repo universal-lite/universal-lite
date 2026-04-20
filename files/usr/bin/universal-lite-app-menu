@@ -368,7 +368,24 @@ class AppMenu(Gtk.Window):
         surface.set_margin_end(pad)
         surface.set_halign(self._resolve_halign())
         surface.set_valign(self._resolve_valign())
-        self.set_child(surface)
+
+        # Wrap the surface in a Gtk.Overlay instead of setting it as
+        # the window's direct child. Gtk.Window's own layout does
+        # honour halign/valign on its child in normal cases, but some
+        # compositor state transitions (screensaver lock + unlock,
+        # output reconfiguration) leave layer-shell windows with the
+        # child allocated the full layer area anyway, which makes the
+        # menu render as a screen-spanning rectangle anchored to the
+        # wrong corner. Gtk.Overlay's job is exactly "big filler with
+        # small floating children sized by their own requests", so
+        # overlay.add_overlay(surface) yields robust positioning that
+        # survives the lock-screen round-trip.
+        overlay = Gtk.Overlay()
+        overlay.set_hexpand(True)
+        overlay.set_vexpand(True)
+        overlay.set_child(Gtk.Box())  # transparent main child fills
+        overlay.add_overlay(surface)
+        self.set_child(overlay)
         self._surface = surface
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
@@ -413,6 +430,16 @@ class AppMenu(Gtk.Window):
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        # Cap how much height the grid can demand from the surface.
+        # Without this bound the FlowBox's natural height (all rows of
+        # all installed apps) can propagate through size negotiation
+        # and push the whole surface past its set_size_request, which
+        # looks like a mispositioned menu because halign/valign then
+        # clip against the screen edge. 320 px fits ~3 tile rows and
+        # leaves room in the 540 px surface for everything else.
+        scrolled.set_propagate_natural_height(False)
+        scrolled.set_propagate_natural_width(False)
+        scrolled.set_max_content_height(320)
         root.append(scrolled)
 
         self._grid = self._make_flowbox(apply_filter=True)
