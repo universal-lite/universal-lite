@@ -205,7 +205,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-greeter-setup \
     /usr/libexec/universal-lite-wizard-session \
     /usr/libexec/universal-lite-menu \
-    /usr/libexec/universal-lite-app-menu \
+    /usr/bin/universal-lite-app-menu \
     /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-volume \
     /usr/libexec/universal-lite-brightness \
