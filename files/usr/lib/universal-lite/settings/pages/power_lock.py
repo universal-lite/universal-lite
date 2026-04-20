@@ -108,6 +108,12 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         return group
 
     def _build_power_profile_group(self) -> Adw.PreferencesGroup:
+        # Lazy import: PowerProfilesHelper opens a D-Bus connection in
+        # its __init__. Deferring the import to first build() avoids
+        # making the connection at module load - window.py instantiates
+        # every page class at startup but only calls build() on first
+        # navigation, and we don't want 16 D-Bus connections for a
+        # user who only opens Appearance.
         from ..dbus_helpers import PowerProfilesHelper
         self._power_helper = PowerProfilesHelper(self.event_bus)
 
