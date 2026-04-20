@@ -6,8 +6,9 @@ from pathlib import Path
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, GLib, Gtk
+from gi.repository import Adw, Gdk, Gtk
 
 from ..base import BasePage
 
@@ -206,16 +207,42 @@ def _save_user_keybindings(bindings: list[dict]) -> None:
     tmp.rename(USER_KEYBINDINGS)
 
 
-class KeyboardPage(BasePage):
+class KeyboardPage(BasePage, Adw.PreferencesPage):
+    """Keyboard settings: layout/variant, repeat timing, caps-lock remap,
+    and per-shortcut rebinding.
+
+    Returns an AdwNavigationView from build() because tapping a shortcut
+    row pushes an AdwNavigationPage hosting an AdwStatusPage with its
+    own Gtk.EventControllerKey — the capture flow lives in a sub-page
+    instead of attaching to the root window.
+    """
+
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._default_bindings = _parse_system_keybindings()
         user = _load_user_keybindings()
         self._bindings = user if user is not None else list(self._default_bindings)
-        self._capture_controller = None
-        self._capture_button = None
-        self._capture_index = -1
-        self._shortcut_buttons: list[Gtk.Button] = []
+        # References populated in build(). None-safe because event
+        # handlers may fire before first navigation on some paths.
+        self._nav: Adw.NavigationView | None = None
+        self._variant_row: Adw.ComboRow | None = None
+        self._variant_codes: list[str] = []
+        self._current_layout_code: str = self.store.get("keyboard_layout", "us")
+        # AdwActionRow per binding. _apply_new_key / _reset_shortcut
+        # update the rows' subtitles with the new human-readable label.
+        self._shortcut_rows: list[Adw.ActionRow] = []
+        self._shortcut_group: Adw.PreferencesGroup | None = None
+        # Cached reference to each row's reset-to-default suffix button
+        # (or None when absent), so we can add/remove the button as the
+        # binding drifts from / returns to its default without walking
+        # AdwActionRow's private child list.
+        self._shortcut_reset_buttons: list[Gtk.Button | None] = []
+        # Capture-state refs so we don't double-attach controllers on
+        # rapid taps and can identify the right binding on key-press.
+        self._capture_page: Adw.NavigationPage | None = None
+        self._capture_index: int = -1
+        self._capture_done: bool = False
 
     @property
     def search_keywords(self):
@@ -227,10 +254,34 @@ class KeyboardPage(BasePage):
             (_("Shortcuts"), _("Hotkey")), (_("Shortcuts"), _("Key combo")),
         ]
 
-    def build(self):
-        page = self.make_page_box()
+    # -- build ----------------------------------------------------------
 
-        # -- Layout --
+    def build(self):
+        self.add(self._build_layout_group())
+        self.add(self._build_repeat_group())
+        self.add(self._build_capslock_group())
+        self.add(self._build_shortcuts_group())
+
+        # Tear down event-bus subscriptions on unmap. Called on self
+        # (the PreferencesPage) so it fires the same way wave-1 pages do.
+        self.setup_cleanup(self)
+
+        # Wrap self in a NavigationView so _push_capture_page can push
+        # sub-pages. Back button, back gesture, and Escape are handled
+        # natively by AdwNavigationView.
+        self._nav = Adw.NavigationView()
+        root_page = Adw.NavigationPage()
+        root_page.set_title(_("Keyboard"))
+        root_page.set_child(self)
+        self._nav.add(root_page)
+        return self._nav
+
+    # -- group builders -------------------------------------------------
+
+    def _build_layout_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Layout"))
+
         layout_codes = self._get_layouts()
         display_names = [LAYOUT_NAMES.get(c, c) for c in layout_codes]
         current_layout = self.store.get("keyboard_layout", "us")
@@ -239,146 +290,232 @@ class KeyboardPage(BasePage):
         except ValueError:
             layout_idx = 0
 
-        layout_dropdown = Gtk.DropDown.new(Gtk.StringList.new(display_names), None)
-        layout_dropdown.set_selected(layout_idx)
-        layout_dropdown.set_size_request(240, -1)
+        layout_row = Adw.ComboRow()
+        layout_row.set_title(_("Keyboard layout"))
+        layout_row.set_model(Gtk.StringList.new(display_names))
+        layout_row.set_selected(layout_idx)
 
-        current_variant = self.store.get("keyboard_variant", "")
-        variant_codes: list[str] = []
+        # Variant row — populated by _build_variant_dropdown; shown only
+        # when the current layout exposes variants.
+        variant_row = Adw.ComboRow()
+        variant_row.set_title(_("Variant"))
+        variant_row.set_model(Gtk.StringList.new([_("(Default)")]))
+        self._variant_row = variant_row
 
-        variant_dropdown = Gtk.DropDown.new(Gtk.StringList.new([_("(Default)")]), None)
-        variant_dropdown.set_size_request(240, -1)
-        variant_row = self.make_setting_row(_("Variant"), "", variant_dropdown)
-
-        def _build_variant_dropdown(layout_code):
-            variants = self._get_variants(layout_code)
-            variant_codes.clear()
-            variant_codes.append("")
-            variant_codes.extend(variants)
-            variant_dropdown.set_model(Gtk.StringList.new([_("(Default)")] + variants))
-            variant_row.set_visible(bool(variants))
-            try:
-                sel = variant_codes.index(current_variant if layout_code == current_layout else "")
-            except ValueError:
-                sel = 0
-            variant_dropdown.set_selected(sel)
-
-        def _on_variant_changed(dd, _pspec):
-            idx = dd.get_selected()
-            if idx == Gtk.INVALID_LIST_POSITION or not variant_codes:
+        def _on_variant_changed(row: Adw.ComboRow, _pspec) -> None:
+            idx = row.get_selected()
+            if idx == Gtk.INVALID_LIST_POSITION or not self._variant_codes:
                 return
-            code = variant_codes[idx] if idx < len(variant_codes) else ""
+            code = self._variant_codes[idx] if idx < len(self._variant_codes) else ""
             self.store.save_and_apply("keyboard_variant", code)
 
-        variant_dropdown.connect("notify::selected", _on_variant_changed)
+        variant_row.connect("notify::selected", _on_variant_changed)
 
-        def _on_layout_changed(dd, _pspec):
-            idx = dd.get_selected()
+        def _on_layout_changed(row: Adw.ComboRow, _pspec) -> None:
+            idx = row.get_selected()
             if idx == Gtk.INVALID_LIST_POSITION or idx >= len(layout_codes):
                 return
             code = layout_codes[idx]
-            self.store.save_dict_and_apply({"keyboard_layout": code, "keyboard_variant": ""})
-            _build_variant_dropdown(code)
+            # Atomic dict save — layout and variant must flip together
+            # so apply-settings doesn't see a stale variant that no
+            # longer belongs to the new layout.
+            self.store.save_dict_and_apply(
+                {"keyboard_layout": code, "keyboard_variant": ""}
+            )
+            self._current_layout_code = code
+            self._build_variant_dropdown(code)
 
-        layout_dropdown.connect("notify::selected", _on_layout_changed)
-        _build_variant_dropdown(current_layout)
+        layout_row.connect("notify::selected", _on_layout_changed)
 
-        page.append(self.make_group(_("Layout"), [
-            self.make_setting_row(_("Keyboard layout"), "", layout_dropdown),
-            variant_row,
-        ]))
+        group.add(layout_row)
+        group.add(variant_row)
 
-        # -- Repeat --
-        delay_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 150, 1000, 50)
-        delay_scale.set_value(self.store.get("keyboard_repeat_delay", 300))
-        delay_scale.set_size_request(200, -1)
-        delay_scale.set_draw_value(True)
-        delay_scale.set_format_value_func(lambda _s, v: f"{v:.0f} ms")
-        delay_scale.connect("value-changed", lambda s: self.store.save_debounced(
-            "keyboard_repeat_delay", int(s.get_value())))
+        # Initial variant population — seeded from the stored variant
+        # for the current layout.
+        self._build_variant_dropdown(current_layout)
+        return group
 
-        rate_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 10, 80, 5)
-        rate_scale.set_value(self.store.get("keyboard_repeat_rate", 40))
-        rate_scale.set_size_request(200, -1)
-        rate_scale.set_draw_value(True)
-        rate_scale.set_format_value_func(lambda _s, v: f"{v:.0f}/s")
-        rate_scale.connect("value-changed", lambda s: self.store.save_debounced(
-            "keyboard_repeat_rate", int(s.get_value())))
+    def _build_variant_dropdown(self, layout_code: str) -> None:
+        """Rebuild the variant ComboRow for the given layout.
 
-        page.append(self.make_group(_("Repeat"), [
-            self.make_setting_row(_("Repeat delay"), "", delay_scale),
-            self.make_setting_row(_("Repeat rate"), "", rate_scale),
-        ]))
+        Hides the row entirely when the layout has no variants. The
+        parallel `self._variant_codes` list maps the row's visible
+        index to the persisted code; index 0 is always "" (Default).
+        """
+        if self._variant_row is None:
+            return
 
-        # -- Caps Lock --
-        caps_options = [_("Default"), _("Ctrl"), _("Escape"), _("Disabled")]
+        variants = self._get_variants(layout_code)
+        self._variant_codes = [""] + list(variants)
+
+        # Temporarily disconnect the notify handler while swapping the
+        # model so we don't spuriously save_and_apply during rebuild.
+        current_variant = self.store.get("keyboard_variant", "")
+        labels = [_("(Default)")] + list(variants)
+        self._variant_row.set_model(Gtk.StringList.new(labels))
+        self._variant_row.set_visible(bool(variants))
+
+        try:
+            sel = self._variant_codes.index(
+                current_variant if layout_code == self._current_layout_code else ""
+            )
+        except ValueError:
+            sel = 0
+        self._variant_row.set_selected(sel)
+
+    def _build_repeat_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Repeat"))
+
+        delay_row = Adw.SpinRow.new_with_range(150.0, 1000.0, 50.0)
+        delay_row.set_title(_("Repeat delay"))
+        delay_row.set_subtitle(_("Milliseconds before keys begin repeating"))
+        delay_row.set_value(float(self.store.get("keyboard_repeat_delay", 300)))
+        delay_row.connect(
+            "notify::value",
+            lambda r, _p: self.store.save_debounced(
+                "keyboard_repeat_delay", int(r.get_value())
+            ),
+        )
+        group.add(delay_row)
+
+        rate_row = Adw.SpinRow.new_with_range(10.0, 80.0, 5.0)
+        rate_row.set_title(_("Repeat rate"))
+        rate_row.set_subtitle(_("Keys per second when held"))
+        rate_row.set_value(float(self.store.get("keyboard_repeat_rate", 40)))
+        rate_row.connect(
+            "notify::value",
+            lambda r, _p: self.store.save_debounced(
+                "keyboard_repeat_rate", int(r.get_value())
+            ),
+        )
+        group.add(rate_row)
+        return group
+
+    def _build_capslock_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Caps Lock Behavior"))
+
+        caps_labels = [_("Default"), _("Ctrl"), _("Escape"), _("Disabled")]
         caps_values = ["default", "ctrl", "escape", "disabled"]
-        caps_dd = Gtk.DropDown.new_from_strings(caps_options)
+
+        row = Adw.ComboRow()
+        row.set_title(_("Caps Lock key"))
+        row.set_subtitle(_("Remap Caps Lock to another function"))
+        row.set_model(Gtk.StringList.new(caps_labels))
+
         current_caps = self.store.get("capslock_behavior", "default")
         try:
-            caps_dd.set_selected(caps_values.index(current_caps))
+            row.set_selected(caps_values.index(current_caps))
         except ValueError:
-            caps_dd.set_selected(0)
-        caps_dd.connect("notify::selected", lambda d, _:
-            self.store.save_and_apply("capslock_behavior", caps_values[d.get_selected()]))
+            row.set_selected(0)
 
-        page.append(self.make_group(_("Caps Lock Behavior"), [
-            self.make_setting_row(
-                _("Caps Lock key"), _("Remap Caps Lock to another function"), caps_dd),
-        ]))
+        def _on_caps_changed(r: Adw.ComboRow, _pspec) -> None:
+            idx = r.get_selected()
+            if 0 <= idx < len(caps_values):
+                self.store.save_and_apply("capslock_behavior", caps_values[idx])
 
-        # -- Keyboard Shortcuts --
-        self._shortcut_buttons.clear()
-        shortcut_rows = [
-            self._build_shortcut_row(i, binding)
-            for i, binding in enumerate(self._bindings)
-        ]
+        row.connect("notify::selected", _on_caps_changed)
+        group.add(row)
+        return group
 
-        # Reset All button
-        reset_all_btn = Gtk.Button(label=_("Reset All Shortcuts"))
-        reset_all_btn.set_halign(Gtk.Align.START)
-        reset_all_btn.set_margin_top(8)
-        reset_all_btn.connect("clicked", lambda _: self._reset_all_shortcuts())
+    def _build_shortcuts_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Keyboard Shortcuts"))
+        self._shortcut_group = group
+        self._shortcut_rows = []
+        self._shortcut_reset_buttons = []
 
-        page.append(self.make_group(_("Keyboard Shortcuts"),
-                                    shortcut_rows + [reset_all_btn]))
+        for i, binding in enumerate(self._bindings):
+            row = self._build_shortcut_row(i, binding)
+            self._shortcut_rows.append(row)
+            group.add(row)
 
-        return page
+        # Reset All — trailing row in the same group with a
+        # destructive-styled suffix button. Reads cleanly alongside the
+        # per-binding reset suffixes.
+        reset_all_row = Adw.ActionRow()
+        reset_all_row.set_title(_("Reset all shortcuts"))
+        reset_all_row.set_subtitle(_("Restore every shortcut to its default"))
 
-    def _build_shortcut_row(self, index: int, binding: dict) -> Gtk.Box:
-        """Build a single shortcut row with label and key capture button."""
-        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        row.add_css_class("setting-row")
-        row.set_valign(Gtk.Align.CENTER)
+        reset_all_btn = Gtk.Button(label=_("Reset All"))
+        reset_all_btn.add_css_class("destructive-action")
+        reset_all_btn.set_valign(Gtk.Align.CENTER)
+        reset_all_btn.connect("clicked", lambda _b: self._reset_all_shortcuts())
+        reset_all_row.add_suffix(reset_all_btn)
+        group.add(reset_all_row)
+        return group
 
-        # Left: description label
-        label = Gtk.Label(label=binding["display_name"], xalign=0)
-        label.set_hexpand(True)
-        row.append(label)
+    def _build_shortcut_row(self, index: int, binding: dict) -> Adw.ActionRow:
+        """Build a single AdwActionRow for a shortcut binding.
 
-        # Reset button (per-shortcut)
+        - Title: human-readable action name.
+        - Subtitle: the current key combination (e.g. "Ctrl + Alt + T").
+        - Suffix: a flat reset-to-default icon button if the binding has
+          been modified from its system default.
+        - Activating the row pushes the capture sub-page.
+        """
+        row = Adw.ActionRow()
+        row.set_title(binding["display_name"])
+        row.set_subtitle(_human_key_label(binding["key"]))
+        row.set_activatable(True)
+
+        reset_btn: Gtk.Button | None = None
         default_key = self._get_default_key(index)
         if default_key and default_key != binding["key"]:
-            reset_btn = Gtk.Button()
-            reset_btn.set_icon_name("edit-undo-symbolic")
+            reset_btn = Gtk.Button.new_from_icon_name("edit-undo-symbolic")
+            reset_btn.add_css_class("flat")
             reset_btn.set_tooltip_text(_("Reset to default"))
             reset_btn.set_valign(Gtk.Align.CENTER)
-            reset_btn.connect("clicked", lambda _, idx=index: self._reset_shortcut(idx))
-            row.append(reset_btn)
+            reset_btn.connect(
+                "clicked", lambda _b, idx=index: self._reset_shortcut(idx)
+            )
+            row.add_suffix(reset_btn)
 
-        # Right: key combo button
-        key_btn = Gtk.Button(label=_human_key_label(binding["key"]))
-        key_btn.set_valign(Gtk.Align.CENTER)
-        key_btn.set_size_request(180, -1)
-        key_btn.connect("clicked", lambda _, idx=index: self._start_capture(idx))
-        row.append(key_btn)
+        # Track the reset button slot so _update_shortcut_row can
+        # add / remove it as the binding drifts from its default.
+        while len(self._shortcut_reset_buttons) <= index:
+            self._shortcut_reset_buttons.append(None)
+        self._shortcut_reset_buttons[index] = reset_btn
 
-        # Track the button for later updates
-        while len(self._shortcut_buttons) <= index:
-            self._shortcut_buttons.append(None)
-        self._shortcut_buttons[index] = key_btn
-
+        row.connect("activated", lambda _r, idx=index: self._push_capture_page(idx))
         return row
+
+    def _update_shortcut_row(self, index: int) -> None:
+        """Mutate a shortcut row in-place to reflect the current binding.
+
+        Updates the subtitle and adds/removes the reset-to-default
+        suffix button as needed. The row widget itself stays in the
+        group at its original position.
+        """
+        if index >= len(self._shortcut_rows):
+            return
+        row = self._shortcut_rows[index]
+        binding = self._bindings[index]
+        row.set_subtitle(_human_key_label(binding["key"]))
+
+        # Grow the reset-button slot list if this index somehow wasn't
+        # registered at build time (defensive; normally set up already).
+        while len(self._shortcut_reset_buttons) <= index:
+            self._shortcut_reset_buttons.append(None)
+
+        existing = self._shortcut_reset_buttons[index]
+        default_key = self._get_default_key(index)
+        needs_reset = bool(default_key and default_key != binding["key"])
+
+        if needs_reset and existing is None:
+            reset_btn = Gtk.Button.new_from_icon_name("edit-undo-symbolic")
+            reset_btn.add_css_class("flat")
+            reset_btn.set_tooltip_text(_("Reset to default"))
+            reset_btn.set_valign(Gtk.Align.CENTER)
+            reset_btn.connect(
+                "clicked", lambda _b, idx=index: self._reset_shortcut(idx)
+            )
+            row.add_suffix(reset_btn)
+            self._shortcut_reset_buttons[index] = reset_btn
+        elif not needs_reset and existing is not None:
+            row.remove(existing)
+            self._shortcut_reset_buttons[index] = None
 
     def _get_default_key(self, index: int) -> str | None:
         """Get the default key for a binding by matching its action signature."""
@@ -392,73 +529,90 @@ class KeyboardPage(BasePage):
                 return default["key"]
         return None
 
-    def _start_capture(self, index: int) -> None:
-        """Enter key capture mode for the given shortcut index."""
-        # Cancel any existing capture
-        self._cancel_capture()
+    # -- capture sub-page -----------------------------------------------
 
-        if index >= len(self._shortcut_buttons) or self._shortcut_buttons[index] is None:
+    def _push_capture_page(self, index: int) -> None:
+        """Push a navigation sub-page dedicated to capturing a new shortcut.
+
+        The Gtk.EventControllerKey attaches to the NavigationPage itself
+        (not the root window), so capture scope is limited to this
+        sub-page. On success: apply + pop. On conflict: the existing
+        AdwAlertDialog flow is preserved.
+        """
+        if index < 0 or index >= len(self._bindings) or self._nav is None:
             return
 
-        btn = self._shortcut_buttons[index]
-        self._capture_button = btn
+        sub = Adw.NavigationPage()
+        sub.set_title(_("Press new shortcut"))
+
+        toolbar = Adw.ToolbarView()
+        toolbar.add_top_bar(Adw.HeaderBar())  # automatic back button
+
+        status = Adw.StatusPage()
+        status.set_icon_name("input-keyboard-symbolic")
+        status.set_title(_("Press the new shortcut"))
+        status.set_description(
+            _("Press the desired key combination. Press Escape to cancel.")
+        )
+        toolbar.set_content(status)
+        sub.set_child(toolbar)
+
+        self._capture_page = sub
         self._capture_index = index
-        btn.set_label(_("Press new shortcut..."))
-
-        window = btn.get_root()
-        if window is None:
-            return
+        self._capture_done = False
 
         controller = Gtk.EventControllerKey()
-        controller.connect("key-pressed", self._on_key_captured)
-        window.add_controller(controller)
-        self._capture_controller = controller
+        controller.connect("key-pressed", self._on_capture_keypress, index, sub)
+        sub.add_controller(controller)
 
-    def _cancel_capture(self) -> None:
-        """Cancel the current key capture, restoring the button label."""
-        if self._capture_controller is not None:
-            window = self._capture_controller.get_widget()
-            if window is not None:
-                window.remove_controller(self._capture_controller)
-            self._capture_controller = None
+        self._nav.push(sub)
 
-        if self._capture_button is not None and self._capture_index >= 0:
-            current_key = self._bindings[self._capture_index]["key"]
-            self._capture_button.set_label(_human_key_label(current_key))
+    def _on_capture_keypress(self, _ctrl, keyval, _keycode, state, index, sub):
+        """Handle a key press on the capture sub-page."""
+        if self._capture_done:
+            # Second key-press while we're already processing the first
+            # (e.g. after showing the conflict dialog). Ignore.
+            return True
 
-        self._capture_button = None
-        self._capture_index = -1
-
-    def _on_key_captured(self, _controller, keyval, _keycode, state):
-        """Handle a key press during capture mode."""
         key_name = Gdk.keyval_name(keyval)
 
-        # Ignore lone modifier presses
+        # Ignore lone modifier presses — wait for the actual key.
         if key_name in _MODIFIER_KEYVALS:
             return True
 
-        # Escape cancels capture
+        # Escape cancels capture (unless combined with a modifier).
         if key_name == "Escape" and not (state & (
                 Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.ALT_MASK
                 | Gdk.ModifierType.SUPER_MASK)):
-            self._cancel_capture()
+            self._capture_done = True
+            if self._nav is not None:
+                self._nav.pop()
+            self._capture_page = None
+            self._capture_index = -1
             return True
 
         new_key = self._build_key_string(keyval, state)
         if not new_key:
             return True
 
-        index = self._capture_index
-        self._cancel_capture()
-
-        # Check for conflicts
+        # Conflict check uses the same logic as before.
         conflict_idx = self._find_conflict(new_key, index)
         if conflict_idx is not None:
             conflict_name = self._bindings[conflict_idx]["display_name"]
-            self._show_conflict_dialog(new_key, index, conflict_idx, conflict_name)
+            # The conflict dialog may resolve asynchronously; guard
+            # against a double-fire if the user somehow taps another
+            # key before it responds.
+            self._capture_done = True
+            self._show_conflict_dialog(new_key, index, conflict_idx, conflict_name, sub)
             return True
 
+        # Success path: apply and pop.
+        self._capture_done = True
         self._apply_new_key(index, new_key)
+        if self._nav is not None:
+            self._nav.pop()
+        self._capture_page = None
+        self._capture_index = -1
         return True
 
     def _build_key_string(self, keyval, state):
@@ -487,47 +641,59 @@ class KeyboardPage(BasePage):
         return None
 
     def _show_conflict_dialog(self, new_key: str, target_idx: int,
-                              conflict_idx: int, conflict_name: str) -> None:
-        """Show a dialog asking the user to confirm reassigning a conflicting key."""
-        btn = self._shortcut_buttons[target_idx] if target_idx < len(self._shortcut_buttons) else None
-        window = btn.get_root() if btn else None
+                              conflict_idx: int, conflict_name: str,
+                              capture_page: Adw.NavigationPage) -> None:
+        """Show a dialog asking the user to confirm reassigning a conflicting key.
 
-        dialog = Gtk.AlertDialog()
-        dialog.set_message(_("Shortcut Conflict"))
-        dialog.set_detail(
-            _('"{key}" is already assigned to "{conflict}".\n\nReassign it to "{target}"?').format(
+        Preserved from the pre-migration code: AdwAlertDialog is already
+        Adw-native, so the only change is that the dismissal path pops
+        the capture sub-page instead of swapping a button label.
+        """
+        parent = capture_page.get_root() if capture_page else self.get_root()
+
+        dialog = Adw.AlertDialog.new(
+            _("Shortcut Conflict"),
+            _('"{key}" is already assigned to "{conflict}".\n\n'
+              'Reassign it to "{target}"?').format(
                 key=_human_key_label(new_key),
                 conflict=conflict_name,
-                target=self._bindings[target_idx]['display_name'],
-            )
+                target=self._bindings[target_idx]["display_name"],
+            ),
         )
-        dialog.set_buttons([_("Cancel"), _("Reassign")])
-        dialog.set_default_button(1)
-        dialog.set_cancel_button(0)
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("reassign", _("Reassign"))
+        dialog.set_response_appearance(
+            "reassign", Adw.ResponseAppearance.SUGGESTED
+        )
+        dialog.set_default_response("reassign")
+        dialog.set_close_response("cancel")
 
-        def _on_response(dialog_obj, result):
-            try:
-                choice = dialog_obj.choose_finish(result)
-            except GLib.Error:
-                return
-            if choice == 1:
-                # Remove the conflicting binding's key (set to "None")
+        def _on_response(_dialog, response_id: str) -> None:
+            if response_id == "reassign":
+                # Fall back the conflicting binding to its default (or
+                # empty if it had none), update its row, then apply the
+                # new key to the target.
                 old_default = self._get_default_key(conflict_idx)
                 self._bindings[conflict_idx]["key"] = old_default or ""
-                if conflict_idx < len(self._shortcut_buttons) and self._shortcut_buttons[conflict_idx]:
-                    self._shortcut_buttons[conflict_idx].set_label(
-                        _human_key_label(self._bindings[conflict_idx]["key"]))
+                self._update_shortcut_row(conflict_idx)
                 self._apply_new_key(target_idx, new_key)
+            # Whether reassigned or cancelled, pop back to the list.
+            if self._nav is not None:
+                self._nav.pop()
+            self._capture_page = None
+            self._capture_index = -1
 
-        dialog.choose(window, None, _on_response)
+        dialog.connect("response", _on_response)
+        dialog.present(parent)
+
+    # -- binding mutation ------------------------------------------------
 
     def _apply_new_key(self, index: int, new_key: str) -> None:
         """Set a new key for the binding at index, save, and reconfigure."""
         if index >= len(self._bindings):
             return
         self._bindings[index]["key"] = new_key
-        if index < len(self._shortcut_buttons) and self._shortcut_buttons[index]:
-            self._shortcut_buttons[index].set_label(_human_key_label(new_key))
+        self._update_shortcut_row(index)
         self._save_and_reconfigure()
 
     def _reset_shortcut(self, index: int) -> None:
@@ -542,23 +708,19 @@ class KeyboardPage(BasePage):
             other_default = self._get_default_key(conflict_idx)
             if other_default:
                 self._bindings[conflict_idx]["key"] = other_default
-                if conflict_idx < len(self._shortcut_buttons) and self._shortcut_buttons[conflict_idx]:
-                    self._shortcut_buttons[conflict_idx].set_label(
-                        _human_key_label(other_default))
+                self._update_shortcut_row(conflict_idx)
 
         self._bindings[index]["key"] = default_key
-        if index < len(self._shortcut_buttons) and self._shortcut_buttons[index]:
-            self._shortcut_buttons[index].set_label(_human_key_label(default_key))
+        self._update_shortcut_row(index)
         self._save_and_reconfigure()
 
     def _reset_all_shortcuts(self) -> None:
         """Reset all shortcuts to system defaults."""
         self._bindings = list(self._default_bindings)
-        # Update all button labels
-        for i, binding in enumerate(self._bindings):
-            if i < len(self._shortcut_buttons) and self._shortcut_buttons[i]:
-                self._shortcut_buttons[i].set_label(_human_key_label(binding["key"]))
-        # Delete user overrides and reconfigure
+        # Update every row in place.
+        for i in range(len(self._bindings)):
+            self._update_shortcut_row(i)
+        # Delete user overrides and reconfigure.
         try:
             if USER_KEYBINDINGS.exists():
                 USER_KEYBINDINGS.unlink()
@@ -585,6 +747,8 @@ class KeyboardPage(BasePage):
 
         # Out-of-band: see note in _reset_all_shortcuts.
         self.store.apply()
+
+    # -- subprocess helpers ---------------------------------------------
 
     @staticmethod
     def _get_layouts():
