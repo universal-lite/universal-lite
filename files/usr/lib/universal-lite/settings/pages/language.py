@@ -3,13 +3,18 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Adw, Gtk
 
 from ..base import BasePage
 
 
-class LanguagePage(BasePage):
+class LanguagePage(BasePage, Adw.PreferencesPage):
+    def __init__(self, store, event_bus):
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
+
     @property
     def search_keywords(self):
         return [
@@ -19,52 +24,56 @@ class LanguagePage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
+        # Info banner — lives outside the group, above it.
+        banner = Adw.Banner.new(_("Changes take effect after logging out"))
+        banner.set_revealed(True)
+        self.add(banner)
 
-        # Info banner
-        banner = Gtk.Label(
-            label=_("Changes take effect after logging out"),
-            xalign=0,
-        )
-        banner.add_css_class("setting-subtitle")
-
-        # System language
+        # Gather locale data before building rows.
         locales = self._get_locales()
         current_locale = self._get_current_locale()
         current_fmt = self._get_current_format()
         loaded = [False]  # mutable so nested lambdas can read it
 
-        lang_dd = Gtk.DropDown.new_from_strings(locales if locales else ["en_US.UTF-8"])
+        # System language row
+        lang_row = Adw.ComboRow()
+        lang_row.set_title(_("System language"))
+        lang_row.set_model(Gtk.StringList.new(locales if locales else ["en_US.UTF-8"]))
         try:
-            lang_dd.set_selected(locales.index(current_locale))
+            lang_row.set_selected(locales.index(current_locale))
         except (ValueError, IndexError):
-            lang_dd.set_selected(0)
-        lang_dd.set_size_request(280, -1)
-        lang_dd.connect("notify::selected", lambda d, _:
-            None if not loaded[0] or not locales
-            else self._set_locale(locales[d.get_selected()]))
+            lang_row.set_selected(0)
+        lang_row.connect(
+            "notify::selected",
+            lambda r, _: None if not loaded[0] or not locales
+            else self._set_locale(locales[r.get_selected()]),
+        )
 
-        # Regional formats
-        fmt_dd = Gtk.DropDown.new_from_strings(locales if locales else ["en_US.UTF-8"])
+        # Regional formats row
+        fmt_row = Adw.ComboRow()
+        fmt_row.set_title(_("Regional formats"))
+        fmt_row.set_subtitle(_("Date, number, and currency format"))
+        fmt_row.set_model(Gtk.StringList.new(locales if locales else ["en_US.UTF-8"]))
         try:
-            fmt_dd.set_selected(locales.index(current_fmt))
+            fmt_row.set_selected(locales.index(current_fmt))
         except (ValueError, IndexError):
-            fmt_dd.set_selected(0)
-        fmt_dd.set_size_request(280, -1)
-        fmt_dd.connect("notify::selected", lambda d, _:
-            None if not loaded[0] or not locales
-            else self._set_format(locales[d.get_selected()]))
+            fmt_row.set_selected(0)
+        fmt_row.connect(
+            "notify::selected",
+            lambda r, _: None if not loaded[0] or not locales
+            else self._set_format(locales[r.get_selected()]),
+        )
 
-        page.append(self.make_group(_("Language & Region"), [
-            banner,
-            self.make_setting_row(_("System language"), "", lang_dd),
-            self.make_setting_row(_("Regional formats"), _("Date, number, and currency format"), fmt_dd),
-        ]))
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Language & Region"))
+        group.add(lang_row)
+        group.add(fmt_row)
+        self.add(group)
 
         # Flip the flag AFTER both initial selections have fired so the
         # page-load set_selected calls don't trigger localectl/polkit.
         loaded[0] = True
-        return page
+        return self
 
     @staticmethod
     def _get_locales():
