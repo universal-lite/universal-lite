@@ -142,14 +142,55 @@ window.app-menu {
 """
 
 
-def _load_edge() -> str:
-    """Return the current panel edge (bottom/top/left/right)."""
+def _load_settings() -> dict:
     try:
-        data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return "bottom"
-    edge = data.get("edge", "bottom")
-    return edge if edge in ("top", "bottom", "left", "right") else "bottom"
+        return {}
+
+
+def _panel_geometry(settings: dict) -> dict:
+    """Mirror apply-settings' panel-geometry formulas.
+
+    Returns the outer extent of the panel along its short axis (what
+    our LayerShell margin needs to clear) and the distance from the
+    panel's starting corner to the launcher's geometric centre (what
+    the tail's cross-axis margin needs to equal so the tail points at
+    the launcher icon). Everything is driven by density + font-size
+    so the menu tracks resized / compact panels automatically.
+    """
+    edge = settings.get("edge", "bottom")
+    if edge not in ("top", "bottom", "left", "right"):
+        edge = "bottom"
+    density = settings.get("density", "normal")
+    if density not in ("compact", "normal"):
+        density = "normal"
+    font_size = settings.get("font_size", 11)
+    if font_size not in (10, 11, 13, 15):
+        font_size = 11
+    size_scale = (font_size + 2) / 13
+
+    is_vertical = edge in ("left", "right")
+    panel_margin = round(8 * size_scale)
+    panel_bar_inset = round(4 * size_scale)
+    panel_pad_module = round(8 * size_scale)
+    panel_pad_launcher_h = round(12 * size_scale)  # horizontal CSS launcher pad
+    panel_icon_size = 16 if density == "compact" else 24
+
+    if is_vertical:
+        panel_short = round((48 if density == "compact" else 64) * size_scale)
+        launcher_pad = panel_pad_module
+    else:
+        panel_short = round((40 if density == "compact" else 48) * size_scale)
+        launcher_pad = panel_pad_launcher_h
+
+    return {
+        "edge": edge,
+        "panel_outer": panel_margin + panel_short,
+        "launcher_centre": (
+            panel_margin + panel_bar_inset + launcher_pad + panel_icon_size // 2
+        ),
+    }
 
 
 def _is_visible(app: Gio.AppInfo) -> bool:
@@ -194,7 +235,8 @@ class AppMenu(Gtk.Window):
         self.add_css_class("app-menu")
         self.set_decorated(False)
 
-        self._edge = _load_edge()
+        self._geom = _panel_geometry(_load_settings())
+        self._edge = self._geom["edge"]
         self._setup_surface(self._edge)
 
         # Window holds an Overlay: surface as the main child, chat-
@@ -257,13 +299,8 @@ class AppMenu(Gtk.Window):
     # the panel-facing side and is 28 px wide (or 14 px for vertical
     # panels, where its long axis runs vertically).
     _SHADOW_PAD = 30
-    _TAIL_W = 28
-    _TAIL_H = 14
-
-    # Approximate launcher centre in the panel's own coordinate system
-    # (padding + icon half-width). Used to align the tail horizontally
-    # (for top/bottom panels) or vertically (for left/right panels).
-    _LAUNCHER_CENTRE = 36
+    _TAIL_W = 32
+    _TAIL_H = 16
 
     def _apply_shadow_margins(self, surface: Gtk.Box, edge: str) -> None:
         pad = self._SHADOW_PAD
@@ -306,11 +343,15 @@ class AppMenu(Gtk.Window):
         tail.set_content_height(tail_h)
         tail.set_size_request(tail_w, tail_h)
 
-        # Position the tail flush with the window's panel-facing edge
-        # so its tip touches the panel, and offset along the cross-axis
-        # so its midpoint lines up with the launcher centre.
-        off_cross = self._LAUNCHER_CENTRE - tail_w // 2
-        off_main = self._LAUNCHER_CENTRE - tail_h // 2
+        # Tail's midpoint lines up with the launcher's centre along the
+        # cross-axis (horizontally for top/bottom panels, vertically for
+        # left/right), so its tip points directly at the launcher icon.
+        # launcher_centre is measured from the panel's starting corner
+        # in screen coords, which equals the window's origin because
+        # layer-shell margin on the cross-axis is zero.
+        centre = self._geom["launcher_centre"]
+        off_cross = centre - tail_w // 2
+        off_main = centre - tail_h // 2
 
         if edge == "bottom":
             tail.set_halign(Gtk.Align.START)
@@ -338,8 +379,14 @@ class AppMenu(Gtk.Window):
 
     def _draw_tail(self, area: Gtk.DrawingArea, cr,
                    width: int, height: int, edge: str) -> None:
-        # Pick up the theme's window background so the tail blends
-        # seamlessly into the surface.
+        """Draw a GNOME-style rounded bubble tail.
+
+        Instead of a sharp triangle, trace two symmetric cubic Béziers
+        from the two base corners to a rounded tip. The curve control
+        points are tuned so the sides bulge outward slightly (giving
+        the soft "drop" shape GNOME uses for popovers) and the tip is
+        kissed by a short arc rather than a hard point.
+        """
         ctx = self.get_style_context()
         found, rgba = ctx.lookup_color("window_bg_color")
         if not found:
@@ -347,23 +394,86 @@ class AppMenu(Gtk.Window):
             rgba.parse("#ffffff")
         cr.set_source_rgba(rgba.red, rgba.green, rgba.blue, rgba.alpha)
 
-        # Triangle whose point faces the panel.
+        w = float(width)
+        h = float(height)
+
+        # Shape parameters (fractions of the short axis):
+        #   bulge — how far the sides bow outward from a straight line
+        #   tip_r — radius of the rounded tip (half-width of the flat
+        #           "kiss" segment at the point)
+        tip_r = 2.0
+        bulge = 0.35
+
         if edge == "bottom":
+            # Base along top; tip toward bottom centre.
+            tip_y = h
+            cx = w / 2
             cr.move_to(0, 0)
-            cr.line_to(width, 0)
-            cr.line_to(width / 2, height)
+            cr.line_to(w, 0)
+            cr.curve_to(
+                w - w * bulge, h * 0.15,
+                cx + tip_r, tip_y - tip_r,
+                cx + tip_r, tip_y,
+            )
+            cr.arc(cx, tip_y, tip_r, 0.0, 3.141592653589793)
+            cr.curve_to(
+                cx - tip_r, tip_y - tip_r,
+                w * bulge, h * 0.15,
+                0, 0,
+            )
         elif edge == "top":
-            cr.move_to(0, height)
-            cr.line_to(width, height)
-            cr.line_to(width / 2, 0)
+            # Base along bottom; tip toward top centre.
+            tip_y = 0.0
+            cx = w / 2
+            cr.move_to(0, h)
+            cr.line_to(w, h)
+            cr.curve_to(
+                w - w * bulge, h * 0.85,
+                cx + tip_r, tip_y + tip_r,
+                cx + tip_r, tip_y,
+            )
+            cr.arc_negative(cx, tip_y, tip_r, 0.0, -3.141592653589793)
+            cr.curve_to(
+                cx - tip_r, tip_y + tip_r,
+                w * bulge, h * 0.85,
+                0, h,
+            )
         elif edge == "left":
-            cr.move_to(width, 0)
-            cr.line_to(width, height)
-            cr.line_to(0, height / 2)
+            # Base along right; tip toward left centre.
+            tip_x = 0.0
+            cy = h / 2
+            cr.move_to(w, 0)
+            cr.line_to(w, h)
+            cr.curve_to(
+                w * 0.85, h - h * bulge,
+                tip_x + tip_r, cy + tip_r,
+                tip_x, cy + tip_r,
+            )
+            cr.arc(tip_x, cy, tip_r,
+                   1.570796326794897, 4.712388980384690)
+            cr.curve_to(
+                tip_x + tip_r, cy - tip_r,
+                w * 0.85, h * bulge,
+                w, 0,
+            )
         elif edge == "right":
+            # Base along left; tip toward right centre.
+            tip_x = w
+            cy = h / 2
             cr.move_to(0, 0)
-            cr.line_to(0, height)
-            cr.line_to(width, height / 2)
+            cr.line_to(0, h)
+            cr.curve_to(
+                w * 0.15, h - h * bulge,
+                tip_x - tip_r, cy + tip_r,
+                tip_x, cy + tip_r,
+            )
+            cr.arc_negative(tip_x, cy, tip_r,
+                            1.570796326794897, -1.570796326794897)
+            cr.curve_to(
+                tip_x - tip_r, cy - tip_r,
+                w * 0.15, h * bulge,
+                0, 0,
+            )
         cr.close_path()
         cr.fill()
 
@@ -418,33 +528,33 @@ class AppMenu(Gtk.Window):
             return
 
         # Anchor to the panel's edge + the corner the launcher sits in.
-        # Panel outer size approximated from apply-settings default
-        # density (panel_margin=8 + panel_bar=40-48 + panel_margin=8).
-        # The window's panel-facing edge sits FLUSH with the panel's
-        # outer edge — no gap — so the tail can physically touch the
-        # panel. The other anchor uses a zero margin so offsets within
-        # the window line up with the launcher in screen coords.
-        panel_size = 56
+        # panel_outer is the computed outer size of the panel (margin +
+        # bar thickness) from settings.json — reading the same formula
+        # apply-settings uses means the tail reaches the panel exactly,
+        # regardless of density or font-size. The cross-axis margin is
+        # zero so the tail's launcher-centre offset maps directly to
+        # screen coordinates.
+        panel_outer = self._geom["panel_outer"]
 
         if edge == "bottom":
             LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
             LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, panel_outer)
             LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
         elif edge == "top":
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
             LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.TOP, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.TOP, panel_outer)
             LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
         elif edge == "left":
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
             LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.LEFT, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.LEFT, panel_outer)
             LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
         elif edge == "right":
             LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
             LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.RIGHT, panel_size)
+            LayerShell.set_margin(self, LayerShell.Edge.RIGHT, panel_outer)
             LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
 
     # -- content --
