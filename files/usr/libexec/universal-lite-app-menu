@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""Universal-Lite categorised start menu.
+
+Fired by the waybar launcher's on-click. A self-contained GTK4 window:
+search entry on top, apps grouped by freedesktop Main Category, one
+system-actions row at the bottom. Deliberately replaces the previous
+wtype-+-labwc-pipemenu combo so clicking the launcher doesn't rely on
+synthetic keystrokes or the compositor's menu grab — both of which
+turned out to be unreliable on labwc 0.9.6.
+"""
+from __future__ import annotations
+
+import sys
+
+import gi
+
+gi.require_version("Gtk", "4.0")
+from gi.repository import Gdk, Gio, GLib, Gtk
+
+# Freedesktop Main Categories we care about. Apps without a matching
+# category land in "Other". Order controls display order in the list.
+CATEGORIES: list[tuple[str, frozenset[str]]] = [
+    ("Internet",   frozenset({"Network", "WebBrowser", "Email", "InstantMessaging"})),
+    ("Office",     frozenset({"Office", "WordProcessor", "Spreadsheet", "Presentation"})),
+    ("Graphics",   frozenset({"Graphics", "2DGraphics", "Photography"})),
+    ("Multimedia", frozenset({"AudioVideo", "Audio", "Video", "Player"})),
+    ("Games",      frozenset({"Game"})),
+    ("Utilities",  frozenset({"Utility", "Accessories"})),
+    ("System",     frozenset({"System", "Settings", "PackageManager", "Security"})),
+    ("Development", frozenset({"Development", "IDE"})),
+]
+
+# Fixed system actions shown at the bottom of the menu.
+SYSTEM_ACTIONS = [
+    ("Settings",     "preferences-system",    ["universal-lite-settings"]),
+    ("File Manager", "system-file-manager",   ["Thunar"]),
+    ("Terminal",     "utilities-terminal",    ["foot"]),
+    ("Lock Screen",  "system-lock-screen",    ["swaylock", "-f"]),
+    ("Log Out",      "system-log-out",        ["labwc", "--exit"]),
+    ("Restart",      "system-reboot",         ["systemctl", "reboot"]),
+    ("Shut Down",    "system-shutdown",       ["systemctl", "poweroff"]),
+]
+
+
+def _category_for(app: Gio.AppInfo) -> str:
+    cats: set[str] = set()
+    if isinstance(app, Gio.DesktopAppInfo):
+        raw = app.get_categories() or ""
+        cats = {c for c in raw.rstrip(";").split(";") if c}
+    for label, keys in CATEGORIES:
+        if cats & keys:
+            return label
+    return "Other"
+
+
+class AppMenu(Gtk.ApplicationWindow):
+    def __init__(self, app: Gtk.Application):
+        super().__init__(application=app, title="Apps")
+        self.set_default_size(480, 640)
+
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        root.set_margin_top(12)
+        root.set_margin_bottom(12)
+        root.set_margin_start(12)
+        root.set_margin_end(12)
+        self.set_child(root)
+
+        self._search = Gtk.SearchEntry()
+        self._search.set_placeholder_text("Search apps\u2026")
+        self._search.connect("search-changed", self._on_search_changed)
+        self._search.connect("activate", self._on_search_activate)
+        root.append(self._search)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        root.append(scrolled)
+
+        self._list = Gtk.ListBox()
+        self._list.set_selection_mode(Gtk.SelectionMode.NONE)
+        self._list.set_filter_func(self._filter_row)
+        scrolled.set_child(self._list)
+
+        self._populate()
+
+        key = Gtk.EventControllerKey()
+        key.connect("key-pressed", self._on_key)
+        self.add_controller(key)
+
+        self._search.grab_focus()
+
+    def _populate(self) -> None:
+        apps = [a for a in Gio.AppInfo.get_all() if a.should_show()]
+        grouped: dict[str, list[Gio.AppInfo]] = {}
+        for a in apps:
+            grouped.setdefault(_category_for(a), []).append(a)
+
+        order = [c[0] for c in CATEGORIES] + ["Other"]
+        for cat in order:
+            items = grouped.get(cat, [])
+            if not items:
+                continue
+            items.sort(key=lambda a: a.get_display_name().lower())
+            self._list.append(self._make_header(cat))
+            for app in items:
+                self._list.append(self._make_app_row(app))
+
+        # System actions section
+        self._list.append(self._make_header("System"))
+        for label, icon_name, cmd in SYSTEM_ACTIONS:
+            self._list.append(self._make_action_row(label, icon_name, cmd))
+
+    def _make_header(self, text: str) -> Gtk.ListBoxRow:
+        row = Gtk.ListBoxRow()
+        row.set_selectable(False)
+        row.set_activatable(False)
+        row._is_header = True
+        label = Gtk.Label(label=text, xalign=0)
+        label.add_css_class("heading")
+        label.add_css_class("dim-label")
+        label.set_margin_top(10)
+        label.set_margin_bottom(2)
+        label.set_margin_start(4)
+        row.set_child(label)
+        return row
+
+    def _make_app_row(self, app: Gio.AppInfo) -> Gtk.ListBoxRow:
+        row = Gtk.ListBoxRow()
+        row._is_header = False
+        row._app = app
+        row._search_text = app.get_display_name().lower()
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        box.set_margin_top(4)
+        box.set_margin_bottom(4)
+        box.set_margin_start(4)
+        box.set_margin_end(4)
+        gicon = app.get_icon()
+        img = (Gtk.Image.new_from_gicon(gicon) if gicon is not None
+               else Gtk.Image.new_from_icon_name("application-x-executable-symbolic"))
+        img.set_pixel_size(28)
+        box.append(img)
+        name = Gtk.Label(label=app.get_display_name(), xalign=0)
+        name.set_hexpand(True)
+        box.append(name)
+        row.set_child(box)
+        gesture = Gtk.GestureClick()
+        gesture.connect("released", lambda *_: self._launch_app(app))
+        row.add_controller(gesture)
+        return row
+
+    def _make_action_row(self, label: str, icon_name: str,
+                         cmd: list[str]) -> Gtk.ListBoxRow:
+        row = Gtk.ListBoxRow()
+        row._is_header = False
+        row._search_text = label.lower()
+        row._app = None
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        box.set_margin_top(4)
+        box.set_margin_bottom(4)
+        box.set_margin_start(4)
+        box.set_margin_end(4)
+        img = Gtk.Image.new_from_icon_name(icon_name)
+        img.set_pixel_size(28)
+        box.append(img)
+        text = Gtk.Label(label=label, xalign=0)
+        text.set_hexpand(True)
+        box.append(text)
+        row.set_child(box)
+        gesture = Gtk.GestureClick()
+        gesture.connect("released", lambda *_: self._run_command(cmd))
+        row.add_controller(gesture)
+        return row
+
+    def _launch_app(self, app: Gio.AppInfo) -> None:
+        try:
+            app.launch([], None)
+        except GLib.Error as exc:
+            print(f"universal-lite-app-menu: launch failed: {exc.message}",
+                  file=sys.stderr)
+        self.close()
+
+    def _run_command(self, cmd: list[str]) -> None:
+        try:
+            GLib.spawn_async(
+                cmd,
+                flags=GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.STDOUT_TO_DEV_NULL
+                | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
+            )
+        except GLib.Error as exc:
+            print(f"universal-lite-app-menu: spawn failed: {exc.message}",
+                  file=sys.stderr)
+        self.close()
+
+    def _filter_row(self, row: Gtk.ListBoxRow) -> bool:
+        query = self._search.get_text().lower().strip()
+        if getattr(row, "_is_header", False):
+            # Hide headers while searching so results read as a flat list.
+            return query == ""
+        if not query:
+            return True
+        return query in getattr(row, "_search_text", "")
+
+    def _on_search_changed(self, _entry: Gtk.SearchEntry) -> None:
+        self._list.invalidate_filter()
+
+    def _on_search_activate(self, _entry: Gtk.SearchEntry) -> None:
+        row = self._list.get_first_child()
+        while row is not None:
+            if not getattr(row, "_is_header", False) and row.get_child_visible():
+                if getattr(row, "_app", None) is not None:
+                    self._launch_app(row._app)
+                return
+            row = row.get_next_sibling()
+
+    def _on_key(self, _ctrl, keyval: int, _code: int, _state) -> bool:
+        if keyval == Gdk.KEY_Escape:
+            self.close()
+            return True
+        return False
+
+
+def main() -> None:
+    app = Gtk.Application(application_id="org.universallite.AppMenu",
+                          flags=Gio.ApplicationFlags.NON_UNIQUE)
+    app.connect("activate", lambda a: AppMenu(a).present())
+    sys.exit(app.run([]))
+
+
+if __name__ == "__main__":
+    main()

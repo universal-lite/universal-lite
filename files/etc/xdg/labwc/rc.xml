@@ -93,14 +93,6 @@
     <keybind key="W-Down">
       <action name="Iconify"/>
     </keybind>
-
-    <!-- Hidden keybind for waybar launcher to trigger the app menu via
-         a synthetic F20 tap. F20 is chosen because no physical keyboard
-         emits it and wtype with no modifier avoids the Ctrl-latch race
-         that opened the menu on every panel click. -->
-    <keybind key="F20">
-      <action name="ShowMenu" menu="root-menu"/>
-    </keybind>
   </keyboard>
   <!-- Mouse bindings: defining ANY mousebind replaces ALL labwc
        built-in defaults, so we must include the full set. -->

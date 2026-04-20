@@ -106,7 +106,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     wlr-randr \
     wireplumber \
     wl-clipboard \
-    wtype \
     xfce-polkit \
     xorg-x11-server-Xwayland \
     xdg-desktop-portal \
@@ -206,6 +205,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-greeter-setup \
     /usr/libexec/universal-lite-wizard-session \
     /usr/libexec/universal-lite-menu \
+    /usr/libexec/universal-lite-app-menu \
     /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-volume \
     /usr/libexec/universal-lite-brightness \

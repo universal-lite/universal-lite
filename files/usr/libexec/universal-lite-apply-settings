@@ -647,20 +647,18 @@ def write_waybar_config(tokens: dict) -> bool:
     # Material Icons Outlined codepoints for waybar modules.
     # Waybar format-icons are literal text, not icon theme lookups.
     # Font set via CSS: font-family includes "Material Icons Outlined".
-    # Click the launcher → synthesise F20 via wtype, which labwc catches
-    # with the hidden `F20 → ShowMenu root-menu` keybind below. We use F20
-    # (no modifier) rather than the old Ctrl+F12 pair because wtype's
-    # modifier-press / modifier-release events race with pointer focus
-    # changes on labwc 0.9.6: if focus shifts mid-sequence, the Ctrl
-    # release lands on a different seat state and Ctrl stays logically
-    # held, making subsequent pointer events re-satisfy the keybind and
-    # reopen the menu on every click. A single F20 tap has no modifier
-    # to latch, and F20 is virtually never physically present on
-    # real-world keyboards so there's no conflict with user input.
+    # Click the launcher → spawn our own GTK4 start menu. We previously
+    # synthesised a keystroke (Ctrl+F12, then F20) and let a labwc
+    # keybind catch it to show the pipemenu, but that route was unstable
+    # on labwc 0.9.6: every click would re-open the menu because labwc's
+    # menu grab didn't reliably consume the pointer-release that
+    # dismissed it, so the release fell through to waybar and triggered
+    # wtype again. A self-contained GTK window has no such grab issue
+    # and doesn't need the wtype detour at all.
     config["custom/launcher"] = {
         "format": "\ue5c3",  # apps (2x2 grid)
         "tooltip-format": "Applications",
-        "on-click": "wtype -k F20",
+        "on-click": "universal-lite-app-menu",
     }
 
     config["wlr/taskbar"] = {
@@ -1184,15 +1182,6 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     </keybind>
     <keybind key="W-Down">
       <action name="Iconify"/>
-    </keybind>
-
-    <!-- Hidden keybind for waybar launcher to trigger the app menu via
-         a synthetic F20 tap (see on-click in apply-settings). F20 is
-         used because no real keyboard emits it, so there's no conflict
-         with user input, and because it carries no modifier — wtype
-         with modifiers has a latching race on labwc 0.9.6. -->
-    <keybind key="F20">
-      <action name="ShowMenu" menu="root-menu"/>
     </keybind>
 
     <!-- User custom keybinds -->
