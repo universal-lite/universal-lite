@@ -4,8 +4,9 @@ from pathlib import Path
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, Gtk
+from gi.repository import Adw, Gio, Gtk
 
 from ..base import BasePage
 
@@ -21,7 +22,11 @@ APP_MIME_TYPES = [
 ]
 
 
-class DefaultAppsPage(BasePage):
+class DefaultAppsPage(BasePage, Adw.PreferencesPage):
+    def __init__(self, store, event_bus):
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
+
     @property
     def search_keywords(self):
         return [(_("Default Applications"), label) for label, _ in APP_MIME_TYPES] + [
@@ -31,32 +36,49 @@ class DefaultAppsPage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
-        rows = []
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Default Applications"))
+
         for label, mime_type in APP_MIME_TYPES:
             apps = self._get_apps_for_mime(mime_type)
             if not apps:
                 continue
             desktop_ids = [did for did, _ in apps]
             display_names = [name for _, name in apps]
+
+            row = Adw.ComboRow()
+            row.set_title(label)
+            row.set_model(Gtk.StringList.new(display_names))
+
             _loading = [True]
-            dropdown = Gtk.DropDown.new_from_strings(display_names)
             current = self._get_default_app(mime_type)
             try:
-                dropdown.set_selected(desktop_ids.index(current))
+                row.set_selected(desktop_ids.index(current))
             except ValueError:
-                dropdown.set_selected(0)
+                row.set_selected(0)
             _loading[0] = False
+
             if mime_type is None:
                 # Terminal: write a wrapper desktop file so the choice takes effect
-                dropdown.connect("notify::selected", lambda d, _, ids=desktop_ids, _l=_loading:
-                    None if _l[0] else self._set_terminal_by_id(ids[d.get_selected()]))
+                row.connect(
+                    "notify::selected",
+                    lambda r, _, ids=desktop_ids, _l=_loading:
+                        None if _l[0] else self._set_terminal_by_id(ids[r.get_selected()]),
+                )
             else:
-                dropdown.connect("notify::selected", lambda d, _, mt=mime_type, ids=desktop_ids, _l=_loading:
-                    None if _l[0] else subprocess.run(["xdg-mime", "default", ids[d.get_selected()], mt], check=False))
-            rows.append(self.make_setting_row(label, "", dropdown))
-        page.append(self.make_group(_("Default Applications"), rows))
-        return page
+                row.connect(
+                    "notify::selected",
+                    lambda r, _, mt=mime_type, ids=desktop_ids, _l=_loading:
+                        None if _l[0] else subprocess.run(
+                            ["xdg-mime", "default", ids[r.get_selected()], mt],
+                            check=False,
+                        ),
+                )
+
+            group.add(row)
+
+        self.add(group)
+        return self
 
     @staticmethod
     def _set_terminal_by_id(desktop_id):
