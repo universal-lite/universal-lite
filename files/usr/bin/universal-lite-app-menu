@@ -94,9 +94,9 @@ window.app-menu {
     color: @window_fg_color;
     border-radius: 14px;
     /* Shadow sized to fit inside the window's _SHADOW_PAD margin on
-       every side (blur + |y-offset| ≤ pad) so the bottom half doesn't
-       clip sharp against the panel edge. Slight downward bias reads
-       as "popup above the panel" without exceeding the budget. */
+       every side (blur + |y-offset| &lt;= pad) so the bottom half
+       doesn't clip sharp against the panel edge. Slight downward
+       bias reads as "popup above the panel" without exceeding it. */
     box-shadow: 0 6px 20px 0 alpha(black, 0.35);
 }
 .app-menu-search {
