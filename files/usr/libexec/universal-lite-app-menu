@@ -87,6 +87,12 @@ class AppMenu(Gtk.ApplicationWindow):
         key.connect("key-pressed", self._on_key)
         self.add_controller(key)
 
+        # Click-outside-to-dismiss: the window is presented focused, so
+        # is_active flips to False as soon as the user clicks on any
+        # other surface (labwc re-focuses that surface). Matches the
+        # dismissal UX of a native popup menu without needing layer-shell.
+        self.connect("notify::is-active", self._on_active_changed)
+
         self._search.grab_focus()
 
     def _populate(self) -> None:
@@ -217,6 +223,10 @@ class AppMenu(Gtk.ApplicationWindow):
             self.close()
             return True
         return False
+
+    def _on_active_changed(self, window: Gtk.Window, _pspec) -> None:
+        if not window.is_active():
+            window.close()
 
 
 def main() -> None:
