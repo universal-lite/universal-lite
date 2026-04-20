@@ -220,7 +220,6 @@ class SettingsWindow(Adw.ApplicationWindow):
                 label=_("Failed to load {label}").format(label=label),
                 xalign=0,
             )
-            widget.add_css_class("setting-subtitle")
         self._stack.add_named(widget, label)
 
     @staticmethod

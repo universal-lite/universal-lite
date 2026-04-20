@@ -1,16 +1,28 @@
-from gettext import gettext as _
+from gettext import gettext as _  # noqa: F401 - re-exported for page modules
 
 import gi
 
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, Gtk
+from gi.repository import Gtk  # noqa: F401 - re-exported for page modules
 
 from .events import EventBus
 from .settings_store import SettingsStore
 
 
 class BasePage:
-    """Base class for all settings pages. Provides shared widget factories and infrastructure."""
+    """Minimal shared protocol every settings page implements.
+
+    This used to be the home for a pile of Gtk widget factory
+    staticmethods (make_page_box, make_group, make_setting_row,
+    make_info_row, make_toggle_cards) that each page pulled from
+    to build its hand-rolled Gtk.Box layouts. After the libadwaita
+    migration (Phases 0-3), every page inherits from
+    Adw.PreferencesPage and builds its UI from native Adw.*Row
+    widgets, so the factories have no callers. Phase 4 dropped them
+    along with the enable_escape_close dialog helper (no Gtk.Window
+    dialogs remain in any page - everything is AdwAlertDialog or
+    AdwNavigationView push).
+    """
 
     def __init__(self, store: SettingsStore, event_bus: EventBus) -> None:
         self.store = store
@@ -33,129 +45,18 @@ class BasePage:
         self._subscriptions.append((event, callback))
 
     def unsubscribe_all(self) -> None:
-        """Unsubscribe all tracked event callbacks."""
+        """Unsubscribe every tracked callback."""
         for event, callback in self._subscriptions:
             self.event_bus.unsubscribe(event, callback)
         self._subscriptions.clear()
 
     def setup_cleanup(self, widget: Gtk.Widget) -> None:
-        """Connect unmap signal to unsubscribe all event callbacks.
-        Call this in build() with the page's root widget."""
+        """Connect the widget's unmap signal to unsubscribe_all.
+
+        Call this from build() on whichever widget actually leaves
+        the visible tree when the user navigates away from the page -
+        for most pages that's self (the PreferencesPage); for pages
+        wrapped in an AdwNavigationView, it's self._nav, because the
+        PreferencesPage itself unmaps when sub-pages are pushed.
+        """
         widget.connect("unmap", lambda _: self.unsubscribe_all())
-
-    @staticmethod
-    def enable_escape_close(dialog: Gtk.Window) -> None:
-        """Close *dialog* when the user presses Escape.
-
-        GTK4's Gtk.Window doesn't wire Escape -> close by default (only
-        Gtk.Dialog did). This matches the GNOME HIG expectation that
-        every dialog is dismissible via the keyboard.
-        """
-        controller = Gtk.EventControllerKey()
-
-        def _on_key(_c, keyval, _kc, _state):
-            if keyval == Gdk.KEY_Escape:
-                dialog.close()
-                return True
-            return False
-
-        controller.connect("key-pressed", _on_key)
-        dialog.add_controller(controller)
-
-    @staticmethod
-    def make_page_box() -> Gtk.Box:
-        page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
-        page.add_css_class("content-page")
-        return page
-
-    @staticmethod
-    def make_group(title: str, children: list[Gtk.Widget], *,
-                   card_widget: Gtk.Widget | None = None) -> Gtk.Box:
-        """Build an Adwaita-style boxed-list group: title label + card container.
-
-        If *card_widget* is given, it is styled as the card directly (used when
-        the content is already a ListBox or ScrolledWindow that should not be
-        wrapped in another ListBox).
-        """
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        if title:
-            lbl = Gtk.Label(label=title, xalign=0)
-            lbl.add_css_class("group-title")
-            lbl.set_margin_bottom(6)
-            outer.append(lbl)
-        if card_widget is not None:
-            card_widget.add_css_class("boxed-list")
-            outer.append(card_widget)
-        else:
-            card = Gtk.ListBox()
-            card.set_selection_mode(Gtk.SelectionMode.NONE)
-            card.add_css_class("boxed-list")
-            for child in children:
-                row = Gtk.ListBoxRow()
-                row.set_activatable(False)
-                row.set_child(child)
-                card.append(row)
-            outer.append(card)
-        return outer
-
-    @staticmethod
-    def make_setting_row(label: str, subtitle: str, control: Gtk.Widget) -> Gtk.Box:
-        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        row.add_css_class("setting-row")
-        row.set_valign(Gtk.Align.CENTER)
-        left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
-        left.set_hexpand(True)
-        left.set_valign(Gtk.Align.CENTER)
-        lbl = Gtk.Label(label=label, xalign=0)
-        left.append(lbl)
-        if subtitle:
-            sub = Gtk.Label(label=subtitle, xalign=0, wrap=True)
-            sub.add_css_class("setting-subtitle")
-            left.append(sub)
-        row.append(left)
-        control.set_valign(Gtk.Align.CENTER)
-        row.append(control)
-        return row
-
-    @staticmethod
-    def make_info_row(label: str, value: str) -> Gtk.Box:
-        row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        row.add_css_class("setting-row")
-        row.set_valign(Gtk.Align.CENTER)
-        lbl = Gtk.Label(label=label, xalign=0)
-        lbl.set_hexpand(True)
-        row.append(lbl)
-        val = Gtk.Label(label=value, xalign=1)
-        val.add_css_class("setting-subtitle")
-        row.append(val)
-        return row
-
-    @staticmethod
-    def make_toggle_cards(options: list[tuple[str, str]], active: str, callback) -> Gtk.Box:
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        buttons: list[Gtk.ToggleButton] = []
-        _updating = [False]
-
-        def _on_toggled(btn: Gtk.ToggleButton, value: str) -> None:
-            if _updating[0]:
-                return
-            if not btn.get_active():
-                _updating[0] = True
-                btn.set_active(True)
-                _updating[0] = False
-                return
-            _updating[0] = True
-            for other in buttons:
-                if other is not btn:
-                    other.set_active(False)
-            _updating[0] = False
-            callback(value)
-
-        for value, label in options:
-            btn = Gtk.ToggleButton(label=label)
-            btn.add_css_class("toggle-card")
-            btn.set_active(value == active)
-            btn.connect("toggled", _on_toggled, value)
-            buttons.append(btn)
-            box.append(btn)
-        return box
