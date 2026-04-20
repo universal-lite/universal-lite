@@ -507,15 +507,20 @@ class AppMenu(Gtk.Window):
             # to us immediately, without the user needing to click to
             # focus first. Also ensures Escape reaches our key handler.
             LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.EXCLUSIVE)
-            LayerShell.set_exclusive_zone(self, 0)
-            # Anchor to all four edges → compositor sizes us to the
-            # full usable area (already excludes waybar's zone). The
-            # empty area around our rounded surface is what catches
-            # click-outside-to-dismiss.
+            # Anchor to all four edges *and* opt out of having our size
+            # trimmed by waybar's exclusive zone (zone = -1). Without
+            # this the compositor shrinks our overlay to the
+            # non-exclusive region, so waybar keeps receiving pointer
+            # events in its strip - clicking the launcher icon while
+            # the menu is open spawns a second menu instead of
+            # dismissing the first. With -1 our surface truly covers
+            # the full screen, including the panel, so launcher clicks
+            # land on us and our click-outside gesture closes the menu.
             for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
                          LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
                 LayerShell.set_anchor(self, side, True)
                 LayerShell.set_margin(self, side, 0)
+            LayerShell.set_exclusive_zone(self, -1)
         except Exception as exc:
             print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
                   file=sys.stderr)
