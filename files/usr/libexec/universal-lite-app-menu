@@ -17,20 +17,32 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gdk, Gio, GLib, Gtk
 
-# Freedesktop Main Categories we care about. Apps without a matching
-# category land in "Other". Order controls display order in the list.
+# App categories, matched to what `labwc-menu-generator -b` emits so the
+# start menu presents the same sections the old labwc pipemenu would
+# have. Order is alphabetical (matches labwc output). Apps that don't
+# match any freedesktop Main Category land in "Other" — labwc-menu
+# -generator drops those silently; we surface them instead so the user
+# can still find obscure apps.
 CATEGORIES: list[tuple[str, frozenset[str]]] = [
-    ("Internet",   frozenset({"Network", "WebBrowser", "Email", "InstantMessaging"})),
-    ("Office",     frozenset({"Office", "WordProcessor", "Spreadsheet", "Presentation"})),
-    ("Graphics",   frozenset({"Graphics", "2DGraphics", "Photography"})),
-    ("Multimedia", frozenset({"AudioVideo", "Audio", "Video", "Player"})),
-    ("Games",      frozenset({"Game"})),
-    ("Utilities",  frozenset({"Utility", "Accessories"})),
-    ("System",     frozenset({"System", "Settings", "PackageManager", "Security"})),
-    ("Development", frozenset({"Development", "IDE"})),
+    ("Accessories", frozenset({"Utility", "Accessories", "Core"})),
+    ("Development", frozenset({"Development", "IDE", "Building"})),
+    ("Games",       frozenset({"Game"})),
+    ("Graphics",    frozenset({"Graphics", "2DGraphics", "3DGraphics", "Photography",
+                               "RasterGraphics", "VectorGraphics", "Viewer"})),
+    ("Internet",    frozenset({"Network", "WebBrowser", "Email", "InstantMessaging",
+                               "FileTransfer", "P2P", "Chat", "IRCClient"})),
+    ("Multimedia",  frozenset({"AudioVideo", "Audio", "Video", "Player", "Recorder",
+                               "Music", "TV"})),
+    ("Settings",    frozenset({"Settings", "DesktopSettings", "HardwareSettings",
+                               "ControlCenter"})),
+    ("System",      frozenset({"System", "PackageManager", "Security", "Monitor",
+                               "TerminalEmulator", "FileManager"})),
 ]
 
-# Fixed system actions shown at the bottom of the menu.
+# Fixed system actions shown at the bottom of the menu. Mirrors the
+# entries the labwc pipemenu (universal-lite-menu) and desktop right-
+# click menu expose, in the same order, so the UX is consistent
+# whichever entry point the user takes.
 SYSTEM_ACTIONS = [
     ("Settings",     "preferences-system",    ["universal-lite-settings"]),
     ("File Manager", "system-file-manager",   ["Thunar"]),
@@ -111,8 +123,10 @@ class AppMenu(Gtk.ApplicationWindow):
             for app in items:
                 self._list.append(self._make_app_row(app))
 
-        # System actions section
-        self._list.append(self._make_header("System"))
+        # System actions — separated from app categories by a thin rule,
+        # matching the <separator/> the labwc pipemenu used to draw
+        # between app entries and system entries.
+        self._list.append(self._make_separator())
         for label, icon_name, cmd in SYSTEM_ACTIONS:
             self._list.append(self._make_action_row(label, icon_name, cmd))
 
@@ -128,6 +142,17 @@ class AppMenu(Gtk.ApplicationWindow):
         label.set_margin_bottom(2)
         label.set_margin_start(4)
         row.set_child(label)
+        return row
+
+    def _make_separator(self) -> Gtk.ListBoxRow:
+        row = Gtk.ListBoxRow()
+        row.set_selectable(False)
+        row.set_activatable(False)
+        row._is_header = True  # hidden during search, same as headers
+        sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        sep.set_margin_top(8)
+        sep.set_margin_bottom(4)
+        row.set_child(sep)
         return row
 
     def _make_app_row(self, app: Gio.AppInfo) -> Gtk.ListBoxRow:
