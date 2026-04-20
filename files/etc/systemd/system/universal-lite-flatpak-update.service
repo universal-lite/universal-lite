@@ -1,17 +1,22 @@
 [Unit]
 Description=Keep Flatpak apps up to date on every boot
-# Runs AFTER greetd — the user is already in or at the login screen;
-# update traffic is pure background work. No reason to block login.
-After=universal-lite-first-boot.service NetworkManager.service greetd.service
+After=NetworkManager.service
 # Opposite of -install: we only want this unit after initial setup
 # has completed (stamp present).
 ConditionPathExists=/var/lib/universal-lite/flatpak-setup.done
 
 [Service]
-Type=oneshot
+# Type=exec so systemd considers the unit active the moment bash is
+# exec'd, not when the script finishes. With Type=oneshot +
+# WantedBy=graphical.target, a 30-minute flatpak update literally
+# blocks graphical.target from reaching active, so the boot screen
+# sits on "Job universal-lite-flatpak-update.service/start running
+# (NN s / 30 min)" until the download completes. Users see that and
+# reasonably think the updater is holding up login. With Type=exec
+# the target proceeds immediately; the script runs quietly in the
+# background and logs to the journal on completion.
+Type=exec
 ExecStart=/usr/libexec/universal-lite-flatpak-setup
-RemainAfterExit=yes
-TimeoutStartSec=1800
 StandardOutput=journal
 StandardError=journal
 

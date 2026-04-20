@@ -14,16 +14,14 @@ ConditionPathExists=/var/lib/universal-lite/setup-done
 ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
 
 [Service]
-Type=oneshot
+# Type=exec so graphical.target reaches active as soon as bash is
+# exec'd, not when every app is installed. The greeter overlay is
+# driven by the stamp file + progress file (not by systemd state),
+# so the UX is unchanged - the greeter dismisses the "Finishing
+# setup" page the moment the script writes the stamp, regardless of
+# whether systemd is still tracking the unit as running.
+Type=exec
 ExecStart=/usr/libexec/universal-lite-flatpak-setup
-RemainAfterExit=yes
-# 10 minutes is more than enough for the default four apps on even
-# VM-speed networks. If it's still running at that point something
-# is wrong (permanent Flathub outage, etc.) — fall through to login
-# rather than trap the user. The script writes no stamp on failure
-# and next boot resumes where it left off (already-installed apps
-# are skipped via `flatpak list`).
-TimeoutStartSec=600
 StandardOutput=journal+console
 StandardError=journal+console
 
