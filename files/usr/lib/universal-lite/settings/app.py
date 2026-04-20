@@ -2,9 +2,10 @@ from pathlib import Path
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gdk", "4.0")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, Gtk
+from gi.repository import Adw, Gdk, Gtk
 
 from .events import EventBus
 from .settings_store import SettingsStore
@@ -14,7 +15,7 @@ APP_ID = "org.universallite.Settings"
 CSS_PATH = Path(__file__).parent / "css" / "style.css"
 
 
-class SettingsApp(Gtk.Application):
+class SettingsApp(Adw.Application):
     def __init__(self) -> None:
         super().__init__(application_id=APP_ID)
         self._store = SettingsStore()
@@ -36,7 +37,7 @@ class SettingsApp(Gtk.Application):
         win.present()
 
     def do_startup(self) -> None:
-        Gtk.Application.do_startup(self)
+        Adw.Application.do_startup(self)
         self.set_accels_for_action("win.search", ["<Control>f"])
 
 
