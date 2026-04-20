@@ -4,8 +4,9 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib, Gtk
+from gi.repository import Adw, GLib, Gtk
 
 from ..base import BasePage
 
@@ -16,16 +17,30 @@ SCHEDULE_LABELS = [_("Sunset to Sunrise"), _("Custom")]
 SCHEDULE_VALUES = ["sunset-sunrise", "custom"]
 
 
-class DisplayPage(BasePage):
+class DisplayPage(BasePage, Adw.PreferencesPage):
+    """Display settings: scale, resolution + refresh rate, night light, and
+    an Advanced launcher for wdisplays.
+
+    Scale and resolution changes go through a 15-second AdwAlertDialog
+    revert flow: the new value is applied immediately (wlr-randr), then
+    the dialog shows a live-updating countdown in its body; if the user
+    doesn't click Keep before it hits 0s, we programmatically fire the
+    Revert response and restore the prior value.
+    """
+
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
-        self._scale_buttons: list[Gtk.ToggleButton] = []
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
+        # Widgets and state we reach from outside build() (timers, dialog
+        # responses, unmap cleanup). Initialised to None; populated in
+        # build() / the revert-dialog flows.
+        self._scale_row: Adw.ComboRow | None = None
         self._revert_timer_id: int | None = None
         self._revert_seconds: int = 15
-        self._revert_dialog: Gtk.Window | None = None
+        self._revert_dialog: Adw.AlertDialog | None = None
         self._res_revert_timer_id: int | None = None
         self._res_revert_seconds: int = 15
-        self._res_revert_dialog: Gtk.Window | None = None
+        self._res_revert_dialog: Adw.AlertDialog | None = None
 
     @property
     def search_keywords(self):
@@ -39,172 +54,263 @@ class DisplayPage(BasePage):
             (_("Night Light"), _("Blue light")),
         ]
 
+    # -- build ----------------------------------------------------------
+
     def build(self):
-        page = self.make_page_box()
+        self.add(self._build_scale_group())
+        self.add(self._build_resolution_group())
+        self.add(self._build_night_light_group())
+        self.add(self._build_advanced_group())
 
-        # ── Display Scale (existing) ──
-        options = [(str(v), label) for v, label in zip(SCALE_VALUES, SCALE_OPTIONS)]
-        active = str(self.store.get("scale", 1.0))
-        cards_box = self.make_toggle_cards(
-            options, active, lambda v: self._apply_scale(float(v)),
+        # Cancel any in-flight revert countdown if the page is unmapped
+        # mid-dialog (user navigates away, window closes). Adw.AlertDialog
+        # has force_close() for exactly this scenario.
+        self.connect("unmap", lambda _w: self._cleanup_dialogs())
+
+        # Tear down event-bus subscriptions on unmap.
+        self.setup_cleanup(self)
+        return self
+
+    # -- group builders -------------------------------------------------
+
+    def _build_scale_group(self) -> Adw.PreferencesGroup:
+        row = Adw.ComboRow()
+        row.set_title(_("Display scale"))
+        row.set_model(Gtk.StringList.new(list(SCALE_OPTIONS)))
+
+        current = self.store.get("scale", 1.0)
+        try:
+            current_f = float(current)
+        except (TypeError, ValueError):
+            current_f = 1.0
+        row.set_selected(
+            SCALE_VALUES.index(current_f) if current_f in SCALE_VALUES else 1
         )
-        child = cards_box.get_first_child()
-        while child is not None:
-            if isinstance(child, Gtk.ToggleButton):
-                self._scale_buttons.append(child)
-            child = child.get_next_sibling()
-        page.append(self.make_group(_("Display Scale"), [cards_box]))
 
-        # ── Resolution & Refresh Rate ──
+        row.connect("notify::selected", self._on_scale_row_selected)
+        self._scale_row = row
+
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Display Scale"))
+        group.add(row)
+        return group
+
+    def _build_resolution_group(self) -> Adw.PreferencesGroup | Adw.StatusPage:
         displays = self._get_displays()
-        res_children: list[Gtk.Widget] = []
         if not displays:
-            no_display = Gtk.Label(label=_("No displays detected"), xalign=0)
-            no_display.add_css_class("setting-subtitle")
-            res_children.append(no_display)
-        else:
-            for name, current, modes in displays:
-                if not modes:
-                    continue
-                dd = Gtk.DropDown.new(
-                    Gtk.StringList.new(modes), None,
-                )
-                if current and current in modes:
-                    dd.set_selected(modes.index(current))
-                dd.set_size_request(240, -1)
-                dd.connect(
-                    "notify::selected",
-                    self._on_resolution_changed, name, modes, current,
-                )
-                res_children.append(self.make_setting_row(name, _("Resolution and refresh rate"), dd))
-        page.append(self.make_group(_("Resolution & Refresh Rate"), res_children))
+            status = Adw.StatusPage()
+            status.set_icon_name("video-display-symbolic")
+            status.set_title(_("No displays detected"))
+            return status
 
-        # ── Night Light ──
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Resolution & Refresh Rate"))
 
-        # Enable toggle
-        nl_toggle = Gtk.Switch()
-        nl_toggle.set_active(self.store.get("night_light_enabled", False))
+        # Expand-by-default only when a single display is present; with
+        # multiple displays the user can pick the one they care about.
+        single_display = len(displays) == 1
 
-        def _on_nl_toggle(_, state):
-            self.store.save_and_apply("night_light_enabled", state)
-            return False
+        for name, current, modes in displays:
+            if not modes:
+                continue
 
-        nl_toggle.connect("state-set", _on_nl_toggle)
+            expander = Adw.ExpanderRow()
+            expander.set_title(name)
+            expander.set_subtitle(_("Resolution and refresh rate"))
+            expander.set_expanded(single_display)
 
-        # Temperature slider
+            mode_row = Adw.ComboRow()
+            mode_row.set_title(_("Mode"))
+            mode_row.set_model(Gtk.StringList.new(list(modes)))
+            if current and current in modes:
+                mode_row.set_selected(modes.index(current))
+
+            mode_row.connect(
+                "notify::selected",
+                self._on_resolution_changed, name, list(modes), current,
+            )
+            expander.add_row(mode_row)
+            group.add(expander)
+
+        return group
+
+    def _build_night_light_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Night Light"))
+
+        # Enable switch row.
+        enable_row = Adw.SwitchRow()
+        enable_row.set_title(_("Night Light"))
+        enable_row.set_subtitle(_("Reduce blue light to help with sleep"))
+        enable_row.set_active(self.store.get("night_light_enabled", False))
+        enable_row.connect(
+            "notify::active",
+            lambda r, _p: self.store.save_and_apply(
+                "night_light_enabled", r.get_active()),
+        )
+        group.add(enable_row)
+
+        # Temperature slider as a suffix on an action row.
+        temp_row = Adw.ActionRow()
+        temp_row.set_title(_("Temperature"))
+        temp_row.set_subtitle(_("3500K (warm) to 6500K (cool)"))
+
         temp_scale = Gtk.Scale.new_with_range(
             Gtk.Orientation.HORIZONTAL, 3500, 6500, 100,
         )
         temp_scale.set_value(self.store.get("night_light_temp", 4500))
         temp_scale.set_size_request(200, -1)
         temp_scale.set_draw_value(True)
+        temp_scale.set_valign(Gtk.Align.CENTER)
         temp_scale.set_format_value_func(lambda _s, v: f"{v:.0f}K")
         temp_scale.connect(
             "value-changed",
-            lambda s: self.store.save_debounced("night_light_temp", int(s.get_value())),
+            lambda s: self.store.save_debounced(
+                "night_light_temp", int(s.get_value())),
         )
+        temp_row.add_suffix(temp_scale)
+        group.add(temp_row)
 
-        # Schedule dropdown
-        schedule_dd = Gtk.DropDown.new_from_strings(list(SCHEDULE_LABELS))
+        # Schedule combo.
+        schedule_row = Adw.ComboRow()
+        schedule_row.set_title(_("Schedule"))
+        schedule_row.set_model(Gtk.StringList.new(list(SCHEDULE_LABELS)))
+
         current_schedule = self.store.get("night_light_schedule", "sunset-sunrise")
         try:
-            schedule_dd.set_selected(SCHEDULE_VALUES.index(current_schedule))
+            schedule_row.set_selected(SCHEDULE_VALUES.index(current_schedule))
         except ValueError:
-            schedule_dd.set_selected(0)
-        schedule_dd.set_size_request(200, -1)
+            schedule_row.set_selected(0)
+        group.add(schedule_row)
 
-        # Custom time entries (start / end)
-        custom_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        # Custom schedule expander — wraps the two HH:MM entry rows.
+        custom_expander = Adw.ExpanderRow()
+        custom_expander.set_title(_("Custom schedule"))
+        custom_expander.set_expanded(current_schedule == "custom")
 
-        def _validate_and_save_time(entry, key):
-            text = entry.get_text().strip()
-            if re.fullmatch(r"[0-2]\d:[0-5]\d", text):
-                h, m = text.split(":")
-                if int(h) < 24:
-                    entry.remove_css_class("error")
-                    self.store.save_and_apply(key, text)
-                    return
-            entry.add_css_class("error")
-
-        start_entry = Gtk.Entry()
-        start_entry.set_text(self.store.get("night_light_start", "20:00"))
-        start_entry.set_placeholder_text(_("HH:MM"))
-        start_entry.set_max_width_chars(5)
-        start_entry.connect(
-            "activate",
-            lambda e: _validate_and_save_time(e, "night_light_start"),
+        start_row = Adw.EntryRow()
+        start_row.set_title(_("Start time"))
+        start_row.set_text(self.store.get("night_light_start", "20:00"))
+        start_row.set_show_apply_button(True)
+        start_row.connect(
+            "apply",
+            lambda r: self._validate_and_save_time(r, "night_light_start"),
         )
-        custom_box.append(self.make_setting_row(_("Start time"), "", start_entry))
+        custom_expander.add_row(start_row)
 
-        end_entry = Gtk.Entry()
-        end_entry.set_text(self.store.get("night_light_end", "06:00"))
-        end_entry.set_placeholder_text(_("HH:MM"))
-        end_entry.set_max_width_chars(5)
-        end_entry.connect(
-            "activate",
-            lambda e: _validate_and_save_time(e, "night_light_end"),
+        end_row = Adw.EntryRow()
+        end_row.set_title(_("End time"))
+        end_row.set_text(self.store.get("night_light_end", "06:00"))
+        end_row.set_show_apply_button(True)
+        end_row.connect(
+            "apply",
+            lambda r: self._validate_and_save_time(r, "night_light_end"),
         )
-        custom_box.append(self.make_setting_row(_("End time"), "", end_entry))
+        custom_expander.add_row(end_row)
 
-        custom_box.set_visible(current_schedule == "custom")
+        group.add(custom_expander)
 
-        def _on_schedule_changed(dd, _param):
-            idx = dd.get_selected()
-            value = SCHEDULE_VALUES[idx]
-            self.store.save_and_apply("night_light_schedule", value)
-            custom_box.set_visible(value == "custom")
+        # Schedule change toggles the custom expander's expanded state
+        # AND saves. Split into one handler so both side-effects stay
+        # in lockstep.
+        def _on_schedule_selected(row: Adw.ComboRow, _pspec) -> None:
+            idx = row.get_selected()
+            if 0 <= idx < len(SCHEDULE_VALUES):
+                value = SCHEDULE_VALUES[idx]
+                self.store.save_and_apply("night_light_schedule", value)
+                custom_expander.set_expanded(value == "custom")
 
-        schedule_dd.connect("notify::selected", _on_schedule_changed)
+        schedule_row.connect("notify::selected", _on_schedule_selected)
 
-        page.append(self.make_group(_("Night Light"), [
-            self.make_setting_row(_("Night Light"), _("Reduce blue light to help with sleep"), nl_toggle),
-            self.make_setting_row(_("Temperature"), _("3500K (warm) to 6500K (cool)"), temp_scale),
-            self.make_setting_row(_("Schedule"), "", schedule_dd),
-            custom_box,
-        ]))
+        return group
 
-        # ── Advanced ──
-        adv_btn = Gtk.Button(label=_("Open wdisplays"))
-        adv_btn.set_halign(Gtk.Align.START)
-        adv_btn.connect("clicked", lambda _: subprocess.Popen(
-            ["wdisplays"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
-        page.append(self.make_group(_("Advanced"), [
-            self.make_setting_row(
-                _("Advanced display settings"), _("Arrange and configure displays visually"), adv_btn),
-        ]))
+    def _build_advanced_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Advanced"))
 
-        page.connect("unmap", lambda _: self._cleanup_dialogs())
-        return page
+        row = Adw.ActionRow()
+        row.set_title(_("Advanced display settings"))
+        row.set_subtitle(_("Arrange and configure displays visually"))
+        row.set_activatable(True)
+        row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
+        row.connect("activated", lambda _r: self._launch_wdisplays())
+        group.add(row)
+        return group
+
+    # -- helpers --------------------------------------------------------
+
+    @staticmethod
+    def _launch_wdisplays() -> None:
+        try:
+            subprocess.Popen(
+                ["wdisplays"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
+        except (FileNotFoundError, OSError):
+            pass
+
+    def _validate_and_save_time(self, row: Adw.EntryRow, key: str) -> None:
+        text = row.get_text().strip()
+        if re.fullmatch(r"[0-2]\d:[0-5]\d", text):
+            h, _m = text.split(":")
+            if int(h) < 24:
+                row.remove_css_class("error")
+                self.store.save_and_apply(key, text)
+                return
+        row.add_css_class("error")
 
     def _cleanup_dialogs(self) -> None:
-        """Clean up revert dialogs and timers when page is unmapped."""
-        if hasattr(self, "_revert_timer_id") and self._revert_timer_id:
-            GLib.source_remove(self._revert_timer_id)
-            self._revert_timer_id = 0
-        if hasattr(self, "_revert_dialog") and self._revert_dialog:
-            self._revert_dialog.close()
-            self._revert_dialog = None
-        if hasattr(self, "_res_revert_timer_id") and self._res_revert_timer_id:
-            GLib.source_remove(self._res_revert_timer_id)
-            self._res_revert_timer_id = 0
-        if hasattr(self, "_res_revert_dialog") and self._res_revert_dialog:
-            self._res_revert_dialog.close()
-            self._res_revert_dialog = None
-
-    # ── Display Scale helpers ──
-
-    def _apply_scale(self, new_scale):
+        """Cancel any running countdown timers and dismiss live revert
+        dialogs when the page is unmapped."""
         if self._revert_timer_id is not None:
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
         if self._revert_dialog is not None:
-            self._revert_dialog.destroy()
+            self._revert_dialog.force_close()
             self._revert_dialog = None
-        old_scale = self.store.get("scale", 1.0)
+        if self._res_revert_timer_id is not None:
+            GLib.source_remove(self._res_revert_timer_id)
+            self._res_revert_timer_id = None
+        if self._res_revert_dialog is not None:
+            self._res_revert_dialog.force_close()
+            self._res_revert_dialog = None
+
+    # ── Display Scale ──────────────────────────────────────────────────
+
+    def _on_scale_row_selected(self, row: Adw.ComboRow, _pspec) -> None:
+        idx = row.get_selected()
+        if not (0 <= idx < len(SCALE_VALUES)):
+            return
+        new_scale = SCALE_VALUES[idx]
+        old_scale_raw = self.store.get("scale", 1.0)
+        try:
+            old_scale = float(old_scale_raw)
+        except (TypeError, ValueError):
+            old_scale = 1.0
+        if new_scale == old_scale:
+            return
+        self._apply_scale(new_scale)
+
+    def _apply_scale(self, new_scale: float) -> None:
+        # Cancel any in-flight revert before starting a new one: the user
+        # just picked a third option mid-countdown.
+        if self._revert_timer_id is not None:
+            GLib.source_remove(self._revert_timer_id)
+            self._revert_timer_id = None
+        if self._revert_dialog is not None:
+            self._revert_dialog.force_close()
+            self._revert_dialog = None
+
+        old_scale_raw = self.store.get("scale", 1.0)
+        try:
+            old_scale = float(old_scale_raw)
+        except (TypeError, ValueError):
+            old_scale = 1.0
+
         self._set_scale(new_scale)
         self._show_revert_dialog(old_scale, new_scale)
 
-    def _set_scale(self, scale):
+    def _set_scale(self, scale: float) -> None:
         try:
             result = subprocess.run(
                 ["wlr-randr"], capture_output=True, text=True, timeout=5,
@@ -222,78 +328,88 @@ class DisplayPage(BasePage):
                 except (FileNotFoundError, subprocess.TimeoutExpired):
                     pass
 
-    def _show_revert_dialog(self, old_scale, new_scale):
-        dialog = Gtk.Window(title=_("Confirm Scale"), modal=True)
-        if self._scale_buttons:
-            dialog.set_transient_for(self._scale_buttons[0].get_root())
-        dialog.set_default_size(400, 150)
-        dialog.set_resizable(False)
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        box.set_margin_top(24)
-        box.set_margin_bottom(24)
-        box.set_margin_start(24)
-        box.set_margin_end(24)
-        self._revert_seconds = 15
-        label = Gtk.Label(label=_("Keep this display scale?\nReverting in {seconds}s...").format(seconds=self._revert_seconds))
-        label.set_wrap(True)
-        box.append(label)
-        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        btn_box.set_halign(Gtk.Align.END)
-        revert_btn = Gtk.Button(label=_("Revert"))
-        revert_btn.connect("clicked", lambda _: self._revert(dialog, old_scale))
-        btn_box.append(revert_btn)
-        keep_btn = Gtk.Button(label=_("Keep"))
-        keep_btn.add_css_class("suggested-action")
-        keep_btn.connect("clicked", lambda _: self._keep(dialog, new_scale))
-        keep_btn.set_receives_default(True)
-        dialog.set_default_widget(keep_btn)
-        btn_box.append(keep_btn)
-        box.append(btn_box)
-        dialog.set_child(box)
-        self._revert_dialog = dialog
-        self._revert_timer_id = GLib.timeout_add_seconds(
-            1, self._tick_revert, label, dialog, old_scale,
+    def _show_revert_dialog(self, old_scale: float, new_scale: float) -> None:
+        dialog = Adw.AlertDialog.new(
+            _("Confirm display scale"),
+            None,
         )
-        dialog.connect("close-request", lambda _: self._revert(dialog, old_scale) or True)
-        BasePage.enable_escape_close(dialog)
-        dialog.present()
+        dialog.add_response("revert", _("Revert"))
+        dialog.add_response("keep", _("Keep"))
+        dialog.set_response_appearance("keep", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_default_response("keep")
+        dialog.set_close_response("revert")
 
-    def _tick_revert(self, label, dialog, old_scale):
+        self._revert_dialog = dialog
+        self._revert_seconds = 15
+        dialog.set_body(
+            _("Keep this display scale? Reverting in {seconds}s…").format(
+                seconds=self._revert_seconds),
+        )
+
+        dialog.connect("response", self._on_revert_response,
+                       old_scale, new_scale)
+
+        parent = self._scale_row.get_root() if self._scale_row else self.get_root()
+        dialog.present(parent)
+
+        self._revert_timer_id = GLib.timeout_add_seconds(
+            1, self._tick_revert, dialog,
+        )
+
+    def _tick_revert(self, dialog: Adw.AlertDialog) -> bool:
         self._revert_seconds -= 1
         if self._revert_seconds <= 0:
-            self._revert(dialog, old_scale)
+            # Clear the timer handle first — dialog.response() triggers
+            # the response handler synchronously, which also attempts to
+            # remove the timer. Returning SOURCE_REMOVE below is enough
+            # for GLib but the handler's defensive source_remove would
+            # be on a stale id.
+            self._revert_timer_id = None
+            dialog.response("revert")
             return GLib.SOURCE_REMOVE
-        label.set_text(_("Keep this display scale?\nReverting in {seconds}s...").format(seconds=self._revert_seconds))
+        dialog.set_body(
+            _("Keep this display scale? Reverting in {seconds}s…").format(
+                seconds=self._revert_seconds),
+        )
         return GLib.SOURCE_CONTINUE
 
-    def _revert(self, dialog, old_scale):
+    def _on_revert_response(
+        self,
+        _dialog: Adw.AlertDialog,
+        response_id: str,
+        old_scale: float,
+        new_scale: float,
+    ) -> None:
         if self._revert_timer_id is not None:
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
         self._revert_dialog = None
-        self._set_scale(old_scale)
-        self._sync_buttons(old_scale)
-        dialog.destroy()
 
-    def _keep(self, dialog, new_scale):
-        if self._revert_timer_id is not None:
-            GLib.source_remove(self._revert_timer_id)
-            self._revert_timer_id = None
-        self._revert_dialog = None
-        self.store.save_and_apply("scale", new_scale)
-        self._sync_buttons(new_scale)
-        dialog.destroy()
+        if response_id == "keep":
+            self.store.save_and_apply("scale", new_scale)
+            self._sync_scale_row_to(new_scale)
+        else:
+            self._set_scale(old_scale)
+            self._sync_scale_row_to(old_scale)
 
-    def _sync_buttons(self, scale):
-        scale_str = str(scale)
-        value_to_label = {str(v): lbl for v, lbl in zip(SCALE_VALUES, SCALE_OPTIONS)}
-        target_label = value_to_label.get(scale_str, "")
-        for btn in self._scale_buttons:
-            active = btn.get_label() == target_label
-            if btn.get_active() != active:
-                btn.set_active(active)
+    def _sync_scale_row_to(self, scale: float) -> None:
+        if self._scale_row is None:
+            return
+        try:
+            target_idx = SCALE_VALUES.index(float(scale))
+        except (ValueError, TypeError):
+            return
+        if self._scale_row.get_selected() != target_idx:
+            # Block our own handler: changing the selected index here is
+            # a sync operation, not a user choice, so it must not kick
+            # off another revert countdown.
+            self._scale_row.handler_block_by_func(self._on_scale_row_selected)
+            try:
+                self._scale_row.set_selected(target_idx)
+            finally:
+                self._scale_row.handler_unblock_by_func(self._on_scale_row_selected)
 
-    # ── Resolution & Refresh Rate helpers ──
+    # ── Resolution & Refresh Rate ──────────────────────────────────────
 
     @staticmethod
     def _get_displays():
@@ -326,24 +442,32 @@ class DisplayPage(BasePage):
             displays.append((name, current, modes))
         return displays
 
-    def _on_resolution_changed(self, dd, _param, output_name, modes, old_mode):
-        idx = dd.get_selected()
+    def _on_resolution_changed(
+        self,
+        row: Adw.ComboRow,
+        _pspec,
+        output_name: str,
+        modes: list[str],
+        old_mode: str | None,
+    ) -> None:
+        idx = row.get_selected()
         if idx < 0 or idx >= len(modes):
             return
         new_mode = modes[idx]
         if new_mode == old_mode:
             return
+        # Cancel any in-flight resolution revert; starting a fresh one.
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         if self._res_revert_dialog is not None:
-            self._res_revert_dialog.destroy()
+            self._res_revert_dialog.force_close()
             self._res_revert_dialog = None
         self._apply_resolution(output_name, new_mode)
-        self._show_res_revert_dialog(dd, output_name, modes, old_mode, new_mode)
+        self._show_res_revert_dialog(row, output_name, modes, old_mode, new_mode)
 
     @staticmethod
-    def _apply_resolution(output_name, mode_str):
+    def _apply_resolution(output_name: str, mode_str: str) -> None:
         # mode_str: "1920x1080@60.0Hz" — strip "Hz" for wlr-randr's --mode flag
         mode_arg = mode_str.replace("Hz", "")
         try:
@@ -354,71 +478,77 @@ class DisplayPage(BasePage):
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
 
-    def _show_res_revert_dialog(self, dropdown, output_name, modes, old_mode, new_mode):
-        dialog = Gtk.Window(title=_("Confirm Resolution"), modal=True)
-        dialog.set_transient_for(dropdown.get_root())
-        dialog.set_default_size(400, 150)
-        dialog.set_resizable(False)
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        box.set_margin_top(24)
-        box.set_margin_bottom(24)
-        box.set_margin_start(24)
-        box.set_margin_end(24)
-        self._res_revert_seconds = 15
-        label = Gtk.Label(
-            label=_("Keep this resolution?\nReverting in {seconds}s...").format(seconds=self._res_revert_seconds),
+    def _show_res_revert_dialog(
+        self,
+        mode_row: Adw.ComboRow,
+        output_name: str,
+        modes: list[str],
+        old_mode: str | None,
+        new_mode: str,
+    ) -> None:
+        dialog = Adw.AlertDialog.new(
+            _("Confirm resolution"),
+            None,
         )
-        label.set_wrap(True)
-        box.append(label)
-        btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        btn_box.set_halign(Gtk.Align.END)
-        revert_btn = Gtk.Button(label=_("Revert"))
-        revert_btn.connect(
-            "clicked",
-            lambda _: self._res_revert(dialog, dropdown, output_name, modes, old_mode),
-        )
-        btn_box.append(revert_btn)
-        keep_btn = Gtk.Button(label=_("Keep"))
-        keep_btn.add_css_class("suggested-action")
-        keep_btn.connect("clicked", lambda _: self._res_keep(dialog, output_name, new_mode))
-        keep_btn.set_receives_default(True)
-        dialog.set_default_widget(keep_btn)
-        btn_box.append(keep_btn)
-        box.append(btn_box)
-        dialog.set_child(box)
-        self._res_revert_dialog = dialog
-        self._res_revert_timer_id = GLib.timeout_add_seconds(
-            1, self._tick_res_revert, label, dialog, dropdown, output_name, modes, old_mode,
-        )
-        dialog.connect(
-            "close-request",
-            lambda _: self._res_revert(dialog, dropdown, output_name, modes, old_mode) or True,
-        )
-        BasePage.enable_escape_close(dialog)
-        dialog.present()
+        dialog.add_response("revert", _("Revert"))
+        dialog.add_response("keep", _("Keep"))
+        dialog.set_response_appearance("keep", Adw.ResponseAppearance.SUGGESTED)
+        dialog.set_default_response("keep")
+        dialog.set_close_response("revert")
 
-    def _tick_res_revert(self, label, dialog, dropdown, output_name, modes, old_mode):
+        self._res_revert_dialog = dialog
+        self._res_revert_seconds = 15
+        dialog.set_body(
+            _("Keep this resolution? Reverting in {seconds}s…").format(
+                seconds=self._res_revert_seconds),
+        )
+
+        dialog.connect(
+            "response", self._on_res_revert_response,
+            mode_row, output_name, modes, old_mode, new_mode,
+        )
+
+        dialog.present(mode_row.get_root() or self.get_root())
+
+        self._res_revert_timer_id = GLib.timeout_add_seconds(
+            1, self._tick_res_revert, dialog,
+        )
+
+    def _tick_res_revert(self, dialog: Adw.AlertDialog) -> bool:
         self._res_revert_seconds -= 1
         if self._res_revert_seconds <= 0:
-            self._res_revert(dialog, dropdown, output_name, modes, old_mode)
+            self._res_revert_timer_id = None
+            dialog.response("revert")
             return GLib.SOURCE_REMOVE
-        label.set_text(_("Keep this resolution?\nReverting in {seconds}s...").format(seconds=self._res_revert_seconds))
+        dialog.set_body(
+            _("Keep this resolution? Reverting in {seconds}s…").format(
+                seconds=self._res_revert_seconds),
+        )
         return GLib.SOURCE_CONTINUE
 
-    def _res_revert(self, dialog, dropdown, output_name, modes, old_mode):
+    def _on_res_revert_response(
+        self,
+        _dialog: Adw.AlertDialog,
+        response_id: str,
+        mode_row: Adw.ComboRow,
+        output_name: str,
+        modes: list[str],
+        old_mode: str | None,
+        new_mode: str,
+    ) -> None:
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         self._res_revert_dialog = None
-        self._apply_resolution(output_name, old_mode)
-        if old_mode in modes:
-            dropdown.set_selected(modes.index(old_mode))
-        dialog.destroy()
 
-    def _res_keep(self, dialog, output_name, new_mode):
-        if self._res_revert_timer_id is not None:
-            GLib.source_remove(self._res_revert_timer_id)
-            self._res_revert_timer_id = None
-        self._res_revert_dialog = None
-        self.store.save_and_apply(f"resolution_{output_name}", new_mode)
-        dialog.destroy()
+        if response_id == "keep":
+            self.store.save_and_apply(f"resolution_{output_name}", new_mode)
+        else:
+            self._apply_resolution(output_name, old_mode or new_mode)
+            if old_mode and old_mode in modes:
+                # Block to avoid re-triggering _on_resolution_changed.
+                mode_row.handler_block_by_func(self._on_resolution_changed)
+                try:
+                    mode_row.set_selected(modes.index(old_mode))
+                finally:
+                    mode_row.handler_unblock_by_func(self._on_resolution_changed)
