@@ -38,6 +38,7 @@ if (os.environ.get("UL_APP_MENU_PRELOADED") != "1"
     os.execv(sys.executable, [sys.executable, __file__] + sys.argv[1:])
 
 import json
+import signal
 import time
 from pathlib import Path
 
@@ -60,6 +61,13 @@ except (ValueError, ImportError) as _e:
 
 SETTINGS_PATH = Path.home() / ".config/universal-lite/settings.json"
 LAUNCHES_PATH = Path.home() / ".config/universal-lite/app-launches.json"
+
+# PID lock: second invocation (e.g. launcher click while the menu is
+# open) signals the live instance to close and itself exits without
+# showing a second menu - giving click-to-toggle behaviour on the
+# launcher without needing a fullscreen catcher surface.
+_XDG_RUNTIME_DIR = os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
+PID_LOCK_PATH = Path(_XDG_RUNTIME_DIR) / "universal-lite-app-menu.pid"
 
 # App categories, matched to what `labwc-menu-generator -b` emits.
 # Order is alphabetical. Apps that don't match any freedesktop Main
@@ -303,6 +311,54 @@ def _load_launches() -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _toggle_or_lock() -> bool:
+    """Acquire the singleton PID lock, or toggle an existing instance off.
+
+    Returns True if this process should continue (no other instance
+    was alive), False if it has asked a live instance to close and
+    should just exit. Stale lock files (process no longer alive) are
+    silently replaced.
+    """
+    if PID_LOCK_PATH.exists():
+        try:
+            other = int(PID_LOCK_PATH.read_text().strip())
+        except (ValueError, OSError):
+            other = 0
+        if other > 0:
+            try:
+                # SIGTERM lets the other instance run its atexit cleanup
+                # (including removing the PID file). If it isn't alive
+                # any more, kill(0) / kill(SIGTERM) throws ProcessLookup.
+                os.kill(other, signal.SIGTERM)
+                return False
+            except ProcessLookupError:
+                pass  # fall through - stale lock
+            except PermissionError:
+                # Different user owns the PID; don't clobber, just open
+                # another menu and live with the overlap.
+                return True
+    try:
+        PID_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
+        PID_LOCK_PATH.write_text(str(os.getpid()))
+    except OSError as exc:
+        # Can't take the lock - launch anyway, we just lose toggle.
+        print(f"universal-lite-app-menu: could not write PID lock: {exc}",
+              file=sys.stderr)
+    return True
+
+
+def _release_lock() -> None:
+    try:
+        current = int(PID_LOCK_PATH.read_text().strip())
+    except (OSError, ValueError):
+        return
+    if current == os.getpid():
+        try:
+            PID_LOCK_PATH.unlink()
+        except OSError:
+            pass
+
+
 def _record_launch(desktop_id: str) -> None:
     """Bump the launch count for `desktop_id` in the tracker file.
 
@@ -349,25 +405,20 @@ class AppMenu(Gtk.Window):
         self._has_frequent = False
         self._apps: list[Gio.AppInfo] = []
 
-        # Single rounded surface inside a transparent window - no tail.
-        # Uniform shadow margin on every side so the drop shadow renders
-        # evenly around the full rounded rectangle. The surface carries
-        # a fixed size; halign/valign place it in the corner adjacent
-        # to the launcher so the rest of the fullscreen overlay window
-        # is empty transparent space that our click-outside gesture
-        # uses to dismiss the menu.
+        # Rounded surface with shadow-clearance margins. The window
+        # itself is pinned to the panel's edge + section corner by
+        # layer-shell (see _setup_surface), so the surface just fills
+        # the window's content area - no halign/valign juggling, and
+        # no fullscreen overlay needed.
         surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         surface.add_css_class("app-menu-surface")
-        surface.set_hexpand(False)
-        surface.set_vexpand(False)
-        surface.set_size_request(640, 540)
+        surface.set_hexpand(True)
+        surface.set_vexpand(True)
         pad = self._SHADOW_PAD
         surface.set_margin_top(pad)
         surface.set_margin_bottom(pad)
         surface.set_margin_start(pad)
         surface.set_margin_end(pad)
-        surface.set_halign(self._resolve_halign())
-        surface.set_valign(self._resolve_valign())
         self.set_child(surface)
         self._surface = surface
 
@@ -428,25 +479,17 @@ class AppMenu(Gtk.Window):
         key.connect("key-pressed", self._on_key)
         self.add_controller(key)
 
-        # Click-outside-to-dismiss. Runs in CAPTURE phase so it sees
-        # every button-press before descendant tile gestures do; the
-        # handler only claims the sequence (closing the menu) when
-        # the click landed outside the surface's bounds. Clicks on
-        # tiles and the power bar return without claiming, so their
-        # own gestures fire normally.
-        dismiss = Gtk.GestureClick()
-        dismiss.set_button(0)  # any button
-        dismiss.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
-        dismiss.connect("pressed", self._on_dismiss_press)
-        self.add_controller(dismiss)
+        # Debounced focus-loss dismissal. The filter DropDown opens
+        # its popup as a child surface that briefly takes keyboard
+        # focus, which flips the window's is-active to False for a
+        # few tens of ms before GTK restores it; closing immediately
+        # on is-active=False would shut the menu the instant the
+        # dropdown is clicked. Waiting ~150 ms lets those transient
+        # blips settle. A genuine click-outside keeps the window
+        # inactive past the timeout and we close.
+        self._inactive_timer: int | None = None
+        self.connect("notify::is-active", self._on_active_changed)
 
-        # Note: we intentionally don't listen to notify::is-active.
-        # Transient child surfaces (the filter DropDown's popover, the
-        # search entry's peek menu) toggle the window's active state
-        # while they're open; closing on that signal closes the menu
-        # the instant the user clicks the dropdown button. Click-
-        # outside dismissal via the capture gesture above handles every
-        # real focus-loss case.
         self._search.grab_focus()
 
     # -- geometry helpers --
@@ -458,86 +501,82 @@ class AppMenu(Gtk.Window):
     # 12 px) with room to spare.
     _SHADOW_PAD = 20
 
-    def _resolve_halign(self) -> Gtk.Align:
-        edge, section = self._edge, self._geom["section"]
-        if edge in ("top", "bottom"):
-            if section == "start":
-                return Gtk.Align.START
-            if section == "end":
-                return Gtk.Align.END
-            return Gtk.Align.CENTER
-        # Side panel - hug the panel's side regardless of launcher section.
-        return Gtk.Align.START if edge == "left" else Gtk.Align.END
-
-    def _resolve_valign(self) -> Gtk.Align:
-        edge, section = self._edge, self._geom["section"]
-        if edge in ("left", "right"):
-            if section == "start":
-                return Gtk.Align.START
-            if section == "end":
-                return Gtk.Align.END
-            return Gtk.Align.CENTER
-        # Top/bottom panel - menu sits on the panel's side of the screen.
-        return Gtk.Align.END if edge == "bottom" else Gtk.Align.START
-
     # -- layer-shell / surface setup --
 
     def _setup_surface(self, edge: str) -> None:
-        """Configure either a layer-shell surface (preferred) or a fallback toplevel.
+        """Anchor the window to the panel's launcher corner via layer-shell.
 
-        Layer-shell path: anchor the window to all four screen edges
-        so it covers the entire display, sit on the OVERLAY layer
-        (above waybar and normal TOP layer clients), grab the keyboard
-        exclusively while open. The inner surface box positions itself
-        in the right corner via halign/valign. Click-outside dismissal
-        is driven by a capture-phase gesture on the window that checks
-        whether the click landed inside the surface's bounds.
+        Instead of a fullscreen overlay with halign/valign juggling,
+        we anchor to two of the four edges (the panel's edge plus the
+        cross-axis edge matching the launcher section). The compositor
+        then places the window flush against those edges and sizes it
+        to our set_default_size, so positioning is pixel-exact and
+        independent of anything inside the surface. Waybar's own
+        exclusive zone is respected (exclusive_zone=0 on our side), so
+        the menu sits adjacent to the panel rather than overlapping it.
 
-        Why OVERLAY and not TOP: waybar also lives on TOP. Clicking the
-        launcher icon on the panel must hit *us* (so we can dismiss the
-        menu) rather than waybar (which would spawn a second instance).
+        Dismissal paths with a panel-anchored (not fullscreen) menu:
+          - Escape - via _on_key
+          - focus leaving the window - via notify::is-active, debounced
+            to ignore transient popover focus blips (filter dropdown)
+          - clicking the launcher again - a second invocation signals
+            this one via the PID lock (see _toggle_or_lock)
         """
+        pad = self._SHADOW_PAD
+        # Window size = menu surface (640x540) plus shadow-clearance
+        # margins on every side. Layer-shell uses this as the fixed
+        # allocation for the window.
+        self.set_default_size(640 + 2 * pad, 540 + 2 * pad)
+
         if not _HAVE_LAYER_SHELL:
-            # No layer-shell → best we can do is a centred, decoration-
-            # less, always-floating window sized to fit the surface.
-            pad = self._SHADOW_PAD
-            self.set_default_size(640 + 2 * pad, 540 + 2 * pad)
             print("universal-lite-app-menu: layer-shell unavailable, "
                   "using fallback toplevel", file=sys.stderr)
             return
 
         try:
             LayerShell.init_for_window(self)
-            # init_for_window is void in C; verify success explicitly.
             if not LayerShell.is_layer_window(self):
                 print("universal-lite-app-menu: layer-shell init returned "
                       "without error but window is not a layer surface - "
                       "library probably loaded after libwayland-client",
                       file=sys.stderr)
                 return
+            section = self._geom["section"]
             print(f"universal-lite-app-menu: layer-shell active "
-                  f"(edge={edge}, fullscreen overlay)",
+                  f"(edge={edge}, section={section})",
                   file=sys.stderr)
-            LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
+            LayerShell.set_layer(self, LayerShell.Layer.TOP)
             LayerShell.set_namespace(self, "universal-lite-app-menu")
-            # EXCLUSIVE keyboard so typing in the search entry routes
-            # to us immediately, without the user needing to click to
-            # focus first. Also ensures Escape reaches our key handler.
-            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.EXCLUSIVE)
-            # Anchor to all four edges *and* opt out of having our size
-            # trimmed by waybar's exclusive zone (zone = -1). Without
-            # this the compositor shrinks our overlay to the
-            # non-exclusive region, so waybar keeps receiving pointer
-            # events in its strip - clicking the launcher icon while
-            # the menu is open spawns a second menu instead of
-            # dismissing the first. With -1 our surface truly covers
-            # the full screen, including the panel, so launcher clicks
-            # land on us and our click-outside gesture closes the menu.
-            for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
-                         LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
-                LayerShell.set_anchor(self, side, True)
-                LayerShell.set_margin(self, side, 0)
-            LayerShell.set_exclusive_zone(self, -1)
+            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.ON_DEMAND)
+            LayerShell.set_exclusive_zone(self, 0)
+
+            # Anchor to the panel edge + its section corner. Margins
+            # are zero; waybar's exclusive zone already provides the
+            # visual gap between the menu and the panel itself.
+            if edge == "bottom":
+                LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+                if section == "start":
+                    LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
+                elif section == "end":
+                    LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
+            elif edge == "top":
+                LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+                if section == "start":
+                    LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
+                elif section == "end":
+                    LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
+            elif edge == "left":
+                LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
+                if section == "start":
+                    LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+                elif section == "end":
+                    LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
+            elif edge == "right":
+                LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
+                if section == "start":
+                    LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
+                elif section == "end":
+                    LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
         except Exception as exc:
             print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
                   file=sys.stderr)
@@ -847,26 +886,28 @@ class AppMenu(Gtk.Window):
             return True
         return False
 
-    def _on_dismiss_press(self, gesture: Gtk.GestureClick,
-                          _n_press: int, x: float, y: float) -> None:
-        """Close the menu if the click landed outside the surface box.
+    def _on_active_changed(self, window: Gtk.Window, _pspec) -> None:
+        """Close when focus is lost to something other than our own popovers.
 
-        compute_bounds walks up to the given parent (self, the window)
-        so the returned rect is in window-local coordinates - the same
-        space as the gesture's (x, y). Returning without claiming the
-        sequence lets clicks inside the surface propagate normally to
-        the row / power-button gestures.
+        is-active flips False briefly while a Gtk.DropDown popup is
+        open because the popup takes keyboard focus as a child
+        surface. A ~150 ms debounce covers that without making a
+        genuine click-away feel laggy.
         """
-        ok, bounds = self._surface.compute_bounds(self)
-        if ok:
-            min_x = bounds.origin.x
-            min_y = bounds.origin.y
-            max_x = min_x + bounds.size.width
-            max_y = min_y + bounds.size.height
-            if min_x <= x <= max_x and min_y <= y <= max_y:
-                return
-        self.close()
-        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
+        if window.is_active():
+            if self._inactive_timer is not None:
+                GLib.source_remove(self._inactive_timer)
+                self._inactive_timer = None
+            return
+        if self._inactive_timer is not None:
+            return
+        self._inactive_timer = GLib.timeout_add(150, self._dismiss_if_inactive)
+
+    def _dismiss_if_inactive(self) -> bool:
+        self._inactive_timer = None
+        if not self.is_active():
+            self.close()
+        return False
 
 
 def _install_css() -> None:
@@ -879,6 +920,23 @@ def _install_css() -> None:
 
 
 def main() -> None:
+    # Singleton toggle: if another instance is already up, signal it
+    # to close and exit without showing a second menu. The launcher
+    # can then be clicked again to re-open - same "click to toggle"
+    # UX that a fullscreen overlay would give us, without needing one.
+    if not _toggle_or_lock():
+        sys.exit(0)
+
+    # Ensure the lock file is cleaned up even on abnormal exits
+    # (SIGTERM from another instance, SIGINT, unhandled exception).
+    import atexit
+    atexit.register(_release_lock)
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        try:
+            signal.signal(sig, lambda *_: sys.exit(0))
+        except (OSError, ValueError):
+            pass
+
     app = Gtk.Application(application_id="org.universallite.AppMenu",
                           flags=Gio.ApplicationFlags.NON_UNIQUE)
 
