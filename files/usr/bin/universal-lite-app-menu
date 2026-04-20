@@ -405,16 +405,16 @@ class AppMenu(Gtk.Window):
         self._has_frequent = False
         self._apps: list[Gio.AppInfo] = []
 
-        # Rounded surface inside a fullscreen OVERLAY window. The
-        # surface is placed in a 1-cell Gtk.Grid, and positioned
-        # within that cell via halign/valign. Wrapping in a Grid
-        # (rather than setting the surface as the window's direct
-        # child) avoids Gtk.Window's single-child layout path, which
-        # in practice doesn't reliably honour halign/valign for
-        # layer-shell fullscreen windows - the surface kept ending
-        # up stretched or at the wrong corner. Grid is documented to
-        # respect halign/valign on every child, including the sole
-        # one of a 1x1 layout.
+        # Rounded surface floated inside a fullscreen OVERLAY window
+        # via Gtk.Overlay - a container explicitly designed for this
+        # "small widget inside larger area, positioned by halign/
+        # valign" pattern. A Gtk.Grid sizes itself to its child's
+        # natural size instead of filling its allocation, so the
+        # grid's cell became 640x540 glued to the window's top-left
+        # regardless of what valign we set. Gtk.Overlay's main child
+        # fills the overlay (and thus the window), and add_overlay
+        # children are floated over it at their natural size,
+        # positioned by their own halign/valign.
         surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         surface.add_css_class("app-menu-surface")
         surface.set_hexpand(False)
@@ -428,11 +428,20 @@ class AppMenu(Gtk.Window):
         surface.set_halign(self._resolve_halign())
         surface.set_valign(self._resolve_valign())
 
-        grid = Gtk.Grid()
-        grid.set_hexpand(True)
-        grid.set_vexpand(True)
-        grid.attach(surface, 0, 0, 1, 1)
-        self.set_child(grid)
+        overlay = Gtk.Overlay()
+        overlay.set_hexpand(True)
+        overlay.set_vexpand(True)
+        # Filler's hexpand/vexpand=True make it claim the whole
+        # overlay area, which in turn makes the overlay claim the
+        # whole window. Without the explicit expand settings the
+        # filler defaults to natural-size (0x0) and the overlay
+        # shrinks to surface size - same failure mode as the Grid.
+        filler = Gtk.Box()
+        filler.set_hexpand(True)
+        filler.set_vexpand(True)
+        overlay.set_child(filler)
+        overlay.add_overlay(surface)
+        self.set_child(overlay)
         self._surface = surface
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
