@@ -90,7 +90,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         self.subscribe("network-connect-success", self._on_connect_success)
         self.subscribe("network-connect-error", self._on_connect_error)
 
-        self.setup_cleanup(self)
+        self.setup_cleanup(self._nav)
         return self._nav
 
     # -- group builders -------------------------------------------------
