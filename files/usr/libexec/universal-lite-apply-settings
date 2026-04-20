@@ -493,6 +493,15 @@ tooltip {{
     border-radius: 8px;
     color: {tokens["text_primary"]};
 }}
+/* GTK4 tooltips wrap their text in a child label; without this rule
+   the label inherits its color from the default theme (a muted grey
+   that reads as washed-out next to the crisp clock text on the
+   panel), and the color set on the tooltip element itself doesn't
+   reach the text. Explicitly paint the label with the same primary
+   fg the rest of the waybar uses. */
+tooltip label {{
+    color: {tokens["text_primary"]};
+}}
 """
 
 
