@@ -6,6 +6,13 @@ edge the user picked, so it feels like a shell popup rather than a
 regular window: no titlebar, no decorations, always on top, painted
 adjacent to the launcher. Falls back to a normal toplevel if
 Gtk4LayerShell isn't available for some reason.
+
+Layout: Adwaita-themed, ChromeOS-style app launcher. A large search
+entry plus a category dropdown at the top. A "Frequent" row of the
+user's most-launched apps (hidden while searching or filtering). A
+scrollable grid of every visible application, each tile = 48 px icon
++ display name + generic name (so "Mousepad" is labelled with its
+secondary "Text Editor"). Power actions live along the bottom edge.
 """
 from __future__ import annotations
 
@@ -31,13 +38,14 @@ if (os.environ.get("UL_APP_MENU_PRELOADED") != "1"
     os.execv(sys.executable, [sys.executable, __file__] + sys.argv[1:])
 
 import json
+import time
 from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gdk", "4.0")
-from gi.repository import Gdk, Gio, GLib, Gtk
+from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 try:
     gi.require_version("Gtk4LayerShell", "1.0")
@@ -51,6 +59,7 @@ except (ValueError, ImportError) as _e:
 
 
 SETTINGS_PATH = Path.home() / ".config/universal-lite/settings.json"
+LAUNCHES_PATH = Path.home() / ".config/universal-lite/app-launches.json"
 
 # App categories, matched to what `labwc-menu-generator -b` emits.
 # Order is alphabetical. Apps that don't match any freedesktop Main
@@ -70,6 +79,15 @@ CATEGORIES: list[tuple[str, frozenset[str]]] = [
     ("System",      frozenset({"System", "PackageManager", "Security", "Monitor",
                                "TerminalEmulator", "FileManager"})),
 ]
+
+CATEGORY_FILTER_LABELS: list[str] = (
+    ["All Apps"] + [c[0] for c in CATEGORIES] + ["Other"]
+)
+
+# Max tiles shown in the "Frequent" row. Also doubles as the column
+# count on the main grid so both rows align visually.
+GRID_COLUMNS = 6
+FREQUENT_MAX = GRID_COLUMNS
 
 POWER_ACTIONS = [
     ("Lock",      "system-lock-screen", ["swaylock", "-f"]),
@@ -107,34 +125,65 @@ window.app-menu {
         0 2px 8px 2px alpha(black, 0.14);
 }
 .app-menu-search {
-    min-height: 40px;
-    padding: 6px 12px;
+    min-height: 36px;
+    padding: 2px 10px;
     border-radius: 999px;
-    font-size: 14px;
+    font-size: 13px;
 }
-.app-menu-category {
-    font-size: 11px;
+/* Gtk.DropDown renders as a button - style the inner button to
+   match the pill shape of the search entry so the two read as a
+   paired control. */
+.app-menu-filter > button {
+    border-radius: 999px;
+    padding: 4px 10px;
+    min-height: 36px;
+}
+.app-menu-section-label {
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
     opacity: 0.55;
-    padding: 14px 4px 4px 4px;
+    padding: 8px 4px 2px 4px;
 }
-.app-menu-row {
-    padding: 6px 8px;
+.app-menu-grid {
+    background: transparent;
+}
+.app-menu-grid > flowboxchild {
+    padding: 0;
+}
+/* Tiles are flat buttons - no border, no background, no stock shadow
+   - with their own hover/focus affordances that match Adwaita's
+   subtle tint patterns. */
+.app-menu-tile {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 6px 4px;
     border-radius: 10px;
-    margin: 1px 0;
+    min-width: 88px;
 }
-.app-menu-row:hover {
+.app-menu-tile:hover {
     background: alpha(@accent_color, 0.12);
 }
+.app-menu-tile:focus {
+    background: alpha(@accent_color, 0.18);
+    outline: none;
+}
+.app-menu-tile-name {
+    font-size: 11px;
+}
+.app-menu-tile-generic {
+    font-size: 9px;
+    opacity: 0.55;
+}
 .app-menu-power-bar {
-    padding: 8px 4px 4px 4px;
+    padding: 6px 4px 2px 4px;
     border-top: 1px solid alpha(@borders, 0.6);
     margin-top: 4px;
 }
 .app-menu-power-btn {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 40px;
+    min-height: 40px;
     padding: 0;
     border-radius: 999px;
     background: transparent;
@@ -210,6 +259,55 @@ def _category_for(app: Gio.AppInfo) -> str:
     return "Other"
 
 
+def _generic_name_for(app: Gio.AppInfo) -> str:
+    """Subtitle text for a tile - the freedesktop GenericName.
+
+    Returns "" when absent or redundant with the display name (e.g.
+    an app whose Name is already "Web Browser"). Rendered as the
+    small muted second line on each tile so unfamiliar app names
+    get a plain-English hint ("Mousepad" -> "Text Editor").
+    """
+    if not isinstance(app, Gio.DesktopAppInfo):
+        return ""
+    generic = (app.get_generic_name() or "").strip()
+    display = (app.get_display_name() or "").strip()
+    if not generic:
+        return ""
+    if generic.lower() == display.lower():
+        return ""
+    return generic
+
+
+def _load_launches() -> dict:
+    try:
+        data = json.loads(LAUNCHES_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _record_launch(desktop_id: str) -> None:
+    """Bump the launch count for `desktop_id` in the tracker file.
+
+    Writes atomically via a tempfile + replace so a concurrent open
+    of the menu can never read a torn JSON blob. Silent on failure -
+    a missing frequent entry is cosmetic.
+    """
+    launches = _load_launches()
+    entry = launches.get(desktop_id) or {}
+    entry["count"] = int(entry.get("count", 0)) + 1
+    entry["last"] = int(time.time())
+    launches[desktop_id] = entry
+    try:
+        LAUNCHES_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = LAUNCHES_PATH.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps(launches), encoding="utf-8")
+        tmp.replace(LAUNCHES_PATH)
+    except OSError as exc:
+        print(f"universal-lite-app-menu: could not record launch: {exc}",
+              file=sys.stderr)
+
+
 class AppMenu(Gtk.Window):
     """Plain Gtk.Window, not ApplicationWindow.
 
@@ -229,52 +327,101 @@ class AppMenu(Gtk.Window):
         self._edge = self._geom["edge"]
         self._setup_surface(self._edge)
 
+        self._launches = _load_launches()
+        self._category_filter = "All Apps"
+        self._has_frequent = False
+        self._apps: list[Gio.AppInfo] = []
+
         # Single rounded surface inside a transparent window - no tail.
         # Uniform shadow margin on every side so the drop shadow renders
-        # evenly around the full rounded rectangle.
+        # evenly around the full rounded rectangle. The surface carries
+        # a fixed size; halign/valign place it in the corner adjacent
+        # to the launcher so the rest of the fullscreen overlay window
+        # is empty transparent space that our click-outside gesture
+        # uses to dismiss the menu.
         surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         surface.add_css_class("app-menu-surface")
-        surface.set_hexpand(True)
-        surface.set_vexpand(True)
+        surface.set_hexpand(False)
+        surface.set_vexpand(False)
+        surface.set_size_request(640, 540)
         pad = self._SHADOW_PAD
         surface.set_margin_top(pad)
         surface.set_margin_bottom(pad)
         surface.set_margin_start(pad)
         surface.set_margin_end(pad)
+        surface.set_halign(self._resolve_halign())
+        surface.set_valign(self._resolve_valign())
         self.set_child(surface)
+        self._surface = surface
 
-        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        root.set_margin_top(14)
-        root.set_margin_bottom(10)
-        root.set_margin_start(14)
-        root.set_margin_end(14)
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        root.set_margin_top(12)
+        root.set_margin_bottom(8)
+        root.set_margin_start(12)
+        root.set_margin_end(12)
         surface.append(root)
 
+        # -- Search + filter row --
+        top_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self._search = Gtk.SearchEntry()
         self._search.set_placeholder_text("Search apps\u2026")
         self._search.add_css_class("app-menu-search")
+        self._search.set_hexpand(True)
         self._search.connect("search-changed", self._on_search_changed)
         self._search.connect("activate", self._on_search_activate)
-        root.append(self._search)
+        top_row.append(self._search)
+
+        self._filter = Gtk.DropDown.new_from_strings(CATEGORY_FILTER_LABELS)
+        self._filter.add_css_class("app-menu-filter")
+        self._filter.set_tooltip_text("Filter by category")
+        self._filter.connect("notify::selected", self._on_filter_changed)
+        top_row.append(self._filter)
+        root.append(top_row)
+
+        # -- Frequent row (hidden until we have launch history) --
+        self._frequent_section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
+                                         spacing=0)
+        freq_label = Gtk.Label(label="Frequent", xalign=0)
+        freq_label.add_css_class("app-menu-section-label")
+        self._frequent_section.append(freq_label)
+        self._frequent_flow = self._make_flowbox(apply_filter=False)
+        self._frequent_section.append(self._frequent_flow)
+        root.append(self._frequent_section)
+
+        # -- All apps grid --
+        all_label = Gtk.Label(label="All Apps", xalign=0)
+        all_label.add_css_class("app-menu-section-label")
+        root.append(all_label)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scrolled.set_margin_top(6)
         root.append(scrolled)
 
-        self._list = Gtk.ListBox()
-        self._list.set_selection_mode(Gtk.SelectionMode.NONE)
-        self._list.set_filter_func(self._filter_row)
-        scrolled.set_child(self._list)
+        self._grid = self._make_flowbox(apply_filter=True)
+        scrolled.set_child(self._grid)
 
         self._populate()
 
+        # -- Power bar --
         root.append(self._build_power_bar())
 
+        # -- Event controllers --
         key = Gtk.EventControllerKey()
         key.connect("key-pressed", self._on_key)
         self.add_controller(key)
+
+        # Click-outside-to-dismiss. Runs in CAPTURE phase so it sees
+        # every button-press before descendant tile gestures do; the
+        # handler only claims the sequence (closing the menu) when
+        # the click landed outside the surface's bounds. Clicks on
+        # tiles and the power bar return without claiming, so their
+        # own gestures fire normally.
+        dismiss = Gtk.GestureClick()
+        dismiss.set_button(0)  # any button
+        dismiss.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        dismiss.connect("pressed", self._on_dismiss_press)
+        self.add_controller(dismiss)
 
         self.connect("notify::is-active", self._on_active_changed)
         self._search.grab_focus()
@@ -288,17 +435,50 @@ class AppMenu(Gtk.Window):
     # 12 px) with room to spare.
     _SHADOW_PAD = 20
 
+    def _resolve_halign(self) -> Gtk.Align:
+        edge, section = self._edge, self._geom["section"]
+        if edge in ("top", "bottom"):
+            if section == "start":
+                return Gtk.Align.START
+            if section == "end":
+                return Gtk.Align.END
+            return Gtk.Align.CENTER
+        # Side panel - hug the panel's side regardless of launcher section.
+        return Gtk.Align.START if edge == "left" else Gtk.Align.END
+
+    def _resolve_valign(self) -> Gtk.Align:
+        edge, section = self._edge, self._geom["section"]
+        if edge in ("left", "right"):
+            if section == "start":
+                return Gtk.Align.START
+            if section == "end":
+                return Gtk.Align.END
+            return Gtk.Align.CENTER
+        # Top/bottom panel - menu sits on the panel's side of the screen.
+        return Gtk.Align.END if edge == "bottom" else Gtk.Align.START
+
     # -- layer-shell / surface setup --
 
     def _setup_surface(self, edge: str) -> None:
-        """Configure either a layer-shell surface (preferred) or a fallback toplevel."""
-        pad = self._SHADOW_PAD
-        self.set_default_size(520 + 2 * pad, 620 + 2 * pad)
+        """Configure either a layer-shell surface (preferred) or a fallback toplevel.
 
+        Layer-shell path: anchor the window to all four screen edges
+        so it covers the entire display, sit on the OVERLAY layer
+        (above waybar and normal TOP layer clients), grab the keyboard
+        exclusively while open. The inner surface box positions itself
+        in the right corner via halign/valign. Click-outside dismissal
+        is driven by a capture-phase gesture on the window that checks
+        whether the click landed inside the surface's bounds.
+
+        Why OVERLAY and not TOP: waybar also lives on TOP. Clicking the
+        launcher icon on the panel must hit *us* (so we can dismiss the
+        menu) rather than waybar (which would spawn a second instance).
+        """
         if not _HAVE_LAYER_SHELL:
             # No layer-shell → best we can do is a centred, decoration-
-            # less, always-floating window. Not as seamless as the
-            # layer-shell path but still visibly a popup.
+            # less, always-floating window sized to fit the surface.
+            pad = self._SHADOW_PAD
+            self.set_default_size(640 + 2 * pad, 540 + 2 * pad)
             print("universal-lite-app-menu: layer-shell unavailable, "
                   "using fallback toplevel", file=sys.stderr)
             return
@@ -312,126 +492,157 @@ class AppMenu(Gtk.Window):
                       "library probably loaded after libwayland-client",
                       file=sys.stderr)
                 return
-            print(f"universal-lite-app-menu: layer-shell active (edge={edge})",
+            print(f"universal-lite-app-menu: layer-shell active "
+                  f"(edge={edge}, fullscreen overlay)",
                   file=sys.stderr)
-            LayerShell.set_layer(self, LayerShell.Layer.TOP)
+            LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
             LayerShell.set_namespace(self, "universal-lite-app-menu")
-            # ON_DEMAND - menu grabs keyboard while focused, releases it
-            # the instant the user clicks any other surface. That focus
-            # shift is also what drives our click-outside-to-dismiss via
-            # notify::is-active.
-            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.ON_DEMAND)
-            # Don't carve screen real-estate from other layer clients.
+            # EXCLUSIVE keyboard so typing in the search entry routes
+            # to us immediately, without the user needing to click to
+            # focus first. Also ensures Escape reaches our key handler.
+            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.EXCLUSIVE)
             LayerShell.set_exclusive_zone(self, 0)
+            # Anchor to all four edges → compositor sizes us to the
+            # full usable area (already excludes waybar's zone). The
+            # empty area around our rounded surface is what catches
+            # click-outside-to-dismiss.
+            for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
+                         LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
+                LayerShell.set_anchor(self, side, True)
+                LayerShell.set_margin(self, side, 0)
         except Exception as exc:
             print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
                   file=sys.stderr)
             return
 
-        # Anchor to the panel's edge plus the cross-axis corner that
-        # matches the launcher's section.
-        #
-        # Panel-side margin is 0 (not panel_outer) because waybar is
-        # itself a layer-shell client and declares its own exclusive
-        # zone. When *we* anchor to the same edge, the compositor
-        # already accounts for that zone - adding our own panel_outer
-        # margin on top stacks, which is what pushed the tail 75 px
-        # above the panel in the previous screenshot. With margin=0
-        # our window edge lands exactly at waybar's zone boundary =
-        # the panel's visible outer edge.
-        #
-        # If the launcher is in modules-center we skip the cross-axis
-        # anchor so the compositor centres the window on its own.
-        section = self._geom["section"]
-
-        if edge == "bottom":
-            LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
-            LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, 0)
-            if section == "start":
-                LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-                LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
-            elif section == "end":
-                LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-                LayerShell.set_margin(self, LayerShell.Edge.RIGHT, 0)
-        elif edge == "top":
-            LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-            LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
-            if section == "start":
-                LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-                LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
-            elif section == "end":
-                LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-                LayerShell.set_margin(self, LayerShell.Edge.RIGHT, 0)
-        elif edge == "left":
-            LayerShell.set_anchor(self, LayerShell.Edge.LEFT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.LEFT, 0)
-            if section == "start":
-                LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-                LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
-            elif section == "end":
-                LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
-                LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, 0)
-        elif edge == "right":
-            LayerShell.set_anchor(self, LayerShell.Edge.RIGHT, True)
-            LayerShell.set_margin(self, LayerShell.Edge.RIGHT, 0)
-            if section == "start":
-                LayerShell.set_anchor(self, LayerShell.Edge.TOP, True)
-                LayerShell.set_margin(self, LayerShell.Edge.TOP, 0)
-            elif section == "end":
-                LayerShell.set_anchor(self, LayerShell.Edge.BOTTOM, True)
-                LayerShell.set_margin(self, LayerShell.Edge.BOTTOM, 0)
-
     # -- content --
+
+    def _make_flowbox(self, *, apply_filter: bool) -> Gtk.FlowBox:
+        """Build a FlowBox that lays tiles out in a fixed-column grid.
+
+        Clamping min == max children per line keeps the column count
+        stable even when the visible-child count changes (otherwise
+        FlowBox rebalances and tile widths jitter during searches).
+        """
+        flow = Gtk.FlowBox()
+        flow.add_css_class("app-menu-grid")
+        flow.set_selection_mode(Gtk.SelectionMode.NONE)
+        flow.set_homogeneous(True)
+        flow.set_min_children_per_line(GRID_COLUMNS)
+        flow.set_max_children_per_line(GRID_COLUMNS)
+        flow.set_row_spacing(2)
+        flow.set_column_spacing(2)
+        if apply_filter:
+            flow.set_filter_func(self._filter_tile)
+        return flow
 
     def _populate(self) -> None:
         apps = [a for a in Gio.AppInfo.get_all() if _is_visible(a)]
-        grouped: dict[str, list[Gio.AppInfo]] = {}
+        apps.sort(key=lambda a: a.get_display_name().lower())
+        self._apps = apps
         for a in apps:
-            grouped.setdefault(_category_for(a), []).append(a)
+            self._grid.append(self._make_tile(a))
+        self._populate_frequent()
 
-        order = [c[0] for c in CATEGORIES] + ["Other"]
-        for cat in order:
-            items = grouped.get(cat, [])
-            if not items:
-                continue
-            items.sort(key=lambda a: a.get_display_name().lower())
-            self._list.append(self._make_header(cat))
-            for a in items:
-                self._list.append(self._make_app_row(a))
+    def _populate_frequent(self) -> None:
+        """Fill the frequent row with the top-N most-launched apps.
 
-    def _make_header(self, text: str) -> Gtk.ListBoxRow:
-        row = Gtk.ListBoxRow()
-        row.set_selectable(False)
-        row.set_activatable(False)
-        row._is_header = True
-        label = Gtk.Label(label=text, xalign=0)
-        label.add_css_class("app-menu-category")
-        row.set_child(label)
-        return row
+        Skips entries that no longer correspond to an installed
+        application (e.g. a Flatpak uninstalled since last launch),
+        and hides the whole section entirely when no qualifying
+        launches exist yet (first boot, fresh user profile).
+        """
+        # Clear any existing children before repopulating.
+        child = self._frequent_flow.get_first_child()
+        while child is not None:
+            nxt = child.get_next_sibling()
+            self._frequent_flow.remove(child)
+            child = nxt
 
-    def _make_app_row(self, app: Gio.AppInfo) -> Gtk.ListBoxRow:
-        row = Gtk.ListBoxRow()
-        row._is_header = False
-        row._app = app
-        row._search_text = app.get_display_name().lower()
-        row.add_css_class("app-menu-row")
+        if not self._launches:
+            self._has_frequent = False
+            self._frequent_section.set_visible(False)
+            return
 
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        by_id: dict[str, Gio.DesktopAppInfo] = {}
+        for a in self._apps:
+            if isinstance(a, Gio.DesktopAppInfo):
+                dsk = a.get_id()
+                if dsk:
+                    by_id[dsk] = a
+
+        ranked = sorted(
+            (kv for kv in self._launches.items() if kv[0] in by_id),
+            key=lambda kv: (-int(kv[1].get("count", 0)),
+                            -int(kv[1].get("last", 0))),
+        )[:FREQUENT_MAX]
+
+        if not ranked:
+            self._has_frequent = False
+            self._frequent_section.set_visible(False)
+            return
+
+        for app_id, _meta in ranked:
+            self._frequent_flow.append(self._make_tile(by_id[app_id]))
+        self._has_frequent = True
+        self._frequent_section.set_visible(True)
+
+    def _make_tile(self, app: Gio.AppInfo) -> Gtk.Button:
+        """Build one grid tile: 48 px icon + name + optional generic name.
+
+        Each tile is a flat button so keyboard focus works (Tab moves
+        through the grid, Enter activates). Search match tokens are
+        precomputed into `_search_text` and include display name,
+        generic name, and executable basename so both user-visible
+        labels and CLI-style hints like "mousepad" match.
+        """
+        btn = Gtk.Button()
+        btn.add_css_class("app-menu-tile")
+        btn.set_has_frame(False)
+
+        display = app.get_display_name() or ""
+        generic = _generic_name_for(app)
+        exec_base = ""
+        if isinstance(app, Gio.DesktopAppInfo):
+            exe = app.get_executable() or ""
+            exec_base = os.path.basename(exe)
+        tooltip = f"{display}\n{generic}" if generic else display
+        btn.set_tooltip_text(tooltip)
+
+        btn._app = app
+        btn._category = _category_for(app)
+        btn._search_text = " ".join(
+            s.lower() for s in (display, generic, exec_base) if s
+        )
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        box.set_halign(Gtk.Align.CENTER)
+
         gicon = app.get_icon()
         img = (Gtk.Image.new_from_gicon(gicon) if gicon is not None
                else Gtk.Image.new_from_icon_name("application-x-executable-symbolic"))
-        img.set_pixel_size(36)
+        img.set_pixel_size(48)
+        img.set_halign(Gtk.Align.CENTER)
         box.append(img)
 
-        name = Gtk.Label(label=app.get_display_name(), xalign=0)
-        name.set_hexpand(True)
+        name = Gtk.Label(label=display)
+        name.add_css_class("app-menu-tile-name")
+        name.set_ellipsize(Pango.EllipsizeMode.END)
+        name.set_max_width_chars(12)
+        name.set_xalign(0.5)
         box.append(name)
-        row.set_child(box)
 
-        gesture = Gtk.GestureClick()
-        gesture.connect("released", lambda *_: self._launch_app(app))
-        row.add_controller(gesture)
-        return row
+        if generic:
+            gen = Gtk.Label(label=generic)
+            gen.add_css_class("app-menu-tile-generic")
+            gen.set_ellipsize(Pango.EllipsizeMode.END)
+            gen.set_max_width_chars(14)
+            gen.set_xalign(0.5)
+            box.append(gen)
+
+        btn.set_child(box)
+        btn.connect("clicked", lambda _b, a=app: self._launch_app(a))
+        return btn
 
     def _build_power_bar(self) -> Gtk.Widget:
         bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -458,6 +669,10 @@ class AppMenu(Gtk.Window):
         except GLib.Error as exc:
             print(f"universal-lite-app-menu: launch failed: {exc.message}",
                   file=sys.stderr)
+        if isinstance(app, Gio.DesktopAppInfo):
+            dsk = app.get_id()
+            if dsk:
+                _record_launch(dsk)
         self.close()
 
     def _run_command(self, cmd: list[str]) -> None:
@@ -474,27 +689,55 @@ class AppMenu(Gtk.Window):
 
     # -- filtering / keys --
 
-    def _filter_row(self, row: Gtk.ListBoxRow) -> bool:
+    def _filter_tile(self, child: Gtk.FlowBoxChild) -> bool:
+        btn = child.get_child()
+        if btn is None:
+            return False
+        if (self._category_filter and self._category_filter != "All Apps"
+                and getattr(btn, "_category", None) != self._category_filter):
+            return False
         query = self._search.get_text().lower().strip()
-        if getattr(row, "_is_header", False):
-            return query == ""
         if not query:
             return True
-        text = getattr(row, "_search_text", "")
+        text = getattr(btn, "_search_text", "")
         return all(tok in text for tok in query.split())
 
+    def _update_frequent_visibility(self) -> None:
+        """Hide frequent row while the user is searching or filtering.
+
+        Reasoning: both are "I'm looking for something specific" ges-
+        tures, and the frequent row's job is discovery when the user
+        doesn't yet know what they want. Showing it during narrowing
+        wastes vertical space and causes two tiles of the same app
+        to appear on screen.
+        """
+        is_default = (self._category_filter == "All Apps"
+                      and not self._search.get_text().strip())
+        self._frequent_section.set_visible(self._has_frequent and is_default)
+
     def _on_search_changed(self, _entry: Gtk.SearchEntry) -> None:
-        self._list.invalidate_filter()
+        self._update_frequent_visibility()
+        self._grid.invalidate_filter()
+
+    def _on_filter_changed(self, dropdown: Gtk.DropDown, _pspec) -> None:
+        idx = dropdown.get_selected()
+        if 0 <= idx < len(CATEGORY_FILTER_LABELS):
+            self._category_filter = CATEGORY_FILTER_LABELS[idx]
+        else:
+            self._category_filter = "All Apps"
+        self._update_frequent_visibility()
+        self._grid.invalidate_filter()
 
     def _on_search_activate(self, _entry: Gtk.SearchEntry) -> None:
-        row = self._list.get_first_child()
-        while row is not None:
-            if (not getattr(row, "_is_header", False)
-                    and row.get_child_visible()
-                    and getattr(row, "_app", None) is not None):
-                self._launch_app(row._app)
-                return
-            row = row.get_next_sibling()
+        child = self._grid.get_first_child()
+        while child is not None:
+            if child.get_child_visible():
+                btn = child.get_child()
+                app = getattr(btn, "_app", None) if btn is not None else None
+                if app is not None:
+                    self._launch_app(app)
+                    return
+            child = child.get_next_sibling()
 
     def _on_key(self, _ctrl, keyval: int, _code: int, _state) -> bool:
         if keyval == Gdk.KEY_Escape:
@@ -505,6 +748,27 @@ class AppMenu(Gtk.Window):
     def _on_active_changed(self, window: Gtk.Window, _pspec) -> None:
         if not window.is_active():
             window.close()
+
+    def _on_dismiss_press(self, gesture: Gtk.GestureClick,
+                          _n_press: int, x: float, y: float) -> None:
+        """Close the menu if the click landed outside the surface box.
+
+        compute_bounds walks up to the given parent (self, the window)
+        so the returned rect is in window-local coordinates - the same
+        space as the gesture's (x, y). Returning without claiming the
+        sequence lets clicks inside the surface propagate normally to
+        the row / power-button gestures.
+        """
+        ok, bounds = self._surface.compute_bounds(self)
+        if ok:
+            min_x = bounds.origin.x
+            min_y = bounds.origin.y
+            max_x = min_x + bounds.size.width
+            max_y = min_y + bounds.size.height
+            if min_x <= x <= max_x and min_y <= y <= max_y:
+                return
+        self.close()
+        gesture.set_state(Gtk.EventSequenceState.CLAIMED)
 
 
 def _install_css() -> None:
