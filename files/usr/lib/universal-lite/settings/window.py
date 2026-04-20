@@ -9,7 +9,6 @@ from gi.repository import Adw, GLib, GObject, Gio, Gtk
 
 from .events import EventBus
 from .settings_store import SettingsStore
-from .toast import ToastWidget
 
 
 class SettingsWindow(Adw.ApplicationWindow):
@@ -17,18 +16,25 @@ class SettingsWindow(Adw.ApplicationWindow):
 
     Structure:
         AdwApplicationWindow
-        └── Gtk.Overlay (hosts the Toast)
-            └── AdwOverlaySplitView (sidebar + content, collapsible)
-                ├── sidebar: ScrolledWindow > ListBox (category rows)
-                └── content: AdwToolbarView
-                    ├── top bar: AdwHeaderBar (sidebar toggle, search toggle)
-                    ├── top bar: GtkSearchBar
-                    └── content: ScrolledWindow > GtkStack (the pages)
+        └── AdwToastOverlay
+            └── AdwNavigationSplitView
+                ├── sidebar: AdwNavigationPage(title="Settings")
+                │   └── AdwToolbarView
+                │       ├── top: AdwHeaderBar
+                │       └── content: ScrolledWindow > ListBox
+                └── content: AdwNavigationPage(title=<current page>)
+                    └── AdwToolbarView
+                        ├── top: AdwHeaderBar (back-button appears
+                        │         automatically in collapsed mode)
+                        ├── top: GtkSearchBar
+                        └── content: ScrolledWindow > GtkStack
 
     An AdwBreakpoint watching the window's max-width flips the split
-    view to collapsed mode (sidebar becomes an overlay drawer) and
-    shows the sidebar-toggle button in the header. This is how the
-    app stays usable on low-res displays at high scale factors.
+    view to collapsed mode. In that mode AdwNavigationSplitView uses
+    push/pop navigation instead of an overlay drawer - picking a
+    category slides in the content page on top of the sidebar, and a
+    back button in the content's header pops back. Matches GNOME
+    Settings' exact pattern.
     """
 
     # Below this window width the sidebar collapses into a drawer.
@@ -42,18 +48,19 @@ class SettingsWindow(Adw.ApplicationWindow):
         super().__init__(application=app)
         self.set_title(_("Settings"))
         self.set_default_size(900, 600)
-        # A small minimum lets the breakpoint actually fire on narrow
-        # widths. Without it the window would refuse to shrink below
-        # the natural content size of the widest page.
+        # Minimum window size lets the breakpoint actually fire. Without
+        # it the window refuses to shrink below the widest page's natural
+        # width, defeating the collapse.
         self.set_size_request(360, 300)
 
         self._store = store
         self._event_bus = event_bus
         self._page_names: list[str] = []
+        self._page_labels: list[str] = []
         self._pages: list = []
         self._built: set[str] = set()
 
-        # -- Sidebar --------------------------------------------------
+        # -- Sidebar page (category list) -----------------------------
         sidebar_scroll = Gtk.ScrolledWindow()
         sidebar_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         sidebar_scroll.set_vexpand(True)
@@ -61,12 +68,18 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self._sidebar.set_margin_top(8)
         self._sidebar.set_margin_bottom(8)
-        # Adwaita's standard class for a sidebar-style ListBox -
-        # gives the rows the correct navigation look and hover colours.
+        # Adwaita's standard class for a sidebar-style ListBox - gives
+        # rows the right navigation look, hover, and selected colours.
         self._sidebar.add_css_class("navigation-sidebar")
         sidebar_scroll.set_child(self._sidebar)
 
-        # -- Content stack + its scroller ----------------------------
+        sidebar_toolbar = Adw.ToolbarView()
+        sidebar_toolbar.add_top_bar(Adw.HeaderBar())
+        sidebar_toolbar.set_content(sidebar_scroll)
+
+        sidebar_page = Adw.NavigationPage.new(sidebar_toolbar, _("Settings"))
+
+        # -- Content page (stack of setting pages) -------------------
         self._stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(150)
@@ -76,27 +89,13 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._content_scroll.set_child(self._stack)
         self._content_scroll.add_css_class("content-area")
 
-        # -- Header bar with sidebar toggle + search toggle ----------
         content_header = Adw.HeaderBar()
-
-        # Sidebar toggle. Hidden by default; the breakpoint makes it
-        # visible when the sidebar collapses into a drawer so the user
-        # can open and close it. A bidirectional bind to the split
-        # view's show-sidebar keeps the button state and the actual
-        # sidebar visibility in lockstep in either direction.
-        sidebar_toggle = Gtk.ToggleButton()
-        sidebar_toggle.set_icon_name("sidebar-show-symbolic")
-        sidebar_toggle.set_tooltip_text(_("Show sidebar"))
-        sidebar_toggle.set_active(True)
-        sidebar_toggle.set_visible(False)
-        content_header.pack_start(sidebar_toggle)
 
         search_btn = Gtk.ToggleButton()
         search_btn.set_icon_name("system-search-symbolic")
         search_btn.set_tooltip_text(_("Search settings"))
         content_header.pack_end(search_btn)
 
-        # -- Search bar ----------------------------------------------
         self._search_entry = Gtk.SearchEntry()
         self._search_entry.set_placeholder_text(_("Search settings\u2026"))
         self._search_bar = Gtk.SearchBar()
@@ -108,49 +107,43 @@ class SettingsWindow(Adw.ApplicationWindow):
             GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE,
         )
 
-        # -- ToolbarView: header + search bar + content --------------
-        # AdwToolbarView replaces the older GtkBox-with-headerbar
-        # pattern and gets the right elevation + separators between
-        # top bars and content for free.
-        toolbar_view = Adw.ToolbarView()
-        toolbar_view.add_top_bar(content_header)
-        toolbar_view.add_top_bar(self._search_bar)
-        toolbar_view.set_content(self._content_scroll)
+        content_toolbar = Adw.ToolbarView()
+        content_toolbar.add_top_bar(content_header)
+        content_toolbar.add_top_bar(self._search_bar)
+        content_toolbar.set_content(self._content_scroll)
 
-        # -- OverlaySplitView holds sidebar + content ----------------
-        split = Adw.OverlaySplitView()
-        split.set_sidebar(sidebar_scroll)
-        split.set_content(toolbar_view)
+        # Content page's title is updated in _on_row_selected so it
+        # reflects the active category in the header (visible in
+        # collapsed mode beside the back button).
+        self._content_page = Adw.NavigationPage.new(content_toolbar,
+                                                    _("Settings"))
+
+        # -- NavigationSplitView -------------------------------------
+        split = Adw.NavigationSplitView()
+        split.set_sidebar(sidebar_page)
+        split.set_content(self._content_page)
         split.set_sidebar_width_fraction(0.25)
         split.set_min_sidebar_width(200.0)
         split.set_max_sidebar_width(280.0)
         self._split_view = split
 
-        split.bind_property(
-            "show-sidebar", sidebar_toggle, "active",
-            GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE,
-        )
-
-        # -- Toast overlay wraps the whole split so the toast widget
-        #    floats above either pane -----------------------------------
-        overlay = Gtk.Overlay()
-        overlay.set_child(split)
-        self._toast = ToastWidget()
-        overlay.add_overlay(self._toast)
-        store.set_toast_callback(self._toast.show_toast)
-
-        self.set_content(overlay)
+        # -- ToastOverlay wraps the split ----------------------------
+        # Replaces our old custom Revealer-based ToastWidget. Handles
+        # dismiss, stacking of concurrent toasts, and keyboard
+        # accessibility correctly out of the box.
+        self._toast_overlay = Adw.ToastOverlay()
+        self._toast_overlay.set_child(split)
+        self.set_content(self._toast_overlay)
+        store.set_toast_callback(self._show_toast)
 
         # -- Breakpoint: collapse below _COLLAPSE_WIDTH --------------
-        # When the window is narrower than the breakpoint, the split
-        # view collapses (sidebar becomes an overlay drawer) and the
-        # toggle button becomes visible so the user can open it. Both
-        # setters revert automatically when the window widens again.
+        # When collapsed, NavigationSplitView uses push/pop between
+        # sidebar and content (with an automatic back button in the
+        # content's header). Reverts when the window widens again.
         breakpoint_ = Adw.Breakpoint.new(
             Adw.BreakpointCondition.parse(self._COLLAPSE_WIDTH)
         )
         breakpoint_.add_setter(split, "collapsed", True)
-        breakpoint_.add_setter(sidebar_toggle, "visible", True)
         self.add_breakpoint(breakpoint_)
 
         # -- Pages + initial selection -------------------------------
@@ -165,6 +158,32 @@ class SettingsWindow(Adw.ApplicationWindow):
         search_action.connect("activate", lambda *_: self.toggle_search())
         self.add_action(search_action)
 
+    # -- Toast -------------------------------------------------------
+
+    def _show_toast(self, message: str, is_error: bool = False,
+                    timeout: int = 3) -> None:
+        """Display an Adw.Toast. Matches the old ToastWidget.show_toast API.
+
+        Errors use red Pango markup in place of the old .toast-error
+        CSS class - Adw.Toast doesn't expose a per-toast style class,
+        but it does honour markup in its title, which is enough to
+        distinguish a failure notice from a neutral one.
+        """
+        toast = Adw.Toast()
+        if is_error:
+            escaped = GLib.markup_escape_text(message)
+            toast.set_use_markup(True)
+            toast.set_title(f'<span foreground="#e01b24">{escaped}</span>')
+            # Higher priority keeps error toasts visible when another
+            # toast arrives before the user has read them.
+            toast.set_priority(Adw.ToastPriority.HIGH)
+        else:
+            toast.set_title(message)
+        toast.set_timeout(max(1, int(timeout)))
+        self._toast_overlay.add_toast(toast)
+
+    # -- Page building -----------------------------------------------
+
     def _build_pages(self) -> None:
         from .pages import ALL_PAGES
 
@@ -176,9 +195,11 @@ class SettingsWindow(Adw.ApplicationWindow):
                       file=sys.stderr)
                 page = None
 
-            row = self._build_sidebar_row(icon_name, _(label))
+            translated = _(label)
+            row = self._build_sidebar_row(icon_name, translated)
             self._sidebar.append(row)
             self._page_names.append(label)
+            self._page_labels.append(translated)
             self._pages.append(page)
 
     def _ensure_page_built(self, idx: int) -> None:
@@ -217,6 +238,8 @@ class SettingsWindow(Adw.ApplicationWindow):
         row.set_child(box)
         return row
 
+    # -- Navigation --------------------------------------------------
+
     def _on_row_selected(self, _listbox: Gtk.ListBox,
                          row: Gtk.ListBoxRow) -> None:
         if row is None:
@@ -231,31 +254,23 @@ class SettingsWindow(Adw.ApplicationWindow):
         if label not in self._built:
             def _build_then_show() -> int:
                 self._ensure_page_built(idx)
-                self._stack.set_visible_child_name(label)
-                self._reset_scroll()
-                self._maybe_close_drawer()
+                self._show_page(idx, label)
                 return GLib.SOURCE_REMOVE
             GLib.idle_add(_build_then_show)
             return
-        self._stack.set_visible_child_name(label)
-        self._reset_scroll()
-        self._maybe_close_drawer()
+        self._show_page(idx, label)
 
-    def _reset_scroll(self) -> None:
+    def _show_page(self, idx: int, label: str) -> None:
+        self._stack.set_visible_child_name(label)
+        self._content_page.set_title(self._page_labels[idx])
         adj = self._content_scroll.get_vadjustment()
         if adj is not None:
             adj.set_value(0)
+        # Push to the content page in collapsed mode. When not
+        # collapsed this is a no-op (both panes are always visible).
+        self._split_view.set_show_content(True)
 
-    def _maybe_close_drawer(self) -> None:
-        """When the sidebar is an overlay drawer, dismiss it after a pick.
-
-        In collapsed mode the sidebar hovers over the content; leaving
-        it open after the user has navigated hides the page they just
-        picked. Expanded mode (normal desktop width) is a permanent
-        split, so we leave it alone there.
-        """
-        if self._split_view.get_collapsed():
-            self._split_view.set_show_sidebar(False)
+    # -- Search ------------------------------------------------------
 
     def _on_search_changed(self, entry: Gtk.SearchEntry) -> None:
         text = entry.get_text().lower().strip()

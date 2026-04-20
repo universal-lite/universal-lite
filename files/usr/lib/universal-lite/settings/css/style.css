@@ -158,20 +158,8 @@
 .accent-purple { background-color: #9141ac; }
 .accent-slate { background-color: #6f8396; }
 
-/* === Toast notifications === */
-.toast {
-    background-color: @headerbar_bg_color;
-    color: @theme_fg_color;
-    border-radius: 8px;
-    padding: 8px 16px;
-    box-shadow: 0 2px 8px alpha(black, 0.15);
-    border: 1px solid alpha(@borders, 0.3);
-}
-.toast-error {
-    background-color: #c01c28;
-    color: white;
-    border-color: #c01c28;
-}
+/* Toast notifications are now provided by AdwToastOverlay (see
+   window.py) - Adwaita ships the styling, so no custom rules here. */
 
 /* === Dialogs === */
 .dialog-overlay {
