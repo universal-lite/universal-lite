@@ -4,8 +4,9 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import Adw, Gio, GLib, Gtk
 
 from ..base import BasePage
 
@@ -27,11 +28,13 @@ def _hash_password(plaintext: str) -> str:
     return result.stdout.strip()
 
 
-class UsersPage(BasePage):
+class UsersPage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._bus = None
         self._user_path = None
+        self._nav = None
 
     @property
     def search_keywords(self):
@@ -72,55 +75,70 @@ class UsersPage(BasePage):
         return result.unpack()[0]
 
     def build(self):
-        page = self.make_page_box()
-
         try:
             self._ensure_dbus()
         except GLib.Error:
-            error_label = Gtk.Label(
-                label=_("Could not connect to AccountsService"),
-                xalign=0,
-            )
-            error_label.add_css_class("setting-subtitle")
-            page.append(self.make_group(_("Users"), [error_label]))
-            return page
+            status = Adw.StatusPage()
+            status.set_icon_name("dialog-error-symbolic")
+            status.set_title(_("Could not connect to AccountsService"))
+            status.set_description(_("User account settings are unavailable."))
+            self.add(status)
+            return self
 
-        # Display name
+        # Account group
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Account"))
+
+        # Display name — AdwEntryRow with explicit apply button
         real_name = ""
         try:
             real_name = self._get_property("RealName")
         except GLib.Error:
             pass
-        name_entry = Gtk.Entry()
-        name_entry.set_text(real_name)
-        name_entry.set_placeholder_text(_("Display name"))
-        name_entry.set_size_request(280, -1)
-        name_entry.connect("activate", self._on_name_activate)
+        name_row = Adw.EntryRow()
+        name_row.set_title(_("Display name"))
+        name_row.set_text(real_name)
+        name_row.set_show_apply_button(True)
+        name_row.connect("apply", self._on_name_activate)
+        group.add(name_row)
 
-        # Change Password
-        pw_button = Gtk.Button(label=_("Change Password"))
-        pw_button.connect("clicked", self._on_change_password)
+        # Password — navigation row with chevron suffix
+        pw_row = Adw.ActionRow()
+        pw_row.set_title(_("Password"))
+        pw_row.set_subtitle(_("Set a new password for your account"))
+        pw_row.set_activatable(True)
+        pw_row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
+        pw_row.connect("activated", self._push_change_password)
+        group.add(pw_row)
 
-        # Auto-login
+        # Automatic login — AdwSwitchRow
         auto_login = False
         try:
             auto_login = self._get_property("AutomaticLogin")
         except GLib.Error:
             pass
-        auto_switch = Gtk.Switch()
-        auto_switch.set_active(auto_login)
-        auto_switch.connect("state-set", self._on_autologin_set)
+        auto_row = Adw.SwitchRow()
+        auto_row.set_title(_("Automatic login"))
+        auto_row.set_subtitle(_("Log in without a password at startup"))
+        auto_row.set_active(auto_login)
+        auto_row.connect("notify::active", self._on_autologin_set)
+        group.add(auto_row)
 
-        page.append(self.make_group(_("Users"), [
-            self.make_setting_row(_("Display name"), _("Press Enter to apply"), name_entry),
-            self.make_setting_row(_("Password"), _("Set a new password for your account"), pw_button),
-            self.make_setting_row(_("Automatic login"), _("Log in without a password at startup"), auto_switch),
-        ]))
+        self.add(group)
 
-        return page
+        # Wrap self in an AdwNavigationView so _push_change_password can push
+        self._nav = Adw.NavigationView()
+        root_page = Adw.NavigationPage()
+        root_page.set_title(_("Users"))
+        root_page.set_child(self)  # self IS the PreferencesPage
+        self._nav.add(root_page)
 
-    def _on_name_activate(self, entry):
-        new_name = entry.get_text().strip()
+        setup_cleanup_target = self._nav
+        self.setup_cleanup(setup_cleanup_target)
+        return self._nav
+
+    def _on_name_activate(self, row):
+        new_name = row.get_text().strip()
         if not new_name:
             return
         try:
@@ -133,89 +151,71 @@ class UsersPage(BasePage):
         except GLib.Error:
             pass
 
-    def _on_autologin_set(self, switch, state):
+    def _on_autologin_set(self, row, _pspec):
         try:
             self._bus.call_sync(
                 "org.freedesktop.Accounts", self._user_path,
                 "org.freedesktop.Accounts.User", "SetAutomaticLogin",
-                GLib.Variant("(b)", (state,)),
+                GLib.Variant("(b)", (row.get_active(),)),
                 None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
             )
         except GLib.Error:
             pass
-        return False
 
-    def _on_change_password(self, button):
-        dialog = Gtk.Window(title=_("Change Password"))
-        dialog.set_default_size(400, -1)
-        dialog.set_modal(True)
-        dialog.set_resizable(False)
-        root = button.get_root()
-        if root:
-            dialog.set_transient_for(root)
+    def _push_change_password(self, *_):
+        sub = Adw.NavigationPage()
+        sub.set_title(_("Change Password"))
 
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        box.set_margin_top(24)
-        box.set_margin_bottom(24)
-        box.set_margin_start(24)
-        box.set_margin_end(24)
+        toolbar = Adw.ToolbarView()
+        toolbar.add_top_bar(Adw.HeaderBar())
 
-        heading = Gtk.Label(label=_("Change Password"))
-        heading.add_css_class("group-title")
-        box.append(heading)
+        inner = Adw.PreferencesPage()
+        group = Adw.PreferencesGroup()
+        group.set_description(_("Enter a new password for your account."))
 
-        new_pw = Gtk.PasswordEntry()
-        new_pw.set_show_peek_icon(True)
-        new_pw.set_placeholder_text(_("New password"))
-        box.append(new_pw)
+        new_pw = Adw.PasswordEntryRow()
+        new_pw.set_title(_("New password"))
+        group.add(new_pw)
 
-        confirm_pw = Gtk.PasswordEntry()
-        confirm_pw.set_show_peek_icon(True)
-        confirm_pw.set_placeholder_text(_("Confirm password"))
-        box.append(confirm_pw)
+        confirm_pw = Adw.PasswordEntryRow()
+        confirm_pw.set_title(_("Confirm password"))
+        group.add(confirm_pw)
 
-        error_label = Gtk.Label(label="")
-        error_label.add_css_class("setting-subtitle")
-        box.append(error_label)
+        inner.add(group)
 
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        button_box.set_halign(Gtk.Align.END)
-
-        cancel_btn = Gtk.Button(label=_("Cancel"))
-        cancel_btn.connect("clicked", lambda _: dialog.close())
-        button_box.append(cancel_btn)
-
+        # Apply button as a suggested-action row below the entries
+        action_group = Adw.PreferencesGroup()
+        apply_row = Adw.ActionRow()
         apply_btn = Gtk.Button(label=_("Apply"))
         apply_btn.add_css_class("suggested-action")
+        apply_btn.set_valign(Gtk.Align.CENTER)
+        apply_btn.connect("clicked", lambda _b: self._apply_password_change(
+            new_pw, confirm_pw, sub))
+        apply_row.add_suffix(apply_btn)
+        action_group.add(apply_row)
+        inner.add(action_group)
 
-        def _apply(_):
-            pw = new_pw.get_text()
-            cpw = confirm_pw.get_text()
-            if not pw:
-                error_label.set_text(_("Password cannot be empty"))
-                return
-            if pw != cpw:
-                error_label.set_text(_("Passwords do not match"))
-                return
-            try:
-                hashed = _hash_password(pw)
-                self._bus.call_sync(
-                    "org.freedesktop.Accounts", self._user_path,
-                    "org.freedesktop.Accounts.User", "SetPassword",
-                    GLib.Variant("(ss)", (hashed, "")),
-                    None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
-                )
-                dialog.close()
-            except (GLib.Error, subprocess.CalledProcessError, subprocess.TimeoutExpired):
-                error_label.set_text(_("Failed to set password"))
+        toolbar.set_content(inner)
+        sub.set_child(toolbar)
+        self._nav.push(sub)
 
-        apply_btn.connect("clicked", _apply)
-        button_box.append(apply_btn)
-        box.append(button_box)
-
-        dialog.set_child(box)
-        apply_btn.set_receives_default(True)
-        dialog.set_default_widget(apply_btn)
-        new_pw.grab_focus()
-        BasePage.enable_escape_close(dialog)
-        dialog.present()
+    def _apply_password_change(self, new_pw, confirm_pw, sub):
+        pw = new_pw.get_text()
+        cpw = confirm_pw.get_text()
+        if not pw:
+            self.store.show_toast(_("Password cannot be empty"))
+            return
+        if pw != cpw:
+            self.store.show_toast(_("Passwords do not match"))
+            return
+        try:
+            hashed = _hash_password(pw)
+            self._bus.call_sync(
+                "org.freedesktop.Accounts", self._user_path,
+                "org.freedesktop.Accounts.User", "SetPassword",
+                GLib.Variant("(ss)", (hashed, "")),
+                None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
+            )
+            self._nav.pop()
+        except (GLib.Error, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+            self.store.show_toast(_("Failed to set password"))
