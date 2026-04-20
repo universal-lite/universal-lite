@@ -242,6 +242,22 @@ systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
 systemctl --global disable flatpak-user-update.timer
 
+# Strip apps inherited from the base image that don't make sense in
+# this distro's UX:
+#   - xfce4-panel: its .desktop entry ("Panel") shows up in the start
+#     menu and tries to launch a second panel on top of our waybar,
+#     which crashes immediately in labwc. Nothing in the image depends
+#     on xfce4-panel itself.
+#   - nvtop: GPU process viewer aimed at developers; irrelevant for an
+#     end-user device and inherited from the ublue-os base.
+# Use `|| true` so the build continues if either package turns out not
+# to be present (package provenance can shift with base-image updates).
+# Belt-and-suspenders: rm -f any stray .desktop files in case the
+# package name on disk doesn't match what we tried to remove.
+dnf5 remove -y xfce4-panel nvtop || true
+rm -f /usr/share/applications/xfce4-panel.desktop \
+      /usr/share/applications/nvtop.desktop
+
 # Flatpak apps are installed by the first-boot service from Flathub —
 # not pre-installed in the image.  This keeps the raw image small for
 # constrained target hardware (16 GB eMMC).
