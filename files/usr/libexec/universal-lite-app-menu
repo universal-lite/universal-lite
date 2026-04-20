@@ -225,11 +225,17 @@ class AppMenu(Gtk.ApplicationWindow):
     def _filter_row(self, row: Gtk.ListBoxRow) -> bool:
         query = self._search.get_text().lower().strip()
         if getattr(row, "_is_header", False):
-            # Hide headers while searching so results read as a flat list.
+            # Hide headers and the separator while searching so results
+            # read as a single flat list.
             return query == ""
         if not query:
             return True
-        return query in getattr(row, "_search_text", "")
+        text = getattr(row, "_search_text", "")
+        # Whitespace-delimited tokens must all appear somewhere in the
+        # display name, in any order. "fire fox" and "fox fire" both
+        # match "Mozilla Firefox"; "vis stud" matches "Visual Studio
+        # Code". A single token behaves exactly like substring search.
+        return all(tok in text for tok in query.split())
 
     def _on_search_changed(self, _entry: Gtk.SearchEntry) -> None:
         self._list.invalidate_filter()
