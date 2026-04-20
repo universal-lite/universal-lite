@@ -1,10 +1,11 @@
 [Unit]
 Description=First-boot Flatpak install
-# Runs BEFORE greetd so the user logs into a complete desktop with
-# their selected apps already present, not an empty one with
-# background downloads in flight. Hard-timeout safety valve below
-# prevents a flaky network from locking the user out forever.
-Before=greetd.service
+# Runs in parallel with greetd. The greeter watches the progress
+# file (/run/universal-lite/flatpak-progress) and shows a "Finishing
+# setup" overlay in place of the login form until the stamp file
+# appears, so login is blocked from the user's perspective but the
+# greeter itself can come up instantly with actual progress
+# feedback instead of a silent Plymouth splash.
 After=universal-lite-first-boot.service NetworkManager.service
 # Wizard must have completed AND we must not already be past the
 # install phase. Once the stamp exists, the -update.service unit

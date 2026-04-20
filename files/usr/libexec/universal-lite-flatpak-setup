@@ -18,6 +18,8 @@ set -uo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
 STAMP=/var/lib/universal-lite/flatpak-setup.done
+PROGRESS_DIR=/run/universal-lite
+PROGRESS_FILE=$PROGRESS_DIR/flatpak-progress
 MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
@@ -32,6 +34,16 @@ wait_for_network() {
         waited=$((waited + 5))
     done
     return 1
+}
+
+# Atomic progress write — the greeter polls $PROGRESS_FILE and shows
+# the contents as a "Finishing setup" overlay until the stamp file
+# appears. World-readable because the greetd user reads it.
+write_progress() {
+    mkdir -p "$PROGRESS_DIR"
+    printf '%s\n' "$1" > "$PROGRESS_FILE.tmp"
+    chmod 0644 "$PROGRESS_FILE.tmp"
+    mv -f "$PROGRESS_FILE.tmp" "$PROGRESS_FILE"
 }
 
 # -----------------------------------------------------------------
@@ -89,14 +101,17 @@ echo "  Universal-Lite - First Boot Setup"
 echo "========================================"
 echo ""
 
+write_progress "Waiting for network connection..."
 echo "Waiting for network connection..."
 if ! wait_for_network; then
     echo "No network after ${MAX_NET_WAIT}s - will retry on next boot."
+    write_progress "No network - will retry on next boot."
     # No stamp: service reruns next boot until initial install succeeds.
     exit 0
 fi
 echo "Network connected."
 
+write_progress "Configuring Flathub app store..."
 echo "Configuring Flathub app store..."
 remote_ok=false
 for attempt in $(seq 1 "$RETRIES"); do
@@ -111,6 +126,7 @@ done
 
 if ! "$remote_ok"; then
     echo "ERROR: Could not configure Flathub. Will retry on next boot."
+    write_progress "Could not reach Flathub - will retry on next boot."
     # No stamp: retry; without Flathub, nothing in apps file can install.
     exit 0
 fi
@@ -132,6 +148,7 @@ while IFS= read -r app_id; do
 
     echo ""
     echo "[$current/$total_apps] Installing $app_id..."
+    write_progress "Installing $current of $total_apps: $app_id"
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do

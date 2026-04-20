@@ -37,6 +37,19 @@ GREETER_THEME_PATH = Path("/var/lib/universal-lite/greeter-theme")
 SESSIONS_DIR = Path("/usr/share/wayland-sessions")
 PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 
+# First-boot flatpak-install coordination. The installer wizard drops
+# SETUP_DONE when it finishes; the flatpak-install service drops
+# FLATPAK_DONE when every requested app is installed; the running
+# script updates FLATPAK_PROGRESS with a human-readable status line
+# we surface in a "Finishing setup" overlay.
+SETUP_DONE_PATH = Path("/var/lib/universal-lite/setup-done")
+FLATPAK_DONE_PATH = Path("/var/lib/universal-lite/flatpak-setup.done")
+FLATPAK_PROGRESS_PATH = Path("/run/universal-lite/flatpak-progress")
+# Safety valve: if the install service somehow never finishes AND
+# never fails, fall through to login after this many seconds so the
+# user can always reach their desktop.
+SETUP_OVERLAY_TIMEOUT_S = 900
+
 # ---------------------------------------------------------------------------
 #  Adwaita palettes — loaded from shared palette.json, extended for greeter
 # ---------------------------------------------------------------------------
@@ -217,6 +230,36 @@ window {{
 
 .session-dropdown button:hover {{
     background: {p["hover"]};
+}}
+
+.setup-card {{
+    background-color: {p["card_bg"]};
+    border-radius: 16px;
+    padding: 48px 48px;
+    box-shadow: {p["card_shadow"]};
+}}
+
+.setup-heading {{
+    font-family: "Roboto", sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: {p["fg"]};
+    margin-top: 20px;
+    margin-bottom: 6px;
+}}
+
+.setup-subtext {{
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    color: {p["secondary_fg"]};
+    margin-bottom: 20px;
+}}
+
+.setup-progress {{
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    color: {p["secondary_fg"]};
+    min-width: 320px;
 }}
 """
 
@@ -441,7 +484,49 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._switch_btn.connect("clicked", lambda _: self._show_username_state())
         card.append(self._switch_btn)
 
-        outer.append(card)
+        # --- Setup-in-progress overlay ---
+        # Shown in place of the login card while first-boot Flatpak
+        # install is still running. Same card shell + shadow so the
+        # swap in and out is a crossfade of equivalent shapes.
+        setup_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        setup_card.add_css_class("setup-card")
+        setup_card.set_halign(Gtk.Align.CENTER)
+        setup_card.set_size_request(420, -1)
+
+        self._setup_spinner = Gtk.Spinner()
+        self._setup_spinner.set_size_request(40, 40)
+        self._setup_spinner.set_halign(Gtk.Align.CENTER)
+        setup_card.append(self._setup_spinner)
+
+        heading = Gtk.Label(label=_("Finishing setup"))
+        heading.add_css_class("setup-heading")
+        heading.set_halign(Gtk.Align.CENTER)
+        setup_card.append(heading)
+
+        subtext = Gtk.Label(
+            label=_("Installing your selected apps before you log in."))
+        subtext.add_css_class("setup-subtext")
+        subtext.set_halign(Gtk.Align.CENTER)
+        subtext.set_wrap(True)
+        subtext.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        subtext.set_max_width_chars(36)
+        setup_card.append(subtext)
+
+        self._setup_progress_label = Gtk.Label()
+        self._setup_progress_label.add_css_class("setup-progress")
+        self._setup_progress_label.set_halign(Gtk.Align.CENTER)
+        self._setup_progress_label.set_wrap(True)
+        self._setup_progress_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._setup_progress_label.set_max_width_chars(40)
+        setup_card.append(self._setup_progress_label)
+
+        # --- Stack to swap between setup overlay and login card ---
+        self._stack = Gtk.Stack()
+        self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self._stack.set_transition_duration(200)
+        self._stack.add_named(setup_card, "setup")
+        self._stack.add_named(card, "login")
+        outer.append(self._stack)
         self.set_child(outer)
 
         # Clear error on keypress
@@ -449,11 +534,61 @@ class GreeterWindow(Gtk.ApplicationWindow):
         key_controller.connect("key-pressed", self._on_key_pressed)
         self.add_controller(key_controller)
 
-        # Start in the right state
+        # If first-boot install hasn't finished, show the setup
+        # overlay and poll for completion. Otherwise jump straight
+        # to login.
+        self._setup_elapsed_s = 0
+        if self._is_setup_in_progress():
+            self._stack.set_visible_child_name("setup")
+            self._setup_spinner.start()
+            self._update_setup_progress()
+            GLib.timeout_add_seconds(1, self._poll_setup_progress)
+        else:
+            self._stack.set_visible_child_name("login")
+
+        # Start in the right state — the login state is prepared
+        # whether or not we're currently showing it, so the crossfade
+        # from setup → login is seamless.
         if self._last_user:
             self._show_password_state(self._last_user)
         else:
             self._show_username_state()
+
+    # ------------------------------------------------------------------
+    # First-boot setup overlay
+    # ------------------------------------------------------------------
+
+    def _is_setup_in_progress(self) -> bool:
+        """True when the wizard is done but flatpak-install hasn't finished."""
+        return SETUP_DONE_PATH.exists() and not FLATPAK_DONE_PATH.exists()
+
+    def _update_setup_progress(self) -> None:
+        try:
+            text = FLATPAK_PROGRESS_PATH.read_text().strip()
+        except OSError:
+            text = ""
+        if not text:
+            text = _("Preparing...")
+        self._setup_progress_label.set_text(text)
+
+    def _poll_setup_progress(self) -> bool:
+        # Install finished → reveal the login card.
+        if FLATPAK_DONE_PATH.exists():
+            self._setup_spinner.stop()
+            self._stack.set_visible_child_name("login")
+            return GLib.SOURCE_REMOVE
+
+        # Install hung longer than the safety valve allows → let the
+        # user log in anyway. Apps still missing will be picked up by
+        # the next boot's retry, and by the -update.service pass.
+        self._setup_elapsed_s += 1
+        if self._setup_elapsed_s >= SETUP_OVERLAY_TIMEOUT_S:
+            self._setup_spinner.stop()
+            self._stack.set_visible_child_name("login")
+            return GLib.SOURCE_REMOVE
+
+        self._update_setup_progress()
+        return GLib.SOURCE_CONTINUE
 
     # ------------------------------------------------------------------
     # Clock
