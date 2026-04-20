@@ -22,9 +22,11 @@ try:
     gi.require_version("Gtk4LayerShell", "1.0")
     from gi.repository import Gtk4LayerShell as LayerShell
     _HAVE_LAYER_SHELL = True
-except (ValueError, ImportError):
+except (ValueError, ImportError) as _e:
     LayerShell = None  # type: ignore
     _HAVE_LAYER_SHELL = False
+    print(f"universal-lite-app-menu: Gtk4LayerShell unavailable ({_e}); "
+          f"falling back to plain toplevel", file=sys.stderr)
 
 
 SETTINGS_PATH = Path.home() / ".config/universal-lite/settings.json"
@@ -146,9 +148,18 @@ def _category_for(app: Gio.AppInfo) -> str:
     return "Other"
 
 
-class AppMenu(Gtk.ApplicationWindow):
+class AppMenu(Gtk.Window):
+    """Plain Gtk.Window, not ApplicationWindow.
+
+    ApplicationWindow adds menu/action-map integration and quits the
+    app when closed, which interacts poorly with some Wayland layer-
+    shell implementations. We register manually with the Gtk.Application
+    via add_window() so lifecycle still works.
+    """
+
     def __init__(self, app: Gtk.Application):
-        super().__init__(application=app)
+        super().__init__()
+        app.add_window(self)
         self.add_css_class("app-menu")
         self.set_decorated(False)
 
@@ -210,18 +221,27 @@ class AppMenu(Gtk.ApplicationWindow):
             # No layer-shell → best we can do is a centred, decoration-
             # less, always-floating window. Not as seamless as the
             # layer-shell path but still visibly a popup.
+            print("universal-lite-app-menu: layer-shell unavailable, "
+                  "using fallback toplevel", file=sys.stderr)
             return
 
-        LayerShell.init_for_window(self)
-        LayerShell.set_layer(self, LayerShell.Layer.TOP)
-        LayerShell.set_namespace(self, "universal-lite-app-menu")
-        # ON_DEMAND — menu grabs keyboard while focused, releases it
-        # the instant the user clicks any other surface. That focus
-        # shift is also what drives our click-outside-to-dismiss via
-        # notify::is-active.
-        LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.ON_DEMAND)
-        # Don't carve screen real-estate from other layer clients.
-        LayerShell.set_exclusive_zone(self, 0)
+        try:
+            LayerShell.init_for_window(self)
+            print(f"universal-lite-app-menu: layer-shell active (edge={edge})",
+                  file=sys.stderr)
+            LayerShell.set_layer(self, LayerShell.Layer.TOP)
+            LayerShell.set_namespace(self, "universal-lite-app-menu")
+            # ON_DEMAND — menu grabs keyboard while focused, releases it
+            # the instant the user clicks any other surface. That focus
+            # shift is also what drives our click-outside-to-dismiss via
+            # notify::is-active.
+            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.ON_DEMAND)
+            # Don't carve screen real-estate from other layer clients.
+            LayerShell.set_exclusive_zone(self, 0)
+        except Exception as exc:
+            print(f"universal-lite-app-menu: layer-shell init failed: {exc}",
+                  file=sys.stderr)
+            return
 
         # Anchor to the panel's edge + the corner where the launcher
         # lives (modules-start = top-of-panel for vertical, left-of-
@@ -393,7 +413,12 @@ def main() -> None:
 
     def _activate(a: Gtk.Application) -> None:
         _install_css()
-        AppMenu(a).present()
+        win = AppMenu(a)
+        # Layer-shell surfaces prefer set_visible(True) over present() —
+        # present() requests an activation token from the compositor
+        # that layer surfaces don't need and some versions of wlroots
+        # handle quirkily.
+        win.set_visible(True)
 
     app.connect("activate", _activate)
     sys.exit(app.run([]))
