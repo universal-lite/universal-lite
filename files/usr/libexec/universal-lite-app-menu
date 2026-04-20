@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """Universal-Lite categorised start menu.
 
-Fired by the waybar launcher's on-click. A self-contained GTK4 window:
-search entry on top, apps grouped by freedesktop Main Category, one
-system-actions row at the bottom. Deliberately replaces the previous
-wtype-+-labwc-pipemenu combo so clicking the launcher doesn't rely on
-synthetic keystrokes or the compositor's menu grab — both of which
-turned out to be unreliable on labwc 0.9.6.
+Fired by the waybar launcher's on-click and by Super+Space. A
+self-contained GTK4 window — no libadwaita, no wtype, no labwc
+pipemenu — that exposes the same eight app categories as
+`labwc-menu-generator -b` plus a Windows-11/ChromeOS-style power
+strip at the bottom.
+
+Three dismissal paths: pick an entry, press Escape, or click any
+other surface (labwc shifts keyboard focus away and our
+`notify::is-active` handler closes the window).
 """
 from __future__ import annotations
 
@@ -17,12 +20,12 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gdk, Gio, GLib, Gtk
 
-# App categories, matched to what `labwc-menu-generator -b` emits so the
-# start menu presents the same sections the old labwc pipemenu would
-# have. Order is alphabetical (matches labwc output). Apps that don't
-# match any freedesktop Main Category land in "Other" — labwc-menu
-# -generator drops those silently; we surface them instead so the user
-# can still find obscure apps.
+# App categories, matched to what `labwc-menu-generator -b` emits so
+# the start menu presents the same sections the old labwc pipemenu
+# would have. Order is alphabetical (matches labwc output). Apps that
+# don't match any freedesktop Main Category land in "Other" — labwc
+# -menu-generator drops those silently; we surface them so obscure
+# apps are still reachable.
 CATEGORIES: list[tuple[str, frozenset[str]]] = [
     ("Accessories", frozenset({"Utility", "Accessories", "Core"})),
     ("Development", frozenset({"Development", "IDE", "Building"})),
@@ -39,19 +42,74 @@ CATEGORIES: list[tuple[str, frozenset[str]]] = [
                                "TerminalEmulator", "FileManager"})),
 ]
 
-# Fixed system actions shown at the bottom of the menu. Mirrors the
-# entries the labwc pipemenu (universal-lite-menu) and desktop right-
-# click menu expose, in the same order, so the UX is consistent
-# whichever entry point the user takes.
-SYSTEM_ACTIONS = [
-    ("Settings",     "preferences-system",    ["universal-lite-settings"]),
-    ("File Manager", "system-file-manager",   ["Thunar"]),
-    ("Terminal",     "utilities-terminal",    ["foot"]),
-    ("Lock Screen",  "system-lock-screen",    ["swaylock", "-f"]),
-    ("Log Out",      "system-log-out",        ["labwc", "--exit"]),
-    ("Restart",      "system-reboot",         ["systemctl", "reboot"]),
-    ("Shut Down",    "system-shutdown",       ["systemctl", "poweroff"]),
+# Icon-button power strip at the bottom. Same commands the labwc
+# pipemenu used; the row is chromey on purpose so users find it at a
+# glance.
+POWER_ACTIONS = [
+    ("Lock",     "system-lock-screen", ["swaylock", "-f"]),
+    ("Log Out",  "system-log-out",     ["labwc", "--exit"]),
+    ("Restart",  "system-reboot",      ["systemctl", "reboot"]),
+    ("Shut Down", "system-shutdown",   ["systemctl", "poweroff"]),
 ]
+
+# Custom CSS. Intentionally terse; GTK's default Adwaita palette does
+# most of the work (respects the system theme). We just round corners,
+# enlarge the search entry, and style the category headers + power
+# strip.
+CSS = b"""
+window.app-menu {
+    background: @window_bg_color;
+    border-radius: 14px;
+}
+
+.app-menu-search {
+    min-height: 40px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+}
+
+.app-menu-category {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    padding: 14px 4px 4px 4px;
+}
+
+.app-menu-row {
+    padding: 6px 8px;
+    border-radius: 10px;
+    margin: 1px 0;
+}
+
+.app-menu-row:hover {
+    background: alpha(@accent_color, 0.12);
+}
+
+.app-menu-power-bar {
+    padding: 8px 4px 4px 4px;
+    border-top: 1px solid alpha(@borders, 0.6);
+    margin-top: 4px;
+}
+
+.app-menu-power-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 999px;
+    background: transparent;
+}
+
+.app-menu-power-btn:hover {
+    background: alpha(@accent_color, 0.15);
+}
+
+.app-menu-power-btn.destructive:hover {
+    background: alpha(@error_color, 0.18);
+}
+"""
 
 
 def _category_for(app: Gio.AppInfo) -> str:
@@ -68,44 +126,53 @@ def _category_for(app: Gio.AppInfo) -> str:
 class AppMenu(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application):
         super().__init__(application=app, title="Apps")
-        self.set_default_size(480, 640)
+        self.set_default_size(520, 680)
+        self.add_css_class("app-menu")
 
-        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        root.set_margin_top(12)
-        root.set_margin_bottom(12)
-        root.set_margin_start(12)
-        root.set_margin_end(12)
+        root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        root.set_margin_top(14)
+        root.set_margin_bottom(10)
+        root.set_margin_start(14)
+        root.set_margin_end(14)
         self.set_child(root)
 
+        # Search — large, rounded, at the top.
         self._search = Gtk.SearchEntry()
         self._search.set_placeholder_text("Search apps\u2026")
+        self._search.add_css_class("app-menu-search")
         self._search.connect("search-changed", self._on_search_changed)
         self._search.connect("activate", self._on_search_activate)
         root.append(self._search)
 
+        # App list.
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_margin_top(6)
         root.append(scrolled)
 
         self._list = Gtk.ListBox()
         self._list.set_selection_mode(Gtk.SelectionMode.NONE)
         self._list.set_filter_func(self._filter_row)
+        self._list.add_css_class("navigation-sidebar")  # borderless look
         scrolled.set_child(self._list)
 
         self._populate()
 
+        # Power strip.
+        root.append(self._build_power_bar())
+
+        # Keyboard controls.
         key = Gtk.EventControllerKey()
         key.connect("key-pressed", self._on_key)
         self.add_controller(key)
 
-        # Click-outside-to-dismiss: the window is presented focused, so
-        # is_active flips to False as soon as the user clicks on any
-        # other surface (labwc re-focuses that surface). Matches the
-        # dismissal UX of a native popup menu without needing layer-shell.
+        # Click-outside-to-dismiss via focus tracking.
         self.connect("notify::is-active", self._on_active_changed)
 
         self._search.grab_focus()
+
+    # -- build helpers --
 
     def _populate(self) -> None:
         apps = [a for a in Gio.AppInfo.get_all() if a.should_show()]
@@ -123,36 +190,14 @@ class AppMenu(Gtk.ApplicationWindow):
             for app in items:
                 self._list.append(self._make_app_row(app))
 
-        # System actions — separated from app categories by a thin rule,
-        # matching the <separator/> the labwc pipemenu used to draw
-        # between app entries and system entries.
-        self._list.append(self._make_separator())
-        for label, icon_name, cmd in SYSTEM_ACTIONS:
-            self._list.append(self._make_action_row(label, icon_name, cmd))
-
     def _make_header(self, text: str) -> Gtk.ListBoxRow:
         row = Gtk.ListBoxRow()
         row.set_selectable(False)
         row.set_activatable(False)
         row._is_header = True
         label = Gtk.Label(label=text, xalign=0)
-        label.add_css_class("heading")
-        label.add_css_class("dim-label")
-        label.set_margin_top(10)
-        label.set_margin_bottom(2)
-        label.set_margin_start(4)
+        label.add_css_class("app-menu-category")
         row.set_child(label)
-        return row
-
-    def _make_separator(self) -> Gtk.ListBoxRow:
-        row = Gtk.ListBoxRow()
-        row.set_selectable(False)
-        row.set_activatable(False)
-        row._is_header = True  # hidden during search, same as headers
-        sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        sep.set_margin_top(8)
-        sep.set_margin_bottom(4)
-        row.set_child(sep)
         return row
 
     def _make_app_row(self, app: Gio.AppInfo) -> Gtk.ListBoxRow:
@@ -160,47 +205,45 @@ class AppMenu(Gtk.ApplicationWindow):
         row._is_header = False
         row._app = app
         row._search_text = app.get_display_name().lower()
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        box.set_margin_top(4)
-        box.set_margin_bottom(4)
-        box.set_margin_start(4)
-        box.set_margin_end(4)
+        row.add_css_class("app-menu-row")
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         gicon = app.get_icon()
         img = (Gtk.Image.new_from_gicon(gicon) if gicon is not None
                else Gtk.Image.new_from_icon_name("application-x-executable-symbolic"))
-        img.set_pixel_size(28)
+        img.set_pixel_size(36)
         box.append(img)
+
         name = Gtk.Label(label=app.get_display_name(), xalign=0)
         name.set_hexpand(True)
+        name.add_css_class("body")
         box.append(name)
         row.set_child(box)
+
         gesture = Gtk.GestureClick()
         gesture.connect("released", lambda *_: self._launch_app(app))
         row.add_controller(gesture)
         return row
 
-    def _make_action_row(self, label: str, icon_name: str,
-                         cmd: list[str]) -> Gtk.ListBoxRow:
-        row = Gtk.ListBoxRow()
-        row._is_header = False
-        row._search_text = label.lower()
-        row._app = None
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        box.set_margin_top(4)
-        box.set_margin_bottom(4)
-        box.set_margin_start(4)
-        box.set_margin_end(4)
-        img = Gtk.Image.new_from_icon_name(icon_name)
-        img.set_pixel_size(28)
-        box.append(img)
-        text = Gtk.Label(label=label, xalign=0)
-        text.set_hexpand(True)
-        box.append(text)
-        row.set_child(box)
-        gesture = Gtk.GestureClick()
-        gesture.connect("released", lambda *_: self._run_command(cmd))
-        row.add_controller(gesture)
-        return row
+    def _build_power_bar(self) -> Gtk.Widget:
+        bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        bar.set_halign(Gtk.Align.END)
+        bar.add_css_class("app-menu-power-bar")
+
+        for label, icon_name, cmd in POWER_ACTIONS:
+            btn = Gtk.Button()
+            btn.set_tooltip_text(label)
+            btn.add_css_class("app-menu-power-btn")
+            if label in ("Restart", "Shut Down"):
+                btn.add_css_class("destructive")
+            img = Gtk.Image.new_from_icon_name(icon_name)
+            img.set_pixel_size(22)
+            btn.set_child(img)
+            btn.connect("clicked", lambda _b, c=cmd: self._run_command(c))
+            bar.append(btn)
+        return bar
+
+    # -- actions --
 
     def _launch_app(self, app: Gio.AppInfo) -> None:
         try:
@@ -222,19 +265,18 @@ class AppMenu(Gtk.ApplicationWindow):
                   file=sys.stderr)
         self.close()
 
+    # -- filtering and keys --
+
     def _filter_row(self, row: Gtk.ListBoxRow) -> bool:
         query = self._search.get_text().lower().strip()
         if getattr(row, "_is_header", False):
-            # Hide headers and the separator while searching so results
-            # read as a single flat list.
             return query == ""
         if not query:
             return True
         text = getattr(row, "_search_text", "")
-        # Whitespace-delimited tokens must all appear somewhere in the
-        # display name, in any order. "fire fox" and "fox fire" both
-        # match "Mozilla Firefox"; "vis stud" matches "Visual Studio
-        # Code". A single token behaves exactly like substring search.
+        # Whitespace-delimited tokens must all appear in the name, in
+        # any order. "fire fox" matches "Mozilla Firefox"; "vis stud"
+        # matches "Visual Studio Code". A single token is substring.
         return all(tok in text for tok in query.split())
 
     def _on_search_changed(self, _entry: Gtk.SearchEntry) -> None:
@@ -243,9 +285,10 @@ class AppMenu(Gtk.ApplicationWindow):
     def _on_search_activate(self, _entry: Gtk.SearchEntry) -> None:
         row = self._list.get_first_child()
         while row is not None:
-            if not getattr(row, "_is_header", False) and row.get_child_visible():
-                if getattr(row, "_app", None) is not None:
-                    self._launch_app(row._app)
+            if (not getattr(row, "_is_header", False)
+                    and row.get_child_visible()
+                    and getattr(row, "_app", None) is not None):
+                self._launch_app(row._app)
                 return
             row = row.get_next_sibling()
 
@@ -260,10 +303,24 @@ class AppMenu(Gtk.ApplicationWindow):
             window.close()
 
 
+def _install_css() -> None:
+    provider = Gtk.CssProvider()
+    provider.load_from_data(CSS)
+    Gtk.StyleContext.add_provider_for_display(
+        Gdk.Display.get_default(), provider,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+    )
+
+
 def main() -> None:
     app = Gtk.Application(application_id="org.universallite.AppMenu",
                           flags=Gio.ApplicationFlags.NON_UNIQUE)
-    app.connect("activate", lambda a: AppMenu(a).present())
+
+    def _activate(a: Gtk.Application) -> None:
+        _install_css()
+        AppMenu(a).present()
+
+    app.connect("activate", _activate)
     sys.exit(app.run([]))
 
 
