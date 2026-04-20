@@ -16,7 +16,7 @@ import sys
 # interpreter loads libwayland-client (which happens the moment we
 # import gi.repository.Gtk). If it isn't, `gtk_layer_init_for_window`
 # no-ops and every subsequent call warns "GtkWindow is not a layer
-# surface" — the window renders as a regular toplevel. Re-exec with
+# surface" - the window renders as a regular toplevel. Re-exec with
 # LD_PRELOAD set to close that ordering race. A sentinel env var
 # prevents infinite re-exec loops if the library is missing.
 _LAYER_SHELL_LIB = "/usr/lib64/libgtk4-layer-shell.so.0"
@@ -78,7 +78,7 @@ POWER_ACTIONS = [
     ("Shut Down", "system-shutdown",    ["systemctl", "poweroff"]),
 ]
 
-# CSS — no libadwaita. Uses Adwaita colour vars so the menu tracks
+# CSS - no libadwaita. Uses Adwaita colour vars so the menu tracks
 # whichever accent / theme apply-settings has set. The surface box
 # carries both the rounded corners and the drop shadow; the surface
 # needs enough room around it inside the (transparent) window for
@@ -92,7 +92,7 @@ window.app-menu {
 .app-menu-surface {
     background: @window_bg_color;
     color: @window_fg_color;
-    /* 12 px matches libadwaita's $popover_radius — standard GNOME
+    /* 12 px matches libadwaita's $popover_radius - standard GNOME
        popover corner. */
     border-radius: 12px;
     /* Subtle edge-definition line in both light and dark themes,
@@ -186,7 +186,7 @@ def _panel_geometry(settings: dict) -> dict:
 def _is_visible(app: Gio.AppInfo) -> bool:
     """Include every installed .desktop entry except NoDisplay / Hidden.
 
-    Intentionally looser than Gio.AppInfo.should_show() — that helper
+    Intentionally looser than Gio.AppInfo.should_show() - that helper
     also filters on OnlyShowIn / NotShowIn against XDG_CURRENT_DESKTOP,
     which on labwc silently hides everything marked OnlyShowIn=GNOME
     (Nautilus, gnome-disks, several Flatpak apps, etc.). Users expect
@@ -229,7 +229,7 @@ class AppMenu(Gtk.Window):
         self._edge = self._geom["edge"]
         self._setup_surface(self._edge)
 
-        # Single rounded surface inside a transparent window — no tail.
+        # Single rounded surface inside a transparent window - no tail.
         # Uniform shadow margin on every side so the drop shadow renders
         # evenly around the full rounded rectangle.
         surface = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -308,7 +308,7 @@ class AppMenu(Gtk.Window):
             # init_for_window is void in C; verify success explicitly.
             if not LayerShell.is_layer_window(self):
                 print("universal-lite-app-menu: layer-shell init returned "
-                      "without error but window is not a layer surface — "
+                      "without error but window is not a layer surface - "
                       "library probably loaded after libwayland-client",
                       file=sys.stderr)
                 return
@@ -316,7 +316,7 @@ class AppMenu(Gtk.Window):
                   file=sys.stderr)
             LayerShell.set_layer(self, LayerShell.Layer.TOP)
             LayerShell.set_namespace(self, "universal-lite-app-menu")
-            # ON_DEMAND — menu grabs keyboard while focused, releases it
+            # ON_DEMAND - menu grabs keyboard while focused, releases it
             # the instant the user clicks any other surface. That focus
             # shift is also what drives our click-outside-to-dismiss via
             # notify::is-active.
@@ -334,7 +334,7 @@ class AppMenu(Gtk.Window):
         # Panel-side margin is 0 (not panel_outer) because waybar is
         # itself a layer-shell client and declares its own exclusive
         # zone. When *we* anchor to the same edge, the compositor
-        # already accounts for that zone — adding our own panel_outer
+        # already accounts for that zone - adding our own panel_outer
         # margin on top stacks, which is what pushed the tail 75 px
         # above the panel in the previous screenshot. With margin=0
         # our window edge lands exactly at waybar's zone boundary =
@@ -523,7 +523,7 @@ def main() -> None:
     def _activate(a: Gtk.Application) -> None:
         _install_css()
         win = AppMenu(a)
-        # Layer-shell surfaces prefer set_visible(True) over present() —
+        # Layer-shell surfaces prefer set_visible(True) over present() -
         # present() requests an activation token from the compositor
         # that layer surfaces don't need and some versions of wlroots
         # handle quirkily.
