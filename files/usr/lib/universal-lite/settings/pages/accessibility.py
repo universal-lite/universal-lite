@@ -2,8 +2,9 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Adw, Gtk
 
 from ..base import BasePage
 
@@ -14,9 +15,10 @@ CURSOR_SIZES = [
 ]
 
 
-class AccessibilityPage(BasePage):
+class AccessibilityPage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._prev_font_size = 11
 
     @property
@@ -29,18 +31,21 @@ class AccessibilityPage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Accessibility"))
 
-        # Large text toggle
-        large_text = Gtk.Switch()
-        large_text.set_active(self.store.get("font_size", 11) >= 15)
+        # -- Large text -------------------------------------------------
+        large_text_row = Adw.SwitchRow()
+        large_text_row.set_title(_("Large text"))
+        large_text_row.set_subtitle(_("Increases font size for better readability"))
         # Remember the font size at page-load time so toggling off
         # restores the user's previous choice without round-tripping
         # through settings.json.
         self._prev_font_size = self.store.get("font_size", 11)
+        large_text_row.set_active(self._prev_font_size >= 15)
 
-        def _on_large_text(_, state):
-            if state:
+        def _on_large_text(row, _pspec):
+            if row.get_active():
                 current = self.store.get("font_size", 11)
                 if current < 15:
                     self._prev_font_size = current
@@ -48,50 +53,52 @@ class AccessibilityPage(BasePage):
             else:
                 prev = self._prev_font_size if self._prev_font_size < 15 else 11
                 self.store.save_and_apply("font_size", prev)
-            return False
 
-        large_text.connect("state-set", _on_large_text)
+        large_text_row.connect("notify::active", _on_large_text)
+        group.add(large_text_row)
 
-        # Cursor size
+        # -- Cursor size ------------------------------------------------
         labels = [label for _, label in CURSOR_SIZES]
         values = [val for val, _ in CURSOR_SIZES]
-        cursor_dd = Gtk.DropDown.new_from_strings(labels)
+        cursor_row = Adw.ComboRow()
+        cursor_row.set_title(_("Cursor size"))
+        cursor_row.set_model(Gtk.StringList.new(labels))
         current = str(self.store.get("cursor_size", 24))
-        try:
-            cursor_dd.set_selected(values.index(current))
-        except ValueError:
-            cursor_dd.set_selected(0)
-        cursor_dd.connect("notify::selected", lambda d, _:
-            self.store.save_and_apply("cursor_size", int(values[d.get_selected()])))
+        cursor_row.set_selected(
+            values.index(current) if current in values else 0
+        )
 
-        # High contrast
-        contrast = Gtk.Switch()
-        contrast.set_active(self.store.get("high_contrast", False))
+        def _on_cursor_size(row, _pspec):
+            idx = row.get_selected()
+            if 0 <= idx < len(values):
+                self.store.save_and_apply("cursor_size", int(values[idx]))
 
-        def _on_contrast(_, state):
-            self.store.save_and_apply("high_contrast", state)
-            return False
+        cursor_row.connect("notify::selected", _on_cursor_size)
+        group.add(cursor_row)
 
-        contrast.connect("state-set", _on_contrast)
+        # -- High contrast ----------------------------------------------
+        contrast_row = Adw.SwitchRow()
+        contrast_row.set_title(_("High contrast"))
+        contrast_row.set_subtitle(_("Forces dark theme with stronger borders"))
+        contrast_row.set_active(self.store.get("high_contrast", False))
 
-        # Reduce motion
-        motion = Gtk.Switch()
-        motion.set_active(self.store.get("reduce_motion", False))
+        def _on_contrast(row, _pspec):
+            self.store.save_and_apply("high_contrast", row.get_active())
 
-        def _on_motion(_, state):
-            self.store.save_and_apply("reduce_motion", state)
-            return False
+        contrast_row.connect("notify::active", _on_contrast)
+        group.add(contrast_row)
 
-        motion.connect("state-set", _on_motion)
+        # -- Reduce motion ----------------------------------------------
+        motion_row = Adw.SwitchRow()
+        motion_row.set_title(_("Reduce motion"))
+        motion_row.set_subtitle(_("Disables animations throughout the interface"))
+        motion_row.set_active(self.store.get("reduce_motion", False))
 
-        page.append(self.make_group(_("Accessibility"), [
-            self.make_setting_row(
-                _("Large text"), _("Increases font size for better readability"), large_text),
-            self.make_setting_row(_("Cursor size"), "", cursor_dd),
-            self.make_setting_row(
-                _("High contrast"), _("Forces dark theme with stronger borders"), contrast),
-            self.make_setting_row(
-                _("Reduce motion"), _("Disables animations throughout the interface"), motion),
-        ]))
+        def _on_motion(row, _pspec):
+            self.store.save_and_apply("reduce_motion", row.get_active())
 
-        return page
+        motion_row.connect("notify::active", _on_motion)
+        group.add(motion_row)
+
+        self.add(group)
+        return self
