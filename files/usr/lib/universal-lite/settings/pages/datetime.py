@@ -4,18 +4,20 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import GLib, Gtk
+from gi.repository import Adw, GLib, Gtk
 
 from ..base import BasePage
 
 
-class DateTimePage(BasePage):
+class DateTimePage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
-        self._time_label = None
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._timer_id = None
         self._mapped = False
+        self._time_group: Adw.PreferencesGroup | None = None
 
     @property
     def search_keywords(self):
@@ -27,42 +29,50 @@ class DateTimePage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Date & Time"))
+        self._time_group = group
 
-        # Current time display (live updating)
-        self._time_label = Gtk.Label(xalign=0)
-        self._time_label.add_css_class("group-title")
+        # Seed the group description with the current time, then start the
+        # 1 Hz timer.  map/unmap are wired to self (the page IS the widget).
         self._mapped = True
         self._update_time()
         self._timer_id = GLib.timeout_add_seconds(1, self._update_time)
-        page.connect("map", lambda _: setattr(self, "_mapped", True))
-        page.connect("unmap", lambda _: self._cleanup())
+        self.connect("map", lambda _: setattr(self, "_mapped", True))
+        self.connect("unmap", lambda _: self._cleanup())
 
-        # Timezone
-        tz_entry = Gtk.Entry()
-        tz_entry.set_text(self._get_timezone())
-        tz_entry.set_placeholder_text(_("e.g. America/New_York"))
-        tz_entry.set_size_request(280, -1)
-        tz_entry.connect("activate", lambda e: self._set_timezone(e.get_text().strip(), e))
+        # Timezone — AdwEntryRow with an explicit apply button so the
+        # subprocess is not called on every keystroke.
+        tz_row = Adw.EntryRow()
+        tz_row.set_title(_("Timezone"))
+        tz_row.set_text(self._get_timezone())
+        tz_row.set_show_apply_button(True)
+        tz_row.connect("apply", lambda r: self._set_timezone(r.get_text().strip(), r))
+        group.add(tz_row)
 
         # Automatic time (NTP)
-        ntp_switch = Gtk.Switch()
-        ntp_switch.set_active(self._get_ntp())
-        ntp_switch.connect("state-set", lambda _, s: self._set_ntp(s) or False)
+        ntp_row = Adw.SwitchRow()
+        ntp_row.set_title(_("Automatic time"))
+        ntp_row.set_subtitle(_("Sync clock via network (NTP)"))
+        ntp_row.set_active(self._get_ntp())
+        ntp_row.connect("notify::active", lambda r, _p: self._set_ntp(r.get_active()))
+        group.add(ntp_row)
 
         # 24-hour clock
-        clock_switch = Gtk.Switch()
-        clock_switch.set_active(self.store.get("clock_24h", False))
-        clock_switch.connect("state-set", lambda _, s: self.store.save_and_apply("clock_24h", s) or False)
+        clock_row = Adw.SwitchRow()
+        clock_row.set_title(_("24-hour clock"))
+        clock_row.set_subtitle(_("Use 24-hour time format"))
+        clock_row.set_active(self.store.get("clock_24h", False))
+        clock_row.connect(
+            "notify::active",
+            lambda r, _p: self.store.save_and_apply("clock_24h", r.get_active()),
+        )
+        group.add(clock_row)
 
-        page.append(self.make_group(_("Date & Time"), [
-            self._time_label,
-            self.make_setting_row(_("Timezone"), _("Press Enter to apply"), tz_entry),
-            self.make_setting_row(_("Automatic time"), _("Sync clock via network (NTP)"), ntp_switch),
-            self.make_setting_row(_("24-hour clock"), _("Use 24-hour time format"), clock_switch),
-        ]))
+        self.add(group)
+        return self
 
-        return page
+    # -- live clock ---------------------------------------------------------
 
     def _update_time(self):
         if not self._mapped:
@@ -74,8 +84,8 @@ class DateTimePage(BasePage):
             fmt = "%A, %B %d, %Y  %H:%M:%S"
         else:
             fmt = "%A, %B %d, %Y  %I:%M:%S %p"
-        if self._time_label:
-            self._time_label.set_text(now.strftime(fmt))
+        if self._time_group is not None:
+            self._time_group.set_description(now.strftime(fmt))
         return GLib.SOURCE_CONTINUE
 
     def _cleanup(self):
@@ -84,11 +94,15 @@ class DateTimePage(BasePage):
             GLib.source_remove(self._timer_id)
             self._timer_id = None
 
+    # -- timezone -----------------------------------------------------------
+
     @staticmethod
     def _get_timezone():
         try:
-            r = subprocess.run(["timedatectl", "show", "--property=Timezone", "--value"],
-                               capture_output=True, text=True, timeout=5)
+            r = subprocess.run(
+                ["timedatectl", "show", "--property=Timezone", "--value"],
+                capture_output=True, text=True, timeout=5,
+            )
             return r.stdout.strip()
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return "UTC"
@@ -116,11 +130,15 @@ class DateTimePage(BasePage):
 
         threading.Thread(target=_run, daemon=True).start()
 
+    # -- NTP ----------------------------------------------------------------
+
     @staticmethod
     def _get_ntp():
         try:
-            r = subprocess.run(["timedatectl", "show", "--property=NTP", "--value"],
-                               capture_output=True, text=True, timeout=5)
+            r = subprocess.run(
+                ["timedatectl", "show", "--property=NTP", "--value"],
+                capture_output=True, text=True, timeout=5,
+            )
             return r.stdout.strip().lower() == "yes"
         except (FileNotFoundError, subprocess.TimeoutExpired):
             return False
