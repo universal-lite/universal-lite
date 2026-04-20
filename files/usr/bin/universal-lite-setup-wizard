@@ -23,6 +23,7 @@ import json
 import os
 
 import re
+import shutil
 import signal
 import socket
 import subprocess
@@ -2799,6 +2800,48 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             )
         except subprocess.CalledProcessError as exc:
             return f"Failed to remount target read-write: {exc.stderr.strip() or exc}"
+
+        # UEFI fallback: bootc/grub-install only drop EFI/fedora/grubx64.efi
+        # on the ESP and leave NVRAM registration to efibootmgr, which is
+        # a no-op from inside the ostree installer (it can't write to the
+        # host firmware, and on VMs the virtual NVRAM is empty). Without
+        # either an NVRAM entry OR the spec-mandated removable-media
+        # fallback at EFI/BOOT/BOOTX64.EFI, OVMF-style firmware has
+        # nothing to boot and lands on the setup screen. Copy the grub
+        # binary into the fallback path so the installed system boots
+        # regardless of firmware NVRAM state. Also register an NVRAM
+        # entry best-effort for real hardware — failure is tolerated
+        # since the fallback already covers the case.
+        if self._uefi_boot:
+            esp = Path(mount_point) / "boot" / "efi"
+            grub_efi = esp / "EFI" / "fedora" / "grubx64.efi"
+            fallback_dir = esp / "EFI" / "BOOT"
+            fallback_efi = fallback_dir / "BOOTX64.EFI"
+            if grub_efi.is_file():
+                try:
+                    fallback_dir.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(grub_efi, fallback_efi)
+                    self._log(f"Wrote UEFI fallback binary to {fallback_efi}\n")
+                except OSError as exc:
+                    self._log(f"WARNING: failed to write UEFI fallback: {exc}\n")
+                try:
+                    self._run_logged(
+                        ["efibootmgr", "-c",
+                         "-d", f"/dev/{self._setup_target_drive}",
+                         "-p", "1",
+                         "-L", "Universal-Lite",
+                         "-l", "\\EFI\\fedora\\grubx64.efi"],
+                        timeout=15,
+                    )
+                except (subprocess.CalledProcessError,
+                        subprocess.TimeoutExpired, FileNotFoundError):
+                    # efibootmgr fails in environments without writable
+                    # host-firmware NVRAM (most VMs, live ISOs). The
+                    # fallback binary above is enough to boot.
+                    pass
+            else:
+                self._log(f"WARNING: expected {grub_efi} after bootc install, "
+                          f"not found — UEFI fallback not installed\n")
 
         # Locate the ostree deployment directory for post-install steps.
         deploy_dirs = sorted(Path(mount_point).glob("ostree/deploy/*/deploy/*/"))
