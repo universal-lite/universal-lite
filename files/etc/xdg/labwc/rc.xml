@@ -62,7 +62,7 @@
       <action name="Execute" command="Thunar"/>
     </keybind>
     <keybind key="W-Escape">
-      <action name="Execute" command="foot -e htop"/>
+      <action name="Execute" command="xfce4-taskmanager"/>
     </keybind>
     <keybind key="W-comma">
       <action name="Execute" command="universal-lite-settings"/>

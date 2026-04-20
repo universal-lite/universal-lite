@@ -73,7 +73,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     gvfs \
     gvfs-gphoto2 \
     gvfs-mtp \
-    htop \
     labwc \
     libnotify \
     mako \
@@ -105,6 +104,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     wdisplays \
     wlr-randr \
     wireplumber \
+    xfce4-taskmanager \
     wl-clipboard \
     xfce-polkit \
     xorg-x11-server-Xwayland \

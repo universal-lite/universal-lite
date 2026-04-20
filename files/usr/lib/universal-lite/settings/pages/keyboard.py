@@ -35,7 +35,7 @@ SHORTCUT_NAMES = {
     ("Execute", "universal-lite-app-menu"): "App Launcher",
     ("Execute", "universal-lite-settings"): "Open Settings",
     ("Execute", "swaylock -f"): "Lock Screen",
-    ("Execute", "foot -e htop"): "System Monitor",
+    ("Execute", "xfce4-taskmanager"): "System Monitor",
     ("NextWindow", ""): "Switch Windows",
     ("PreviousWindow", ""): "Switch Windows (Reverse)",
     ("Close", ""): "Close Window",
