@@ -95,13 +95,15 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         group.add(row)
         return group
 
-    def _build_resolution_group(self) -> Adw.PreferencesGroup | Adw.StatusPage:
+    def _build_resolution_group(self) -> Adw.PreferencesGroup:
         displays = self._get_displays()
         if not displays:
+            group = Adw.PreferencesGroup()
             status = Adw.StatusPage()
             status.set_icon_name("video-display-symbolic")
             status.set_title(_("No displays detected"))
-            return status
+            group.add(status)
+            return group
 
         group = Adw.PreferencesGroup()
         group.set_title(_("Resolution & Refresh Rate"))
