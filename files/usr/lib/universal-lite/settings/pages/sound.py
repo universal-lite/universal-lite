@@ -5,25 +5,28 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk
+from gi.repository import Adw, Gtk
 
 from ..base import BasePage
 from ..dbus_helpers import PulseAudioSubscriber
 
 
-class SoundPage(BasePage):
+class SoundPage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._pa = None
         self._updating = False
-        # Widget refs for live updates
-        self._sink_dd = None
-        self._out_vol = None
-        self._out_mute = None
-        self._source_dd = None
-        self._in_vol = None
-        self._in_mute = None
+        # Widget refs for live updates — rewritten by _refresh()
+        # After conversion: ComboRow / inner Gtk.Scale / SwitchRow
+        self._sink_dd = None    # Adw.ComboRow
+        self._out_vol = None    # Gtk.Scale (suffix inside ActionRow)
+        self._out_mute = None   # Adw.SwitchRow
+        self._source_dd = None  # Adw.ComboRow
+        self._in_vol = None     # Gtk.Scale (suffix inside ActionRow)
+        self._in_mute = None    # Adw.SwitchRow
         self._sink_names = []
         self._source_names = []
 
@@ -35,9 +38,10 @@ class SoundPage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
+        # -- Output group --
+        output_group = Adw.PreferencesGroup()
+        output_group.set_title(_("Output"))
 
-        # -- Output --
         sinks = self._get_sinks()
         self._sink_names = [n for n, _ in sinks]
         sink_descs = [d for _, d in sinks]
@@ -47,31 +51,39 @@ class SoundPage(BasePage):
         except ValueError:
             sink_idx = 0
 
-        self._sink_dd = Gtk.DropDown.new(
-            Gtk.StringList.new(sink_descs or [_("(No output devices)")]), None,
+        self._sink_dd = Adw.ComboRow()
+        self._sink_dd.set_title(_("Output device"))
+        self._sink_dd.set_model(
+            Gtk.StringList.new(sink_descs if sink_descs else [_("(No output devices)")])
         )
         self._sink_dd.set_selected(sink_idx)
-        self._sink_dd.set_size_request(240, -1)
         self._sink_dd.connect("notify::selected", self._on_sink_selected)
+        output_group.add(self._sink_dd)
 
+        out_vol_row = Adw.ActionRow()
+        out_vol_row.set_title(_("Volume"))
         self._out_vol = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
         self._out_vol.set_value(self._get_volume("@DEFAULT_SINK@"))
         self._out_vol.set_size_request(200, -1)
         self._out_vol.set_draw_value(True)
         self._out_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
+        self._out_vol.set_valign(Gtk.Align.CENTER)
         self._out_vol.connect("value-changed", self._on_out_vol_changed)
+        out_vol_row.add_suffix(self._out_vol)
+        output_group.add(out_vol_row)
 
-        self._out_mute = Gtk.Switch()
+        self._out_mute = Adw.SwitchRow()
+        self._out_mute.set_title(_("Mute"))
         self._out_mute.set_active(self._get_mute("@DEFAULT_SINK@"))
-        self._out_mute.connect("state-set", self._on_out_mute_set)
+        self._out_mute.connect("notify::active", self._on_out_mute_changed)
+        output_group.add(self._out_mute)
 
-        page.append(self.make_group(_("Output"), [
-            self.make_setting_row(_("Output device"), "", self._sink_dd),
-            self.make_setting_row(_("Volume"), "", self._out_vol),
-            self.make_setting_row(_("Mute"), "", self._out_mute),
-        ]))
+        self.add(output_group)
 
-        # -- Input --
+        # -- Input group --
+        input_group = Adw.PreferencesGroup()
+        input_group.set_title(_("Input"))
+
         sources = self._get_sources()
         self._source_names = [n for n, _ in sources]
         source_descs = [d for _, d in sources]
@@ -81,29 +93,34 @@ class SoundPage(BasePage):
         except ValueError:
             source_idx = 0
 
-        self._source_dd = Gtk.DropDown.new(
-            Gtk.StringList.new(source_descs or [_("(No input devices)")]), None,
+        self._source_dd = Adw.ComboRow()
+        self._source_dd.set_title(_("Input device"))
+        self._source_dd.set_model(
+            Gtk.StringList.new(source_descs if source_descs else [_("(No input devices)")])
         )
         self._source_dd.set_selected(source_idx)
-        self._source_dd.set_size_request(240, -1)
         self._source_dd.connect("notify::selected", self._on_source_selected)
+        input_group.add(self._source_dd)
 
+        in_vol_row = Adw.ActionRow()
+        in_vol_row.set_title(_("Volume"))
         self._in_vol = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
         self._in_vol.set_value(self._get_volume("@DEFAULT_SOURCE@", is_source=True))
         self._in_vol.set_size_request(200, -1)
         self._in_vol.set_draw_value(True)
         self._in_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
+        self._in_vol.set_valign(Gtk.Align.CENTER)
         self._in_vol.connect("value-changed", self._on_in_vol_changed)
+        in_vol_row.add_suffix(self._in_vol)
+        input_group.add(in_vol_row)
 
-        self._in_mute = Gtk.Switch()
+        self._in_mute = Adw.SwitchRow()
+        self._in_mute.set_title(_("Mute"))
         self._in_mute.set_active(self._get_mute("@DEFAULT_SOURCE@", is_source=True))
-        self._in_mute.connect("state-set", self._on_in_mute_set)
+        self._in_mute.connect("notify::active", self._on_in_mute_changed)
+        input_group.add(self._in_mute)
 
-        page.append(self.make_group(_("Input"), [
-            self.make_setting_row(_("Input device"), "", self._source_dd),
-            self.make_setting_row(_("Volume"), "", self._in_vol),
-            self.make_setting_row(_("Mute"), "", self._in_mute),
-        ]))
+        self.add(input_group)
 
         self.subscribe("audio-changed", self._on_audio_changed)
 
@@ -120,11 +137,11 @@ class SoundPage(BasePage):
                 self._pa.stop()
                 self._pa = None
 
-        page.connect("map", _on_map)
-        page.connect("unmap", _on_unmap)
+        self.connect("map", _on_map)
+        self.connect("unmap", _on_unmap)
 
-        self.setup_cleanup(page)
-        return page
+        self.setup_cleanup(self)
+        return self
 
     # -- Signal handlers (user interaction) --
 
@@ -152,9 +169,10 @@ class SoundPage(BasePage):
         except (subprocess.TimeoutExpired, OSError):
             pass
 
-    def _on_out_mute_set(self, _switch, state):
+    def _on_out_mute_changed(self, switch_row, _pspec):
         if self._updating:
-            return False
+            return
+        state = switch_row.get_active()
         try:
             subprocess.run(
                 ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "1" if state else "0"],
@@ -162,7 +180,6 @@ class SoundPage(BasePage):
             )
         except (subprocess.TimeoutExpired, OSError):
             pass
-        return False
 
     def _on_source_selected(self, dropdown, _pspec):
         if self._updating:
@@ -188,9 +205,10 @@ class SoundPage(BasePage):
         except (subprocess.TimeoutExpired, OSError):
             pass
 
-    def _on_in_mute_set(self, _switch, state):
+    def _on_in_mute_changed(self, switch_row, _pspec):
         if self._updating:
-            return False
+            return
+        state = switch_row.get_active()
         try:
             subprocess.run(
                 ["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "1" if state else "0"],
@@ -198,7 +216,6 @@ class SoundPage(BasePage):
             )
         except (subprocess.TimeoutExpired, OSError):
             pass
-        return False
 
     # -- Live event handling --
 
@@ -216,7 +233,7 @@ class SoundPage(BasePage):
             # Update sink dropdown if device list changed
             if new_sink_names != self._sink_names:
                 self._sink_names = new_sink_names
-                model = Gtk.StringList.new(sink_descs or [_("(No output devices)")])
+                model = Gtk.StringList.new(sink_descs if sink_descs else [_("(No output devices)")])
                 self._sink_dd.set_model(model)
 
             # Select current default sink
@@ -240,7 +257,7 @@ class SoundPage(BasePage):
             # Update source dropdown if device list changed
             if new_source_names != self._source_names:
                 self._source_names = new_source_names
-                model = Gtk.StringList.new(source_descs or [_("(No input devices)")])
+                model = Gtk.StringList.new(source_descs if source_descs else [_("(No input devices)")])
                 self._source_dd.set_model(model)
 
             # Select current default source
