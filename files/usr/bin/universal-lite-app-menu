@@ -112,7 +112,8 @@ POWER_ACTIONS = [
 # larger than the surface and every content edge has a sizeable
 # margin.
 CSS = b"""
-window.app-menu {
+window.app-menu,
+window.app-menu-backdrop {
     background: transparent;
 }
 .app-menu-surface {
@@ -381,6 +382,69 @@ def _record_launch(desktop_id: str) -> None:
               file=sys.stderr)
 
 
+class Backdrop(Gtk.Window):
+    """Fullscreen transparent layer surface that catches every pointer
+    click outside the menu and dismisses it.
+
+    Panel-anchored layer surfaces can't detect click-outside via
+    keyboard focus events: EXCLUSIVE keyboard mode keeps the
+    compositor sending keys to us regardless of pointer activity,
+    and ON_DEMAND often never grants us compositor focus in the
+    first place. The only reliable way is a separate click-catcher
+    surface underneath the menu.
+
+    The backdrop sits on the TOP layer with anchor-all-four +
+    exclusive_zone=-1 so it spans the whole screen including waybar's
+    strip. The menu itself lives on OVERLAY (one layer up), so any
+    click on the menu hits the menu and clicks anywhere else land
+    here. KeyboardMode.NONE - we don't need input routed to us.
+    """
+
+    def __init__(self, app: Gtk.Application, on_dismiss) -> None:
+        super().__init__()
+        app.add_window(self)
+        self.set_decorated(False)
+        self.add_css_class("app-menu-backdrop")
+
+        # Transparent fill so the backdrop is invisible; the click
+        # gesture is what matters. Gtk.Window needs a non-null child
+        # to measure and render.
+        filler = Gtk.Box()
+        filler.set_hexpand(True)
+        filler.set_vexpand(True)
+        self.set_child(filler)
+
+        click = Gtk.GestureClick()
+        click.set_button(0)  # any button
+        click.connect("pressed", lambda *_: on_dismiss())
+        self.add_controller(click)
+
+        if not _HAVE_LAYER_SHELL:
+            # Without layer-shell we have no way to render a
+            # fullscreen transparent click-catcher reliably - skip
+            # init and let the menu fall back to whatever dismissal
+            # paths it has (Escape, in-menu actions).
+            return
+        try:
+            LayerShell.init_for_window(self)
+            if not LayerShell.is_layer_window(self):
+                return
+            LayerShell.set_layer(self, LayerShell.Layer.TOP)
+            LayerShell.set_namespace(self, "universal-lite-app-menu-backdrop")
+            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.NONE)
+            for side in (LayerShell.Edge.TOP, LayerShell.Edge.BOTTOM,
+                         LayerShell.Edge.LEFT, LayerShell.Edge.RIGHT):
+                LayerShell.set_anchor(self, side, True)
+                LayerShell.set_margin(self, side, 0)
+            # -1: cover the full screen including waybar's exclusive
+            # zone, so launcher clicks while the menu is open hit us
+            # and dismiss.
+            LayerShell.set_exclusive_zone(self, -1)
+        except Exception as exc:
+            print(f"universal-lite-app-menu: backdrop layer-shell init failed: {exc}",
+                  file=sys.stderr)
+
+
 class AppMenu(Gtk.Window):
     """Plain Gtk.Window, not ApplicationWindow.
 
@@ -479,17 +543,15 @@ class AppMenu(Gtk.Window):
         key.connect("key-pressed", self._on_key)
         self.add_controller(key)
 
-        # Debounced focus-loss dismissal. The filter DropDown opens
-        # its popup as a child surface that briefly takes keyboard
-        # focus, which flips the window's is-active to False for a
-        # few tens of ms before GTK restores it; closing immediately
-        # on is-active=False would shut the menu the instant the
-        # dropdown is clicked. Waiting ~150 ms lets those transient
-        # blips settle. A genuine click-outside keeps the window
-        # inactive past the timeout and we close.
-        self._inactive_timer: int | None = None
-        self.connect("notify::is-active", self._on_active_changed)
-
+        # Click-outside dismissal is handled by the separate Backdrop
+        # layer surface (see Backdrop class + main()); the menu itself
+        # doesn't listen for is-active changes. notify::is-active is
+        # unreliable here anyway - with EXCLUSIVE keyboard the
+        # compositor keeps focus on us no matter where the user
+        # clicks, and with ON_DEMAND the compositor often never grants
+        # us keyboard focus in the first place, so the signal either
+        # never fires or misses the cases we need (clicks inside
+        # another app, clicks on the desktop).
         self._search.grab_focus()
 
     # -- geometry helpers --
@@ -525,10 +587,14 @@ class AppMenu(Gtk.Window):
 
         Dismissal paths with a panel-anchored (not fullscreen) menu:
           - Escape - via _on_key
-          - focus leaving the window - via notify::is-active, debounced
-            to ignore transient popover focus blips (filter dropdown)
-          - clicking the launcher again - a second invocation signals
-            this one via the PID lock (see _toggle_or_lock)
+          - clicking anywhere outside the menu - caught by the
+            Backdrop layer surface (see Backdrop class), which sits
+            on the TOP layer and intercepts every pointer event in
+            the screen area not covered by the menu itself
+          - clicking the launcher again - Backdrop swallows the click
+            so the launcher never fires; user clicks launcher a
+            second time to reopen. Also backed up by the PID lock
+            (see _toggle_or_lock) in case the Backdrop fails to map.
         """
         pad = self._SHADOW_PAD
         # Window size = menu surface (640x540) plus shadow-clearance
@@ -553,9 +619,17 @@ class AppMenu(Gtk.Window):
             print(f"universal-lite-app-menu: layer-shell active "
                   f"(edge={edge}, section={section})",
                   file=sys.stderr)
-            LayerShell.set_layer(self, LayerShell.Layer.TOP)
+            # OVERLAY (above TOP) so the menu stacks above our
+            # click-catcher Backdrop, which lives on the TOP layer.
+            LayerShell.set_layer(self, LayerShell.Layer.OVERLAY)
             LayerShell.set_namespace(self, "universal-lite-app-menu")
-            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.ON_DEMAND)
+            # EXCLUSIVE so keys go to the search entry immediately on
+            # open without needing a click to focus. The Backdrop
+            # handles click-outside dismissal - we no longer rely on
+            # is-active flipping, so EXCLUSIVE's behaviour of keeping
+            # keyboard focus on us regardless of pointer clicks is
+            # fine.
+            LayerShell.set_keyboard_mode(self, LayerShell.KeyboardMode.EXCLUSIVE)
             LayerShell.set_exclusive_zone(self, 0)
 
             # Anchor to the panel edge + its section corner. Margins
@@ -910,28 +984,6 @@ class AppMenu(Gtk.Window):
             return True
         return False
 
-    def _on_active_changed(self, window: Gtk.Window, _pspec) -> None:
-        """Close when focus is lost to something other than our own popovers.
-
-        is-active flips False briefly while a Gtk.DropDown popup is
-        open because the popup takes keyboard focus as a child
-        surface. A ~150 ms debounce covers that without making a
-        genuine click-away feel laggy.
-        """
-        if window.is_active():
-            if self._inactive_timer is not None:
-                GLib.source_remove(self._inactive_timer)
-                self._inactive_timer = None
-            return
-        if self._inactive_timer is not None:
-            return
-        self._inactive_timer = GLib.timeout_add(150, self._dismiss_if_inactive)
-
-    def _dismiss_if_inactive(self) -> bool:
-        self._inactive_timer = None
-        if not self.is_active():
-            self.close()
-        return False
 
 
 def _install_css() -> None:
@@ -966,12 +1018,23 @@ def main() -> None:
 
     def _activate(a: Gtk.Application) -> None:
         _install_css()
-        win = AppMenu(a)
-        # Layer-shell surfaces prefer set_visible(True) over present() -
-        # present() requests an activation token from the compositor
-        # that layer surfaces don't need and some versions of wlroots
-        # handle quirkily.
-        win.set_visible(True)
+        menu = AppMenu(a)
+        backdrop = Backdrop(a, on_dismiss=menu.close)
+        # When the menu goes away (any dismissal path - click-outside,
+        # Escape, app launch, power action), tear down the backdrop
+        # too so the app's window count drops to zero and the process
+        # exits cleanly. Without this the invisible backdrop keeps
+        # the GLib main loop running and stays on screen catching
+        # clicks forever.
+        menu.connect("destroy", lambda *_: backdrop.destroy())
+        # Map backdrop first so it sits beneath the menu in map order
+        # (wlroots stacks by map time within a layer). Layer-shell
+        # surfaces prefer set_visible(True) over present() - present()
+        # requests an activation token from the compositor that layer
+        # surfaces don't need and some versions of wlroots handle
+        # quirkily.
+        backdrop.set_visible(True)
+        menu.set_visible(True)
 
     app.connect("activate", _activate)
     sys.exit(app.run([]))
