@@ -68,6 +68,22 @@ def _load_palettes() -> dict:
             "accents": {"blue": "#3584e4"},
         }
     accent = raw["accents"].get("blue", "#3584e4")
+    # Adwaita-style elevation: three stacked layers - a hairline
+    # outline that defines the card's edge even against a similar-
+    # coloured surface, a tight key shadow that anchors the card, and
+    # a broader ambient shadow for depth. Same structure in both
+    # modes; only the alpha values change so the dark-mode shadow
+    # reads on a dark bg without being pitch-black underneath.
+    light_shadow = (
+        "0 0 0 1px rgba(0, 0, 0, 0.10), "
+        "0 1px 3px rgba(0, 0, 0, 0.10), "
+        "0 6px 16px rgba(0, 0, 0, 0.14)"
+    )
+    dark_shadow = (
+        "0 0 0 1px rgba(0, 0, 0, 0.30), "
+        "0 1px 3px rgba(0, 0, 0, 0.35), "
+        "0 6px 16px rgba(0, 0, 0, 0.45)"
+    )
     return {
         "light": {
             **raw["light"],
@@ -77,7 +93,7 @@ def _load_palettes() -> dict:
             "accent_active": "#1c71d8",
             "error": raw["accents"].get("red", "#e62d42"),
             "hover": "rgba(0, 0, 0, 0.04)",
-            "card_shadow": "0 2px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06)",
+            "card_shadow": light_shadow,
         },
         "dark": {
             **raw["dark"],
@@ -87,7 +103,7 @@ def _load_palettes() -> dict:
             "accent_active": "#1c71d8",
             "error": "#ff6b6b",
             "hover": "rgba(255, 255, 255, 0.06)",
-            "card_shadow": "0 2px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06)",
+            "card_shadow": dark_shadow,
         },
     }
 

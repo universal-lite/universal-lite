@@ -1,12 +1,12 @@
 {
   "light": {
-    "window_bg": "#fafafa",
+    "window_bg": "#ebebeb",
     "view_bg": "#ffffff",
-    "headerbar_bg": "#f0f0f0",
+    "headerbar_bg": "#e0e0e0",
     "card_bg": "#ffffff",
     "fg": "#1e1e1e",
     "secondary_fg": "#5e5c64",
-    "border": "#d1d1d1",
+    "border": "#c7c7c7",
     "inactive_fg": "#c0bfbc"
   },
   "dark": {
