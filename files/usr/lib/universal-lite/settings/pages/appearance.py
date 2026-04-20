@@ -3,8 +3,9 @@ from gettext import gettext as _
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gdk, GdkPixbuf, Gio, Gtk
+from gi.repository import Adw, Gdk, GdkPixbuf, Gio, Gtk
 
 from ..base import BasePage
 from ..wallpapers import Wallpaper, add_custom, list_wallpapers, remove_custom
@@ -43,9 +44,10 @@ def _load_thumbnail(path: str) -> Gtk.Picture | None:
     return pic
 
 
-class AppearancePage(BasePage):
+class AppearancePage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._wallpaper_flow: Gtk.FlowBox | None = None
         self._wallpaper_buttons: list[tuple[Gtk.ToggleButton, str]] = []
 
@@ -59,22 +61,31 @@ class AppearancePage(BasePage):
         ]
 
     def build(self):
-        page = self.make_page_box()
+        # -- Group 1: Theme --
+        theme_group = Adw.PreferencesGroup()
+        theme_group.set_title(_("Theme"))
 
-        # -- Theme group --
-        theme_children = [self.make_toggle_cards(
-            [("light", _("Light")), ("dark", _("Dark"))],
-            self.store.get("theme", "light"),
-            lambda v: self.store.save_and_apply("theme", v),
-        )]
+        dark_row = Adw.SwitchRow()
+        dark_row.set_title(_("Dark mode"))
+        dark_row.set_active(self.store.get("theme", "light") == "dark")
+
+        def _on_dark_mode(row, _pspec):
+            self.store.save_and_apply("theme", "dark" if row.get_active() else "light")
+
+        dark_row.connect("notify::active", _on_dark_mode)
+        theme_group.add(dark_row)
+
         if self.store.get("high_contrast", False):
-            note = Gtk.Label(label=_("Theme is set to Dark by High Contrast mode"), xalign=0)
-            note.add_css_class("setting-subtitle")
-            theme_children.append(note)
-        page.append(self.make_group(_("Theme"), theme_children))
+            theme_group.set_description(_("Theme is set to Dark by High Contrast mode"))
 
-        # -- Accent color group --
+        self.add(theme_group)
+
+        # -- Group 2: Accent color --
+        accent_group = Adw.PreferencesGroup()
+        accent_group.set_title(_("Accent color"))
+
         accent_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        accent_box.set_valign(Gtk.Align.CENTER)
         accent_buttons: list[Gtk.ToggleButton] = []
         current_accent = self.store.get("accent", "blue")
 
@@ -94,27 +105,49 @@ class AppearancePage(BasePage):
             btn.connect("toggled", _on_accent_toggled, name)
             accent_buttons.append(btn)
             accent_box.append(btn)
-        page.append(self.make_group(_("Accent color"), [accent_box]))
 
-        # -- Font size group --
+        accent_row = Adw.ActionRow()
+        accent_row.set_activatable(False)
+        accent_row.add_suffix(accent_box)
+        accent_group.add(accent_row)
+
+        self.add(accent_group)
+
+        # -- Group 3: Font size --
+        font_group = Adw.PreferencesGroup()
+        font_group.set_title(_("Font size"))
+
         font_sizes = [("10", _("Small")), ("11", _("Default")), ("13", _("Large")), ("15", _("Larger"))]
         font_labels = [label for _, label in font_sizes]
         font_values = [val for val, _ in font_sizes]
-        font_dd = Gtk.DropDown.new_from_strings(font_labels)
+
+        font_row = Adw.ComboRow()
+        font_row.set_title(_("Font size"))
+        font_row.set_subtitle(_("Affects all text throughout the interface"))
+        font_row.set_model(Gtk.StringList.new(font_labels))
+
         current_font = str(self.store.get("font_size", 11))
         try:
-            font_dd.set_selected(font_values.index(current_font))
+            font_row.set_selected(font_values.index(current_font))
         except ValueError:
-            font_dd.set_selected(1)
-        font_dd.connect("notify::selected", lambda d, _:
-            self.store.save_and_apply("font_size", int(font_values[d.get_selected()])))
-        page.append(self.make_group(_("Font size"), [
-            self.make_setting_row(_("Font size"), _("Affects all text throughout the interface"), font_dd),
-        ]))
+            font_row.set_selected(1)
 
-        # -- Wallpaper group --
+        def _on_font_size(row, _pspec):
+            idx = row.get_selected()
+            if 0 <= idx < len(font_values):
+                self.store.save_and_apply("font_size", int(font_values[idx]))
+
+        font_row.connect("notify::selected", _on_font_size)
+        font_group.add(font_row)
+
+        self.add(font_group)
+
+        # -- Group 4: Wallpaper --
         # Built inside a try/except so a broken manifest or thumbnail never
         # takes down the whole Appearance page.
+        wallpaper_group = Adw.PreferencesGroup()
+        wallpaper_group.set_title(_("Wallpaper"))
+
         try:
             flow = Gtk.FlowBox()
             flow.set_max_children_per_line(6)
@@ -125,15 +158,21 @@ class AppearancePage(BasePage):
             flow.set_row_spacing(12)
             flow.add_css_class("wallpaper-grid")
             self._wallpaper_flow = flow
-            self._populate_wallpapers(page)
-            page.append(self.make_group(_("Wallpaper"), [flow]))
+            self._populate_wallpapers(wallpaper_group)
+
+            wallpaper_row = Adw.ActionRow()
+            wallpaper_row.set_activatable(False)
+            wallpaper_row.add_suffix(flow)
+            wallpaper_group.add(wallpaper_row)
         except Exception as exc:
             print(f"appearance: wallpaper grid failed: {exc!r}", file=sys.stderr)
-            err = Gtk.Label(label=_("Wallpaper picker unavailable"), xalign=0)
-            err.add_css_class("setting-subtitle")
-            page.append(self.make_group(_("Wallpaper"), [err]))
+            wallpaper_group.set_description(_("Wallpaper picker unavailable"))
 
-        return page
+        self.add(wallpaper_group)
+
+        # Tear down event-bus subscriptions on unmap.
+        self.setup_cleanup(self)
+        return self
 
     # ── Wallpaper grid ────────────────────────────────────────────────────
 
