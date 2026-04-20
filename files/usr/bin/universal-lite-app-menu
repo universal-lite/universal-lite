@@ -426,14 +426,14 @@ class AppMenu(Gtk.Window):
 
     def _draw_tail(self, area: Gtk.DrawingArea, cr,
                    width: int, height: int, edge: str) -> None:
-        """GNOME-style popover tail: straight flared sides, rounded tip.
+        """Popover tail: straight flared sides, rounded tip.
 
-        Shape is a wide isoceles triangle with the tip replaced by a
-        small arc so the point is not a hard vertex. This matches
-        `gtk_popover_get_tail_path()` in GTK4's libadwaita renderer:
-        full-width base flush against the bubble body, straight lines
-        converging to a ~2.5 px-radius tip. No Bézier bulge — the
-        shape reads as a GNOME menu tail rather than a water drop.
+        A wide isoceles triangle — full-width base flush against the
+        bubble body, straight lines converging to the tip, and a
+        small arc (~2.5 px radius) at the tip instead of a hard
+        vertex. Nothing libadwaita-specific: this is just the common
+        popover/menu tail pattern drawn with plain Cairo. No Bézier
+        bulge — the shape reads as a menu tail, not a water drop.
         """
         import math
         ctx = self.get_style_context()
