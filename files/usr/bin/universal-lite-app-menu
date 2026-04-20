@@ -93,7 +93,11 @@ window.app-menu {
     background: @window_bg_color;
     color: @window_fg_color;
     border-radius: 14px;
-    box-shadow: 0 14px 36px 2px alpha(black, 0.38);
+    /* Shadow sized to fit inside the window's _SHADOW_PAD margin on
+       every side (blur + |y-offset| ≤ pad) so the bottom half doesn't
+       clip sharp against the panel edge. Slight downward bias reads
+       as "popup above the panel" without exceeding the budget. */
+    box-shadow: 0 6px 20px 0 alpha(black, 0.35);
 }
 .app-menu-search {
     min-height: 40px;
@@ -272,7 +276,9 @@ class AppMenu(Gtk.Window):
 
     # Shadow clearance around the surface so the drop shadow fades out
     # evenly on all four sides without clipping against the window.
-    _SHADOW_PAD = 30
+    # Must be ≥ (shadow y-offset + blur radius) of the CSS box-shadow,
+    # currently 6 + 20 = 26 px, with a safety margin.
+    _SHADOW_PAD = 32
 
     # -- layer-shell / surface setup --
 
