@@ -10,9 +10,9 @@
     "inactive_fg": "#c0bfbc"
   },
   "dark": {
-    "window_bg": "#242424",
+    "window_bg": "#2e2e32",
     "view_bg": "#1e1e1e",
-    "headerbar_bg": "#303030",
+    "headerbar_bg": "#3a3a3e",
     "card_bg": "#383838",
     "fg": "#ffffff",
     "secondary_fg": "#c0bfbc",
