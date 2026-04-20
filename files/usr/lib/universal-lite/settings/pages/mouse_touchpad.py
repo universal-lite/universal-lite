@@ -18,6 +18,7 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
         BasePage.__init__(self, store, event_bus)
         Adw.PreferencesPage.__init__(self)
+        self._accel_values: list[str] = []
 
     @property
     def search_keywords(self):
@@ -31,6 +32,7 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
     def build(self):
         self.add(self._build_touchpad_group())
         self.add(self._build_mouse_group())
+        self.setup_cleanup(self)
         return self
 
     # -- group builders -------------------------------------------------
@@ -115,15 +117,13 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
 
         labels = [label for _value, label in ACCEL_OPTIONS]
         values = [value for value, _label in ACCEL_OPTIONS]
+        self._accel_values = values
         accel_row.set_model(Gtk.StringList.new(labels))
 
         current = self.store.get("mouse_accel_profile", "adaptive")
         accel_row.set_selected(values.index(current) if current in values else 0)
         accel_row.connect("notify::selected", self._on_accel_profile)
         group.add(accel_row)
-
-        # Store values list for use in handler
-        self._accel_values = values
 
         return group
 
