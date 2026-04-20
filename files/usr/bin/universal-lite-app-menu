@@ -92,12 +92,19 @@ window.app-menu {
 .app-menu-surface {
     background: @window_bg_color;
     color: @window_fg_color;
-    border-radius: 14px;
-    /* Shadow sized to fit inside the window's _SHADOW_PAD margin on
-       every side (blur + |y-offset| &lt;= pad) so the bottom half
-       doesn't clip sharp against the panel edge. Slight downward
-       bias reads as "popup above the panel" without exceeding it. */
-    box-shadow: 0 6px 20px 0 alpha(black, 0.35);
+    /* 12 px matches libadwaita's $popover_radius — standard GNOME
+       popover corner. */
+    border-radius: 12px;
+    /* Subtle edge-definition line in both light and dark themes,
+       same approach Adwaita uses on popover contents. */
+    border: 1px solid alpha(@borders, 0.5);
+    /* Two-layer elevation shadow matching libadwaita's popover spec:
+       a tight near-shadow to anchor the edge, plus a broader ambient
+       shadow for depth. Total extent is ~12 px so it fits the
+       _SHADOW_PAD budget with no clipping on any side. */
+    box-shadow:
+        0 1px 2px 0 alpha(black, 0.12),
+        0 2px 8px 2px alpha(black, 0.14);
 }
 .app-menu-search {
     min-height: 40px;
@@ -274,11 +281,12 @@ class AppMenu(Gtk.Window):
 
     # -- geometry helpers --
 
-    # Shadow clearance around the surface so the drop shadow fades out
-    # evenly on all four sides without clipping against the window.
-    # Must be ≥ (shadow y-offset + blur radius) of the CSS box-shadow,
-    # currently 6 + 20 = 26 px, with a safety margin.
-    _SHADOW_PAD = 32
+    # Shadow clearance around the surface so the drop shadow fades
+    # out evenly on all four sides without clipping against the window.
+    # Matches the extent of the layered Adwaita-style popover shadow
+    # (y-offset + blur + spread on the larger shadow is 2 + 8 + 2 =
+    # 12 px) with room to spare.
+    _SHADOW_PAD = 20
 
     # -- layer-shell / surface setup --
 
