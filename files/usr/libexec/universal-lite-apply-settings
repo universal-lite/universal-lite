@@ -647,19 +647,20 @@ def write_waybar_config(tokens: dict) -> bool:
     # Material Icons Outlined codepoints for waybar modules.
     # Waybar format-icons are literal text, not icon theme lookups.
     # Font set via CSS: font-family includes "Material Icons Outlined".
-    # Click the launcher → fuzzel (already bound to Super+Space too). We
-    # used to synthesise Ctrl+F12 via `wtype` to trigger a labwc keybind,
-    # but any wtype-based synthetic modifier input on labwc 0.9.6 is prone
-    # to latching: if keyboard focus shifts between waybar's virtual
-    # keyboard and a real surface during the Ctrl-press/release pair, the
-    # release can land on a different seat state and leave Ctrl logically
-    # down, causing labwc to re-fire Ctrl+F12 on unrelated pointer events.
-    # That's how a launcher click made *every* subsequent panel click look
-    # like it was opening the root-menu.
+    # Click the launcher → synthesise F20 via wtype, which labwc catches
+    # with the hidden `F20 → ShowMenu root-menu` keybind below. We use F20
+    # (no modifier) rather than the old Ctrl+F12 pair because wtype's
+    # modifier-press / modifier-release events race with pointer focus
+    # changes on labwc 0.9.6: if focus shifts mid-sequence, the Ctrl
+    # release lands on a different seat state and Ctrl stays logically
+    # held, making subsequent pointer events re-satisfy the keybind and
+    # reopen the menu on every click. A single F20 tap has no modifier
+    # to latch, and F20 is virtually never physically present on
+    # real-world keyboards so there's no conflict with user input.
     config["custom/launcher"] = {
         "format": "\ue5c3",  # apps (2x2 grid)
         "tooltip-format": "Applications",
-        "on-click": "fuzzel",
+        "on-click": "wtype -k F20",
     }
 
     config["wlr/taskbar"] = {
@@ -1183,6 +1184,15 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     </keybind>
     <keybind key="W-Down">
       <action name="Iconify"/>
+    </keybind>
+
+    <!-- Hidden keybind for waybar launcher to trigger the app menu via
+         a synthetic F20 tap (see on-click in apply-settings). F20 is
+         used because no real keyboard emits it, so there's no conflict
+         with user input, and because it carries no modifier — wtype
+         with modifiers has a latching race on labwc 0.9.6. -->
+    <keybind key="F20">
+      <action name="ShowMenu" menu="root-menu"/>
     </keybind>
 
     <!-- User custom keybinds -->
