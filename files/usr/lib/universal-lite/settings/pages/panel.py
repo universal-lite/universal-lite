@@ -6,8 +6,9 @@ from pathlib import Path
 
 import gi
 
+gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Gio, Gtk
+from gi.repository import Adw, Gio, Gtk
 
 from ..base import BasePage
 
@@ -40,15 +41,39 @@ HORIZONTAL_LABELS = {"start": _("Left"), "center": _("Center"), "end": _("Right"
 VERTICAL_LABELS = {"start": _("Top"), "center": _("Center"), "end": _("Bottom")}
 SECTION_ORDER = ["start", "center", "end"]
 
+EDGE_OPTIONS: list[tuple[str, str]] = [
+    ("bottom", _("Bottom")),
+    ("top", _("Top")),
+    ("left", _("Left")),
+    ("right", _("Right")),
+]
 
-class PanelPage(BasePage):
+DENSITY_OPTIONS: list[tuple[str, str]] = [
+    ("normal", _("Normal")),
+    ("compact", _("Compact")),
+]
+
+
+class PanelPage(BasePage, Adw.PreferencesPage):
+    """Panel position, density, twilight, module layout, and pinned apps.
+
+    Returns an AdwNavigationView from build() so the Add Pinned App
+    picker can push a sub-page over the top-level preferences content.
+    The module-layout editor is kept as a custom 3-column HBox (arrow
+    buttons move modules between sections and reorder within a section)
+    wrapped in an AdwActionRow suffix — the appearance.py pattern.
+    """
+
     def __init__(self, store, event_bus):
-        super().__init__(store, event_bus)
+        BasePage.__init__(self, store, event_bus)
+        Adw.PreferencesPage.__init__(self)
         self._layout_data: dict = {}
         self._section_boxes: dict = {}
         self._section_labels: dict = {}
         self._pinned_data: list = []
-        self._pinned_list: Gtk.ListBox | None = None
+        self._pinned_group: Adw.PreferencesGroup | None = None
+        self._pinned_rows: list[Adw.ActionRow] = []
+        self._nav: Adw.NavigationView | None = None
 
     @property
     def search_keywords(self):
@@ -58,45 +83,120 @@ class PanelPage(BasePage):
             (_("Module Layout"), _("Modules")), (_("Pinned Apps"), _("Pinned")),
         ]
 
+    # -- build ----------------------------------------------------------
+
     def build(self):
-        page = self.make_page_box()
-        page.append(self.make_group(_("Position"), [
-            self.make_toggle_cards(
-                [("bottom", _("Bottom")), ("top", _("Top")), ("left", _("Left")), ("right", _("Right"))],
-                self.store.get("edge", "bottom"),
-                self._on_edge_changed,
-            ),
-        ]))
-        page.append(self.make_group(_("Density"), [
-            self.make_toggle_cards(
-                [("normal", _("Normal")), ("compact", _("Compact"))],
-                self.store.get("density", "normal"),
-                lambda v: self.store.save_and_apply("density", v),
-            ),
-        ]))
+        self.add(self._build_position_group())
+        self.add(self._build_density_group())
+        self.add(self._build_twilight_group())
+        self.add(self._build_module_layout_group())
+        self.add(self._build_pinned_apps_group())
 
-        twilight = Gtk.Switch()
-        twilight.set_active(self.store.get("panel_twilight", False))
-        twilight.connect("state-set", lambda _, s: self.store.save_and_apply("panel_twilight", s) or False)
-        page.append(self.make_group(_("Twilight"), [
-            self.make_setting_row(
-                _("Twilight"),
-                _("Invert panel colors from the system theme"),
-                twilight,
-            ),
-        ]))
+        # Tear down event-bus subscriptions on unmap. Call on self
+        # (the PreferencesPage), not on the nav wrapper.
+        self.setup_cleanup(self)
 
-        page.append(self.make_group(_("Module Layout"), [],
-                                     card_widget=self._build_module_layout()))
-        page.append(self.make_group(_("Pinned Apps"), [],
-                                     card_widget=self._build_pinned_apps()))
-        reset_btn = Gtk.Button(label=_("Reset layout to defaults"))
-        reset_btn.set_halign(Gtk.Align.START)
-        reset_btn.connect("clicked", lambda _: self._reset_layout())
-        page.append(reset_btn)
-        return page
+        # Wrap the preferences page in a NavigationView so the Add
+        # Pinned App picker can push a sub-page. Back button + Escape
+        # are handled natively by AdwNavigationView.
+        self._nav = Adw.NavigationView()
+        root_page = Adw.NavigationPage()
+        root_page.set_title(_("Panel"))
+        root_page.set_child(self)
+        self._nav.add(root_page)
+        return self._nav
 
-    # -- Module layout --
+    # -- Position / Density / Twilight ---------------------------------
+
+    def _build_position_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Position"))
+
+        row = Adw.ComboRow()
+        row.set_title(_("Panel position"))
+
+        labels = [label for _v, label in EDGE_OPTIONS]
+        values = [v for v, _label in EDGE_OPTIONS]
+        row.set_model(Gtk.StringList.new(labels))
+
+        current = self.store.get("edge", "bottom")
+        row.set_selected(values.index(current) if current in values else 0)
+
+        def _on_selected(r: Adw.ComboRow, _pspec) -> None:
+            idx = r.get_selected()
+            if 0 <= idx < len(values):
+                self._on_edge_changed(values[idx])
+
+        row.connect("notify::selected", _on_selected)
+        group.add(row)
+        return group
+
+    def _build_density_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Density"))
+
+        row = Adw.ComboRow()
+        row.set_title(_("Panel density"))
+
+        labels = [label for _v, label in DENSITY_OPTIONS]
+        values = [v for v, _label in DENSITY_OPTIONS]
+        row.set_model(Gtk.StringList.new(labels))
+
+        current = self.store.get("density", "normal")
+        row.set_selected(values.index(current) if current in values else 0)
+
+        def _on_selected(r: Adw.ComboRow, _pspec) -> None:
+            idx = r.get_selected()
+            if 0 <= idx < len(values):
+                self.store.save_and_apply("density", values[idx])
+
+        row.connect("notify::selected", _on_selected)
+        group.add(row)
+        return group
+
+    def _build_twilight_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Twilight"))
+
+        row = Adw.SwitchRow()
+        row.set_title(_("Twilight"))
+        row.set_subtitle(_("Invert panel colors from the system theme"))
+        row.set_active(self.store.get("panel_twilight", False))
+
+        def _on_active(r: Adw.SwitchRow, _pspec) -> None:
+            self.store.save_and_apply("panel_twilight", r.get_active())
+
+        row.connect("notify::active", _on_active)
+        group.add(row)
+        return group
+
+    # -- Module layout -------------------------------------------------
+
+    def _build_module_layout_group(self) -> Adw.PreferencesGroup:
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Module Layout"))
+
+        # Custom 3-column editor wrapped in an AdwActionRow suffix —
+        # same pattern as appearance.py's wallpaper grid. The row is
+        # non-activatable so clicks don't steal focus from the arrow
+        # buttons.
+        editor_row = Adw.ActionRow()
+        editor_row.set_activatable(False)
+        editor_row.add_suffix(self._build_module_layout())
+        group.add(editor_row)
+
+        # Trailing reset row, destructive-action button in the suffix.
+        reset_row = Adw.ActionRow()
+        reset_row.set_title(_("Reset layout to defaults"))
+        reset_row.set_activatable(False)
+        reset_btn = Gtk.Button(label=_("Reset"))
+        reset_btn.add_css_class("destructive-action")
+        reset_btn.set_valign(Gtk.Align.CENTER)
+        reset_btn.connect("clicked", lambda _b: self._reset_layout())
+        reset_row.add_suffix(reset_btn)
+        group.add(reset_row)
+
+        return group
 
     def _on_edge_changed(self, edge):
         self.store.save_and_apply("edge", edge)
@@ -112,6 +212,7 @@ class PanelPage(BasePage):
     def _build_module_layout(self):
         self._layout_data = self._load_layout()
         inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
+        inner.set_hexpand(True)
         self._section_boxes = {}
         self._section_labels = {}
         edge = self.store.get("edge", "bottom")
@@ -131,6 +232,7 @@ class PanelPage(BasePage):
         self._refresh_module_lists()
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+        scrolled.set_hexpand(True)
         scrolled.set_child(inner)
         return scrolled
 
@@ -219,48 +321,66 @@ class PanelPage(BasePage):
         self._refresh_module_lists()
         self.store.save_and_apply("layout", self._layout_data)
 
-    # -- Pinned apps --
+    def _reset_layout(self):
+        self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
+        self._refresh_module_lists()
+        self.store.save_and_apply("layout", self._layout_data)
+        # Pinned apps are not affected by layout reset
 
-    def _build_pinned_apps(self):
+    # -- Pinned apps ---------------------------------------------------
+
+    def _build_pinned_apps_group(self) -> Adw.PreferencesGroup:
         raw = self.store.get("pinned", [])
         self._pinned_data = list(raw) if isinstance(raw, list) else []
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        self._pinned_list = Gtk.ListBox()
-        self._pinned_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        vbox.append(self._pinned_list)
-        add_btn = Gtk.Button(label=_("Add pinned app"))
-        add_btn.set_halign(Gtk.Align.START)
-        add_btn.set_margin_top(8)
-        add_btn.connect("clicked", lambda _: self._show_add_pinned_dialog())
-        vbox.append(add_btn)
+
+        group = Adw.PreferencesGroup()
+        group.set_title(_("Pinned Apps"))
+
+        add_btn = Gtk.Button.new_from_icon_name("list-add-symbolic")
+        add_btn.add_css_class("flat")
+        add_btn.set_tooltip_text(_("Add pinned app"))
+        add_btn.connect("clicked", lambda _b: self._push_add_pinned_page())
+        group.set_header_suffix(add_btn)
+
+        self._pinned_group = group
         self._refresh_pinned_list()
-        return vbox
+        return group
 
     def _refresh_pinned_list(self):
-        if self._pinned_list is None:
+        group = self._pinned_group
+        if group is None:
             return
-        while (child := self._pinned_list.get_row_at_index(0)) is not None:
-            self._pinned_list.remove(child)
+
+        # Remove existing pinned rows. Only our cached rows so future
+        # siblings (group description etc.) aren't touched.
+        for row in self._pinned_rows:
+            group.remove(row)
+        self._pinned_rows = []
+
+        if not self._pinned_data:
+            group.set_description(_("No pinned apps"))
+            return
+        group.set_description("")
+
         for idx, app in enumerate(self._pinned_data):
-            self._pinned_list.append(self._build_pinned_row(app, idx))
+            row = self._build_pinned_row(app, idx)
+            group.add(row)
+            self._pinned_rows.append(row)
 
     def _build_pinned_row(self, app, idx):
-        row = Gtk.ListBoxRow()
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        box.set_margin_top(4)
-        box.set_margin_bottom(4)
-        box.set_margin_start(4)
-        box.set_margin_end(4)
-        icon = Gtk.Image.new_from_icon_name(app.get("icon", "application-x-executable-symbolic"))
+        row = Adw.ActionRow()
+        row.set_title(app.get("name", app.get("command", _("Unknown"))))
+
+        icon = Gtk.Image.new_from_icon_name(
+            app.get("icon", "application-x-executable-symbolic"))
         icon.set_pixel_size(20)
-        box.append(icon)
-        name_label = Gtk.Label(label=app.get("name", app.get("command", "Unknown")), xalign=0)
-        name_label.set_hexpand(True)
-        box.append(name_label)
+        row.add_prefix(icon)
+
         remove_btn = Gtk.Button(label=_("Remove"))
-        remove_btn.connect("clicked", lambda _, i=idx: self._remove_pinned(i))
-        box.append(remove_btn)
-        row.set_child(box)
+        remove_btn.add_css_class("flat")
+        remove_btn.set_valign(Gtk.Align.CENTER)
+        remove_btn.connect("clicked", lambda _b, i=idx: self._remove_pinned(i))
+        row.add_suffix(remove_btn)
         return row
 
     def _remove_pinned(self, idx):
@@ -269,91 +389,86 @@ class PanelPage(BasePage):
             self._refresh_pinned_list()
             self.store.save_and_apply("pinned", self._pinned_data)
 
-    def _show_add_pinned_dialog(self):
-        dialog = Gtk.Window(title=_("Add Pinned App"), modal=True)
-        root = self._pinned_list.get_root()
-        if root and isinstance(root, Gtk.Window):
-            dialog.set_transient_for(root)
-        dialog.set_default_size(400, 500)
-        dialog.set_resizable(True)
-        outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        outer.set_margin_top(24)
-        outer.set_margin_bottom(24)
-        outer.set_margin_start(24)
-        outer.set_margin_end(24)
+    # -- Add-pinned sub-page -------------------------------------------
 
-        search_entry = Gtk.SearchEntry()
-        search_entry.set_placeholder_text(_("Search apps\u2026"))
-        outer.append(search_entry)
+    def _push_add_pinned_page(self):
+        if self._nav is None:
+            return
 
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_vexpand(True)
-        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        sub = Adw.NavigationPage()
+        sub.set_title(_("Add Pinned App"))
 
-        app_list = Gtk.ListBox()
-        app_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        toolbar = Adw.ToolbarView()
+        toolbar.add_top_bar(Adw.HeaderBar())  # automatic back button
+
+        inner = Adw.PreferencesPage()
+
+        # Search group: single AdwEntryRow used as a filter driver. No
+        # apply side-effects — we just watch `notify::text` to
+        # invalidate the apps group filter.
+        search_group = Adw.PreferencesGroup()
+        search_row = Adw.EntryRow()
+        search_row.set_title(_("Search apps"))
+        search_group.add(search_row)
+        inner.add(search_group)
+
+        # Apps group populated from Gio.AppInfo.get_all(). Each row is
+        # an AdwActionRow with an icon prefix and an Add button suffix
+        # that calls _add_app_from_info + pops the nav page.
+        apps_group = Adw.PreferencesGroup()
+        apps_group.set_title(_("Applications"))
+        inner.add(apps_group)
 
         apps = [a for a in Gio.AppInfo.get_all() if a.should_show()]
         apps.sort(key=lambda a: a.get_display_name().lower())
 
+        app_rows: list[tuple[Adw.ActionRow, str]] = []
+
         for app in apps:
-            row = Gtk.ListBoxRow()
-            row_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-            row_box.set_margin_top(4)
-            row_box.set_margin_bottom(4)
-            row_box.set_margin_start(4)
-            row_box.set_margin_end(4)
+            row = Adw.ActionRow()
+            row.set_title(app.get_display_name())
 
             icon_info = app.get_icon()
-            if icon_info:
+            if icon_info is not None:
                 icon_widget = Gtk.Image.new_from_gicon(icon_info)
             else:
-                icon_widget = Gtk.Image.new_from_icon_name("application-x-executable-symbolic")
+                icon_widget = Gtk.Image.new_from_icon_name(
+                    "application-x-executable-symbolic")
             icon_widget.set_pixel_size(24)
-            row_box.append(icon_widget)
-
-            name_label = Gtk.Label(label=app.get_display_name(), xalign=0)
-            name_label.set_hexpand(True)
-            row_box.append(name_label)
+            row.add_prefix(icon_widget)
 
             add_btn = Gtk.Button(label=_("Add"))
-            add_btn.connect("clicked", lambda _, a=app: self._add_app_from_info(a, dialog))
-            row_box.append(add_btn)
+            add_btn.add_css_class("suggested-action")
+            add_btn.set_valign(Gtk.Align.CENTER)
+            add_btn.connect(
+                "clicked", lambda _b, a=app: self._on_add_app_clicked(a))
+            row.add_suffix(add_btn)
 
-            row.set_child(row_box)
-            row._app_name = app.get_display_name().lower()
-            app_list.append(row)
+            apps_group.add(row)
+            app_rows.append((row, app.get_display_name().lower()))
 
-        def _filter_func(row):
-            query = search_entry.get_text().lower()
-            if not query:
-                return True
-            return query in row._app_name
+        def _on_search_changed(entry: Adw.EntryRow, _pspec) -> None:
+            query = entry.get_text().lower().strip()
+            for row, name in app_rows:
+                row.set_visible(not query or query in name)
 
-        app_list.set_filter_func(_filter_func)
-        search_entry.connect("search-changed", lambda _: app_list.invalidate_filter())
+        search_row.connect("notify::text", _on_search_changed)
 
-        scrolled.set_child(app_list)
-        outer.append(scrolled)
+        toolbar.set_content(inner)
+        sub.set_child(toolbar)
+        self._nav.push(sub)
 
-        cancel_btn = Gtk.Button(label=_("Cancel"))
-        cancel_btn.set_halign(Gtk.Align.END)
-        cancel_btn.set_margin_top(4)
-        cancel_btn.connect("clicked", lambda _: dialog.destroy())
-        outer.append(cancel_btn)
+    def _on_add_app_clicked(self, app_info):
+        self._add_app_from_info(app_info)
+        if self._nav is not None:
+            self._nav.pop()
 
-        dialog.set_child(outer)
-        BasePage.enable_escape_close(dialog)
-        search_entry.grab_focus()
-        dialog.present()
-
-    def _add_app_from_info(self, app_info, dialog):
+    def _add_app_from_info(self, app_info):
         name = app_info.get_display_name()
         cmd = re.sub(r'\s*%[uUfFdDnNickvm]', '', app_info.get_commandline() or "").strip()
         if not cmd:
             self.store.show_toast(
                 _("{app} has no launch command").format(app=name), True)
-            dialog.destroy()
             return
 
         icon_gicon = app_info.get_icon()
@@ -376,10 +491,3 @@ class PanelPage(BasePage):
         self._pinned_data.append({"name": name, "command": cmd, "icon": icon})
         self._refresh_pinned_list()
         self.store.save_and_apply("pinned", self._pinned_data)
-        dialog.destroy()
-
-    def _reset_layout(self):
-        self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
-        self._refresh_module_lists()
-        self.store.save_and_apply("layout", self._layout_data)
-        # Pinned apps are not affected by layout reset
