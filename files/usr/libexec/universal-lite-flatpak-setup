@@ -82,20 +82,31 @@ if ! "$remote_ok"; then
     exit 0
 fi
 
-# Install each app with per-app retry and progress display
+# Snapshot what's already installed system-wide so repeat boots skip
+# anything that's already present — no network needed, no re-download.
+installed_ids=$(flatpak list --system --app --columns=application 2>/dev/null || true)
+
+# Install each missing app with per-app retry. Track whether the end
+# state matches the requested list so we can decide whether to stamp
+# the service complete or let it retry on the next boot.
 current=0
-failed=0
+missing=0
 while IFS= read -r app_id; do
     [[ -z "$app_id" ]] && continue
     current=$((current + 1))
+
+    if printf '%s\n' "$installed_ids" | grep -qx "$app_id"; then
+        echo "[$current/$total_apps] $app_id already installed."
+        continue
+    fi
 
     echo ""
     echo "[$current/$total_apps] Installing $app_id..."
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
-        # Send flatpak's verbose output to journal, not the console.
-        # Only our progress messages should show on the boot screen.
+        # Send flatpak's verbose output to the journal only; the boot
+        # console just sees our progress lines.
         if flatpak install --or-update --system --noninteractive \
                 flathub "$app_id" >/dev/null 2>&1; then
             ok=true
@@ -108,20 +119,21 @@ while IFS= read -r app_id; do
 
     if ! "$ok"; then
         echo "[$current/$total_apps] WARNING: Failed to install $app_id."
-        failed=$((failed + 1))
+        missing=$((missing + 1))
     fi
 done < "$APPS_FILE"
 
 echo ""
-if [ "$failed" -eq 0 ]; then
-    echo "All apps installed successfully. Starting desktop..."
+if [ "$missing" -eq 0 ]; then
+    echo "All requested apps are installed. Marking setup complete."
+    touch "$STAMP"
 else
-    echo "$failed app(s) failed to install. Starting desktop..."
-    echo "Missing apps can be installed later from Bazaar or flatpak CLI."
+    echo "$missing app(s) still missing. Service will retry on next boot."
+    echo "Missing apps can also be installed manually via Bazaar or flatpak CLI."
+    # Deliberately no stamp: without it the service re-runs on the next
+    # boot, picks up where we left off (already-installed apps are
+    # skipped cheaply via `flatpak list`), and only stamps done once
+    # every requested app is actually present on the system.
 fi
-echo ""
-
-# Always write stamp — don't retry everything on every boot
-touch "$STAMP"
 
 exit 0
