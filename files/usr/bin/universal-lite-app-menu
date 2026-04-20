@@ -194,6 +194,23 @@ window.app-menu {
 .app-menu-power-btn.destructive:hover {
     background: alpha(@error_color, 0.18);
 }
+.app-menu-confirm-label {
+    font-size: 12px;
+    padding: 0 6px;
+}
+.app-menu-confirm-btn {
+    border-radius: 999px;
+    padding: 4px 14px;
+    min-height: 32px;
+    font-size: 12px;
+}
+.app-menu-confirm-btn.ok {
+    background: @error_color;
+    color: white;
+}
+.app-menu-confirm-btn.ok:hover {
+    background: shade(@error_color, 1.08);
+}
 """
 
 
@@ -656,9 +673,23 @@ class AppMenu(Gtk.Window):
         return btn
 
     def _build_power_bar(self) -> Gtk.Widget:
-        bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        bar.set_halign(Gtk.Align.END)
-        bar.add_css_class("app-menu-power-bar")
+        """Two-page stack: the four power buttons, or a confirmation row.
+
+        Layer-shell surfaces don't always parent modal Gtk dialogs
+        cleanly (the dialog wants a normal xdg-toplevel parent), so
+        the confirmation lives inline - click a destructive action
+        and the bar crossfades to a "Log out now? [Cancel] [Log Out]"
+        prompt. Cancel returns to the normal bar; Confirm runs the
+        pending command. Lock intentionally has no confirmation: it's
+        reversible and the common case is "stepping away now".
+        """
+        self._power_stack = Gtk.Stack()
+        self._power_stack.add_css_class("app-menu-power-bar")
+        self._power_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self._power_stack.set_transition_duration(120)
+
+        normal = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        normal.set_halign(Gtk.Align.END)
         for label, icon_name, cmd in POWER_ACTIONS:
             btn = Gtk.Button()
             btn.set_tooltip_text(label)
@@ -668,9 +699,62 @@ class AppMenu(Gtk.Window):
             img = Gtk.Image.new_from_icon_name(icon_name)
             img.set_pixel_size(22)
             btn.set_child(img)
-            btn.connect("clicked", lambda _b, c=cmd: self._run_command(c))
-            bar.append(btn)
-        return bar
+            if label == "Lock":
+                btn.connect("clicked", lambda _b, c=cmd: self._run_command(c))
+            else:
+                btn.connect(
+                    "clicked",
+                    lambda _b, l=label, c=cmd: self._prompt_confirm(l, c),
+                )
+            normal.append(btn)
+        self._power_stack.add_named(normal, "normal")
+
+        confirm = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        confirm.set_halign(Gtk.Align.FILL)
+        self._confirm_label = Gtk.Label(label="")
+        self._confirm_label.add_css_class("app-menu-confirm-label")
+        self._confirm_label.set_hexpand(True)
+        self._confirm_label.set_xalign(1.0)
+        self._confirm_label.set_ellipsize(Pango.EllipsizeMode.END)
+        confirm.append(self._confirm_label)
+
+        cancel = Gtk.Button(label="Cancel")
+        cancel.add_css_class("app-menu-confirm-btn")
+        cancel.connect("clicked", lambda _b: self._cancel_confirm())
+        confirm.append(cancel)
+
+        self._confirm_action = Gtk.Button(label="Confirm")
+        self._confirm_action.add_css_class("app-menu-confirm-btn")
+        self._confirm_action.add_css_class("ok")
+        self._confirm_action.connect("clicked", self._on_confirm_clicked)
+        confirm.append(self._confirm_action)
+        self._power_stack.add_named(confirm, "confirm")
+
+        self._power_stack.set_visible_child_name("normal")
+        self._pending_cmd: list[str] | None = None
+        return self._power_stack
+
+    def _prompt_confirm(self, label: str, cmd: list[str]) -> None:
+        prompts = {
+            "Log Out":   ("Log out now?",           "Log Out"),
+            "Restart":   ("Restart the computer?",  "Restart"),
+            "Shut Down": ("Shut down the computer?", "Shut Down"),
+        }
+        prompt, btn_label = prompts.get(label, (f"{label}?", label))
+        self._confirm_label.set_label(prompt)
+        self._confirm_action.set_label(btn_label)
+        self._pending_cmd = cmd
+        self._power_stack.set_visible_child_name("confirm")
+
+    def _cancel_confirm(self) -> None:
+        self._pending_cmd = None
+        self._power_stack.set_visible_child_name("normal")
+
+    def _on_confirm_clicked(self, _btn: Gtk.Button) -> None:
+        cmd = self._pending_cmd
+        self._pending_cmd = None
+        if cmd is not None:
+            self._run_command(cmd)
 
     # -- actions --
 
@@ -752,6 +836,13 @@ class AppMenu(Gtk.Window):
 
     def _on_key(self, _ctrl, keyval: int, _code: int, _state) -> bool:
         if keyval == Gdk.KEY_Escape:
+            # If a power confirmation is visible, Escape should back
+            # out of it rather than closing the whole menu - matches
+            # the expected "cancel this dialog" affordance.
+            if (hasattr(self, "_power_stack")
+                    and self._power_stack.get_visible_child_name() == "confirm"):
+                self._cancel_confirm()
+                return True
             self.close()
             return True
         return False
