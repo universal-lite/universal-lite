@@ -33,9 +33,6 @@ SHORTCUT_NAMES = {
     ("Execute", "foot"): "Open Terminal",
     ("Execute", "Thunar"): "Open File Manager",
     ("Execute", "universal-lite-app-menu"): "App Launcher",
-    # Legacy fuzzel binding kept for users with existing custom
-    # keybindings — surfaces the same label so they aren't surprised.
-    ("Execute", "fuzzel"): "App Launcher",
     ("Execute", "universal-lite-settings"): "Open Settings",
     ("Execute", "swaylock -f"): "Lock Screen",
     ("Execute", "foot -e htop"): "System Monitor",

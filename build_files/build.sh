@@ -34,7 +34,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     file-roller \
     flatpak \
     foot \
-    fuzzel \
     labwc-menu-generator \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
@@ -209,8 +208,7 @@ chmod 0755 \
     /usr/bin/universal-lite-app-menu \
     /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-volume \
-    /usr/libexec/universal-lite-brightness \
-    /usr/bin/universal-lite-power-menu
+    /usr/libexec/universal-lite-brightness
 
 systemctl mask plymouth-quit-wait.service plymouth-quit.service
 systemctl enable greetd.service

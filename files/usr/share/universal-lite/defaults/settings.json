@@ -7,7 +7,7 @@
   "layout": {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
-    "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"]
+    "end": ["pulseaudio", "backlight", "battery", "clock", "tray"]
   },
   "wallpaper": "universal-lite",
   "pinned": [

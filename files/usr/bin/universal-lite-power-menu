@@ -1,8 +1,0 @@
-#!/bin/sh
-choice=$(printf "Lock Screen\nLog Out\nRestart\nShut Down" | fuzzel --dmenu -p "Power " -w 20)
-case "$choice" in
-    "Lock Screen") swaylock -f ;;
-    "Log Out") loginctl terminate-session "$XDG_SESSION_ID" ;;
-    "Restart") systemctl reboot ;;
-    "Shut Down") systemctl poweroff ;;
-esac

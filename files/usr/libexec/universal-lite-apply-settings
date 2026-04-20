@@ -29,7 +29,6 @@ SETTINGS_PATH = SETTINGS_DIR / "settings.json"
 WAYBAR_DIR = CONFIG_HOME / "waybar"
 GTK3_DIR = CONFIG_HOME / "gtk-3.0"
 GTK4_DIR = CONFIG_HOME / "gtk-4.0"
-FUZZEL_DIR = CONFIG_HOME / "fuzzel"
 MAKO_DIR = CONFIG_HOME / "mako"
 FOOT_DIR = CONFIG_HOME / "foot"
 LABWC_DIR = CONFIG_HOME / "labwc"
@@ -45,10 +44,10 @@ VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 DEFAULT_LAYOUT = {
     "start": ["custom/launcher"],
     "center": ["wlr/taskbar"],
-    "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"],
+    "end": ["pulseaudio", "backlight", "battery", "clock", "tray"],
 }
 
-ALL_MODULES_ORDER = ["custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"]
+ALL_MODULES_ORDER = ["custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "tray"]
 ALL_MODULES = set(ALL_MODULES_ORDER)
 
 _PALETTE_PATH = SHARE_ROOT / "universal-lite/palette.json"
@@ -254,7 +253,6 @@ def _build_tokens(settings: dict) -> dict:
         "accent_rgba_30": f"rgba({r}, {g}, {b}, 0.3)",
         "accent_rgba_15": f"rgba({r}, {g}, {b}, 0.15)",
         "accent_mako": accent_hex + "FF",
-        "accent_fuzzel": _strip_hash(accent_hex) + "ff",
         # State backgrounds
         "state_hover": _rgba_css(palette["fg"], 0.08),
         "state_active": f"rgba({r}, {g}, {b}, 0.3)",
@@ -469,7 +467,7 @@ window#waybar {{
 
 /* Material Icons glyphs sized to match theme icons (standard {icon_sz}px) */
 #custom-launcher,
-#pulseaudio, #backlight, #battery, #custom-power {{
+#pulseaudio, #backlight, #battery {{
     font-size: {icon_sz}px;
 }}
 
@@ -484,7 +482,7 @@ window#waybar {{
 #pulseaudio.muted {{ color: {tokens["panel_secondary_fg"]}; }}
 
 #clock:hover, #battery:hover, #backlight:hover,
-#pulseaudio:hover, #custom-power:hover {{
+#pulseaudio:hover {{
     background: {tokens["panel_hover"]};
     border-radius: 999px;
 }}
@@ -533,7 +531,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 }}
 #taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
-#clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
+#clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: 0 {pm}px;
     min-height: {h}px;
     border-radius: 999px;
@@ -583,7 +581,7 @@ window#waybar {{ min-width: {w}px; }}
 }}
 #taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
-#clock, #battery, #backlight, #pulseaudio, #custom-power, #tray {{
+#clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: {pm}px 0;
     min-width: {w}px;
     border-radius: 999px;
@@ -726,12 +724,6 @@ def write_waybar_config(tokens: dict) -> bool:
         "interval": 60,
     }
 
-    config["custom/power"] = {
-        "format": "\ue8ac",  # power_settings_new
-        "tooltip": False,
-        "on-click": "universal-lite-power-menu",
-    }
-
     config["tray"] = {
         "icon-size": icon_size,
         "spacing": 8,
@@ -801,41 +793,6 @@ def write_gtk_settings(tokens: dict) -> None:
     ]
     for command in gsettings_commands:
         _run_best_effort(command, timeout=5)
-
-
-def write_fuzzel_config(tokens: dict) -> None:
-    FUZZEL_DIR.mkdir(parents=True, exist_ok=True)
-
-    width = 34 if tokens["density"] == "compact" else 40
-
-    ini = f"""\
-[main]
-font={tokens["font_ui"]}:size={tokens["font_size_ui"]}
-icons-enabled=yes
-terminal=foot
-layer=overlay
-exit-on-keyboard-focus-loss=yes
-width={width}
-horizontal-pad=16
-vertical-pad=12
-inner-pad=8
-
-[colors]
-background={_hex_to_rgba(tokens["surface_base"])}
-text={_hex_to_rgba(tokens["text_primary"])}
-match={tokens["accent_fuzzel"]}
-selection={tokens["accent_fuzzel"]}
-selection-text={_hex_to_rgba("#ffffff")}
-selection-match={_hex_to_rgba("#ffffff")}
-border={_hex_to_rgba(tokens["accent_hex"])}
-
-[border]
-width=2
-radius=12
-"""
-
-    with (FUZZEL_DIR / "fuzzel.ini").open("w", encoding="utf-8") as handle:
-        handle.write(ini)
 
 
 def write_mako_config(tokens: dict) -> None:
@@ -1387,7 +1344,6 @@ def main() -> int:
     tokens = _build_tokens(settings)
     waybar_changed = write_waybar_config(tokens)
     write_gtk_settings(tokens)
-    write_fuzzel_config(tokens)
     write_mako_config(tokens)
     write_foot_config(tokens)
     write_labwc_themerc(tokens)

@@ -14,7 +14,7 @@ from ..base import BasePage
 MODULE_NAMES = {
     "custom/launcher": _("Apps"), "wlr/taskbar": _("Window list"),
     "pulseaudio": _("Volume"), "backlight": _("Brightness"), "battery": _("Battery"),
-    "clock": _("Clock"), "custom/power": _("Power"), "tray": _("System tray"),
+    "clock": _("Clock"), "tray": _("System tray"),
 }
 
 _DEFAULTS_PATH = Path("/usr/share/universal-lite/defaults/settings.json")
@@ -32,7 +32,7 @@ def _load_default_layout():
     return {
         "start": ["custom/launcher"],
         "center": ["wlr/taskbar"],
-        "end": ["pulseaudio", "backlight", "battery", "clock", "tray", "custom/power"],
+        "end": ["pulseaudio", "backlight", "battery", "clock", "tray"],
     }
 
 DEFAULT_LAYOUT = _load_default_layout()
