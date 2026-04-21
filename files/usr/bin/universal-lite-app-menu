@@ -178,11 +178,12 @@ window.app-menu {
     outline: none;
 }
 .app-menu-tile-name {
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 500;
 }
 .app-menu-tile-generic {
     font-size: 9px;
-    opacity: 0.55;
+    opacity: 0.6;
 }
 .app-menu-power-bar {
     padding: 6px 4px 2px 4px;
@@ -285,12 +286,14 @@ def _category_for(app: Gio.AppInfo) -> str:
 
 
 def _generic_name_for(app: Gio.AppInfo) -> str:
-    """Subtitle text for a tile - the freedesktop GenericName.
+    """Plain-English purpose for an app - the freedesktop GenericName.
 
-    Returns "" when absent or redundant with the display name (e.g.
-    an app whose Name is already "Web Browser"). Rendered as the
-    small muted second line on each tile so unfamiliar app names
-    get a plain-English hint ("Mousepad" -> "Text Editor").
+    Promoted to the PRIMARY tile label so non-technical users with
+    reduced vision see WHAT the app does ("Web Browser", "Text Editor")
+    before the product name ("Google Chrome", "Mousepad"). Returns ""
+    when the desktop file has no GenericName or it duplicates the
+    display name; the tile then falls back to showing just the
+    display name.
     """
     if not isinstance(app, Gio.DesktopAppInfo):
         return ""
@@ -635,7 +638,13 @@ class AppMenu(Gtk.Window):
 
     def _populate(self) -> None:
         apps = [a for a in Gio.AppInfo.get_all() if _is_visible(a)]
-        apps.sort(key=lambda a: a.get_display_name().lower())
+        # Sort by the primary tile label (GenericName when available,
+        # display name otherwise) so the alphabetical order the user
+        # sees on-screen matches the order we laid them out in.
+        def _sort_key(a):
+            primary = _generic_name_for(a) or (a.get_display_name() or "")
+            return primary.lower()
+        apps.sort(key=_sort_key)
         self._apps = apps
         for a in apps:
             self._grid.append(self._make_tile(a))
@@ -712,7 +721,15 @@ class AppMenu(Gtk.Window):
         if isinstance(app, Gio.DesktopAppInfo):
             exe = app.get_executable() or ""
             exec_base = os.path.basename(exe)
-        tooltip = f"{display}\n{generic}" if generic else display
+
+        # Primary line: what the app DOES. Secondary line: the product
+        # name. When the desktop file provides no GenericName, fall back
+        # to showing just the display name as primary with no secondary
+        # (so tiles never have an empty primary).
+        primary = generic or display
+        secondary = display if generic else ""
+
+        tooltip = f"{primary}\n{secondary}" if secondary else primary
         btn.set_tooltip_text(tooltip)
 
         btn._app = app
@@ -731,18 +748,18 @@ class AppMenu(Gtk.Window):
         img.set_halign(Gtk.Align.CENTER)
         box.append(img)
 
-        name = Gtk.Label(label=display)
+        name = Gtk.Label(label=primary)
         name.add_css_class("app-menu-tile-name")
         name.set_ellipsize(Pango.EllipsizeMode.END)
-        name.set_max_width_chars(12)
+        name.set_max_width_chars(13)
         name.set_xalign(0.5)
         box.append(name)
 
-        if generic:
-            gen = Gtk.Label(label=generic)
+        if secondary:
+            gen = Gtk.Label(label=secondary)
             gen.add_css_class("app-menu-tile-generic")
             gen.set_ellipsize(Pango.EllipsizeMode.END)
-            gen.set_max_width_chars(14)
+            gen.set_max_width_chars(13)
             gen.set_xalign(0.5)
             box.append(gen)
 
