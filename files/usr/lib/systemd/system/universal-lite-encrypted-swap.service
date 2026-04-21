@@ -1,6 +1,11 @@
 [Unit]
 Description=Encrypted swap
-After=local-fs.target
+# DefaultDependencies=no matches the other swap services (swap-init,
+# zswap). Without it, the implicit After=sysinit.target combines with
+# Before=swap.target + WantedBy=swap.target to force sysinit-before-swap,
+# which creates the ordering cycle systemd was logging on every boot.
+DefaultDependencies=no
+After=local-fs.target universal-lite-swap-init.service
 Before=swap.target
 ConditionPathExists=/var/swap
 

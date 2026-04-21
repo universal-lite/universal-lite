@@ -1,7 +1,13 @@
 [Unit]
 Description=First-boot configuration for installer-deployed Universal-Lite
+# Before=swap.target was the cycle source: combined with the default
+# After=basic.target it forced sysinit→basic→first-boot→swap ordering,
+# which collided with swap.target's placement in the boot sequence.
+# First-boot writes swap-size and calls the swap scripts directly
+# (see /usr/libexec/universal-lite-first-boot), so blocking swap.target
+# from systemd's side is unnecessary.
 After=local-fs.target
-Before=greetd.service swap.target
+Before=greetd.service
 
 [Service]
 Type=oneshot
