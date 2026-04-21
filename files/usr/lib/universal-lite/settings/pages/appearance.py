@@ -84,8 +84,14 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         accent_group = Adw.PreferencesGroup()
         accent_group.set_title(_("Accent color"))
 
-        accent_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        accent_box.set_valign(Gtk.Align.CENTER)
+        accent_flow = Gtk.FlowBox()
+        accent_flow.set_selection_mode(Gtk.SelectionMode.NONE)
+        accent_flow.set_max_children_per_line(9)
+        accent_flow.set_min_children_per_line(3)
+        accent_flow.set_homogeneous(True)
+        accent_flow.set_column_spacing(8)
+        accent_flow.set_row_spacing(8)
+        accent_flow.set_valign(Gtk.Align.CENTER)
         accent_buttons: list[Gtk.ToggleButton] = []
         current_accent = self.store.get("accent", "blue")
 
@@ -104,11 +110,11 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             btn.set_active(name == current_accent)
             btn.connect("toggled", _on_accent_toggled, name)
             accent_buttons.append(btn)
-            accent_box.append(btn)
+            accent_flow.append(btn)
 
         accent_row = Adw.ActionRow()
         accent_row.set_activatable(False)
-        accent_row.add_suffix(accent_box)
+        accent_row.add_suffix(accent_flow)
         accent_group.add(accent_row)
 
         self.add(accent_group)
@@ -151,7 +157,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         try:
             flow = Gtk.FlowBox()
             flow.set_max_children_per_line(6)
-            flow.set_min_children_per_line(2)
+            flow.set_min_children_per_line(1)
             flow.set_selection_mode(Gtk.SelectionMode.NONE)
             flow.set_homogeneous(True)
             flow.set_column_spacing(12)
