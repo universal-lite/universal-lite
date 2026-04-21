@@ -201,6 +201,7 @@ MENU_EOF
 
 chmod 0755 \
     /etc/xdg/labwc/autostart \
+    /usr/bin/ul-debug-nm \
     /usr/bin/universal-lite-settings \
     /usr/bin/universal-lite-setup-wizard \
     /usr/bin/universal-lite-greeter \
