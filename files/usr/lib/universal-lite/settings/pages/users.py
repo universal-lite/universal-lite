@@ -168,7 +168,9 @@ class UsersPage(BasePage, Adw.PreferencesPage):
         sub.set_title(_("Change Password"))
 
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        header.set_decoration_layout(":minimize,maximize,close")
+        toolbar.add_top_bar(header)
 
         inner = Adw.PreferencesPage()
         group = Adw.PreferencesGroup()

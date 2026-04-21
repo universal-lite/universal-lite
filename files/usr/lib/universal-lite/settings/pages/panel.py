@@ -412,7 +412,9 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         sub.set_title(_("Add Pinned App"))
 
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())  # automatic back button
+        header = Adw.HeaderBar()  # automatic back button in collapsed mode
+        header.set_decoration_layout(":minimize,maximize,close")
+        toolbar.add_top_bar(header)
 
         inner = Adw.PreferencesPage()
 

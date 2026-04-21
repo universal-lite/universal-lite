@@ -289,7 +289,9 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         sub.set_title(_("Connect to {ssid}").format(ssid=ap.ssid))
 
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        header.set_decoration_layout(":minimize,maximize,close")
+        toolbar.add_top_bar(header)
 
         inner = Adw.PreferencesPage()
 
@@ -336,7 +338,9 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         sub.set_title(_("Connect to Hidden Network"))
 
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())
+        header = Adw.HeaderBar()
+        header.set_decoration_layout(":minimize,maximize,close")
+        toolbar.add_top_bar(header)
 
         inner = Adw.PreferencesPage()
 

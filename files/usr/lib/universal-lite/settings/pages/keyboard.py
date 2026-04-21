@@ -546,7 +546,9 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         sub.set_title(_("Press new shortcut"))
 
         toolbar = Adw.ToolbarView()
-        toolbar.add_top_bar(Adw.HeaderBar())  # automatic back button
+        header = Adw.HeaderBar()  # automatic back button in collapsed mode
+        header.set_decoration_layout(":minimize,maximize,close")
+        toolbar.add_top_bar(header)
 
         status = Adw.StatusPage()
         status.set_icon_name("input-keyboard-symbolic")

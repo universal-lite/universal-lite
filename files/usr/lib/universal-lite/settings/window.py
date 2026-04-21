@@ -74,7 +74,9 @@ class SettingsWindow(Adw.ApplicationWindow):
         sidebar_scroll.set_child(self._sidebar)
 
         sidebar_toolbar = Adw.ToolbarView()
-        sidebar_toolbar.add_top_bar(Adw.HeaderBar())
+        sidebar_header = Adw.HeaderBar()
+        sidebar_header.set_decoration_layout(":minimize,maximize,close")
+        sidebar_toolbar.add_top_bar(sidebar_header)
         sidebar_toolbar.set_content(sidebar_scroll)
 
         sidebar_page = Adw.NavigationPage.new(sidebar_toolbar, _("Settings"))
@@ -86,6 +88,7 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._stack.add_css_class("content-area")
 
         content_header = Adw.HeaderBar()
+        content_header.set_decoration_layout(":minimize,maximize,close")
 
         search_btn = Gtk.ToggleButton()
         search_btn.set_icon_name("system-search-symbolic")
