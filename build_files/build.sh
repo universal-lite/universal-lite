@@ -235,6 +235,13 @@ systemctl enable bluetooth.service
 # flatpak-setup polls DNS itself), so the unit being enabled costs
 # nothing on the common case and keeps us aligned with the base image.
 systemctl enable NetworkManager.service
+# A/B test on 2026-04-21 showed NM still failing to activate on 2/6
+# reboots even with units at canonical /usr/lib/ paths. The declarative
+# Wants= is being silently dropped somewhere in systemd's transaction
+# resolution. This oneshot invokes `systemctl start NetworkManager`
+# imperatively at boot, which can't be dropped the same way.
+# Remove if and when the upstream root cause is identified and fixed.
+systemctl enable universal-lite-nm-start.service
 systemctl enable universal-lite-first-boot.service
 systemctl enable universal-lite-flatpak-install.service
 systemctl enable universal-lite-flatpak-update.service
