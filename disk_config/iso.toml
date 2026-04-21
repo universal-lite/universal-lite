@@ -1,6 +1,31 @@
 [customizations.installer.kickstart]
 contents = """
-%post
+%post --interpreter=/bin/bash --erroronfail
+# Seed the first-boot config that universal-lite-first-boot.service
+# expects. The DD/USB wizard writes this file itself; anaconda doesn't
+# know about it, so without this seed the service is gated off by
+# ConditionPathExists and never runs - which cascades through
+# flatpak-install.service and flatpak-update.service (both gated on
+# setup-done), leaving anaconda-installed systems with no Flatpaks,
+# no greeter prefill, and no swap setup.
+#
+# memory_strategy=zram tells first-boot to skip the zswap setup path.
+# zram itself is already active via zram-generator.conf baked into
+# the image (125% of RAM on 2 GB Chromebooks), so nothing else needs
+# doing on this front. swap_size_gb=0 is a harmless placeholder.
+#
+# username comes from anaconda's Users module, which always assigns
+# UID 1000 to the first interactively-created user.
+mkdir -p /var/lib/universal-lite
+username=$(getent passwd 1000 | cut -d: -f1)
+cat > /var/lib/universal-lite/install-config.json <<EOF
+{
+  "memory_strategy": "zram",
+  "swap_size_gb": 0,
+  "username": "${username}"
+}
+EOF
+
 bootc switch --mutate-in-place --transport registry ghcr.io/universal-lite/universal-lite:latest
 %end
 """
