@@ -5,7 +5,8 @@ Description=Encrypted swap
 # Before=swap.target + WantedBy=swap.target to force sysinit-before-swap,
 # which creates the ordering cycle systemd was logging on every boot.
 DefaultDependencies=no
-After=local-fs.target universal-lite-swap-init.service
+RequiresMountsFor=/var/swap
+After=universal-lite-swap-init.service
 Before=swap.target
 ConditionPathExists=/var/swap
 

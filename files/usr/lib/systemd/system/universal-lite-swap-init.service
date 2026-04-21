@@ -1,7 +1,12 @@
 [Unit]
 Description=Create encrypted swap file
+# After=local-fs.target caused an ordering cycle: Fedora's tmp.mount
+# has After=swap.target, and local-fs.target pulls in tmp.mount, so
+# local-fs.target ended up transitively after swap.target -- which
+# can't also be before it. RequiresMountsFor=/var pulls in just the
+# specific mount unit the swap file needs, no target transits.
 DefaultDependencies=no
-After=local-fs.target
+RequiresMountsFor=/var
 Before=swap.target universal-lite-encrypted-swap.service
 ConditionPathExists=!/var/swap
 ConditionPathExists=/var/lib/universal-lite/swap-size
