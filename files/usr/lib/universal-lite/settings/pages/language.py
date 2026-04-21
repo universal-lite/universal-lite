@@ -76,7 +76,6 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
         wrapper = Adw.ToolbarView()
         wrapper.add_top_bar(self._banner)
         wrapper.set_content(self)
-        self.setup_cleanup(wrapper)
         return wrapper
 
     @staticmethod
