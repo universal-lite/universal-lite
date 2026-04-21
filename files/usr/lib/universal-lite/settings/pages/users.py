@@ -147,8 +147,9 @@ class UsersPage(BasePage, Adw.PreferencesPage):
                 GLib.Variant("(s)", (new_name,)),
                 None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            self.store.show_toast(
+                _("Could not save name: {msg}").format(msg=exc.message), True)
 
     def _on_autologin_set(self, row, _pspec):
         try:
@@ -158,8 +159,9 @@ class UsersPage(BasePage, Adw.PreferencesPage):
                 GLib.Variant("(b)", (row.get_active(),)),
                 None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
             )
-        except GLib.Error:
-            pass
+        except GLib.Error as exc:
+            self.store.show_toast(
+                _("Could not change auto-login: {msg}").format(msg=exc.message), True)
 
     def _push_change_password(self, *_):
         sub = Adw.NavigationPage()

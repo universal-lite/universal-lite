@@ -743,7 +743,12 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
                 "direction": b.get("direction", ""),
                 "menu": b.get("menu", ""),
             })
-        _save_user_keybindings(save_data)
+        try:
+            _save_user_keybindings(save_data)
+        except OSError as exc:
+            self.store.show_toast(
+                _("Failed to save shortcuts: {msg}").format(msg=str(exc)), True)
+            return
 
         # Out-of-band: see note in _reset_all_shortcuts.
         self.store.apply()
