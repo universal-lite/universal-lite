@@ -226,12 +226,13 @@ systemctl enable accounts-daemon.service
 systemctl enable cups.service
 systemctl enable bluetooth.service
 # Explicit: NM is enabled by the base image, but re-enabling is a cheap
-# safeguard against any preset drift.
+# safeguard against any preset drift. NetworkManager-wait-online stays
+# at its preset default (enabled) to match bluefin exactly - nothing
+# on this image actually orders against network-online.target on the
+# critical boot path (greetd doesn't, our first-boot service doesn't,
+# flatpak-setup polls DNS itself), so the unit being enabled costs
+# nothing on the common case and keeps us aligned with the base image.
 systemctl enable NetworkManager.service
-# Nothing on this image needs network-online.target synchronously at
-# boot any more (flatpak-setup does its own DNS poll), so skip the up-
-# to-30-second wait on offline Chromebook boots.
-systemctl disable NetworkManager-wait-online.service
 systemctl enable universal-lite-first-boot.service
 systemctl enable universal-lite-flatpak-install.service
 systemctl enable universal-lite-flatpak-update.service
