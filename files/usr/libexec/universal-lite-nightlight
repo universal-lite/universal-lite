@@ -54,6 +54,30 @@ def _in_range(now_min: int, start_min: int, end_min: int) -> bool:
     return start_min <= now_min < end_min
 
 
+TIMER_UNIT = "universal-lite-nightlight.timer"
+
+
+def _reconcile_timer(enable: bool) -> None:
+    """Toggle the user systemd timer that re-invokes this helper.
+
+    The timer fires every 15 minutes so custom schedules kick in and
+    out at their configured boundaries without the user having to
+    touch settings or log out. When night light is disabled, the timer
+    is stopped to avoid waking systemd --user every quarter-hour for
+    nothing. systemctl enable/disable are idempotent, so calling this
+    with the current state is a no-op. If no user systemd session is
+    available (e.g. helper invoked outside a session), the call fails
+    silently - exactly what we want.
+    """
+    subcmd = "enable" if enable else "disable"
+    subprocess.run(
+        ["systemctl", "--user", subcmd, "--now", TIMER_UNIT],
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
 def _kill_gammastep() -> None:
     subprocess.run(
         ["pkill", "-x", "gammastep"],
@@ -85,7 +109,9 @@ def main() -> int:
     except (OSError, json.JSONDecodeError):
         return 0
 
-    if not bool(settings.get("night_light_enabled", False)):
+    enabled = bool(settings.get("night_light_enabled", False))
+    _reconcile_timer(enabled)
+    if not enabled:
         _kill_gammastep()
         return 0
 

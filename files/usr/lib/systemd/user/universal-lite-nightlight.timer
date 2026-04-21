@@ -1,0 +1,13 @@
+[Unit]
+Description=Night-light schedule reconcile every 15 minutes
+
+[Timer]
+# Fire on the quarter-hour so the schedule boundaries line up with the
+# UI's 15-minute increments. AccuracySec relaxes the trigger window
+# slightly to reduce wake-up cost on 2 GB hardware.
+OnCalendar=*:0/15
+AccuracySec=1min
+Persistent=false
+
+[Install]
+WantedBy=timers.target

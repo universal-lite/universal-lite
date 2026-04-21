@@ -188,6 +188,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         # Custom schedule expander — wraps the two HH:MM entry rows.
         custom_expander = Adw.ExpanderRow()
         custom_expander.set_title(_("Custom schedule"))
+        custom_expander.set_subtitle(_("Times snap to 15-minute increments"))
         custom_expander.set_expanded(current_schedule == "custom")
 
         start_row = Adw.EntryRow()
@@ -253,11 +254,21 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
 
     def _validate_and_save_time(self, row: Adw.EntryRow, key: str) -> None:
         text = row.get_text().strip()
-        if re.fullmatch(r"[0-2]\d:[0-5]\d", text):
-            h, _m = text.split(":")
-            if int(h) < 24:
+        m = re.fullmatch(r"(\d{1,2}):(\d{2})", text)
+        if m:
+            h, mm = int(m.group(1)), int(m.group(2))
+            if 0 <= h < 24 and 0 <= mm < 60:
+                # Snap to the nearest quarter-hour so the schedule
+                # boundaries line up with the 15-minute reconcile timer.
+                rounded = round(mm / 15) * 15
+                if rounded == 60:
+                    h = (h + 1) % 24
+                    rounded = 0
+                canonical = f"{h:02d}:{rounded:02d}"
+                if canonical != text:
+                    row.set_text(canonical)
                 row.remove_css_class("error")
-                self.store.save_and_apply(key, text)
+                self.store.save_and_apply(key, canonical)
                 return
         row.add_css_class("error")
 
