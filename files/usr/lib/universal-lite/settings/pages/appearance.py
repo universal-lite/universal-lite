@@ -117,11 +117,15 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             accent_buttons.append(btn)
             accent_flow.append(btn)
 
-        # FlowBox goes directly in the group rather than an ActionRow
-        # suffix. An ActionRow suffix pins its child to the row's right
-        # edge, which left the nine swatches clustered in the right
-        # half of the card with a big empty strip on the left.
-        accent_group.add(accent_flow)
+        # Wrap in a bare PreferencesRow (parent of ActionRow) so the
+        # group's boxed-list card styling still frames the picker, but
+        # the FlowBox is the row's full-width child rather than an
+        # ActionRow suffix — suffixes pin to the row's trailing edge
+        # and would cluster the nine circles on the right.
+        accent_row = Adw.PreferencesRow()
+        accent_row.set_activatable(False)
+        accent_row.set_child(accent_flow)
+        accent_group.add(accent_row)
 
         self.add(accent_group)
 
