@@ -154,6 +154,13 @@ cp -a /ctx/files/. /
 # Language name matrix and all MO files (wizard + settings) are
 # pre-compiled and shipped in files/, installed by the cp above.
 
+# Recompile the GSettings schema cache so our zz-universal-lite
+# override (button-layout: minimize/maximize/close) wins over
+# Fedora's 'appmenu:close' default. Chrome/Chromium, Firefox,
+# Electron apps, and Flatpak apps via xdg-desktop-portal's Settings
+# namespace all read this.
+glib-compile-schemas /usr/share/glib-2.0/schemas/
+
 # Add signature verification for our container registry.
 # Merge into existing policy.json rather than replacing it so
 # the base image's ublue-os verification entries are preserved.
