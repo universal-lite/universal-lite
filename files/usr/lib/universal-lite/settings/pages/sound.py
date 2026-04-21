@@ -64,7 +64,8 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         out_vol_row.set_title(_("Volume"))
         self._out_vol = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
         self._out_vol.set_value(self._get_volume("@DEFAULT_SINK@"))
-        self._out_vol.set_size_request(200, -1)
+        self._out_vol.set_size_request(150, -1)
+        self._out_vol.set_hexpand(True)
         self._out_vol.set_draw_value(True)
         self._out_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
         self._out_vol.set_valign(Gtk.Align.CENTER)
@@ -106,7 +107,8 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         in_vol_row.set_title(_("Volume"))
         self._in_vol = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
         self._in_vol.set_value(self._get_volume("@DEFAULT_SOURCE@", is_source=True))
-        self._in_vol.set_size_request(200, -1)
+        self._in_vol.set_size_request(150, -1)
+        self._in_vol.set_hexpand(True)
         self._in_vol.set_draw_value(True)
         self._in_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
         self._in_vol.set_valign(Gtk.Align.CENTER)
@@ -222,6 +224,8 @@ class SoundPage(BasePage, Adw.PreferencesPage):
     def _on_audio_changed(self, _data):
         self._refresh()
 
+    # Main-loop-only. _updating guards against handler re-entry when we
+    # set scale values during refresh (not thread concurrency).
     def _refresh(self):
         self._updating = True
         try:
