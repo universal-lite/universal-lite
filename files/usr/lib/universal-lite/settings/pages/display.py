@@ -160,7 +160,8 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
             Gtk.Orientation.HORIZONTAL, 3500, 6500, 100,
         )
         temp_scale.set_value(self.store.get("night_light_temp", 4500))
-        temp_scale.set_size_request(200, -1)
+        temp_scale.set_size_request(150, -1)
+        temp_scale.set_hexpand(True)
         temp_scale.set_draw_value(True)
         temp_scale.set_valign(Gtk.Align.CENTER)
         temp_scale.set_format_value_func(lambda _s, v: f"{v:.0f}K")
