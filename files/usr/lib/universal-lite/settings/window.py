@@ -83,11 +83,7 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(150)
-        self._content_scroll = Gtk.ScrolledWindow()
-        self._content_scroll.set_policy(Gtk.PolicyType.NEVER,
-                                        Gtk.PolicyType.AUTOMATIC)
-        self._content_scroll.set_child(self._stack)
-        self._content_scroll.add_css_class("content-area")
+        self._stack.add_css_class("content-area")
 
         content_header = Adw.HeaderBar()
 
@@ -110,7 +106,7 @@ class SettingsWindow(Adw.ApplicationWindow):
         content_toolbar = Adw.ToolbarView()
         content_toolbar.add_top_bar(content_header)
         content_toolbar.add_top_bar(self._search_bar)
-        content_toolbar.set_content(self._content_scroll)
+        content_toolbar.set_content(self._stack)
 
         # Content page's title is updated in _on_row_selected so it
         # reflects the active category in the header (visible in
@@ -262,9 +258,6 @@ class SettingsWindow(Adw.ApplicationWindow):
     def _show_page(self, idx: int, label: str) -> None:
         self._stack.set_visible_child_name(label)
         self._content_page.set_title(self._page_labels[idx])
-        adj = self._content_scroll.get_vadjustment()
-        if adj is not None:
-            adj.set_value(0)
         # Push to the content page in collapsed mode. When not
         # collapsed this is a no-op (both panes are always visible).
         self._split_view.set_show_content(True)
