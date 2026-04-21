@@ -75,7 +75,7 @@
     box-shadow: 0 1px 3px alpha(black, 0.3);
 }
 .wallpaper-remove:hover {
-    background-color: #c01c28;
+    background-color: @error_color;
 }
 
 /* === Accent color circles === */
@@ -125,8 +125,8 @@
 
 /* === Destructive actions === */
 .destructive-button {
-    color: #c01c28;
+    color: @error_color;
 }
 .destructive-button:hover {
-    background-color: alpha(#c01c28, 0.1);
+    background-color: alpha(@error_color, 0.1);
 }

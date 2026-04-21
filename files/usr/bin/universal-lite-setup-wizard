@@ -72,7 +72,7 @@ def _reset_child_signals():
 
 CSS = """\
 window {
-    background-color: #242424;
+    background-color: #222226;
     color: #ffffff;
 }
 
@@ -108,9 +108,9 @@ checkbutton label {
     font-size: 16px;
     padding: 10px 14px;
     border-radius: 8px;
-    background-color: #363636;
+    background-color: #36363a;
     color: #ffffff;
-    border: 1px solid #555555;
+    border: 1px solid #3a3a3e;
     min-height: 20px;
 }
 
@@ -272,7 +272,7 @@ button.back-button:active label {
 }
 
 .card {
-    background-color: #2e2e2e;
+    background-color: #1d1d20;
     border-radius: 16px;
     padding: 40px;
     border: 1px solid #444444;

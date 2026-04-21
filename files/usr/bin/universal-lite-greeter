@@ -34,6 +34,7 @@ APP_ID = "org.universallite.Greeter"
 
 LAST_USER_PATH = Path("/var/lib/greetd/last-user")
 GREETER_THEME_PATH = Path("/var/lib/universal-lite/greeter-theme")
+GREETER_ACCENT_PATH = Path("/var/lib/universal-lite/greeter-accent")
 SESSIONS_DIR = Path("/usr/share/wayland-sessions")
 PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 
@@ -54,6 +55,20 @@ SETUP_OVERLAY_TIMEOUT_S = 900
 #  Adwaita palettes — loaded from shared palette.json, extended for greeter
 # ---------------------------------------------------------------------------
 
+def _load_accent_name() -> str:
+    """Read the accent name apply-settings wrote to the shared /var/lib
+    slot. The greeter runs pre-login without access to any user's home,
+    so apply-settings propagates the choice via this file whenever the
+    session script runs. Falls back to blue if the file is missing."""
+    try:
+        name = GREETER_ACCENT_PATH.read_text(encoding="utf-8").strip()
+        if name:
+            return name
+    except OSError:
+        pass
+    return "blue"
+
+
 def _load_palettes() -> dict:
     """Load base palette from shared JSON file and extend with greeter-specific tokens."""
     try:
@@ -61,13 +76,17 @@ def _load_palettes() -> dict:
     except (OSError, json.JSONDecodeError):
         # Hardcoded fallback if palette.json is missing (should not happen)
         raw = {
-            "light": {"window_bg": "#fafafa", "card_bg": "#ffffff", "fg": "#1e1e1e",
-                       "secondary_fg": "#5e5c64", "border": "#d1d1d1"},
-            "dark": {"window_bg": "#242424", "card_bg": "#383838", "fg": "#ffffff",
-                      "secondary_fg": "#c0bfbc", "border": "#4a4a4a"},
-            "accents": {"blue": "#3584e4"},
+            "light": {"window_bg": "#fafafa", "view_bg": "#ffffff",
+                      "card_bg": "#ffffff", "fg": "#1e1e1e",
+                      "secondary_fg": "#5e5c64", "border": "#d0d0d4"},
+            "dark": {"window_bg": "#222226", "view_bg": "#1d1d20",
+                     "card_bg": "#36363a", "fg": "#ffffff",
+                     "secondary_fg": "#c0bfbc", "border": "#3a3a3e"},
+            "accents": {"blue": "#3584e4", "red": "#e62d42"},
         }
-    accent = raw["accents"].get("blue", "#3584e4")
+    accent_name = _load_accent_name()
+    accent = raw["accents"].get(accent_name) or raw["accents"].get("blue", "#3584e4")
+    error = raw["accents"].get("red", "#e62d42")
     # Adwaita-style elevation: three stacked layers - a hairline
     # outline that defines the card's edge even against a similar-
     # coloured surface, a tight key shadow that anchors the card, and
@@ -87,21 +106,24 @@ def _load_palettes() -> dict:
     return {
         "light": {
             **raw["light"],
-            "entry_bg": raw["light"]["card_bg"],
+            "entry_bg": raw["light"].get("view_bg", raw["light"]["card_bg"]),
             "accent": accent,
-            "accent_hover": "#62a0ea",
-            "accent_active": "#1c71d8",
-            "error": raw["accents"].get("red", "#e62d42"),
+            # GTK CSS shade() lightens/darkens the accent proportionally,
+            # so hover and active states track whichever accent the user
+            # picked rather than hardcoded blue shades.
+            "accent_hover": f"shade({accent}, 1.1)",
+            "accent_active": f"shade({accent}, 0.85)",
+            "error": error,
             "hover": "rgba(0, 0, 0, 0.04)",
             "card_shadow": light_shadow,
         },
         "dark": {
             **raw["dark"],
-            "entry_bg": "#2e2e2e",
+            "entry_bg": raw["dark"].get("view_bg", "#1d1d20"),
             "accent": accent,
-            "accent_hover": "#62a0ea",
-            "accent_active": "#1c71d8",
-            "error": "#ff6b6b",
+            "accent_hover": f"shade({accent}, 1.15)",
+            "accent_active": f"shade({accent}, 0.85)",
+            "error": error,
             "hover": "rgba(255, 255, 255, 0.06)",
             "card_shadow": dark_shadow,
         },
@@ -169,7 +191,7 @@ window {{
 
 .form-entry:focus, .form-entry:focus-within {{
     border-color: {p["accent"]};
-    box-shadow: 0 0 0 2px rgba(53, 132, 228, 0.25);
+    box-shadow: 0 0 0 2px alpha({p["accent"]}, 0.25);
 }}
 
 .form-entry image {{

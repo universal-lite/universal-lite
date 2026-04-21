@@ -327,6 +327,16 @@ def ensure_settings() -> dict:
     except OSError:
         pass
 
+    # The greeter runs pre-login with no access to the user's home dir,
+    # so propagate the accent choice via the same shared /var/lib path
+    # the theme uses. Greeter reads this and looks up the hex in the
+    # same palette.json. Falls back to "blue" if the file is absent.
+    greeter_accent_path = Path("/var/lib/universal-lite/greeter-accent")
+    try:
+        greeter_accent_path.write_text(accent + "\n", encoding="utf-8")
+    except OSError:
+        pass
+
     scale = data.get("scale", 1.0)
     if scale not in VALID_SCALE:
         scale = 1.0
@@ -783,6 +793,10 @@ def write_gtk_settings(tokens: dict) -> None:
             handle.write("gtk-cursor-theme-name=Adwaita\n")
             handle.write(f"gtk-cursor-theme-size={tokens['cursor_size']}\n")
             handle.write(f"gtk-enable-animations={'1' if not tokens['reduce_motion'] else '0'}\n")
+            # Per-user settings.ini shadows /etc/gtk-*/settings.ini entirely
+            # for keys it declares, so we must repeat the decoration-layout
+            # line here - otherwise first apply-settings run wipes the
+            # min/max buttons shipped by the system default.
             handle.write("gtk-decoration-layout=:minimize,maximize,close\n")
 
     gsettings_commands = [
