@@ -1,0 +1,33 @@
+[Unit]
+# Imperative NetworkManager starter. Bypasses whatever is suppressing
+# the declarative Wants= on multi-user.target and greetd.service.d/
+# 10-ensure-networkmanager.conf — on failing boots we can see
+# `systemctl show greetd -p Wants` return Wants=NetworkManager.service
+# and `systemctl cat NetworkManager` loaded+enabled, yet systemd never
+# queues NM for activation. Root cause unknown (same mechanism that
+# lets universal-lite-first-boot.service run despite its
+# !setup-done condition on some boots — suggests systemd's condition/
+# dependency evaluation is racy in our specific boot environment).
+#
+# This service sidesteps the problem entirely: it uses ExecStart=
+# to call systemctl directly, which issues a fresh start job for
+# NetworkManager at runtime. That job doesn't go through the same
+# transaction resolution that was silently dropping the Wants=.
+#
+# Once the root cause is found, this service can be removed.
+
+Description=Force-start NetworkManager (workaround for dropped Wants=)
+After=dbus.service
+Before=greetd.service
+Wants=dbus.service
+
+[Service]
+Type=oneshot
+# --no-block so we don't wait for NM to fully settle. The actual NM
+# start is backgrounded; this service is considered done as soon as
+# the job is queued.
+ExecStart=/usr/bin/systemctl --no-block start NetworkManager.service
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -234,6 +234,12 @@ systemctl enable bluetooth.service
 # flatpak-setup polls DNS itself), so the unit being enabled costs
 # nothing on the common case and keeps us aligned with the base image.
 systemctl enable NetworkManager.service
+# Belt-and-very-big-suspenders: the declarative Wants= on NM (both
+# from multi-user.target.wants/ and our greetd drop-in) gets silently
+# dropped on some boots, leaving NM dead despite being enabled. This
+# service force-starts NM via an explicit `systemctl start` call at
+# boot, bypassing the transaction resolver.
+systemctl enable universal-lite-nm-start.service
 systemctl enable universal-lite-first-boot.service
 systemctl enable universal-lite-flatpak-install.service
 systemctl enable universal-lite-flatpak-update.service
