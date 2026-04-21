@@ -92,6 +92,11 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         accent_flow.set_column_spacing(8)
         accent_flow.set_row_spacing(8)
         accent_flow.set_valign(Gtk.Align.CENTER)
+        accent_flow.set_halign(Gtk.Align.CENTER)
+        accent_flow.set_margin_top(12)
+        accent_flow.set_margin_bottom(12)
+        accent_flow.set_margin_start(12)
+        accent_flow.set_margin_end(12)
         accent_buttons: list[Gtk.ToggleButton] = []
         current_accent = self.store.get("accent", "blue")
 
@@ -112,10 +117,11 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             accent_buttons.append(btn)
             accent_flow.append(btn)
 
-        accent_row = Adw.ActionRow()
-        accent_row.set_activatable(False)
-        accent_row.add_suffix(accent_flow)
-        accent_group.add(accent_row)
+        # FlowBox goes directly in the group rather than an ActionRow
+        # suffix. An ActionRow suffix pins its child to the row's right
+        # edge, which left the nine swatches clustered in the right
+        # half of the card with a big empty strip on the left.
+        accent_group.add(accent_flow)
 
         self.add(accent_group)
 
