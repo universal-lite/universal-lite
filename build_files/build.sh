@@ -210,6 +210,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-first-boot \
     /usr/libexec/universal-lite-flatpak-setup \
     /usr/libexec/universal-lite-nightlight \
+    /usr/libexec/universal-lite-set-memory-strategy \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-launch \
     /usr/libexec/universal-lite-greeter-setup \

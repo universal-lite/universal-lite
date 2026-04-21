@@ -1,0 +1,92 @@
+#!/bin/bash
+# Switch between zram-only and zswap-backed memory strategies on an
+# already-installed Universal-Lite system.
+#
+# Usage:
+#   universal-lite-set-memory-strategy zram
+#   universal-lite-set-memory-strategy zswap [SIZE_GB]     # default 4
+#
+# Must be run as root. Updates /var/lib/universal-lite/install-config.json
+# and reconciles swap file + services + zram-generator.conf accordingly.
+# A reboot is required for kernel-level changes (zram unloading, zswap
+# enabling) to take effect — this script does NOT reboot, the caller
+# handles that.
+
+set -euo pipefail
+
+if [ "$EUID" -ne 0 ]; then
+    echo "universal-lite-set-memory-strategy: must run as root" >&2
+    exit 1
+fi
+
+STRATEGY="${1:-}"
+SWAP_GB="${2:-4}"
+STATE_DIR=/var/lib/universal-lite
+CONFIG="$STATE_DIR/install-config.json"
+ZRAM_CONF=/etc/systemd/zram-generator.conf
+
+case "$STRATEGY" in
+    zram|zswap) ;;
+    *)
+        echo "Usage: $0 {zram|zswap} [SWAP_GB]" >&2
+        exit 1
+        ;;
+esac
+
+mkdir -p "$STATE_DIR"
+
+# Update install-config.json so first-boot (and anything else that reads
+# the file) sees the same state we're configuring here.
+python3 - "$CONFIG" "$STRATEGY" "$SWAP_GB" <<'PY'
+import json, sys
+path, strategy, swap_gb = sys.argv[1], sys.argv[2], int(sys.argv[3])
+try:
+    d = json.load(open(path))
+except (OSError, ValueError):
+    d = {}
+d["memory_strategy"] = strategy
+d["swap_size_gb"] = swap_gb if strategy == "zswap" else 0
+with open(path, "w") as f:
+    json.dump(d, f, indent=2)
+    f.write("\n")
+PY
+
+if [ "$STRATEGY" = "zswap" ]; then
+    # Seed swap size for swap-init and run it now so /var/swap exists.
+    echo "$SWAP_GB" > "$STATE_DIR/swap-size"
+    /usr/libexec/universal-lite-swap-init
+
+    # Enable swap services so they fire on every boot from now on.
+    systemctl enable \
+        universal-lite-swap-init.service \
+        universal-lite-encrypted-swap.service \
+        universal-lite-zswap.service
+
+    # Override zram-generator so zram0 is NOT created at next boot.
+    # (The image default at /usr/etc/ allocates 125% of RAM as zram;
+    # with disk-backed zswap we don't want that competing.)
+    cat > "$ZRAM_CONF" <<'ZRAM_EOF'
+[zram0]
+zram-size = 0
+ZRAM_EOF
+
+    echo "memory strategy: zswap (${SWAP_GB} GB encrypted disk swap + kernel zswap compression)"
+else
+    # zram mode — tear down everything zswap put in place.
+    systemctl disable \
+        universal-lite-swap-init.service \
+        universal-lite-encrypted-swap.service \
+        universal-lite-zswap.service 2>/dev/null || true
+
+    # Restore the image-default zram-generator config. Writing the same
+    # content back makes the 3-way merge happy on future bootc upgrades.
+    cat > "$ZRAM_CONF" <<'ZRAM_EOF'
+[zram0]
+zram-size = min(ram * 5 / 4, 3072)
+compression-algorithm = zstd(level=3)
+swap-priority = 100
+ZRAM_EOF
+
+    echo "memory strategy: zram (125% of RAM, compressed in-memory swap)"
+    echo "The existing /var/swap file will become idle after reboot — delete manually if you want the disk back."
+fi
