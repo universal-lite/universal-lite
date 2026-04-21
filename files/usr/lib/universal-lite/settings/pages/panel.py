@@ -59,17 +59,18 @@ class PanelPage(BasePage, Adw.PreferencesPage):
 
     Returns an AdwNavigationView from build() so the Add Pinned App
     picker can push a sub-page over the top-level preferences content.
-    The module-layout editor is kept as a custom 3-column HBox (arrow
-    buttons move modules between sections and reorder within a section)
-    wrapped in an AdwActionRow suffix — the appearance.py pattern.
+    The module-layout editor renders as three stacked AdwPreferencesGroups
+    (one per section — Left/Center/Right horizontally, Top/Middle/Bottom
+    vertically) with each module as an AdwActionRow carrying arrow
+    suffix buttons for up/down and prev/next-section movement.
     """
 
     def __init__(self, store, event_bus):
         BasePage.__init__(self, store, event_bus)
         Adw.PreferencesPage.__init__(self)
         self._layout_data: dict = {}
-        self._section_boxes: dict = {}
-        self._section_labels: dict = {}
+        self._section_groups: dict[str, Adw.PreferencesGroup] = {}
+        self._section_rows: dict[str, list[Adw.ActionRow]] = {}
         self._pinned_data: list = []
         self._pinned_group: Adw.PreferencesGroup | None = None
         self._pinned_rows: list[Adw.ActionRow] = []
@@ -89,7 +90,9 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         self.add(self._build_position_group())
         self.add(self._build_density_group())
         self.add(self._build_twilight_group())
-        self.add(self._build_module_layout_group())
+        for group in self._build_module_layout_groups():
+            self.add(group)
+        self.add(self._build_layout_reset_group())
         self.add(self._build_pinned_apps_group())
 
         # Tear down event-bus subscriptions on unmap. Call on self
@@ -172,20 +175,30 @@ class PanelPage(BasePage, Adw.PreferencesPage):
 
     # -- Module layout -------------------------------------------------
 
-    def _build_module_layout_group(self) -> Adw.PreferencesGroup:
+    def _build_module_layout_groups(self) -> list[Adw.PreferencesGroup]:
+        """Build three stacked AdwPreferencesGroups, one per section.
+
+        Each group's title is edge-aware (Left/Center/Right horizontally,
+        Top/Middle/Bottom vertically). Module rows are populated by
+        _refresh_module_lists so arrow enable/disable state tracks layout
+        changes after every move.
+        """
+        self._layout_data = self._load_layout()
+        edge = self.store.get("edge", "bottom")
+        labels = HORIZONTAL_LABELS if edge in ("top", "bottom") else VERTICAL_LABELS
+        self._section_groups = {}
+        self._section_rows = {}
+        for section in SECTION_ORDER:
+            group = Adw.PreferencesGroup()
+            group.set_title(labels[section])
+            self._section_groups[section] = group
+            self._section_rows[section] = []
+        self._refresh_module_lists()
+        return list(self._section_groups.values())
+
+    def _build_layout_reset_group(self) -> Adw.PreferencesGroup:
+        """Trailing group with a destructive-action reset button."""
         group = Adw.PreferencesGroup()
-        group.set_title(_("Module Layout"))
-
-        # Custom 3-column editor wrapped in an AdwActionRow suffix —
-        # same pattern as appearance.py's wallpaper grid. The row is
-        # non-activatable so clicks don't steal focus from the arrow
-        # buttons.
-        editor_row = Adw.ActionRow()
-        editor_row.set_activatable(False)
-        editor_row.add_suffix(self._build_module_layout())
-        group.add(editor_row)
-
-        # Trailing reset row, destructive-action button in the suffix.
         reset_row = Adw.ActionRow()
         reset_row.set_title(_("Reset layout to defaults"))
         reset_row.set_activatable(False)
@@ -195,7 +208,6 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         reset_btn.connect("clicked", lambda _b: self._reset_layout())
         reset_row.add_suffix(reset_btn)
         group.add(reset_row)
-
         return group
 
     def _on_edge_changed(self, edge):
@@ -206,35 +218,8 @@ class PanelPage(BasePage, Adw.PreferencesPage):
     def _update_section_labels(self):
         edge = self.store.get("edge", "bottom")
         labels = HORIZONTAL_LABELS if edge in ("top", "bottom") else VERTICAL_LABELS
-        for section, widget in self._section_labels.items():
-            widget.set_label(labels[section])
-
-    def _build_module_layout(self):
-        self._layout_data = self._load_layout()
-        inner = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
-        inner.set_hexpand(True)
-        self._section_boxes = {}
-        self._section_labels = {}
-        edge = self.store.get("edge", "bottom")
-        labels = HORIZONTAL_LABELS if edge in ("top", "bottom") else VERTICAL_LABELS
-        for section in SECTION_ORDER:
-            section_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-            section_box.set_hexpand(True)
-            header = Gtk.Label(label=labels[section], xalign=0)
-            header.add_css_class("group-title")
-            self._section_labels[section] = header
-            section_box.append(header)
-            listbox = Gtk.ListBox()
-            listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-            self._section_boxes[section] = listbox
-            section_box.append(listbox)
-            inner.append(section_box)
-        self._refresh_module_lists()
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
-        scrolled.set_hexpand(True)
-        scrolled.set_child(inner)
-        return scrolled
+        for section, group in self._section_groups.items():
+            group.set_title(labels[section])
 
     def _load_layout(self):
         saved = self.store.get("layout")
@@ -246,61 +231,78 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         return copy.deepcopy(DEFAULT_LAYOUT)
 
     def _refresh_module_lists(self):
-        for section in SECTION_ORDER:
-            listbox = self._section_boxes[section]
-            while (child := listbox.get_row_at_index(0)) is not None:
-                listbox.remove(child)
-            for mod_key in self._layout_data.get(section, []):
-                listbox.append(self._build_module_row(mod_key, section))
+        for section, group in self._section_groups.items():
+            # Remove all currently-tracked rows from the group.
+            for row in self._section_rows.get(section, []):
+                group.remove(row)
+            self._section_rows[section] = []
 
-    def _build_module_row(self, mod_key, section):
-        row = Gtk.ListBoxRow()
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        box.set_margin_top(4)
-        box.set_margin_bottom(4)
-        box.set_margin_start(4)
-        box.set_margin_end(4)
-        label = Gtk.Label(label=MODULE_NAMES.get(mod_key, mod_key), xalign=0)
-        label.set_hexpand(True)
-        box.append(label)
+            modules = self._layout_data.get(section, [])
+            for idx, mod_key in enumerate(modules):
+                row = self._build_module_row(mod_key, section, idx, len(modules))
+                group.add(row)
+                self._section_rows[section].append(row)
 
-        edge = self.store.get("edge", "bottom")
-        is_horizontal = edge in ("top", "bottom")
+    def _build_module_row(self, mod_key, section, idx, total):
+        row = Adw.ActionRow()
+        row.set_title(MODULE_NAMES.get(mod_key, mod_key))
+        row.set_activatable(False)
+
         sec_idx = SECTION_ORDER.index(section)
-        modules = self._layout_data.get(section, [])
-        mod_idx = modules.index(mod_key) if mod_key in modules else -1
+        can_up = idx > 0
+        can_down = idx < total - 1
+        can_prev_section = sec_idx > 0
+        can_next_section = sec_idx < len(SECTION_ORDER) - 1
 
-        # Section-move buttons
-        section_prev = "\u25C2" if is_horizontal else "\u25B2"
-        section_next = "\u25B8" if is_horizontal else "\u25BC"
-        # Reorder buttons (within section)
-        reorder_up = "\u25B2" if is_horizontal else "\u25C2"
-        reorder_down = "\u25BC" if is_horizontal else "\u25B8"
+        if can_up:
+            up_btn = Gtk.Button.new_from_icon_name("go-up-symbolic")
+            up_btn.add_css_class("flat")
+            up_btn.set_valign(Gtk.Align.CENTER)
+            up_btn.set_tooltip_text(_("Move up in section"))
+            up_btn.connect(
+                "clicked",
+                lambda _b, k=mod_key, s=section: self._reorder_module(k, s, -1),
+            )
+            row.add_suffix(up_btn)
+        if can_down:
+            down_btn = Gtk.Button.new_from_icon_name("go-down-symbolic")
+            down_btn.add_css_class("flat")
+            down_btn.set_valign(Gtk.Align.CENTER)
+            down_btn.set_tooltip_text(_("Move down in section"))
+            down_btn.connect(
+                "clicked",
+                lambda _b, k=mod_key, s=section: self._reorder_module(k, s, 1),
+            )
+            row.add_suffix(down_btn)
+        if can_prev_section:
+            prev_btn = Gtk.Button.new_from_icon_name("go-previous-symbolic")
+            prev_btn.add_css_class("flat")
+            prev_btn.set_valign(Gtk.Align.CENTER)
+            prev_btn.set_tooltip_text(
+                _("Move to {section}").format(section=SECTION_ORDER[sec_idx - 1])
+            )
+            prev_btn.connect(
+                "clicked",
+                lambda _b, k=mod_key, s=section: self._move_module(
+                    k, s, SECTION_ORDER[SECTION_ORDER.index(s) - 1]
+                ),
+            )
+            row.add_suffix(prev_btn)
+        if can_next_section:
+            next_btn = Gtk.Button.new_from_icon_name("go-next-symbolic")
+            next_btn.add_css_class("flat")
+            next_btn.set_valign(Gtk.Align.CENTER)
+            next_btn.set_tooltip_text(
+                _("Move to {section}").format(section=SECTION_ORDER[sec_idx + 1])
+            )
+            next_btn.connect(
+                "clicked",
+                lambda _b, k=mod_key, s=section: self._move_module(
+                    k, s, SECTION_ORDER[SECTION_ORDER.index(s) + 1]
+                ),
+            )
+            row.add_suffix(next_btn)
 
-        if sec_idx > 0:
-            btn = Gtk.Button(label=section_prev)
-            btn.set_tooltip_text(_("Move to {section}").format(section=SECTION_ORDER[sec_idx - 1]))
-            btn.connect("clicked", lambda _, k=mod_key, s=section: self._move_module(
-                k, s, SECTION_ORDER[SECTION_ORDER.index(s) - 1]))
-            box.append(btn)
-        if sec_idx < len(SECTION_ORDER) - 1:
-            btn = Gtk.Button(label=section_next)
-            btn.set_tooltip_text(_("Move to {section}").format(section=SECTION_ORDER[sec_idx + 1]))
-            btn.connect("clicked", lambda _, k=mod_key, s=section: self._move_module(
-                k, s, SECTION_ORDER[SECTION_ORDER.index(s) + 1]))
-            box.append(btn)
-        if mod_idx > 0:
-            btn = Gtk.Button(label=reorder_up)
-            btn.set_tooltip_text(_("Move up in section"))
-            btn.connect("clicked", lambda _, k=mod_key, s=section: self._reorder_module(k, s, -1))
-            box.append(btn)
-        if mod_idx < len(modules) - 1:
-            btn = Gtk.Button(label=reorder_down)
-            btn.set_tooltip_text(_("Move down in section"))
-            btn.connect("clicked", lambda _, k=mod_key, s=section: self._reorder_module(k, s, 1))
-            box.append(btn)
-
-        row.set_child(box)
         return row
 
     def _reorder_module(self, mod_key, section, direction):
