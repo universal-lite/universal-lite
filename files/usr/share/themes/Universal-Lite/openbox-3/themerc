@@ -5,8 +5,8 @@
 # before that override lands (first boot, debug sessions, etc.).
 
 border.width: 1
-window.active.border.color: #d0d0d4
-window.inactive.border.color: #d0d0d4
+window.active.border.color: #d9d9dc
+window.inactive.border.color: #d9d9dc
 
 window.titlebar.padding.height: 4
 window.titlebar.padding.width: 8
@@ -35,15 +35,15 @@ window.button.height: 26
 window.button.spacing: 4
 window.button.hover.bg.corner-radius: 13
 window.active.button.hover.bg: flat solid
-window.active.button.hover.bg.color: #d0d0d4
+window.active.button.hover.bg.color: #d9d9dc
 window.inactive.button.hover.bg: flat solid
-window.inactive.button.hover.bg.color: #d0d0d4
+window.inactive.button.hover.bg.color: #d9d9dc
 
 osd.bg: flat solid
-osd.bg.color: #fafafa
+osd.bg.color: #ffffff
 osd.label.text.color: #1e1e1e
 osd.border.width: 1
-osd.border.color: #d0d0d4
+osd.border.color: #d9d9dc
 
 # Window switcher (thumbnail mode — ChromeOS / GNOME style)
 window.switcher.width: 80%
@@ -55,12 +55,12 @@ window.switcher.item.border.width: 3
 window.switcher.item.border.color: #3584e4
 
 menu.items.bg: flat solid
-menu.items.bg.color: #fafafa
+menu.items.bg.color: #ffffff
 menu.items.text.color: #1e1e1e
 menu.items.active.bg: flat solid
 menu.items.active.bg.color: #3584e4
 menu.items.active.text.color: #ffffff
-menu.separator.color: #d0d0d4
+menu.separator.color: #d9d9dc
 menu.border.width: 1
-menu.border.color: #d0d0d4
+menu.border.color: #d9d9dc
 menu.border.radius: 8

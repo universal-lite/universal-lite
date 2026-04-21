@@ -940,9 +940,12 @@ window.inactive.button.hover.bg: flat solid
 window.inactive.button.hover.bg.color: {palette["border"]}
 window.inactive.button.hover.image.color: {palette["secondary_fg"]}
 
-# Menu
+# Menu — sits above the window surface, so uses the elevated
+# card_bg (matches libadwaita's @popover_bg_color: #ffffff light /
+# #36363a dark). Painting at window_bg would make right-click menus
+# blend into the desktop in dark mode.
 menu.items.bg: flat solid
-menu.items.bg.color: {palette["window_bg"]}
+menu.items.bg.color: {palette["card_bg"]}
 menu.items.text.color: {palette["fg"]}
 menu.items.active.bg: flat solid
 menu.items.active.bg.color: {accent}
@@ -952,9 +955,10 @@ menu.border.width: 1
 menu.border.color: {palette["border"]}
 menu.border.radius: 8
 
-# OSD
+# OSD — same elevation rule as the menu. Volume/brightness overlays
+# should sit visually above the wallpaper, not match it.
 osd.bg: flat solid
-osd.bg.color: {palette["window_bg"]}
+osd.bg.color: {palette["card_bg"]}
 osd.border.width: 1
 osd.border.color: {palette["border"]}
 osd.label.text.color: {palette["fg"]}

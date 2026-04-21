@@ -6,7 +6,7 @@
     "card_bg": "#ffffff",
     "fg": "#1e1e1e",
     "secondary_fg": "#5e5c64",
-    "border": "#d0d0d4",
+    "border": "#d9d9dc",
     "inactive_fg": "#c0bfbc"
   },
   "dark": {
@@ -16,7 +16,7 @@
     "card_bg": "#36363a",
     "fg": "#ffffff",
     "secondary_fg": "#c0bfbc",
-    "border": "#3a3a3e",
+    "border": "#434349",
     "inactive_fg": "#5e5c64"
   },
   "accents": {
