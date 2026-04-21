@@ -57,8 +57,16 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
     # -- build ----------------------------------------------------------
 
     def build(self):
+        displays = self._get_displays()
+        if not displays:
+            status = Adw.StatusPage()
+            status.set_icon_name("video-display-symbolic")
+            status.set_title(_("No displays detected"))
+            status.set_description(_("Connect a display and reopen Settings."))
+            return status
+
         self.add(self._build_scale_group())
-        self.add(self._build_resolution_group())
+        self.add(self._build_resolution_group(displays))
         self.add(self._build_night_light_group())
         self.add(self._build_advanced_group())
 
@@ -95,16 +103,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         group.add(row)
         return group
 
-    def _build_resolution_group(self) -> Adw.PreferencesGroup:
-        displays = self._get_displays()
-        if not displays:
-            group = Adw.PreferencesGroup()
-            status = Adw.StatusPage()
-            status.set_icon_name("video-display-symbolic")
-            status.set_title(_("No displays detected"))
-            group.add(status)
-            return group
-
+    def _build_resolution_group(self, displays) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup()
         group.set_title(_("Resolution & Refresh Rate"))
 

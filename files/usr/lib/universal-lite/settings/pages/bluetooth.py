@@ -43,9 +43,8 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         self.add(toggle_group)
 
         # -- Banner: no adapter --
-        banner = Adw.Banner.new(_("No Bluetooth adapter found"))
-        banner.set_revealed(not self._bt.available)
-        self.add(banner)
+        self._banner = Adw.Banner.new(_("No Bluetooth adapter found"))
+        self._banner.set_revealed(not self._bt.available)
 
         # -- Group 2: Paired devices --
         self._paired_group = Adw.PreferencesGroup()
@@ -85,8 +84,12 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
 
         # Stop discovery if page is torn down
         self.connect("unmap", lambda _: self._cleanup())
-        self.setup_cleanup(self)
-        return self
+
+        wrapper = Adw.ToolbarView()
+        wrapper.add_top_bar(self._banner)
+        wrapper.set_content(self)
+        self.setup_cleanup(wrapper)
+        return wrapper
 
     def _on_toggle(self, row, _pspec):
         if self._updating:

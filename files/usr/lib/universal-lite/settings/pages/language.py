@@ -25,9 +25,8 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
 
     def build(self):
         # Info banner — lives outside the group, above it.
-        banner = Adw.Banner.new(_("Changes take effect after logging out"))
-        banner.set_revealed(True)
-        self.add(banner)
+        self._banner = Adw.Banner.new(_("Changes take effect after logging out"))
+        self._banner.set_revealed(True)
 
         # Gather locale data before building rows.
         locales = self._get_locales()
@@ -73,7 +72,12 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
         # Flip the flag AFTER both initial selections have fired so the
         # page-load set_selected calls don't trigger localectl/polkit.
         loaded[0] = True
-        return self
+
+        wrapper = Adw.ToolbarView()
+        wrapper.add_top_bar(self._banner)
+        wrapper.set_content(self)
+        self.setup_cleanup(wrapper)
+        return wrapper
 
     @staticmethod
     def _get_locales():

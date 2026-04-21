@@ -66,14 +66,18 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
                         None if _l[0] else self._set_terminal_by_id(ids[r.get_selected()]),
                 )
             else:
-                row.connect(
-                    "notify::selected",
-                    lambda r, _, mt=mime_type, ids=desktop_ids, _l=_loading:
-                        None if _l[0] else subprocess.run(
+                def _set_default(r, _, mt=mime_type, ids=desktop_ids, _l=_loading):
+                    if _l[0]:
+                        return
+                    try:
+                        subprocess.run(
                             ["xdg-mime", "default", ids[r.get_selected()], mt],
                             check=False,
-                        ),
-                )
+                            timeout=5,
+                        )
+                    except (subprocess.TimeoutExpired, OSError):
+                        pass
+                row.connect("notify::selected", _set_default)
 
             group.add(row)
 

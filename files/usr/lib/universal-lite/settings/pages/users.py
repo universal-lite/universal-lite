@@ -82,8 +82,7 @@ class UsersPage(BasePage, Adw.PreferencesPage):
             status.set_icon_name("dialog-error-symbolic")
             status.set_title(_("Could not connect to AccountsService"))
             status.set_description(_("User account settings are unavailable."))
-            self.add(status)
-            return self
+            return status  # CHANGED: was self.add(status); return self
 
         # Account group
         group = Adw.PreferencesGroup()

@@ -68,7 +68,6 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         # airplane mode. Revealed dynamically from event handlers.
         self._banner = Adw.Banner.new(_("No network adapter"))
         self._banner.set_revealed(not self._nm.ready)
-        self.add(self._banner)
 
         self.add(self._build_wifi_group())
         self.add(self._build_networks_group())
@@ -76,12 +75,17 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         self.add(self._build_wired_group())
         self.add(self._build_advanced_group())
 
+        # Wrap banner around self (PreferencesPage) so it actually renders.
+        root_toolbar = Adw.ToolbarView()
+        root_toolbar.add_top_bar(self._banner)
+        root_toolbar.set_content(self)
+
         # Wrap in NavigationView so password + hidden-network sub-pages
         # can be pushed.
         self._nav = Adw.NavigationView()
         root_page = Adw.NavigationPage()
         root_page.set_title(_("Network"))
-        root_page.set_child(self)  # self IS the PreferencesPage
+        root_page.set_child(root_toolbar)  # CHANGED: was .set_child(self)
         self._nav.add(root_page)
 
         # Subscriptions preserved from the pre-migration version.
