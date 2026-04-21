@@ -29,11 +29,7 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
 
     @property
     def search_keywords(self):
-        return [(_("Default Applications"), label) for label, _ in APP_MIME_TYPES] + [
-            (_("Default Applications"), _("Image Viewer")),
-            (_("Default Applications"), _("PDF Viewer")),
-            (_("Default Applications"), _("Email Client")),
-        ]
+        return [(_("Default Applications"), label) for label, _mime in APP_MIME_TYPES]
 
     def build(self):
         group = Adw.PreferencesGroup()
