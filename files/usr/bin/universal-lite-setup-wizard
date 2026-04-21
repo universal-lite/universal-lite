@@ -3247,7 +3247,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._sysroot_unlink_write(
                 zram_dir / "zram-generator.conf",
                 "[zram0]\n"
-                "zram-size = min(ram * 5 / 4, 3072)\n"
+                "zram-size = min(ram * 5 / 4, 16384)\n"
                 "compression-algorithm = zstd(level=3)\n"
                 "swap-priority = 100\n",
             )

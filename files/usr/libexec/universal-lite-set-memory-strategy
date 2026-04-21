@@ -98,7 +98,7 @@ else
     # content back makes the 3-way merge happy on future bootc upgrades.
     cat > "$ZRAM_CONF" <<'ZRAM_EOF'
 [zram0]
-zram-size = min(ram * 5 / 4, 3072)
+zram-size = min(ram * 5 / 4, 16384)
 compression-algorithm = zstd(level=3)
 swap-priority = 100
 ZRAM_EOF

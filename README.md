@@ -147,7 +147,7 @@ without reinstalling.
 
 | Option | How it works | Best for |
 |--------|-------------|----------|
-| **zram** (default) | Compressed in-RAM swap via `zram-generator`. Sized at 1.25× RAM, capped at 3 GB. | Most machines — fast, no disk wear |
+| **zram** (default) | Compressed in-RAM swap via `zram-generator`. Sized at 1.25× RAM, capped at 16 GB. | Most machines — fast, no disk wear |
 | **zswap + encrypted disk swap** | Compressed RAM cache that spills to a `dm-crypt`-encrypted swap file when RAM + zram fill. Configurable swap file size. `vm.swappiness=100` to favor page-out. | 2 GB Chromebooks running heavy apps |
 
 The encrypted disk swap uses `aes-xts-plain64` with a 512-bit key read
