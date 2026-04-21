@@ -28,19 +28,6 @@
     background-color: @window_bg_color;
 }
 
-/* === Section headers for custom widgets === */
-/* Still used by panel.py's bespoke module-layout editor for the
-   three section headers (start / center / end). The rest of the
-   settings app is on AdwPreferencesGroup, which provides its own
-   title styling. */
-.group-title {
-    font-size: 0.85em;
-    font-weight: bold;
-    opacity: 0.8;
-    margin-bottom: 6px;
-    margin-start: 4px;
-}
-
 /* === Wallpaper picker === */
 .wallpaper-grid {
     padding: 0;
