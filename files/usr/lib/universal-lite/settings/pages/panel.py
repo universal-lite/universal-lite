@@ -248,6 +248,15 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         row.set_title(MODULE_NAMES.get(mod_key, mod_key))
         row.set_activatable(False)
 
+        edge = self.store.get("edge", "bottom")
+        is_horizontal = edge in ("top", "bottom")
+        labels = HORIZONTAL_LABELS if is_horizontal else VERTICAL_LABELS
+        # Cross-section icons follow panel orientation: horizontal
+        # panel -> horizontal arrows between Left/Center/Right sections;
+        # vertical panel -> vertical arrows between Top/Middle/Bottom.
+        prev_icon = "go-previous-symbolic" if is_horizontal else "go-up-symbolic"
+        next_icon = "go-next-symbolic" if is_horizontal else "go-down-symbolic"
+
         sec_idx = SECTION_ORDER.index(section)
         can_up = idx > 0
         can_down = idx < total - 1
@@ -275,11 +284,12 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             )
             row.add_suffix(down_btn)
         if can_prev_section:
-            prev_btn = Gtk.Button.new_from_icon_name("go-previous-symbolic")
+            prev_btn = Gtk.Button.new_from_icon_name(prev_icon)
             prev_btn.add_css_class("flat")
             prev_btn.set_valign(Gtk.Align.CENTER)
             prev_btn.set_tooltip_text(
-                _("Move to {section}").format(section=SECTION_ORDER[sec_idx - 1])
+                _("Move to {section}").format(
+                    section=labels[SECTION_ORDER[sec_idx - 1]])
             )
             prev_btn.connect(
                 "clicked",
@@ -289,11 +299,12 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             )
             row.add_suffix(prev_btn)
         if can_next_section:
-            next_btn = Gtk.Button.new_from_icon_name("go-next-symbolic")
+            next_btn = Gtk.Button.new_from_icon_name(next_icon)
             next_btn.add_css_class("flat")
             next_btn.set_valign(Gtk.Align.CENTER)
             next_btn.set_tooltip_text(
-                _("Move to {section}").format(section=SECTION_ORDER[sec_idx + 1])
+                _("Move to {section}").format(
+                    section=labels[SECTION_ORDER[sec_idx + 1]])
             )
             next_btn.connect(
                 "clicked",

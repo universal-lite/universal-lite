@@ -27,7 +27,7 @@ class SettingsWindow(Adw.ApplicationWindow):
                         ├── top: AdwHeaderBar (back-button appears
                         │         automatically in collapsed mode)
                         ├── top: GtkSearchBar
-                        └── content: ScrolledWindow > GtkStack
+                        └── content: GtkStack
 
     An AdwBreakpoint watching the window's max-width flips the split
     view to collapsed mode. In that mode AdwNavigationSplitView uses
