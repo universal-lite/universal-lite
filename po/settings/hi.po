@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-18 13:06-0400\n"
+"POT-Creation-Date: 2026-04-20 23:57-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,124 +16,138 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../files/usr/bin/universal-lite-greeter:320
+#: ../files/usr/bin/universal-lite-greeter:401
 msgid "Login"
 msgstr "लॉगिन"
 
-#: ../files/usr/bin/universal-lite-greeter:378
+#: ../files/usr/bin/universal-lite-greeter:459
 msgid "Session"
 msgstr "सत्र"
 
-#: ../files/usr/bin/universal-lite-greeter:404
+#: ../files/usr/bin/universal-lite-greeter:485
 msgid "Username"
 msgstr "उपयोगकर्ता नाम"
 
-#: ../files/usr/bin/universal-lite-greeter:413
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:198
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:245
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+#: ../files/usr/bin/universal-lite-greeter:494
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:302
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:365
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:106
 msgid "Password"
 msgstr "पासवर्ड"
 
-#: ../files/usr/bin/universal-lite-greeter:475
+#: ../files/usr/bin/universal-lite-greeter:539
+msgid "Finishing setup"
+msgstr "सेटअप पूरा हो रहा है"
+
+#: ../files/usr/bin/universal-lite-greeter:545
+msgid "Installing your selected apps before you log in."
+msgstr "लॉग इन करने से पहले आपके चुने गए ऐप्स इंस्टॉल हो रहे हैं।"
+
+#: ../files/usr/bin/universal-lite-greeter:609
+msgid "Preparing..."
+msgstr "तैयार हो रहा है..."
+
+#: ../files/usr/bin/universal-lite-greeter:648
 #, python-brace-format
 msgid "Welcome back, {username}"
 msgstr "पुनः स्वागत है, {username}"
 
-#: ../files/usr/bin/universal-lite-greeter:481
+#: ../files/usr/bin/universal-lite-greeter:654
 msgid "Log In"
 msgstr "लॉग इन"
 
-#: ../files/usr/bin/universal-lite-greeter:482
+#: ../files/usr/bin/universal-lite-greeter:655
 #, python-brace-format
 msgid "Not {username}?"
 msgstr "{username} नहीं हैं?"
 
-#: ../files/usr/bin/universal-lite-greeter:498
+#: ../files/usr/bin/universal-lite-greeter:671
 msgid "Log in"
 msgstr "लॉग इन करें"
 
-#: ../files/usr/bin/universal-lite-greeter:504
+#: ../files/usr/bin/universal-lite-greeter:677
 msgid "Next"
 msgstr "अगला"
 
-#: ../files/usr/bin/universal-lite-greeter:517
-#: ../files/usr/bin/universal-lite-greeter:532
-#: ../files/usr/bin/universal-lite-greeter:581
+#: ../files/usr/bin/universal-lite-greeter:690
+#: ../files/usr/bin/universal-lite-greeter:705
+#: ../files/usr/bin/universal-lite-greeter:754
 #, python-brace-format
 msgid "Connection error: {exc}"
 msgstr "कनेक्शन त्रुटि: {exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:541
-#: ../files/usr/bin/universal-lite-greeter:546
+#: ../files/usr/bin/universal-lite-greeter:714
+#: ../files/usr/bin/universal-lite-greeter:719
 msgid "Authentication error"
 msgstr "प्रमाणीकरण त्रुटि"
 
-#: ../files/usr/bin/universal-lite-greeter:556
+#: ../files/usr/bin/universal-lite-greeter:729
 msgid "Unknown error"
 msgstr "अज्ञात त्रुटि"
 
-#: ../files/usr/bin/universal-lite-greeter:565
+#: ../files/usr/bin/universal-lite-greeter:738
 msgid "Enter a username."
 msgstr "उपयोगकर्ता नाम दर्ज करें।"
 
-#: ../files/usr/bin/universal-lite-greeter:573
+#: ../files/usr/bin/universal-lite-greeter:746
 msgid "Enter your password."
 msgstr "अपना पासवर्ड दर्ज करें।"
 
-#: ../files/usr/bin/universal-lite-greeter:592
+#: ../files/usr/bin/universal-lite-greeter:765
 msgid "Authentication failed"
 msgstr "प्रमाणीकरण विफल"
 
-#: ../files/usr/bin/universal-lite-greeter:603
+#: ../files/usr/bin/universal-lite-greeter:776
 msgid "Unexpected authentication response."
 msgstr "अप्रत्याशित प्रमाणीकरण प्रतिक्रिया।"
 
-#: ../files/usr/bin/universal-lite-greeter:607
+#: ../files/usr/bin/universal-lite-greeter:780
 msgid "Multi-step auth not supported."
 msgstr "बहु-चरण प्रमाणीकरण समर्थित नहीं है।"
 
-#: ../files/usr/bin/universal-lite-greeter:612
+#: ../files/usr/bin/universal-lite-greeter:785
 msgid "Incorrect password."
 msgstr "गलत पासवर्ड।"
 
-#: ../files/usr/bin/universal-lite-greeter:614
+#: ../files/usr/bin/universal-lite-greeter:787
 msgid "Login failed."
 msgstr "लॉगिन विफल।"
 
-#: ../files/usr/bin/universal-lite-greeter:617
+#: ../files/usr/bin/universal-lite-greeter:790
 msgid "Unexpected response from login service."
 msgstr "लॉगिन सेवा से अप्रत्याशित प्रतिक्रिया।"
 
-#: ../files/usr/bin/universal-lite-greeter:626
+#: ../files/usr/bin/universal-lite-greeter:799
 #, python-brace-format
 msgid "Failed to start session: {exc}"
 msgstr "सत्र प्रारंभ करने में विफल: {exc}"
 
-#: ../files/usr/bin/universal-lite-greeter:634
+#: ../files/usr/bin/universal-lite-greeter:807
 msgid "Failed to start session."
 msgstr "सत्र प्रारंभ करने में विफल।"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:162
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:172
 #, python-brace-format
 msgid "Apply timed out after {n}s"
 msgstr "{n}s के बाद लागू करने का समय समाप्त हो गया"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:17
+#: ../files/usr/lib/universal-lite/settings/window.py:49
+#: ../files/usr/lib/universal-lite/settings/window.py:82
+#: ../files/usr/lib/universal-lite/settings/window.py:118
 msgid "Settings"
 msgstr "सेटिंग्स"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:33
+#: ../files/usr/lib/universal-lite/settings/window.py:95
 msgid "Search settings"
 msgstr "सेटिंग्स खोजें"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:50
+#: ../files/usr/lib/universal-lite/settings/window.py:99
 msgid "Search settings…"
 msgstr "सेटिंग्स खोजें…"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:140
+#: ../files/usr/lib/universal-lite/settings/window.py:219
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "{label} लोड करने में विफल"
@@ -147,20 +161,22 @@ msgid "Display"
 msgstr "डिस्प्ले"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:293
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:54
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:87
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:434
 msgid "Network"
 msgstr "नेटवर्क"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:29
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:29
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:39
 msgid "Bluetooth"
 msgstr "ब्लूटूथ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:30
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:82
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:107
 msgid "Panel"
 msgstr "पैनल"
 
@@ -169,6 +185,7 @@ msgid "Mouse & Touchpad"
 msgstr "माउस और टचपैड"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:32
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:274
 msgid "Keyboard"
 msgstr "कीबोर्ड"
 
@@ -181,38 +198,37 @@ msgid "Power & Lock"
 msgstr "पावर और लॉक"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:35
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:26
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:27
 #: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:87
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:35
 msgid "Accessibility"
 msgstr "अभिगम्यता"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
 #: ../files/usr/lib/universal-lite/settings/pages/datetime.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:33
 msgid "Date & Time"
 msgstr "दिनांक और समय"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:42
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:85
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:114
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:43
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:44
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:131
 msgid "Users"
 msgstr "उपयोगकर्ता"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:21
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:22
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:23
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:67
 msgid "Language & Region"
 msgstr "भाषा और क्षेत्र"
 
@@ -221,179 +237,177 @@ msgid "Default Apps"
 msgstr "डिफ़ॉल्ट ऐप्स"
 
 #: ../files/usr/lib/universal-lite/settings/pages/__init__.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:188
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:191
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:192
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:262
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:73
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:94
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:103
 msgid "About"
 msgstr "परिचय"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:74
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:192
-msgid "Restore Defaults"
-msgstr "डिफ़ॉल्ट पुनर्स्थापित करें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:80
-msgid "Select which settings to reset to factory defaults."
-msgstr "चुनें कि कौन सी सेटिंग्स फ़ैक्टरी डिफ़ॉल्ट पर रीसेट करनी हैं।"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:87
-msgid "Select All"
-msgstr "सभी चुनें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:107
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:504
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:203
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:250
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:339
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:183
-msgid "Cancel"
-msgstr "रद्द करें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:111
-msgid "Reset"
-msgstr "रीसेट"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:144
-msgid "Could not read defaults file"
-msgstr "डिफ़ॉल्ट फ़ाइल पढ़ नहीं सकी"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:188
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:253
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:161
 msgid "Operating System"
 msgstr "ऑपरेटिंग सिस्टम"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:188
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:254
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:162
 msgid "Hostname"
 msgstr "होस्टनेम"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:255
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:163
 msgid "Processor"
 msgstr "प्रोसेसर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:256
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:164
 msgid "Memory"
 msgstr "मेमोरी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:189
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:166
 msgid "Disk"
 msgstr "डिस्क"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:258
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:168
 msgid "Desktop"
 msgstr "डेस्कटॉप"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:257
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:167
 msgid "Graphics"
 msgstr "ग्राफ़िक्स"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:190
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:72
 msgid "GPU"
 msgstr "GPU"
 
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:73
 #: ../files/usr/lib/universal-lite/settings/pages/about.py:191
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:278
 msgid "Updates"
 msgstr "अपडेट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:267
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:222
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:303
+msgid "Restore Defaults"
+msgstr "डिफ़ॉल्ट पुनर्स्थापित करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:194
+msgid "Status"
+msgstr "स्थिति"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:195
 msgid "Click to check for updates"
 msgstr "अपडेट जाँचने के लिए क्लिक करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:270
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:199
 msgid "Check for Updates"
 msgstr "अपडेट जाँचें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:273
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:204
 msgid "Update now..."
 msgstr "अभी अपडेट करें..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:284
-msgid "Reset settings to factory defaults"
-msgstr "सेटिंग्स को फ़ैक्टरी डिफ़ॉल्ट पर रीसेट करें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:289
-msgid "Restore Defaults..."
-msgstr "डिफ़ॉल्ट पुनर्स्थापित करें..."
-
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:293
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:219
 msgid "Troubleshooting"
 msgstr "समस्या निवारण"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:298
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:223
+msgid "Reset settings to factory defaults"
+msgstr "सेटिंग्स को फ़ैक्टरी डिफ़ॉल्ट पर रीसेट करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:241
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:150
 msgid "Checking..."
 msgstr "जाँच हो रही है..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:307
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:250
 msgid "Update check timed out"
 msgstr "अपडेट जाँच का समय समाप्त हो गया"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:310
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:253
 msgid "uupd not available"
 msgstr "uupd उपलब्ध नहीं है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:313
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:256
 msgid "Update available"
 msgstr "अपडेट उपलब्ध है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:316
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:259
 msgid "System is up to date"
 msgstr "सिस्टम अद्यतित है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:319
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:262
 msgid "Could not check for updates"
 msgstr "अपडेट की जाँच नहीं हो सकी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/about.py:336
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:285
 msgid "Terminal not available"
 msgstr "टर्मिनल उपलब्ध नहीं है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:11
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:315
+msgid "Select which settings to reset to factory defaults."
+msgstr "चुनें कि कौन सी सेटिंग्स फ़ैक्टरी डिफ़ॉल्ट पर रीसेट करनी हैं।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:322
+msgid "Categories"
+msgstr "श्रेणियाँ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:325
+msgid "Select All"
+msgstr "सभी चुनें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:365
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:205
+msgid "Reset"
+msgstr "रीसेट"
+
+#: ../files/usr/lib/universal-lite/settings/pages/about.py:404
+msgid "Could not read defaults file"
+msgstr "डिफ़ॉल्ट फ़ाइल पढ़ नहीं सकी"
+
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
 msgid "Default (24px)"
 msgstr "डिफ़ॉल्ट (24px)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:12
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
 msgid "Large (32px)"
 msgstr "बड़ा (32px)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:14
 msgid "Larger (48px)"
 msgstr "और बड़ा (48px)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:25
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:39
 msgid "Large text"
 msgstr "बड़ा टेक्स्ट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:90
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:64
 msgid "Cursor size"
 msgstr "कर्सर का आकार"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:92
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:81
 msgid "High contrast"
 msgstr "उच्च कंट्रास्ट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:94
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:93
 msgid "Reduce motion"
 msgstr "गति कम करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:40
 msgid "Increases font size for better readability"
 msgstr "बेहतर पठनीयता के लिए फ़ॉन्ट आकार बढ़ाता है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:92
+#: ../files/usr/lib/universal-lite/settings/pages/accessibility.py:82
 msgid "Forces dark theme with stronger borders"
 msgstr "मजबूत बॉर्डर के साथ डार्क थीम लागू करता है"
 
@@ -401,525 +415,555 @@ msgstr "मजबूत बॉर्डर के साथ डार्क थ�
 msgid "Disables animations throughout the interface"
 msgstr "पूरे इंटरफ़ेस में एनिमेशन बंद करता है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:55
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:66
 msgid "Theme"
 msgstr "थीम"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:55
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:66
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
 msgid "Light"
 msgstr "लाइट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:55
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:66
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
 msgid "Dark"
 msgstr "डार्क"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:56
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:97
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:85
 msgid "Accent color"
 msgstr "एक्सेंट रंग"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:58
 msgid "Color"
 msgstr "रंग"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:111
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:112
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:59
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:134
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:141
 msgid "Font size"
 msgstr "फ़ॉन्ट आकार"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:59
 msgid "Font"
 msgstr "फ़ॉन्ट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:58
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:129
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:134
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:165
 msgid "Wallpaper"
 msgstr "वॉलपेपर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:60
 msgid "Background"
 msgstr "पृष्ठभूमि"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:69
+msgid "Dark mode"
+msgstr "डार्क मोड"
+
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:79
 msgid "Theme is set to Dark by High Contrast mode"
 msgstr "उच्च कंट्रास्ट मोड द्वारा थीम डार्क पर सेट है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:136
 msgid "Small"
 msgstr "छोटा"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:136
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
 msgid "Default"
 msgstr "डिफ़ॉल्ट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:136
 msgid "Large"
 msgstr "बड़ा"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:136
 msgid "Larger"
 msgstr "और बड़ा"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:112
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:142
 msgid "Affects all text throughout the interface"
 msgstr "पूरे इंटरफ़ेस में सभी टेक्स्ट को प्रभावित करता है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:132
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:185
 msgid "Wallpaper picker unavailable"
 msgstr "वॉलपेपर चयनकर्ता उपलब्ध नहीं है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:196
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:260
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:251
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:392
 msgid "Remove"
 msgstr "हटाएँ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:204
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:259
 msgid "Add picture…"
 msgstr "चित्र जोड़ें…"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:222
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:277
 msgid "Choose Wallpaper"
 msgstr "वॉलपेपर चुनें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:224
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:279
 msgid "Images"
 msgstr "चित्र"
 
-#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/appearance.py:298
 msgid "Could not add wallpaper"
 msgstr "वॉलपेपर नहीं जोड़ा जा सका"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:165
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:199
 msgid "Pair"
 msgstr "पेयर करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:54
 msgid "Wireless"
 msgstr "वायरलेस"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:29
 msgid "Device"
 msgstr "डिवाइस"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:46
 msgid "No Bluetooth adapter found"
 msgstr "कोई ब्लूटूथ एडाप्टर नहीं मिला"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:51
 msgid "Paired Devices"
 msgstr "पेयर किए गए डिवाइस"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:67
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:112
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:193
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:52
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:163
+msgid "No paired devices"
+msgstr "कोई पेयर किया गया डिवाइस नहीं"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:57
+msgid "Available Devices"
+msgstr "उपलब्ध डिवाइस"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:169
+msgid "Tap 'Search' to find nearby devices"
+msgstr "पास के डिवाइस ढूँढने के लिए 'खोजें' पर टैप करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:114
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:223
 msgid "Search for devices"
 msgstr "डिवाइस खोजें"
 
 #: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:70
-msgid "Available Devices"
-msgstr "उपलब्ध डिवाइस"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:232
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:158
+msgid "Advanced"
+msgstr "उन्नत"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:74
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:78
-msgid "Advanced..."
-msgstr "उन्नत..."
-
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:106
 msgid "Scanning..."
 msgstr "स्कैन हो रहा है..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:151
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:163
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:305
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:107
+msgid "Scanning for devices..."
+msgstr "डिवाइस खोजे जा रहे हैं..."
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:175
+msgid "Unknown device"
+msgstr "अज्ञात डिवाइस"
+
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:182
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:247
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:459
 msgid "Connected"
 msgstr "कनेक्टेड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:154
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:183
 msgid "Disconnect"
 msgstr "डिस्कनेक्ट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:158
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:170
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:206
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:253
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:188
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:265
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:308
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:372
 msgid "Connect"
 msgstr "कनेक्ट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:161
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:166
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:193
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:259
 msgid "Forget"
 msgstr "भूल जाएँ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:207
 msgid "Pairing..."
 msgstr "पेयर हो रहा है..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:178
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:211
 msgid "Paired successfully"
 msgstr "सफलतापूर्वक पेयर हो गया"
 
-#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:183
+#: ../files/usr/lib/universal-lite/settings/pages/bluetooth.py:214
 #, python-brace-format
 msgid "Pairing failed: {message}"
 msgstr "पेयरिंग विफल: {message}"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:23
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:47
 msgid "Timezone"
 msgstr "समय क्षेत्र"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:55
 msgid "Automatic time"
 msgstr "स्वचालित समय"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:27
 msgid "NTP"
 msgstr "NTP"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:63
 msgid "24-hour clock"
 msgstr "24-घंटे की घड़ी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:44
-msgid "e.g. America/New_York"
-msgstr "जैसे America/New_York"
-
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:60
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:115
-msgid "Press Enter to apply"
-msgstr "लागू करने के लिए Enter दबाएँ"
-
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:56
 msgid "Sync clock via network (NTP)"
 msgstr "नेटवर्क द्वारा समय सिंक करें (NTP)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:64
 msgid "Use 24-hour time format"
 msgstr "24-घंटे का समय प्रारूप उपयोग करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:119
 msgid "Failed to set timezone"
 msgstr "समय क्षेत्र सेट करने में विफल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:109
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:123
 msgid "Invalid timezone"
 msgstr "अमान्य समय क्षेत्र"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:137
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:155
 msgid "Automatic time change timed out"
 msgstr "स्वचालित समय परिवर्तन का समय समाप्त हो गया"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:141
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:159
 msgid "timedatectl not available"
 msgstr "timedatectl उपलब्ध नहीं है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:145
+#: ../files/usr/lib/universal-lite/settings/pages/datetime.py:163
 msgid "Failed to change automatic time"
 msgstr "स्वचालित समय बदलने में विफल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
 msgid "Web Browser"
 msgstr "वेब ब्राउज़र"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
 msgid "File Manager"
 msgstr "फ़ाइल प्रबंधक"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
 msgid "Terminal"
 msgstr "टर्मिनल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
 msgid "Text Editor"
 msgstr "टेक्स्ट संपादक"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
 msgid "Image Viewer"
 msgstr "चित्र दर्शक"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
 msgid "PDF Viewer"
 msgstr "PDF दर्शक"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:19
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
 msgid "Media Player"
 msgstr "मीडिया प्लेयर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:20
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:21
 msgid "Email Client"
 msgstr "ईमेल क्लाइंट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:29
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:30
-#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:58
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:32
+#: ../files/usr/lib/universal-lite/settings/pages/default_apps.py:36
 msgid "Default Applications"
 msgstr "डिफ़ॉल्ट ऐप्लिकेशन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:16
 msgid "Sunset to Sunrise"
 msgstr "सूर्यास्त से सूर्योदय"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:16
 msgid "Custom"
 msgstr "कस्टम"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:48
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:49
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:102
 msgid "Display Scale"
 msgstr "डिस्प्ले स्केल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:48
 msgid "Scale"
 msgstr "स्केल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:49
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:50
 msgid "Resolution"
 msgstr "रेज़ोल्यूशन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:35
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:80
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:50
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:51
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:108
 msgid "Resolution & Refresh Rate"
 msgstr "रेज़ोल्यूशन और रिफ़्रेश दर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:51
 msgid "Refresh"
 msgstr "रिफ़्रेश"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:159
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:160
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:52
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:54
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:140
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:144
 msgid "Night Light"
 msgstr "रात्रि प्रकाश"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:161
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:156
 msgid "Temperature"
 msgstr "तापमान"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:54
 msgid "Blue light"
 msgstr "नीली रोशनी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:62
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:64
 msgid "No displays detected"
 msgstr "कोई डिस्प्ले नहीं मिला"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:79
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:65
+msgid "Connect a display and reopen Settings."
+msgstr "एक डिस्प्ले कनेक्ट करें और सेटिंग्स फिर से खोलें।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:86
+msgid "Display scale"
+msgstr "डिस्प्ले स्केल"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:120
 msgid "Resolution and refresh rate"
 msgstr "रेज़ोल्यूशन और रिफ़्रेश दर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:131
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:141
-msgid "HH:MM"
-msgstr "HH:MM"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:124
+msgid "Mode"
+msgstr "मोड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:137
-msgid "Start time"
-msgstr "प्रारंभ समय"
-
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:147
-msgid "End time"
-msgstr "समाप्ति समय"
-
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:160
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:145
 msgid "Reduce blue light to help with sleep"
 msgstr "नींद में सहायता के लिए नीली रोशनी कम करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:161
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:157
 msgid "3500K (warm) to 6500K (cool)"
 msgstr "3500K (गर्म) से 6500K (ठंडा)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:162
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:178
 msgid "Schedule"
 msgstr "शेड्यूल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:167
-msgid "Open wdisplays"
-msgstr "wdisplays खोलें"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:190
+msgid "Custom schedule"
+msgstr "कस्टम शेड्यूल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:171
-msgid "Advanced"
-msgstr "उन्नत"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:191
+msgid "Times snap to 15-minute increments"
+msgstr "समय 15 मिनट के अंतराल पर सेट होता है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:195
+msgid "Start time"
+msgstr "प्रारंभ समय"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:205
+msgid "End time"
+msgstr "समाप्ति समय"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:235
 msgid "Advanced display settings"
 msgstr "उन्नत डिस्प्ले सेटिंग्स"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:236
 msgid "Arrange and configure displays visually"
 msgstr "डिस्प्ले को दृश्य रूप से व्यवस्थित और कॉन्फ़िगर करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:226
-msgid "Confirm Scale"
-msgstr "स्केल की पुष्टि करें"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:346
+msgid "Confirm display scale"
+msgstr "डिस्प्ले स्केल की पुष्टि करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:237
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:263
-#, python-brace-format
-msgid ""
-"Keep this display scale?\n"
-"Reverting in {seconds}s..."
-msgstr ""
-"यह डिस्प्ले स्केल रखें?\n"
-"{seconds}s में वापस बदल रहा है..."
-
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:242
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:372
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:349
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:506
 msgid "Revert"
 msgstr "वापस बदलें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:245
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:378
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:350
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:507
 msgid "Keep"
 msgstr "रखें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:355
-msgid "Confirm Resolution"
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:358
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:384
+#, python-brace-format
+msgid "Keep this display scale? Reverting in {seconds}s…"
+msgstr "यह डिस्प्ले स्केल रखें? {seconds}s में वापस बदल रहा है…"
+
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:503
+msgid "Confirm resolution"
 msgstr "रेज़ोल्यूशन की पुष्टि करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:366
-#: ../files/usr/lib/universal-lite/settings/pages/display.py:399
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:515
+#: ../files/usr/lib/universal-lite/settings/pages/display.py:537
 #, python-brace-format
-msgid ""
-"Keep this resolution?\n"
-"Reverting in {seconds}s..."
-msgstr ""
-"यह रेज़ोल्यूशन रखें?\n"
-"{seconds}s में वापस बदल रहा है..."
+msgid "Keep this resolution? Reverting in {seconds}s…"
+msgstr "यह रेज़ोल्यूशन रखें? {seconds}s में वापस बदल रहा है…"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:286
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:250
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:283
 msgid "Layout"
 msgstr "लेआउट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:287
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:250
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:294
 msgid "Keyboard layout"
 msgstr "कीबोर्ड लेआउट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:223
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:250
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:301
 msgid "Variant"
 msgstr "वेरिएंट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:308
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:368
 msgid "Repeat"
 msgstr "दोहराव"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:309
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:371
 msgid "Repeat delay"
 msgstr "दोहराव विलंब"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:224
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:310
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:251
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:383
 msgid "Repeat rate"
 msgstr "दोहराव दर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:252
 msgid "Caps Lock"
 msgstr "Caps Lock"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:252
 msgid "Caps Lock behavior"
 msgstr "Caps Lock व्यवहार"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:225
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:252
 msgid "Remap"
 msgstr "रीमैप"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:253
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:254
 msgid "Shortcuts"
 msgstr "शॉर्टकट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:253
 msgid "Keyboard shortcuts"
 msgstr "कीबोर्ड शॉर्टकट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:226
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:253
 msgid "Keybinding"
 msgstr "कीबाइंडिंग"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:254
 msgid "Hotkey"
 msgstr "हॉटकी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:227
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:254
 msgid "Key combo"
 msgstr "की कॉम्बो"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:249
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:258
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:302
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:354
 msgid "(Default)"
 msgstr "(डिफ़ॉल्ट)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
-msgid "Ctrl"
-msgstr "Ctrl"
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:372
+msgid "Milliseconds before keys begin repeating"
+msgstr "कुंजी दोहराव शुरू होने से पहले मिलीसेकंड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
-msgid "Escape"
-msgstr "Escape"
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:384
+msgid "Keys per second when held"
+msgstr "दबाए रखने पर प्रति सेकंड कुंजी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:314
-msgid "Disabled"
-msgstr "अक्षम"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:325
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:397
 msgid "Caps Lock Behavior"
 msgstr "Caps Lock व्यवहार"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:327
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+msgid "Ctrl"
+msgstr "Ctrl"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+msgid "Escape"
+msgstr "Escape"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:399
+msgid "Disabled"
+msgstr "अक्षम"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:403
 msgid "Caps Lock key"
 msgstr "Caps Lock कुंजी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:327
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:404
 msgid "Remap Caps Lock to another function"
 msgstr "Caps Lock को किसी अन्य फ़ंक्शन पर रीमैप करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:338
-msgid "Reset All Shortcuts"
-msgstr "सभी शॉर्टकट रीसेट करें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:343
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:424
 msgid "Keyboard Shortcuts"
 msgstr "कीबोर्ड शॉर्टकट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:364
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:438
+msgid "Reset all shortcuts"
+msgstr "सभी शॉर्टकट रीसेट करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:439
+msgid "Restore every shortcut to its default"
+msgstr "हर शॉर्टकट को उसके डिफ़ॉल्ट पर पुनर्स्थापित करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:441
+msgid "Reset All"
+msgstr "सभी रीसेट करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:468
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:509
 msgid "Reset to default"
 msgstr "डिफ़ॉल्ट पर रीसेट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:406
-msgid "Press new shortcut..."
-msgstr "नया शॉर्टकट दबाएँ..."
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:546
+msgid "Press new shortcut"
+msgstr "नया शॉर्टकट दबाएँ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:496
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:555
+msgid "Press the new shortcut"
+msgstr "नया शॉर्टकट दबाएँ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:557
+msgid "Press the desired key combination. Press Escape to cancel."
+msgstr "वांछित कुंजी संयोजन दबाएँ। रद्द करने के लिए Escape दबाएँ।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:657
 msgid "Shortcut Conflict"
 msgstr "शॉर्टकट विरोध"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:498
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:658
 #, python-brace-format
 msgid ""
 "\"{key}\" is already assigned to \"{conflict}\".\n"
@@ -930,597 +974,738 @@ msgstr ""
 "\n"
 "इसे \"{target}\" पर पुनः असाइन करें?"
 
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:504
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:665
+msgid "Cancel"
+msgstr "रद्द करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:666
 msgid "Reassign"
 msgstr "पुनः असाइन करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:752
+#, python-brace-format
+msgid "Failed to save shortcuts: {msg}"
+msgstr "शॉर्टकट सहेजने में विफल: {msg}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:21
 msgid "Language"
 msgstr "भाषा"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:22
 msgid "Locale"
 msgstr "लोकेल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:18
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:23
 msgid "Regional format"
 msgstr "क्षेत्रीय प्रारूप"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:28
 msgid "Changes take effect after logging out"
 msgstr "परिवर्तन लॉग आउट करने के बाद लागू होंगे"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:60
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:39
 msgid "System language"
 msgstr "सिस्टम भाषा"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:53
 msgid "Regional formats"
 msgstr "क्षेत्रीय प्रारूप"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:61
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:54
 msgid "Date, number, and currency format"
 msgstr "दिनांक, संख्या और मुद्रा प्रारूप"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:113
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:125
 msgid "Failed to set language"
 msgstr "भाषा सेट करने में विफल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:115
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:129
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:127
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:141
 msgid "localectl not found"
 msgstr "localectl नहीं मिला"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:117
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:129
 msgid "Language change timed out"
 msgstr "भाषा परिवर्तन का समय समाप्त"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:127
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:139
 msgid "Failed to set regional format"
 msgstr "क्षेत्रीय प्रारूप सेट करने में विफल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/language.py:131
+#: ../files/usr/lib/universal-lite/settings/pages/language.py:143
 msgid "Format change timed out"
 msgstr "प्रारूप परिवर्तन का समय समाप्त"
 
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:47
-msgid "Touchpad"
-msgstr "टचपैड"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:48
-msgid "Tap to click"
-msgstr "टैप करके क्लिक करें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:15
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:49
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:67
-msgid "Natural scrolling"
-msgstr "प्राकृतिक स्क्रॉलिंग"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:50
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:68
-msgid "Pointer speed"
-msgstr "पॉइंटर गति"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:51
-msgid "Scroll speed"
-msgstr "स्क्रॉल गति"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:66
-msgid "Mouse"
-msgstr "माउस"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:69
-msgid "Acceleration"
-msgstr "त्वरण"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:49
-msgid "Content moves with your fingers"
-msgstr "सामग्री आपकी उँगलियों के साथ चलती है"
-
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:12
 msgid "Adaptive"
 msgstr "अनुकूली"
 
-#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:13
 msgid "Flat"
 msgstr "फ़्लैट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:26
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:42
+msgid "Touchpad"
+msgstr "टचपैड"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:46
+msgid "Tap to click"
+msgstr "टैप करके क्लिक करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:94
+msgid "Natural scrolling"
+msgstr "प्राकृतिक स्क्रॉलिंग"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:110
+msgid "Pointer speed"
+msgstr "पॉइंटर गति"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:76
+msgid "Scroll speed"
+msgstr "स्क्रॉल गति"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:90
+msgid "Mouse"
+msgstr "माउस"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:29
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:116
+msgid "Acceleration"
+msgstr "त्वरण"
+
+#: ../files/usr/lib/universal-lite/settings/pages/mouse_touchpad.py:54
+msgid "Content moves with your fingers"
+msgstr "सामग्री आपकी उँगलियों के साथ चलती है"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:54
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:55
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:116
 msgid "WiFi"
 msgstr "WiFi"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:27
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:55
 msgid "Hidden network"
 msgstr "छिपा नेटवर्क"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:75
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:146
 msgid "Wired"
 msgstr "वायर्ड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:56
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:149
 msgid "Ethernet"
 msgstr "ईथरनेट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:56
 msgid "Connection"
 msgstr "कनेक्शन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:28
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:56
 msgid "IP address"
 msgstr "IP पता"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:58
-msgid "Scan"
-msgstr "स्कैन करें"
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:69
+msgid "No network adapter"
+msgstr "कोई नेटवर्क एडाप्टर नहीं"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:61
-msgid "Connect to Hidden Network..."
-msgstr "छिपे नेटवर्क से कनेक्ट करें..."
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:109
+msgid "Scan for networks"
+msgstr "नेटवर्क खोजें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:122
+msgid "Connect to hidden network"
+msgstr "छिपे नेटवर्क से कनेक्ट करें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:132
+msgid "Available Networks"
+msgstr "उपलब्ध नेटवर्क"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:133
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:225
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:236
+msgid "No networks found"
+msgstr "कोई नेटवर्क नहीं मिला"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:139
 msgid "Active Connection"
 msgstr "सक्रिय कनेक्शन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:84
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:140
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:429
+msgid "Not connected"
+msgstr "कनेक्ट नहीं है"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:161
+msgid "Advanced network settings"
+msgstr "उन्नत नेटवर्क सेटिंग्स"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:176
 msgid "Connection editor not found"
 msgstr "कनेक्शन संपादक नहीं मिला"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:181
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:213
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:261
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:277
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:328
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:395
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "{ssid} से कनेक्ट हो रहा है..."
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:186
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:289
 #, python-brace-format
 msgid "Connect to {ssid}"
 msgstr "{ssid} से कनेक्ट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:226
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:299
+msgid "Enter the Wi-Fi password."
+msgstr "Wi-Fi पासवर्ड दर्ज करें।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:325
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:209
+msgid "Password cannot be empty"
+msgstr "पासवर्ड खाली नहीं हो सकता"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:338
 msgid "Connect to Hidden Network"
 msgstr "छिपे नेटवर्क से कनेक्ट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:237
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:349
+msgid "Enter the network name and security details."
+msgstr "नेटवर्क नाम और सुरक्षा विवरण दर्ज करें।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:353
 msgid "Network name (SSID)"
 msgstr "नेटवर्क नाम (SSID)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
-msgid "None"
-msgstr "कोई नहीं"
-
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
-msgid "WPA/WPA2"
-msgstr "WPA/WPA2"
-
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:240
-msgid "WPA3"
-msgstr "WPA3"
-
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:241
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:357
 msgid "Security"
 msgstr "सुरक्षा"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:276
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:359
+msgid "None"
+msgstr "कोई नहीं"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:359
+msgid "WPA/WPA2"
+msgstr "WPA/WPA2"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:359
+msgid "WPA3"
+msgstr "WPA3"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:390
+msgid "Network name cannot be empty"
+msgstr "नेटवर्क नाम खाली नहीं हो सकता"
+
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:405
 msgid "Connected successfully"
 msgstr "सफलतापूर्वक कनेक्ट हो गया"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:291
-msgid "Not connected"
-msgstr "कनेक्ट नहीं है"
-
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:294
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:435
 msgid "Type"
 msgstr "प्रकार"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:295
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:436
 msgid "IP Address"
 msgstr "IP पता"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:296
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:437
 msgid "Gateway"
 msgstr "गेटवे"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:297
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:438
 msgid "DNS"
 msgstr "DNS"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:303
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:457
 msgid "No wired adapter detected"
 msgstr "कोई वायर्ड एडाप्टर नहीं मिला"
 
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:307
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:461
 msgid "Disconnected"
 msgstr "डिस्कनेक्टेड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 msgid "Apps"
 msgstr "ऐप्स"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:15
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
 msgid "Window list"
 msgstr "विंडो सूची"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:70
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:64
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:107
 msgid "Volume"
 msgstr "वॉल्यूम"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
 msgid "Brightness"
 msgstr "चमक"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:16
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:71
 msgid "Battery"
 msgstr "बैटरी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:18
 msgid "Clock"
 msgstr "घड़ी"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
-msgid "Power"
-msgstr "पावर"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:17
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:18
 msgid "System tray"
 msgstr "सिस्टम ट्रे"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:47
 msgid "Left"
 msgstr "बाएँ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:41
 msgid "Center"
 msgstr "केंद्र"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:48
 msgid "Right"
 msgstr "दाएँ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:46
 msgid "Top"
 msgstr "ऊपर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:65
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:45
 msgid "Bottom"
 msgstr "नीचे"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:63
-msgid "Position"
-msgstr "स्थिति"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:70
-msgid "Density"
-msgstr "घनत्व"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:56
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:72
-msgid "Compact"
-msgstr "कॉम्पैक्ट"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:81
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:83
-msgid "Twilight"
-msgstr "गोधूलि"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:57
-msgid "Invert"
-msgstr "उलटें"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:89
-msgid "Module Layout"
-msgstr "मॉड्यूल लेआउट"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
-msgid "Modules"
-msgstr "मॉड्यूल"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:91
-msgid "Pinned Apps"
-msgstr "पिन किए गए ऐप्स"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:58
-msgid "Pinned"
-msgstr "पिन किया गया"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:52
 msgid "Normal"
 msgstr "सामान्य"
 
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:53
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:82
+msgid "Compact"
+msgstr "कॉम्पैक्ट"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:82
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:116
+msgid "Position"
+msgstr "स्थिति"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:82
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:139
+msgid "Density"
+msgstr "घनत्व"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:83
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:162
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:165
+msgid "Twilight"
+msgstr "गोधूलि"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:83
+msgid "Invert"
+msgstr "उलटें"
+
 #: ../files/usr/lib/universal-lite/settings/pages/panel.py:84
+msgid "Module Layout"
+msgstr "मॉड्यूल लेआउट"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:84
+msgid "Modules"
+msgstr "मॉड्यूल"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:84
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:350
+msgid "Pinned Apps"
+msgstr "पिन किए गए ऐप्स"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:84
+msgid "Pinned"
+msgstr "पिन किया गया"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:119
+msgid "Panel position"
+msgstr "पैनल स्थिति"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:142
+msgid "Panel density"
+msgstr "पैनल घनत्व"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:166
 msgid "Invert panel colors from the system theme"
 msgstr "सिस्टम थीम से पैनल के रंग उलटें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:93
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:203
 msgid "Reset layout to defaults"
 msgstr "लेआउट डिफ़ॉल्ट पर रीसेट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:180
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:186
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:270
+msgid "Move up in section"
+msgstr "अनुभाग में ऊपर ले जाएँ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:280
+msgid "Move down in section"
+msgstr "अनुभाग में नीचे ले जाएँ"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:291
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:306
 #, python-brace-format
 msgid "Move to {section}"
 msgstr "{section} में ले जाएँ"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:192
-msgid "Move up in section"
-msgstr "अनुभाग में ऊपर ले जाएँ"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:197
-msgid "Move down in section"
-msgstr "अनुभाग में नीचे ले जाएँ"
-
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:231
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:354
 msgid "Add pinned app"
 msgstr "पिन किया गया ऐप जोड़ें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:273
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:374
+msgid "No pinned apps"
+msgstr "कोई पिन किया गया ऐप नहीं"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:385
+msgid "Unknown"
+msgstr "अज्ञात"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:412
 msgid "Add Pinned App"
 msgstr "पिन किया गया ऐप जोड़ें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:286
-msgid "Search apps…"
-msgstr "ऐप्स खोजें…"
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:426
+msgid "Search apps"
+msgstr "ऐप्स खोजें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:319
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:434
+msgid "Applications"
+msgstr "ऐप्लिकेशन"
+
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:455
 msgid "Add"
 msgstr "जोड़ें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/panel.py:353
+#: ../files/usr/lib/universal-lite/settings/pages/panel.py:486
 #, python-brace-format
 msgid "{app} has no launch command"
 msgstr "{app} के पास कोई लॉन्च कमांड नहीं है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:17
 msgid "1 minute"
 msgstr "1 मिनट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
 msgid "2 minutes"
 msgstr "2 मिनट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:13
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
 msgid "5 minutes"
 msgstr "5 मिनट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
 msgid "10 minutes"
 msgstr "10 मिनट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:21
 msgid "15 minutes"
 msgstr "15 मिनट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:22
 msgid "30 minutes"
 msgstr "30 मिनट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:14
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:23
 msgid "Never"
 msgstr "कभी नहीं"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:18
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:128
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:27
 msgid "Balanced"
 msgstr "संतुलित"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:19
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:129
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:28
 msgid "Power Saver"
 msgstr "पावर सेवर"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:20
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:130
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:29
 msgid "Performance"
 msgstr "प्रदर्शन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:24
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:33
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
 msgid "Suspend"
 msgstr "सस्पेंड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:25
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
 msgid "Lock"
 msgstr "लॉक"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:26
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
 msgid "Do Nothing"
 msgstr "कुछ न करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
 #: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:68
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:96
 msgid "Lock & Display"
 msgstr "लॉक और डिस्प्ले"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:68
 msgid "Lock screen"
 msgstr "लॉक स्क्रीन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:35
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
 msgid "Display off"
 msgstr "डिस्प्ले बंद"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:36
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:37
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:89
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:71
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:142
 msgid "Power Profile"
 msgstr "पावर प्रोफ़ाइल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:38
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:103
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:70
+msgid "Power"
+msgstr "पावर"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:72
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:73
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:148
 msgid "Suspend on Idle"
 msgstr "निष्क्रिय होने पर सस्पेंड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:39
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:73
 msgid "Idle"
 msgstr "निष्क्रिय"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:119
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:74
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:178
 msgid "Lid Close Behavior"
 msgstr "ढक्कन बंद करने का व्यवहार"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:40
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:74
 msgid "Lid"
 msgstr "ढक्कन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:69
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:99
 msgid "Lock screen after"
 msgstr "इतने समय बाद लॉक स्क्रीन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:70
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:104
 msgid "Turn off display after"
 msgstr "इतने समय बाद डिस्प्ले बंद करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:104
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:121
+msgid "Power profile"
+msgstr "पावर प्रोफ़ाइल"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:122
+msgid "Balance between performance and battery life"
+msgstr "प्रदर्शन और बैटरी जीवन के बीच संतुलन"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:150
+msgid "Put the computer to sleep after a period of inactivity."
+msgstr "कुछ समय तक निष्क्रिय रहने पर कंप्यूटर को स्लीप पर डालें।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:153
 msgid "Suspend after"
 msgstr "इतने समय बाद सस्पेंड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:120
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:161
 msgid "When lid is closed"
 msgstr "जब ढक्कन बंद हो"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:147
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:239
 msgid "Lid action change timed out"
 msgstr "ढक्कन क्रिया परिवर्तन का समय समाप्त हो गया"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:151
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:245
 msgid "pkexec not available"
 msgstr "pkexec उपलब्ध नहीं है"
 
-#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:161
+#: ../files/usr/lib/universal-lite/settings/pages/power_lock.py:260
 msgid "Failed to change lid close action"
 msgstr "ढक्कन बंद क्रिया बदलने में विफल"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:68
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:43
 msgid "Output"
 msgstr "आउटपुट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:69
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:55
 msgid "Output device"
 msgstr "आउटपुट डिवाइस"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:33
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:71
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:105
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:36
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:77
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:120
 msgid "Mute"
 msgstr "म्यूट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:102
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:86
 msgid "Input"
 msgstr "इनपुट"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:103
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:37
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:98
 msgid "Input device"
 msgstr "इनपुट डिवाइस"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:34
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:37
 msgid "Microphone"
 msgstr "माइक्रोफ़ोन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:51
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:219
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:57
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:240
 msgid "(No output devices)"
 msgstr "(कोई आउटपुट डिवाइस नहीं)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:85
-#: ../files/usr/lib/universal-lite/settings/pages/sound.py:243
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:100
+#: ../files/usr/lib/universal-lite/settings/pages/sound.py:264
 msgid "(No input devices)"
 msgstr "(कोई इनपुट डिवाइस नहीं)"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:39
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:96
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:115
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:98
 msgid "Display name"
 msgstr "प्रदर्शन नाम"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:41
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:44
 msgid "Auto-login"
 msgstr "स्वतः-लॉगिन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:42
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:45
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:89
 msgid "Account"
 msgstr "खाता"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:81
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:83
 msgid "Could not connect to AccountsService"
 msgstr "AccountsService से कनेक्ट नहीं हो सका"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:101
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:149
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:162
-msgid "Change Password"
-msgstr "पासवर्ड बदलें"
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:84
+msgid "User account settings are unavailable."
+msgstr "उपयोगकर्ता खाता सेटिंग्स उपलब्ध नहीं हैं।"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:116
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:107
 msgid "Set a new password for your account"
 msgstr "अपने खाते के लिए नया पासवर्ड सेट करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:117
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:120
 msgid "Automatic login"
 msgstr "स्वचालित लॉगिन"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:117
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:121
 msgid "Log in without a password at startup"
 msgstr "स्टार्टअप पर बिना पासवर्ड के लॉग इन करें"
 
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:152
+#, python-brace-format
+msgid "Could not save name: {msg}"
+msgstr "नाम सहेजा नहीं जा सका: {msg}"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:164
+#, python-brace-format
+msgid "Could not change auto-login: {msg}"
+msgstr "स्वतः-लॉगिन नहीं बदला जा सका: {msg}"
+
 #: ../files/usr/lib/universal-lite/settings/pages/users.py:168
+msgid "Change Password"
+msgstr "पासवर्ड बदलें"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:177
+msgid "Enter a new password for your account."
+msgstr "अपने खाते के लिए नया पासवर्ड दर्ज करें।"
+
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:180
 msgid "New password"
 msgstr "नया पासवर्ड"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:173
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:184
 msgid "Confirm password"
 msgstr "पासवर्ड की पुष्टि करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:187
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:192
 msgid "Apply"
 msgstr "लागू करें"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:194
-msgid "Password cannot be empty"
-msgstr "पासवर्ड खाली नहीं हो सकता"
-
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:197
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:212
 msgid "Passwords do not match"
 msgstr "पासवर्ड मेल नहीं खाते"
 
-#: ../files/usr/lib/universal-lite/settings/pages/users.py:209
+#: ../files/usr/lib/universal-lite/settings/pages/users.py:224
 msgid "Failed to set password"
 msgstr "पासवर्ड सेट करने में विफल"
+
+#~ msgid "Restore Defaults..."
+#~ msgstr "डिफ़ॉल्ट पुनर्स्थापित करें..."
+
+#~ msgid "Advanced..."
+#~ msgstr "उन्नत..."
+
+#~ msgid "e.g. America/New_York"
+#~ msgstr "जैसे America/New_York"
+
+#~ msgid "Press Enter to apply"
+#~ msgstr "लागू करने के लिए Enter दबाएँ"
+
+#~ msgid "HH:MM"
+#~ msgstr "HH:MM"
+
+#~ msgid "Open wdisplays"
+#~ msgstr "wdisplays खोलें"
+
+#~ msgid "Confirm Scale"
+#~ msgstr "स्केल की पुष्टि करें"
+
+#, python-brace-format
+#~ msgid ""
+#~ "Keep this display scale?\n"
+#~ "Reverting in {seconds}s..."
+#~ msgstr ""
+#~ "यह डिस्प्ले स्केल रखें?\n"
+#~ "{seconds}s में वापस बदल रहा है..."
+
+#~ msgid "Confirm Resolution"
+#~ msgstr "रेज़ोल्यूशन की पुष्टि करें"
+
+#, python-brace-format
+#~ msgid ""
+#~ "Keep this resolution?\n"
+#~ "Reverting in {seconds}s..."
+#~ msgstr ""
+#~ "यह रेज़ोल्यूशन रखें?\n"
+#~ "{seconds}s में वापस बदल रहा है..."
+
+#~ msgid "Reset All Shortcuts"
+#~ msgstr "सभी शॉर्टकट रीसेट करें"
+
+#~ msgid "Press new shortcut..."
+#~ msgstr "नया शॉर्टकट दबाएँ..."
+
+#~ msgid "Scan"
+#~ msgstr "स्कैन करें"
+
+#~ msgid "Connect to Hidden Network..."
+#~ msgstr "छिपे नेटवर्क से कनेक्ट करें..."
+
+#~ msgid "Search apps…"
+#~ msgstr "ऐप्स खोजें…"
 
 #~ msgid "Universal-Lite Settings"
 #~ msgstr "Universal-Lite सेटिंग्स"

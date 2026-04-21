@@ -21,7 +21,6 @@ SETTINGS_SOURCES = \
 	../files/usr/lib/universal-lite/settings/base.py \
 	../files/usr/lib/universal-lite/settings/settings_store.py \
 	../files/usr/lib/universal-lite/settings/window.py \
-	../files/usr/lib/universal-lite/settings/toast.py \
 	../files/usr/lib/universal-lite/settings/pages/__init__.py \
 	$(wildcard ../files/usr/lib/universal-lite/settings/pages/[a-z]*.py)
 
