@@ -1,0 +1,58 @@
+[Default Applications]
+
+# PDFs open in Evince - lighter than GNOME Papers and already shipped
+# in the image. Overrides the base image's Papers default.
+application/pdf=org.gnome.Evince.desktop
+
+# Flatpak ref files open in Bazaar, the app-store front-end pinned on
+# the panel. Matches the base image's choice.
+application/vnd.flatpak.ref=io.github.kolunmi.Bazaar.desktop
+
+# AppImages do not get a default handler on purpose - noop.desktop is
+# a stub that prevents xdg-open from launching anything, nudging users
+# to chmod +x and execute directly.
+application/vnd.appimage=noop.desktop
+
+# Text and source code open in Mousepad.
+text/plain=mousepad.desktop
+text/x-python=mousepad.desktop
+
+# HTML and http/https schemes open in Chrome.
+text/html=com.google.Chrome.desktop
+x-scheme-handler/http=com.google.Chrome.desktop
+x-scheme-handler/https=com.google.Chrome.desktop
+
+# Images: every format Ristretto can decode with the loaders we ship
+# (webp-pixbuf-loader + our built libpixbufloader-jxl). Without these
+# explicit entries any format not in the short list defaults to Chrome,
+# which claims image/png image/jpeg image/webp image/gif in its own
+# desktop file.
+image/jpeg=ristretto.desktop
+image/png=ristretto.desktop
+image/gif=ristretto.desktop
+image/svg+xml=ristretto.desktop
+image/webp=ristretto.desktop
+image/bmp=ristretto.desktop
+image/x-bmp=ristretto.desktop
+image/tiff=ristretto.desktop
+image/x-tiff=ristretto.desktop
+image/jxl=ristretto.desktop
+image/vnd.microsoft.icon=ristretto.desktop
+image/x-icon=ristretto.desktop
+image/x-portable-anymap=ristretto.desktop
+image/x-portable-bitmap=ristretto.desktop
+image/x-portable-graymap=ristretto.desktop
+image/x-portable-pixmap=ristretto.desktop
+image/x-xbitmap=ristretto.desktop
+image/x-xpixmap=ristretto.desktop
+
+# Video/audio in mpv.
+video/mp4=mpv.desktop
+video/webm=mpv.desktop
+video/x-matroska=mpv.desktop
+audio/mpeg=mpv.desktop
+audio/flac=mpv.desktop
+audio/ogg=mpv.desktop
+
+# Directories in Thunar.
+inode/directory=thunar.desktop
