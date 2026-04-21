@@ -79,6 +79,8 @@
 }
 
 /* === Accent color circles === */
+/* Per-accent .accent-<name> background rules are generated at app
+   startup from palette.json - see app.py _build_accent_css. */
 .accent-circle {
     min-width: 32px;
     min-height: 32px;
@@ -88,15 +90,6 @@
 .accent-circle:checked {
     box-shadow: 0 0 0 3px @accent_color;
 }
-.accent-blue { background-color: #3584e4; }
-.accent-teal { background-color: #2190a4; }
-.accent-green { background-color: #3a944a; }
-.accent-yellow { background-color: #c88800; }
-.accent-orange { background-color: #ed5b00; }
-.accent-red { background-color: #e62d42; }
-.accent-pink { background-color: #d56199; }
-.accent-purple { background-color: #9141ac; }
-.accent-slate { background-color: #6f8396; }
 
 /* Toast notifications are now provided by AdwToastOverlay (see
    window.py) - Adwaita ships the styling, so no custom rules here. */

@@ -220,8 +220,6 @@ def _build_tokens(settings: dict) -> dict:
     else:
         mako_anchor = "top-right"
 
-    border_strong = "#666666" if settings["theme"] == "dark" else palette["border"]
-
     # Panel colors — normally match the system theme.  In "twilight" mode
     # the panel draws from the opposite palette (dark bar on light desktop
     # or light bar on dark desktop).
@@ -247,7 +245,6 @@ def _build_tokens(settings: dict) -> dict:
         "text_disabled": palette["inactive_fg"],
         # Borders
         "border_default": palette["border"],
-        "border_strong": border_strong,
         # Accent — pre-derived in all formats needed downstream
         "accent_hex": accent_hex,
         "accent_rgba_30": f"rgba({r}, {g}, {b}, 0.3)",
@@ -1252,7 +1249,9 @@ def write_swaylock_config(tokens: dict) -> None:
     bg = _strip_hash(tokens["surface_base"])
     fg = _strip_hash(tokens["text_primary"])
     border = _strip_hash(tokens["border_default"])
-    wrong = "c01c28"
+    # Palette red, same value the settings app's @error_color resolves to
+    # and the color waybar uses for color_error — single source of truth.
+    wrong = _strip_hash(ACCENTS["red"])
     transparent = "00000000"
 
     # Idle: semi-transparent inside so the indicator is visible against bg
