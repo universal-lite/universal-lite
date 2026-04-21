@@ -79,6 +79,12 @@ _logdir="${XDG_RUNTIME_DIR:-/tmp}"
 waybar >/dev/null 2>"$_logdir/waybar.log" &
 mako >/dev/null 2>"$_logdir/mako.log" &
 
+# Reconcile night light so the setting persists across logouts. Helper
+# reads settings.json and starts gammastep if enabled and in-schedule,
+# kills it otherwise. Same code path as apply-settings so one fix
+# covers both triggers.
+/usr/libexec/universal-lite-nightlight >/dev/null 2>&1 &
+
 # nm-applet exits immediately if NetworkManager isn't on the system bus
 # yet — which happens on boots where NM is slightly late registering its
 # D-Bus name. Wait up to ~5 s for NM before launching the applet so the
