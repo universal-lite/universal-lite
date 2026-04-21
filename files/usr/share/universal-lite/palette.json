@@ -1,22 +1,22 @@
 {
   "light": {
-    "window_bg": "#ebebeb",
+    "window_bg": "#fafafa",
     "view_bg": "#ffffff",
-    "headerbar_bg": "#e0e0e0",
+    "headerbar_bg": "#ebebeb",
     "card_bg": "#ffffff",
     "fg": "#1e1e1e",
     "secondary_fg": "#5e5c64",
-    "border": "#c7c7c7",
+    "border": "#d0d0d4",
     "inactive_fg": "#c0bfbc"
   },
   "dark": {
-    "window_bg": "#2e2e32",
-    "view_bg": "#1e1e1e",
-    "headerbar_bg": "#3a3a3e",
-    "card_bg": "#383838",
+    "window_bg": "#222226",
+    "view_bg": "#1d1d20",
+    "headerbar_bg": "#2e2e32",
+    "card_bg": "#36363a",
     "fg": "#ffffff",
     "secondary_fg": "#c0bfbc",
-    "border": "#4a4a4a",
+    "border": "#3a3a3e",
     "inactive_fg": "#5e5c64"
   },
   "accents": {
