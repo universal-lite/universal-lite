@@ -251,18 +251,21 @@ systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
 systemctl --global disable flatpak-user-update.timer
 
-# Remove packages that show up in the start menu but don't belong in
-# this distro's UX. Both are leaves of the dep graph (verified via
-# `rpm -q --whatrequires`), so removal won't cascade:
-#   - xfce4-panel: pulled in as a weak/transitive by the XFCE userland
-#     bits (Thunar / Ristretto / Mousepad / tumbler / xfce-polkit).
-#     Its "Panel" launcher doesn't run under labwc + waybar.
-#   - nvtop: GPU process viewer aimed at developers, inherited from
-#     the ublue-os base.
-# `|| true` so a future base image that stops shipping either doesn't
-# fail our build. rm -f of the .desktop is belt-and-suspenders in case
-# dnf is a no-op for any reason.
-dnf5 remove -y xfce4-panel nvtop || true
+# Hide launchers for packages that show up in the start menu but
+# don't belong in this distro's UX.
+#
+# xfce4-panel can't be uninstalled: Fedora 43's Thunar package Requires
+# xfce4-panel directly (verified: `dnf5 repoquery --whatrequires
+# xfce4-panel` lists Thunar-4.20.*). An earlier version of this file
+# did `dnf5 remove -y xfce4-panel`, which dnf5 honored by cascade-
+# removing Thunar as well — so Super+E, File Manager menu entries,
+# and inode/directory MIME defaults all dead-ended into "command
+# not found". We now just remove the .desktop file so the launcher
+# never surfaces; the ~5 MB of binaries stay on disk but never run
+# under labwc + waybar.
+#
+# nvtop is a real leaf (no reverse deps), so we uninstall it outright.
+dnf5 remove -y nvtop || true
 rm -f /usr/share/applications/xfce4-panel.desktop \
       /usr/share/applications/nvtop.desktop
 
