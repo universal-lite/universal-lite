@@ -24,6 +24,7 @@ SWAP_GB="${2:-4}"
 STATE_DIR=/var/lib/universal-lite
 CONFIG="$STATE_DIR/install-config.json"
 ZRAM_CONF=/etc/systemd/zram-generator.conf
+SYSCTL_CONF=/etc/sysctl.d/91-universal-lite-zswap.conf
 
 case "$STRATEGY" in
     zram|zswap) ;;
@@ -57,10 +58,21 @@ if [ "$STRATEGY" = "zswap" ]; then
     /usr/libexec/universal-lite-swap-init
 
     # Enable swap services so they fire on every boot from now on.
+    # universal-lite-zswap.service writes the kernel sysfs parameters
+    # (enabled=1, compressor=zstd, max_pool_percent=25) on each boot,
+    # so the zswap layer activates at runtime regardless of whether the
+    # zswap.* kernel cmdline args are present.
     systemctl enable \
         universal-lite-swap-init.service \
         universal-lite-encrypted-swap.service \
         universal-lite-zswap.service
+
+    # Persistent swappiness tuning — disk-backed swap benefits from a
+    # higher value because page-out is cheap (zswap compresses in RAM
+    # first, only truly cold pages hit the disk). Matches the wizard's
+    # zswap-install behavior exactly.
+    mkdir -p "$(dirname "$SYSCTL_CONF")"
+    printf 'vm.swappiness = 100\n' > "$SYSCTL_CONF"
 
     # Override zram-generator so zram0 is NOT created at next boot.
     # (The image default at /usr/etc/ allocates 125% of RAM as zram;
@@ -77,6 +89,10 @@ else
         universal-lite-swap-init.service \
         universal-lite-encrypted-swap.service \
         universal-lite-zswap.service 2>/dev/null || true
+
+    # Remove swappiness tuning; kernel default (60) is correct for
+    # zram-only since there's no disk spillover.
+    rm -f "$SYSCTL_CONF"
 
     # Restore the image-default zram-generator config. Writing the same
     # content back makes the 3-way merge happy on future bootc upgrades.
