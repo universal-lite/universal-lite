@@ -60,7 +60,8 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         tp_speed_scale = Gtk.Scale.new_with_range(
             Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
         tp_speed_scale.set_value(self.store.get("touchpad_pointer_speed", 0.0))
-        tp_speed_scale.set_size_request(200, -1)
+        tp_speed_scale.set_size_request(120, -1)
+        tp_speed_scale.set_hexpand(True)
         tp_speed_scale.set_draw_value(False)
         tp_speed_scale.set_valign(Gtk.Align.CENTER)
         tp_speed_scale.connect("value-changed", self._on_touchpad_pointer_speed)
@@ -70,19 +71,17 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         tp_speed_row.add_suffix(tp_speed_scale)
         group.add(tp_speed_row)
 
-        # Scroll speed
-        tp_scroll_scale = Gtk.Scale.new_with_range(
-            Gtk.Orientation.HORIZONTAL, 1.0, 10.0, 1.0)
-        tp_scroll_scale.set_value(self.store.get("touchpad_scroll_speed", 5))
-        tp_scroll_scale.set_size_request(200, -1)
-        tp_scroll_scale.set_draw_value(False)
-        tp_scroll_scale.set_valign(Gtk.Align.CENTER)
-        tp_scroll_scale.connect("value-changed", self._on_touchpad_scroll_speed)
-
-        tp_scroll_row = Adw.ActionRow()
-        tp_scroll_row.set_title(_("Scroll speed"))
-        tp_scroll_row.add_suffix(tp_scroll_scale)
-        group.add(tp_scroll_row)
+        # Scroll speed (discrete 1..10 — SpinRow adapts to narrow widths)
+        scroll_row = Adw.SpinRow.new_with_range(1.0, 10.0, 1.0)
+        scroll_row.set_title(_("Scroll speed"))
+        scroll_row.set_value(float(self.store.get("touchpad_scroll_speed", 5)))
+        scroll_row.connect(
+            "notify::value",
+            lambda r, _p: self.store.save_debounced(
+                "touchpad_scroll_speed", int(r.get_value())
+            ),
+        )
+        group.add(scroll_row)
 
         return group
 
@@ -101,7 +100,8 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         mouse_speed_scale = Gtk.Scale.new_with_range(
             Gtk.Orientation.HORIZONTAL, -1.0, 1.0, 0.1)
         mouse_speed_scale.set_value(self.store.get("mouse_pointer_speed", 0.0))
-        mouse_speed_scale.set_size_request(200, -1)
+        mouse_speed_scale.set_size_request(120, -1)
+        mouse_speed_scale.set_hexpand(True)
         mouse_speed_scale.set_draw_value(False)
         mouse_speed_scale.set_valign(Gtk.Align.CENTER)
         mouse_speed_scale.connect("value-changed", self._on_mouse_pointer_speed)
@@ -137,9 +137,6 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
 
     def _on_touchpad_pointer_speed(self, scale: Gtk.Scale) -> None:
         self.store.save_debounced("touchpad_pointer_speed", round(scale.get_value(), 1))
-
-    def _on_touchpad_scroll_speed(self, scale: Gtk.Scale) -> None:
-        self.store.save_debounced("touchpad_scroll_speed", int(scale.get_value()))
 
     def _on_mouse_natural_scroll(self, row: Adw.SwitchRow, _pspec) -> None:
         self.store.save_and_apply("mouse_natural_scroll", row.get_active())
