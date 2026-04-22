@@ -302,6 +302,17 @@ install -Dm644 /usr/share/fedora-logos/fedora_logo.svg \
 gtk-update-icon-cache -f /usr/share/icons/Adwaita 2>/dev/null || true
 gtk-update-icon-cache -f /usr/share/icons/hicolor 2>/dev/null || true
 
+# Precompile our Python helpers so cold starts don't pay the
+# .py -> .pyc compilation tax on first import. Without this step,
+# launching the settings app on a freshly-booted 2 GB machine
+# compiles ~25 modules totalling ~6 kLOC before the window even
+# appears. `-q` silences per-file log output; `-j 0` parallelises
+# across available cores. We only target /usr/lib/universal-lite —
+# the top-level /usr/bin scripts are shebang files without a .py
+# extension, so compileall skips them anyway, and their bytecode
+# cache directory would be non-writable on a booted ostree system.
+python3 -m compileall -q -j 0 /usr/lib/universal-lite 2>/dev/null || true
+
 # Regenerate initramfs so /usr/lib/modprobe.d/universal-lite-i915.conf
 # reaches the early-KMS load of i915. Without this step the options only
 # take effect after the first kernel update triggers its own regen.

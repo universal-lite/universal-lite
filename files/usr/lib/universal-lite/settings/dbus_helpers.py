@@ -4,12 +4,31 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 
-import gi
-
-gi.require_version("NM", "1.0")
-from gi.repository import Gio, GLib, NM
+from gi.repository import Gio, GLib
 
 from .events import EventBus
+
+# NetworkManager's GI introspection data is ~several MB and loading it
+# noticeably slows settings-app startup on 2 GB hardware. Nothing in
+# this module except NetworkManagerHelper touches NM, but sound.py
+# imports PulseAudioSubscriber at module level, which would otherwise
+# drag NM in on every settings launch whether the user touches Network
+# or not. We stage the import behind _ensure_nm() so it only happens
+# when someone actually instantiates NetworkManagerHelper. Module-level
+# type annotations referencing NM.Client are fine because
+# `from __future__ import annotations` makes every annotation a string
+# at class-definition time.
+NM = None  # type: ignore[assignment]
+
+
+def _ensure_nm() -> None:
+    global NM
+    if NM is not None:
+        return
+    import gi
+    gi.require_version("NM", "1.0")
+    from gi.repository import NM as _NM
+    NM = _NM
 
 
 # ---------------------------------------------------------------------------
@@ -53,6 +72,7 @@ class NetworkManagerHelper:
     network-connect-success, network-connect-error."""
 
     def __init__(self, event_bus: EventBus) -> None:
+        _ensure_nm()
         self._event_bus = event_bus
         self._client: NM.Client | None = None
         self._wifi_device: NM.DeviceWifi | None = None
