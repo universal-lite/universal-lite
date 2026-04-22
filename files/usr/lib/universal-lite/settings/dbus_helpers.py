@@ -574,8 +574,11 @@ class PowerProfilesHelper:
             # and _on_props_changed reconciles the UI. On failure no
             # signal fires, so the ComboRow would sit on the value the
             # user picked while the daemon is still on the old one.
-            # Publish our own event to force a re-read.
-            self._event_bus.publish("power-profile-changed")
+            # Publish with the daemon's ACTUAL current profile so the
+            # page's handler (_on_profile_changed) can look it up in
+            # its ComboRow values list — publishing without a payload
+            # landed a None that the handler silently ignored.
+            self._event_bus.publish("power-profile-changed", self.get_active_profile())
 
     def _on_props_changed(self, _conn, _sender, _path, _iface, _signal, params, _data) -> None:
         changed = params.unpack()[1]

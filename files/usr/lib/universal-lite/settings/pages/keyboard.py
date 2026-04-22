@@ -13,38 +13,48 @@ from gi.repository import Adw, Gdk, Gtk
 from ..base import BasePage
 
 LAYOUT_NAMES = {
-    "us": "English (US)", "gb": "English (UK)", "de": "German",
-    "fr": "French", "es": "Spanish", "it": "Italian", "pt": "Portuguese",
-    "ru": "Russian", "jp": "Japanese", "kr": "Korean", "cn": "Chinese",
-    "ar": "Arabic", "br": "Portuguese (Brazil)", "ca": "Canadian",
-    "dk": "Danish", "fi": "Finnish", "nl": "Dutch", "no": "Norwegian",
-    "pl": "Polish", "se": "Swedish", "ch": "Swiss", "tr": "Turkish",
-    "ua": "Ukrainian", "in": "Indian", "il": "Hebrew", "th": "Thai",
-    "cz": "Czech", "hu": "Hungarian", "ro": "Romanian", "sk": "Slovak",
-    "hr": "Croatian", "si": "Slovenian", "bg": "Bulgarian", "gr": "Greek",
-    "ir": "Persian", "et": "Amharic", "vn": "Vietnamese",
-    "ke": "Swahili (Kenya)", "tz": "Swahili (Tanzania)", "ng": "Nigerian",
+    "us": _("English (US)"), "gb": _("English (UK)"), "de": _("German"),
+    "fr": _("French"), "es": _("Spanish"), "it": _("Italian"),
+    "pt": _("Portuguese"),
+    "ru": _("Russian"), "jp": _("Japanese"), "kr": _("Korean"),
+    "cn": _("Chinese"),
+    "ar": _("Arabic"), "br": _("Portuguese (Brazil)"), "ca": _("Canadian"),
+    "dk": _("Danish"), "fi": _("Finnish"), "nl": _("Dutch"),
+    "no": _("Norwegian"),
+    "pl": _("Polish"), "se": _("Swedish"), "ch": _("Swiss"),
+    "tr": _("Turkish"),
+    "ua": _("Ukrainian"), "in": _("Indian"), "il": _("Hebrew"),
+    "th": _("Thai"),
+    "cz": _("Czech"), "hu": _("Hungarian"), "ro": _("Romanian"),
+    "sk": _("Slovak"),
+    "hr": _("Croatian"), "si": _("Slovenian"), "bg": _("Bulgarian"),
+    "gr": _("Greek"),
+    "ir": _("Persian"), "et": _("Amharic"), "vn": _("Vietnamese"),
+    "ke": _("Swahili (Kenya)"), "tz": _("Swahili (Tanzania)"),
+    "ng": _("Nigerian"),
 }
 
 SYSTEM_RC_XML = Path("/etc/xdg/labwc/rc.xml")
 USER_KEYBINDINGS = Path.home() / ".config/universal-lite/keybindings.json"
 
-# Human-readable names for action+command combos
+# Human-readable names for action+command combos. Values wrapped so
+# xgettext extracts them and the Keyboard shortcut rows render in the
+# user's language instead of English-only.
 SHORTCUT_NAMES = {
-    ("Execute", "foot"): "Open Terminal",
-    ("Execute", "Thunar"): "Open File Manager",
-    ("Execute", "universal-lite-app-menu"): "App Launcher",
-    ("Execute", "universal-lite-settings"): "Open Settings",
-    ("Execute", "swaylock -f"): "Lock Screen",
-    ("Execute", "xfce4-taskmanager"): "System Monitor",
-    ("NextWindow", ""): "Switch Windows",
-    ("PreviousWindow", ""): "Switch Windows (Reverse)",
-    ("Close", ""): "Close Window",
-    ("ToggleMaximize", ""): "Maximize / Restore",
-    ("Iconify", ""): "Minimize",
-    ("ToggleFullscreen", ""): "Toggle Fullscreen",
-    ("SnapToEdge", "left"): "Snap Left",
-    ("SnapToEdge", "right"): "Snap Right",
+    ("Execute", "foot"): _("Open Terminal"),
+    ("Execute", "Thunar"): _("Open File Manager"),
+    ("Execute", "universal-lite-app-menu"): _("App Launcher"),
+    ("Execute", "universal-lite-settings"): _("Open Settings"),
+    ("Execute", "swaylock -f"): _("Lock Screen"),
+    ("Execute", "xfce4-taskmanager"): _("System Monitor"),
+    ("NextWindow", ""): _("Switch Windows"),
+    ("PreviousWindow", ""): _("Switch Windows (Reverse)"),
+    ("Close", ""): _("Close Window"),
+    ("ToggleMaximize", ""): _("Maximize / Restore"),
+    ("Iconify", ""): _("Minimize"),
+    ("ToggleFullscreen", ""): _("Toggle Fullscreen"),
+    ("SnapToEdge", "left"): _("Snap Left"),
+    ("SnapToEdge", "right"): _("Snap Right"),
 }
 
 # Keys to skip in the shortcuts editor (internal bindings)
@@ -586,6 +596,18 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         controller.connect("key-pressed", self._on_capture_keypress, index, sub)
         sub.add_controller(controller)
 
+        # Clear capture state on any dismissal — Escape, back-gesture,
+        # header back button, Alt-Left. Without this, the state fields
+        # remain pointing at a popped-and-destroyed sub-page, so any
+        # future code path that gates on "are we in capture?" gets
+        # confused. The "hidden" signal fires on every dismissal path.
+        def _on_hidden(_page):
+            if self._capture_page is _page:
+                self._capture_page = None
+                self._capture_index = -1
+                self._capture_done = False
+        sub.connect("hidden", _on_hidden)
+
         self._nav.push(sub)
 
     def _on_capture_keypress(self, _ctrl, keyval, _keycode, state, index, sub):
@@ -736,18 +758,45 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         self._save_and_reconfigure()
 
     def _reset_shortcut(self, index: int) -> None:
-        """Reset a single shortcut to its system default."""
+        """Reset a single shortcut to its system default.
+
+        If the default key is currently assigned to a *different*
+        shortcut, the user's other customization would silently get
+        stomped. Warn via an AlertDialog and let the user confirm or
+        cancel, rather than cascade-resetting without permission.
+        """
         default_key = self._get_default_key(index)
         if default_key is None:
             return
-        # Check if the default key conflicts with another modified binding
         conflict_idx = self._find_conflict(default_key, index)
         if conflict_idx is not None:
-            # Reset the conflicting one too
-            other_default = self._get_default_key(conflict_idx)
-            if other_default:
-                self._bindings[conflict_idx]["key"] = other_default
-                self._update_shortcut_row(conflict_idx)
+            conflict_name = self._bindings[conflict_idx]["display_name"]
+            dialog = Adw.AlertDialog.new(
+                _("Reset would affect another shortcut"),
+                _("{key} is currently assigned to {name}. Reset this "
+                  "shortcut and also reset {name} to its default?").format(
+                      key=default_key, name=conflict_name),
+            )
+            dialog.add_response("cancel", _("Cancel"))
+            dialog.add_response("reset", _("Reset Both"))
+            dialog.set_response_appearance("reset", Adw.ResponseAppearance.DESTRUCTIVE)
+            dialog.set_close_response("cancel")
+            dialog.set_default_response("cancel")
+
+            def _on_response(_d, response_id):
+                if response_id != "reset":
+                    return
+                other_default = self._get_default_key(conflict_idx)
+                if other_default:
+                    self._bindings[conflict_idx]["key"] = other_default
+                    self._update_shortcut_row(conflict_idx)
+                self._bindings[index]["key"] = default_key
+                self._update_shortcut_row(index)
+                self._save_and_reconfigure()
+
+            dialog.connect("response", _on_response)
+            dialog.present(self)
+            return
 
         self._bindings[index]["key"] = default_key
         self._update_shortcut_row(index)

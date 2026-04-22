@@ -152,6 +152,8 @@ class UsersPage(BasePage, Adw.PreferencesPage):
                 _("Could not save name: {msg}").format(msg=exc.message), True)
 
     def _on_autologin_set(self, row, _pspec):
+        if getattr(self, "_autologin_updating", False):
+            return
         try:
             self._bus.call_sync(
                 "org.freedesktop.Accounts", self._user_path,
@@ -161,7 +163,19 @@ class UsersPage(BasePage, Adw.PreferencesPage):
             )
         except GLib.Error as exc:
             self.store.show_toast(
-                _("Could not change auto-login: {msg}").format(msg=exc.message), True)
+                _("Could not change auto-login"), True)
+            # Flip the switch back to the pre-click state. GTK already
+            # animated to the new position before our signal handler
+            # fired, so without reconciliation the switch lies about
+            # the actual daemon state until the user clicks again.
+            # The _autologin_updating guard prevents the reconciling
+            # set_active from re-entering this handler and re-trying
+            # the failing call.
+            self._autologin_updating = True
+            try:
+                row.set_active(not row.get_active())
+            finally:
+                self._autologin_updating = False
 
     def _push_change_password(self, *_):
         sub = Adw.NavigationPage()
@@ -206,10 +220,10 @@ class UsersPage(BasePage, Adw.PreferencesPage):
         pw = new_pw.get_text()
         cpw = confirm_pw.get_text()
         if not pw:
-            self.store.show_toast(_("Password cannot be empty"))
+            self.store.show_toast(_("Password cannot be empty"), True)
             return
         if pw != cpw:
-            self.store.show_toast(_("Passwords do not match"))
+            self.store.show_toast(_("Passwords do not match"), True)
             return
         try:
             hashed = _hash_password(pw)
@@ -226,4 +240,4 @@ class UsersPage(BasePage, Adw.PreferencesPage):
             # from PATH (rare on a Fedora bootc image, but defensive on
             # a stripped-down build); OSError covers permission issues
             # on the openssl binary or accounts-daemon bus drop.
-            self.store.show_toast(_("Failed to set password"))
+            self.store.show_toast(_("Failed to set password"), True)

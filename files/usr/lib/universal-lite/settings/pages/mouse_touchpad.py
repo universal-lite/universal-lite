@@ -14,6 +14,25 @@ ACCEL_OPTIONS: list[tuple[str, str]] = [
 ]
 
 
+def _pointer_speed_label(_scale, value: float) -> str:
+    """Map a libinput pointer-speed value ([-1.0, 1.0]) to a word.
+
+    GTK's default value format for a Scale is "-0.3" / "0.7" — fine
+    for keyboard shortcuts, meaningless for a non-technical user
+    comparing "slow" to "fast". Five bands matching how libinput's
+    acceleration curve feels in practice.
+    """
+    if value <= -0.6:
+        return _("Slowest")
+    if value < -0.2:
+        return _("Slow")
+    if value <= 0.2:
+        return _("Default")
+    if value < 0.6:
+        return _("Fast")
+    return _("Fastest")
+
+
 class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
         BasePage.__init__(self, store, event_bus)
@@ -62,7 +81,13 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         tp_speed_scale.set_value(self.store.get("touchpad_pointer_speed", 0.0))
         tp_speed_scale.set_size_request(120, -1)
         tp_speed_scale.set_hexpand(True)
-        tp_speed_scale.set_draw_value(False)
+        # Show the current value as "Slow" / "Default" / "Fast" rather
+        # than a bare scale thumb. Without this, the slider has no
+        # visible readout for sighted users and announces as just
+        # "slider" to Orca with no indication of the selected value.
+        tp_speed_scale.set_draw_value(True)
+        tp_speed_scale.set_value_pos(Gtk.PositionType.RIGHT)
+        tp_speed_scale.set_format_value_func(_pointer_speed_label)
         tp_speed_scale.set_valign(Gtk.Align.CENTER)
         tp_speed_scale.connect("value-changed", self._on_touchpad_pointer_speed)
 

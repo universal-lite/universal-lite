@@ -20,6 +20,11 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         self._pa = None
         self._updating = False
         self._refresh_pending = False
+        # Volume-slider drag coalesce (see _on_out_vol_changed).
+        self._pending_out_volume: int | None = None
+        self._pending_in_volume: int | None = None
+        self._out_vol_source: int | None = None
+        self._in_vol_source: int | None = None
         # Widget refs for live updates — rewritten by _refresh()
         # After conversion: ComboRow / inner Gtk.Scale / SwitchRow
         self._sink_dd = None    # Adw.ComboRow
@@ -164,13 +169,29 @@ class SoundPage(BasePage, Adw.PreferencesPage):
     def _on_out_vol_changed(self, scale):
         if self._updating:
             return
+        # Slider drag fires value-changed at ~60 Hz. A synchronous
+        # pactl subprocess per event blocks the main loop for up to
+        # 5 s on every tick if pipewire-pulse is busy — UI feels
+        # jerky even under normal load. Coalesce to the scale's
+        # latest value every 80 ms, run pactl then.
+        self._pending_out_volume = int(scale.get_value())
+        if self._out_vol_source is None:
+            self._out_vol_source = GLib.timeout_add(80, self._flush_out_volume)
+
+    def _flush_out_volume(self) -> bool:
+        self._out_vol_source = None
+        value = self._pending_out_volume
+        if value is None:
+            return False
+        self._pending_out_volume = None
         try:
             subprocess.run(
-                ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{int(scale.get_value())}%"],
+                ["pactl", "set-sink-volume", "@DEFAULT_SINK@", f"{value}%"],
                 capture_output=True, timeout=5,
             )
         except (subprocess.TimeoutExpired, OSError):
             pass
+        return False
 
     def _on_out_mute_changed(self, switch_row, _pspec):
         if self._updating:
@@ -200,13 +221,24 @@ class SoundPage(BasePage, Adw.PreferencesPage):
     def _on_in_vol_changed(self, scale):
         if self._updating:
             return
+        self._pending_in_volume = int(scale.get_value())
+        if self._in_vol_source is None:
+            self._in_vol_source = GLib.timeout_add(80, self._flush_in_volume)
+
+    def _flush_in_volume(self) -> bool:
+        self._in_vol_source = None
+        value = self._pending_in_volume
+        if value is None:
+            return False
+        self._pending_in_volume = None
         try:
             subprocess.run(
-                ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"{int(scale.get_value())}%"],
+                ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"{value}%"],
                 capture_output=True, timeout=5,
             )
         except (subprocess.TimeoutExpired, OSError):
             pass
+        return False
 
     def _on_in_mute_changed(self, switch_row, _pspec):
         if self._updating:

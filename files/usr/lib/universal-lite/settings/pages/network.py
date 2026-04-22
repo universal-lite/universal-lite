@@ -331,11 +331,20 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         return row
 
     def _connect(self, ap):
+        if getattr(self, "_connect_in_flight", False):
+            # A previous connect is still pending. Firing a second
+            # connect_wifi would race the first; NM would run both
+            # and publish generic success/error for whichever settled
+            # first with ambiguous UI feedback. Gate with a toast.
+            self.store.show_toast(
+                _("Another connection attempt is already running"), True)
+            return
         if ap.secured:
             self._push_password_page(ap)
         else:
+            self._connect_in_flight = True
             self.store.show_toast(
-                _("Connecting to {ssid}...").format(ssid=ap.ssid)
+                _("Connecting to {ssid}…").format(ssid=ap.ssid)
             )
             self._nm.connect_wifi(ap.ssid, None)
 
@@ -462,10 +471,12 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
     # -- Connect-result feedback ---------------------------------------
 
     def _on_connect_success(self, _data):
+        self._connect_in_flight = False
         # Toast auto-dismisses; no manual 3-second timer needed.
         self.store.show_toast(_("Connected successfully"))
 
     def _on_connect_error(self, message):
+        self._connect_in_flight = False
         self.store.show_toast(str(message), True)
 
     # -- Active connection info ----------------------------------------

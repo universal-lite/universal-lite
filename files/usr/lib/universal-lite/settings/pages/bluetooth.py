@@ -79,12 +79,7 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         adv_row.set_title(_("Advanced"))
         adv_row.set_activatable(True)
         adv_row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
-        adv_row.connect("activated", lambda _: subprocess.Popen(
-            ["blueman-manager"],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True))
+        adv_row.connect("activated", self._on_advanced_activated)
         advanced_group.add(adv_row)
         self.add(advanced_group)
 
@@ -103,6 +98,19 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         wrapper.set_content(self)
         self.setup_cleanup(wrapper)
         return wrapper
+
+    def _on_advanced_activated(self, _row):
+        try:
+            subprocess.Popen(
+                ["blueman-manager"],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except FileNotFoundError:
+            self.store.show_toast(
+                _("Bluetooth manager not available"), True)
 
     def _on_toggle(self, row, _pspec):
         if self._updating:
@@ -224,7 +232,11 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         self.store.show_toast(_("Paired successfully"))
 
     def _on_pair_error(self, message):
-        self.store.show_toast(_("Pairing failed: {message}").format(message=message))
+        # is_error=True paints the toast red; without it, users see a
+        # pair failure as a neutral informational toast. The {message}
+        # is a D-Bus error string from BlueZ — translators can't
+        # localize it, but it's the only actionable hint we have.
+        self.store.show_toast(_("Pairing failed: {message}").format(message=message), True)
 
     def _cleanup(self, *_args):
         if self._scan_timer is not None:

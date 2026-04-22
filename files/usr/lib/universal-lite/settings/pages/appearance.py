@@ -32,6 +32,29 @@ _ACCENT_FALLBACK = [
 ]
 
 
+def _accent_display_name(name: str) -> str:
+    """Human-readable color name for screen readers and tooltips.
+
+    Essential for the primary (vision-impaired) user: the circles
+    have no visible label and, without this, Orca announces every
+    one as identical "toggle button, pressed" with no way to tell
+    them apart. Returns a translated string; falls back to the raw
+    name (title-cased) for accent names we haven't pre-translated.
+    """
+    names = {
+        "blue": _("Blue"),
+        "teal": _("Teal"),
+        "green": _("Green"),
+        "yellow": _("Yellow"),
+        "orange": _("Orange"),
+        "red": _("Red"),
+        "pink": _("Pink"),
+        "purple": _("Purple"),
+        "slate": _("Slate"),
+    }
+    return names.get(name, name.title())
+
+
 def _load_accent_names() -> list[str]:
     try:
         palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
@@ -166,9 +189,22 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
                 self._group_updating = False
 
         for name in _load_accent_names():
+            display_name = _accent_display_name(name)
             btn = Gtk.ToggleButton()
             btn.add_css_class("accent-circle")
             btn.add_css_class(f"accent-{name}")
+            # Tooltip doubles as the accessible name for GTK4 widgets
+            # that don't otherwise carry a label. Without it Orca reads
+            # each circle as "toggle button" with no way for a vision-
+            # impaired user to distinguish Blue from Red.
+            btn.set_tooltip_text(display_name)
+            try:
+                btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [display_name])
+            except Exception:
+                # update_property is GTK 4.10+; on older GTK tooltip
+                # fallback still provides the accessible name.
+                pass
             btn.set_active(name == current_accent)
             btn.connect("toggled", _on_accent_toggled, name)
             accent_buttons.append(btn)
@@ -233,9 +269,15 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             self._wallpaper_flow = flow
             self._populate_wallpapers(wallpaper_group)
 
-            wallpaper_row = Adw.ActionRow()
+            # Bare PreferencesRow (not ActionRow) keeps the group's
+            # boxed-list card styling while letting the grid fill the
+            # row's full width. ActionRow's add_suffix pins the grid
+            # to the trailing edge, clustering wallpaper tiles on the
+            # right with empty space on the left — same reasoning as
+            # the accent picker above.
+            wallpaper_row = Adw.PreferencesRow()
             wallpaper_row.set_activatable(False)
-            wallpaper_row.add_suffix(flow)
+            wallpaper_row.set_child(flow)
             wallpaper_group.add(wallpaper_row)
         except Exception as exc:
             print(f"appearance: wallpaper grid failed: {exc!r}", file=sys.stderr)

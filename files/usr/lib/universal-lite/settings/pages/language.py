@@ -1,11 +1,12 @@
 import subprocess
+import threading
 from gettext import gettext as _
 
 import gi
 
 gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Adw, Gtk
+from gi.repository import Adw, GLib, Gtk
 
 from ..base import BasePage
 
@@ -112,32 +113,45 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
         return LanguagePage._get_current_locale()
 
     def _set_locale(self, locale):
-        try:
-            # localectl talks to systemd-localed via D-Bus, which triggers a
-            # polkit password dialog (xfce-polkit).  Give the user up to 60s
-            # to authenticate — the previous 5s timeout killed the process
-            # before the dialog could be answered.
-            result = subprocess.run(
-                ["localectl", "set-locale", f"LANG={locale}"],
-                capture_output=True, text=True, timeout=60,
-            )
-            if result.returncode != 0:
-                self.store.show_toast(_("Failed to set language"))
-        except FileNotFoundError:
-            self.store.show_toast(_("localectl not found"))
-        except subprocess.TimeoutExpired:
-            self.store.show_toast(_("Language change timed out"))
+        # localectl talks to systemd-localed via D-Bus, which triggers a
+        # polkit prompt. The subprocess doesn't return until the user
+        # authenticates (or the 60s timeout expires). Running this
+        # synchronously on the GTK main thread froze the settings
+        # window — including the polkit agent's redraw path — for the
+        # full duration; on a 2 GB Chromebook this looks like a hard
+        # lockup. Threading keeps the UI responsive; idle_add posts
+        # toasts back from the worker.
+        self._run_localectl_async(
+            ["localectl", "set-locale", f"LANG={locale}"],
+            _("Failed to set language"),
+            _("Language change timed out"),
+        )
 
     def _set_format(self, locale):
-        try:
-            result = subprocess.run(
-                ["localectl", "set-locale", f"LC_TIME={locale}",
-                 f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
-                capture_output=True, text=True, timeout=60,
-            )
-            if result.returncode != 0:
-                self.store.show_toast(_("Failed to set regional format"))
-        except FileNotFoundError:
-            self.store.show_toast(_("localectl not found"))
-        except subprocess.TimeoutExpired:
-            self.store.show_toast(_("Format change timed out"))
+        self._run_localectl_async(
+            ["localectl", "set-locale", f"LC_TIME={locale}",
+             f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
+            _("Failed to set regional format"),
+            _("Format change timed out"),
+        )
+
+    def _run_localectl_async(self, argv, fail_msg, timeout_msg):
+        def _worker():
+            try:
+                result = subprocess.run(
+                    argv, capture_output=True, text=True, timeout=60,
+                )
+                if result.returncode != 0:
+                    GLib.idle_add(
+                        lambda: self.store.show_toast(fail_msg, True) or False)
+            except FileNotFoundError:
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Language settings are unavailable on this system"), True) or False)
+            except subprocess.TimeoutExpired:
+                GLib.idle_add(lambda: self.store.show_toast(timeout_msg, True) or False)
+            except OSError as exc:
+                msg = _("Language change failed: {reason}").format(
+                    reason=str(exc))
+                GLib.idle_add(lambda: self.store.show_toast(msg, True) or False)
+
+        threading.Thread(target=_worker, daemon=True).start()

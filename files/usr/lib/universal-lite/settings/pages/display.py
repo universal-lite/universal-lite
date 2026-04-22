@@ -38,9 +38,15 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         self._revert_timer_id: int | None = None
         self._revert_seconds: int = 15
         self._revert_dialog: Adw.AlertDialog | None = None
+        self._revert_pending_scale: float | None = None
+        self._revert_pending_old_scale: float | None = None
         self._res_revert_timer_id: int | None = None
         self._res_revert_seconds: int = 15
         self._res_revert_dialog: Adw.AlertDialog | None = None
+        self._res_revert_pending: tuple[str, str] | None = None
+        # Track last-confirmed resolution per output for proper revert
+        # baseline (see _on_resolution_changed).
+        self._current_res: dict[str, str] = {}
 
     @property
     def search_keywords(self):
@@ -242,8 +248,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
 
     # -- helpers --------------------------------------------------------
 
-    @staticmethod
-    def _launch_wdisplays() -> None:
+    def _launch_wdisplays(self) -> None:
         try:
             subprocess.Popen(
                 ["wdisplays"],
@@ -253,7 +258,12 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
                 start_new_session=True,
             )
         except (FileNotFoundError, OSError):
-            pass
+            # Sibling network.py page toasts "Connection editor not
+            # found" for the same class of failure — matching here
+            # gives the user a reason Advanced Display does nothing
+            # instead of silently swallowing the click.
+            self.store.show_toast(
+                _("Advanced display tool not available"), True)
 
     def _validate_and_save_time(self, row: Adw.EntryRow, key: str) -> None:
         text = row.get_text().strip()
@@ -279,36 +289,46 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         """Cancel any running countdown timers and dismiss live revert
         dialogs when the page is unmapped.
 
-        Treats unmap as implicit *Keep*, not Revert. Previously the
-        dialog's close-response ("revert") fired on every unmap,
-        silently rolling back a scale/resolution choice the user had
-        already committed to in their mind — e.g. navigating sidebar
-        categories during the countdown. We now disconnect the
-        response handler before force_close so the dialog dismisses
-        without running the revert branch. The applied scale/resolution
-        stays put; the user's Keep/Revert choice just didn't need to
-        happen once they walked away.
+        Treats unmap as implicit *Keep*, not Revert. When the user
+        navigates away mid-countdown, the scale/resolution is live in
+        the compositor but not yet persisted to settings.json (that
+        happens on explicit Keep). Previously we disconnected the
+        response handler before force_close, so neither Keep nor
+        Revert ran — next login's autostart reverted the choice.
+        Now we call save_and_apply on the pending new value before
+        dismissing, mirroring what the explicit Keep branch would do.
         """
         if self._revert_timer_id is not None:
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
         if self._revert_dialog is not None:
+            pending = getattr(self, "_revert_pending_scale", None)
             try:
                 self._revert_dialog.disconnect_by_func(self._on_revert_response)
             except TypeError:
                 pass
             self._revert_dialog.force_close()
             self._revert_dialog = None
+            if pending is not None:
+                self.store.save_and_apply("scale", pending)
+                self._sync_scale_row_to(pending)
+            self._revert_pending_scale = None
+            self._revert_pending_old_scale = None
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         if self._res_revert_dialog is not None:
+            pending_res = getattr(self, "_res_revert_pending", None)
             try:
                 self._res_revert_dialog.disconnect_by_func(self._on_res_revert_response)
             except TypeError:
                 pass
             self._res_revert_dialog.force_close()
             self._res_revert_dialog = None
+            if pending_res is not None:
+                output_name, new_mode = pending_res
+                self.store.save_and_apply(f"resolution_{output_name}", new_mode)
+            self._res_revert_pending = None
 
     # ── Display Scale ──────────────────────────────────────────────────
 
@@ -397,6 +417,13 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         dialog.set_close_response("revert")
 
         self._revert_dialog = dialog
+        # Stash the pending values so _cleanup_dialogs can implicit-Keep
+        # (persist to settings.json) when the user navigates away mid-
+        # countdown. Without persistence, the compositor holds the new
+        # scale for the session but the autostart at next login reads
+        # the old value from settings.json and reverts.
+        self._revert_pending_scale = new_scale
+        self._revert_pending_old_scale = old_scale
         self._revert_seconds = 15
         dialog.set_body(
             _("Keep this display scale? Reverting in {seconds}s…").format(
@@ -441,6 +468,8 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
         self._revert_dialog = None
+        self._revert_pending_scale = None
+        self._revert_pending_old_scale = None
 
         if response_id == "keep":
             self.store.save_and_apply("scale", new_scale)
@@ -511,8 +540,15 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         if idx < 0 or idx >= len(modes):
             return
         new_mode = modes[idx]
-        if new_mode == old_mode:
+        # Track the user's last-confirmed mode per output so Revert
+        # rolls back to THAT, not to the captured build-time mode.
+        # Without this, after: pick 1920x1080, Keep, then pick 1280x720,
+        # Revert — the revert baseline was still the original
+        # build-time mode, not the 1920x1080 the user just confirmed.
+        current_mode = self._current_res.get(output_name, old_mode)
+        if new_mode == current_mode:
             return
+        old_mode = current_mode
         # Cancel any in-flight resolution revert; starting a fresh one.
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
@@ -561,6 +597,9 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         dialog.set_close_response("revert")
 
         self._res_revert_dialog = dialog
+        # Stash so _cleanup_dialogs can implicit-Keep on unmap, same
+        # reason as the scale case above.
+        self._res_revert_pending = (output_name, new_mode)
         self._res_revert_seconds = 15
         dialog.set_body(
             _("Keep this resolution? Reverting in {seconds}s…").format(
@@ -604,9 +643,13 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         self._res_revert_dialog = None
+        self._res_revert_pending = None
 
         if response_id == "keep":
             self.store.save_and_apply(f"resolution_{output_name}", new_mode)
+            # Update the per-output baseline so the next revert rolls
+            # back to THIS mode, not the build-time captured one.
+            self._current_res[output_name] = new_mode
         else:
             self._apply_resolution(output_name, old_mode or new_mode)
             if old_mode and old_mode in modes:

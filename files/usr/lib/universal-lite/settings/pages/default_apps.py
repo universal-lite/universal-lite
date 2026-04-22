@@ -64,17 +64,22 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
                         None if _l[0] else self._set_terminal_by_id(ids[r.get_selected()]),
                 )
             else:
-                def _set_default(r, _, mt=mime_type, ids=desktop_ids, _l=_loading):
+                def _set_default(r, _, mt=mime_type, ids=desktop_ids,
+                                 _l=_loading, _store=self.store):
                     if _l[0]:
                         return
                     try:
-                        subprocess.run(
+                        result = subprocess.run(
                             ["xdg-mime", "default", ids[r.get_selected()], mt],
-                            check=False,
-                            timeout=5,
+                            check=False, timeout=5,
+                            capture_output=True, text=True,
                         )
+                        if result.returncode != 0:
+                            _store.show_toast(
+                                _("Could not change default app"), True)
                     except (subprocess.TimeoutExpired, OSError):
-                        pass
+                        _store.show_toast(
+                            _("Could not change default app"), True)
                 row.connect("notify::selected", _set_default)
 
             group.add(row)
@@ -153,7 +158,15 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
         if mime_type is None:
             return ""
         try:
-            return subprocess.run(["xdg-mime", "query", "default", mime_type],
-                                  capture_output=True, text=True).stdout.strip()
-        except FileNotFoundError:
+            # xdg-mime is a shell script that calls into gio /
+            # update-desktop-database / dbus, all of which can hang if
+            # the session bus or a desktop-file handler is wedged.
+            # Without timeout the page would freeze indefinitely on
+            # the first cold build — this function is called once per
+            # APP_MIME_TYPES entry on the main thread during build().
+            return subprocess.run(
+                ["xdg-mime", "query", "default", mime_type],
+                capture_output=True, text=True, timeout=5,
+            ).stdout.strip()
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return ""

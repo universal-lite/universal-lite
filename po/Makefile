@@ -19,7 +19,9 @@ SETTINGS_SOURCES = \
 	../files/usr/bin/universal-lite-greeter \
 	../files/usr/lib/universal-lite/settings/app.py \
 	../files/usr/lib/universal-lite/settings/base.py \
+	../files/usr/lib/universal-lite/settings/dbus_helpers.py \
 	../files/usr/lib/universal-lite/settings/settings_store.py \
+	../files/usr/lib/universal-lite/settings/wallpapers.py \
 	../files/usr/lib/universal-lite/settings/window.py \
 	../files/usr/lib/universal-lite/settings/pages/__init__.py \
 	$(wildcard ../files/usr/lib/universal-lite/settings/pages/[a-z]*.py)

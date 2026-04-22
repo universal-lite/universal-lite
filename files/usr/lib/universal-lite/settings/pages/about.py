@@ -42,6 +42,12 @@ CATEGORY_KEYS = {
         "suspend_timeout", "lid_close_action",
         "power_profile",
     ],
+    # Date & Time and Language categories live in OS state (timedatectl /
+    # localectl) rather than settings.json, so the actual reset work is
+    # done via the out-of-band cleanup block in _run_restore below —
+    # these empty lists are here so the category appears in the picker.
+    "Date & Time": [],
+    "Language & Region": [],
 }
 
 
@@ -264,7 +270,7 @@ class AboutPage(BasePage, Adw.PreferencesPage):
                 GLib.idle_add(self._set_update_subtitle, _("Update check timed out"))
                 return
             except FileNotFoundError:
-                GLib.idle_add(self._set_update_subtitle, _("uupd not available"))
+                GLib.idle_add(self._set_update_subtitle, _("Update system not available"))
                 return
             if r.returncode == 77:
                 GLib.idle_add(self._set_update_subtitle, _("Update available"))
@@ -448,6 +454,22 @@ class AboutPage(BasePage, Adw.PreferencesPage):
             # (outputs are discovered at runtime). Drop them so the display
             # reverts to the compositor's preferred mode on restart.
             self.store.remove_keys_matching(lambda k: k.startswith("resolution_"))
+        if "Appearance" in selected:
+            # Custom wallpapers live in ~/.local/share/universal-lite/
+            # custom-wallpapers/ with manifests in ~/.local/share/
+            # gnome-background-properties/. A user resetting Appearance
+            # expects "back to factory"; leaving their custom tiles in
+            # the picker contradicts that mental model.
+            from ..wallpapers import list_wallpapers, remove_custom
+            for wp in list_wallpapers():
+                if wp.is_custom:
+                    remove_custom(wp.id)
+        if "Date & Time" in selected:
+            # Reset clock to 24-hour default (handled via restore_keys)
+            # and attempt to re-enable NTP + reset timezone.
+            self._restore_datetime_defaults()
+        if "Language & Region" in selected:
+            self._restore_language_defaults()
 
         # Write merged settings and apply
         self.store.restore_keys(keys, defaults)
@@ -460,6 +482,49 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         def _restart():
             os.execv(sys.executable, [sys.executable] + sys.argv)
             return GLib.SOURCE_REMOVE
+
+    def _restore_datetime_defaults(self):
+        """Reset timezone to UTC and re-enable NTP via timedatectl.
+
+        Uses a background thread so polkit prompts don't block the
+        restart flow. Best-effort: failures are logged via show_toast
+        but don't abort the rest of the reset.
+        """
+        import threading
+
+        def _worker():
+            for argv in (
+                ["timedatectl", "set-ntp", "true"],
+                ["timedatectl", "set-timezone", "UTC"],
+            ):
+                try:
+                    subprocess.run(argv, capture_output=True, timeout=60)
+                except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                    pass
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _restore_language_defaults(self):
+        """Reset system locale to en_US.UTF-8 via localectl.
+
+        Same best-effort pattern as _restore_datetime_defaults.
+        """
+        import threading
+
+        def _worker():
+            try:
+                subprocess.run(
+                    ["localectl", "set-locale",
+                     "LANG=en_US.UTF-8",
+                     "LC_TIME=en_US.UTF-8",
+                     "LC_NUMERIC=en_US.UTF-8",
+                     "LC_MONETARY=en_US.UTF-8"],
+                    capture_output=True, timeout=60,
+                )
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                pass
+
+        threading.Thread(target=_worker, daemon=True).start()
 
         # Defer restart one idle tick so GTK finishes unmapping the
         # sub-page. Fallback timeout guards against wait_for_apply

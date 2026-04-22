@@ -34,11 +34,22 @@ class DateTimePage(BasePage, Adw.PreferencesPage):
         self._time_group = group
 
         # Seed the group description with the current time, then start the
-        # 1 Hz timer.  map/unmap are wired to self (the page IS the widget).
+        # 1 Hz timer. Re-arm the timer on every map so navigating away
+        # and back doesn't leave the clock frozen — _cleanup cancels
+        # the source and nulls the id, but only _build() previously
+        # re-created it, so after the first unmap the clock stopped
+        # updating permanently (pages are cached, _build() runs once).
         self._mapped = True
         self._update_time()
         self._timer_id = GLib.timeout_add_seconds(1, self._update_time)
-        self.connect("map", lambda _: setattr(self, "_mapped", True))
+
+        def _on_map(_w):
+            self._mapped = True
+            if self._timer_id is None:
+                self._update_time()
+                self._timer_id = GLib.timeout_add_seconds(1, self._update_time)
+
+        self.connect("map", _on_map)
         self.connect("unmap", lambda _: self._cleanup())
 
         # Timezone — AdwEntryRow with an explicit apply button so the
@@ -142,12 +153,19 @@ class DateTimePage(BasePage, Adw.PreferencesPage):
     @staticmethod
     def _get_ntp():
         try:
+            # Force C locale on the timedatectl invocation so the
+            # "yes"/"no" value token can't be localized by a
+            # non-English session env. Some downstream systemd builds
+            # and older versions emit localized tokens; ours expects
+            # literal "yes".
+            import os
+            env = {**os.environ, "LC_ALL": "C"}
             r = subprocess.run(
                 ["timedatectl", "show", "--property=NTP", "--value"],
-                capture_output=True, text=True, timeout=5,
+                capture_output=True, text=True, timeout=5, env=env,
             )
             return r.stdout.strip().lower() == "yes"
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return False
 
     def _set_ntp(self, enabled):
@@ -163,7 +181,7 @@ class DateTimePage(BasePage, Adw.PreferencesPage):
                 return
             except FileNotFoundError:
                 GLib.idle_add(lambda: self.store.show_toast(
-                    _("timedatectl not available"), True) or False)
+                    _("Time settings are unavailable on this system"), True) or False)
                 return
             if result.returncode != 0:
                 GLib.idle_add(lambda: self.store.show_toast(

@@ -344,6 +344,14 @@ def ensure_settings() -> dict:
     except OSError:
         pass
 
+    # high_contrast forces dark — needs to land before we write the
+    # greeter-theme file, otherwise the lock screen / login screen can
+    # paint light on a system that's otherwise in high-contrast dark
+    # until the user triggers any other apply. We pre-read the flag
+    # here; the final validation + writeback happens further down.
+    if bool(data.get("high_contrast", False)):
+        theme = "dark"
+
     greeter_theme_path = greeter_state_dir / "greeter-theme"
     try:
         greeter_theme_path.write_text(theme + "\n", encoding="utf-8")
@@ -449,6 +457,38 @@ def ensure_settings() -> dict:
         capslock_behavior = "default"
     panel_twilight = bool(data.get("panel_twilight", False))
 
+    # Libinput input-speed + accel-profile values are interpolated into
+    # the generated rc.xml. Without coercion a stale/hand-edited
+    # settings.json with a non-numeric value (e.g. {"touchpad_pointer_speed": "0.3"})
+    # crashes `(tp_scroll - 1) * ...` in write_labwc_rc_overrides with
+    # TypeError, abortin the whole apply. Clamp to libinput's ranges
+    # and write the coerced values back to settings.json.
+    def _coerce_float(key: str, default: float, lo: float, hi: float) -> float:
+        try:
+            v = float(data.get(key, default))
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, v))
+
+    def _coerce_int(key: str, default: int, lo: int, hi: int) -> int:
+        try:
+            v = int(data.get(key, default))
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, v))
+
+    touchpad_pointer_speed = _coerce_float("touchpad_pointer_speed", 0.0, -1.0, 1.0)
+    mouse_pointer_speed = _coerce_float("mouse_pointer_speed", 0.0, -1.0, 1.0)
+    touchpad_scroll_speed = _coerce_int("touchpad_scroll_speed", 5, 1, 10)
+    mouse_accel_profile = data.get("mouse_accel_profile", "adaptive")
+    if mouse_accel_profile not in ("adaptive", "flat"):
+        mouse_accel_profile = "adaptive"
+    touchpad_tap_to_click = bool(data.get("touchpad_tap_to_click", True))
+    touchpad_natural_scroll = bool(data.get("touchpad_natural_scroll", False))
+    mouse_natural_scroll = bool(data.get("mouse_natural_scroll", False))
+    keyboard_repeat_delay = _coerce_int("keyboard_repeat_delay", 300, 150, 1000)
+    keyboard_repeat_rate = _coerce_int("keyboard_repeat_rate", 40, 10, 100)
+
     # Write back validated values, preserving all other keys (input, keyboard, power)
     data.update({
         "edge": edge,
@@ -476,11 +516,32 @@ def ensure_settings() -> dict:
         "clock_24h": clock_24h,
         "capslock_behavior": capslock_behavior,
         "panel_twilight": panel_twilight,
+        "touchpad_pointer_speed": touchpad_pointer_speed,
+        "touchpad_scroll_speed": touchpad_scroll_speed,
+        "touchpad_tap_to_click": touchpad_tap_to_click,
+        "touchpad_natural_scroll": touchpad_natural_scroll,
+        "mouse_pointer_speed": mouse_pointer_speed,
+        "mouse_natural_scroll": mouse_natural_scroll,
+        "mouse_accel_profile": mouse_accel_profile,
+        "keyboard_repeat_delay": keyboard_repeat_delay,
+        "keyboard_repeat_rate": keyboard_repeat_rate,
     })
 
-    with SETTINGS_PATH.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2)
-        handle.write("\n")
+    # Atomic writeback: tmp-then-rename guards against a crash or OOM
+    # mid-dump from leaving settings.json truncated (next run would
+    # JSONDecodeError and fall back to defaults, silently losing every
+    # prior customization). Mirrors SettingsStore._write in the app.
+    try:
+        tmp = SETTINGS_PATH.with_suffix(".json.tmp")
+        with tmp.open("w", encoding="utf-8") as handle:
+            json.dump(data, handle, indent=2)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp, SETTINGS_PATH)
+    except OSError as exc:
+        print(f"apply-settings: settings.json writeback failed: {exc}",
+              file=sys.stderr)
 
     # Runtime consumers (swaybg, token builder) need the resolved path, not the ID.
     data["wallpaper"] = wallpaper
@@ -1014,44 +1075,80 @@ window.switcher.item.border.color: {accent}
         handle.write(themerc)
 
 
-def _build_keybinds_xml() -> str:
-    """Read user keybinding overrides and build XML keybind elements."""
+def _user_keybind_overrides() -> dict[str, str]:
+    """Parse keybindings.json and return {key: inner_action_xml}.
+
+    Returns a mapping by labwc key string to the inner <action ...>
+    XML fragment. Values are escape-safe (via xml.sax.saxutils).
+    Unparseable / non-list files return {}.
+    """
     from xml.sax.saxutils import escape, quoteattr
 
     keybinds_path = SETTINGS_DIR / "keybindings.json"
     if not keybinds_path.exists():
-        return ""
+        return {}
     try:
         bindings = json.loads(keybinds_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
-        return ""
-    if not bindings:
-        return ""
-    lines = []
+        return {}
+    if not isinstance(bindings, list):
+        return {}
+
+    out: dict[str, str] = {}
     for entry in bindings:
+        if not isinstance(entry, dict):
+            continue
         key = entry.get("key", "")
         action_name = entry.get("action", "")
         command = entry.get("command", "")
         direction = entry.get("direction", "")
         menu = entry.get("menu", "")
-        if not key or not action_name:
+        if not isinstance(key, str) or not key:
+            continue
+        if not isinstance(action_name, str) or not action_name:
             continue
         if command:
-            lines.append(f"    <keybind key={quoteattr(key)}>")
-            lines.append(f"      <action name={quoteattr(action_name)} command={quoteattr(command)}/>")
-            lines.append("    </keybind>")
+            frag = f'<action name={quoteattr(action_name)} command={quoteattr(str(command))}/>'
         elif direction:
-            lines.append(f"    <keybind key={quoteattr(key)}>")
-            lines.append(f"      <action name={quoteattr(action_name)}><direction>{escape(direction)}</direction></action>")
-            lines.append("    </keybind>")
+            frag = (
+                f'<action name={quoteattr(action_name)}>'
+                f'<direction>{escape(str(direction))}</direction>'
+                f'</action>'
+            )
         elif menu:
-            lines.append(f"    <keybind key={quoteattr(key)}>")
-            lines.append(f"      <action name={quoteattr(action_name)} menu={quoteattr(menu)}/>")
-            lines.append("    </keybind>")
+            frag = f'<action name={quoteattr(action_name)} menu={quoteattr(str(menu))}/>'
         else:
-            lines.append(f"    <keybind key={quoteattr(key)}>")
-            lines.append(f"      <action name={quoteattr(action_name)}/>")
-            lines.append("    </keybind>")
+            frag = f'<action name={quoteattr(action_name)}/>'
+        out[key] = frag
+    return out
+
+
+def _build_merged_keybinds_xml(defaults: dict[str, str]) -> str:
+    """Merge user overrides into the default keybind set, emit <keybind> blocks.
+
+    User overrides for a given key REPLACE the default — previously the
+    default block was hardcoded in the rc.xml template and user
+    overrides were appended, so rebinding "Open Terminal" from C-A-T to
+    C-A-Y left C-A-T firing alongside the new binding.
+
+    A user override with an empty-string action is treated as "remove
+    this default" (future-proofing for an "unbind" UI).
+    """
+    from xml.sax.saxutils import quoteattr
+
+    overrides = _user_keybind_overrides()
+    merged: dict[str, str] = dict(defaults)
+    for key, frag in overrides.items():
+        if not frag:
+            merged.pop(key, None)
+        else:
+            merged[key] = frag
+    lines = []
+    for key in merged:
+        frag = merged[key]
+        lines.append(f"    <keybind key={quoteattr(key)}>")
+        lines.append(f"      {frag}")
+        lines.append("    </keybind>")
     return "\n".join(lines) + "\n" if lines else ""
 
 
@@ -1100,7 +1197,47 @@ def write_labwc_rc_overrides(settings: dict) -> None:
         # the rest of this block.
         options_line = f"\n      <xkbOptions>{_xml_escape(xkb_options)}</xkbOptions>"
 
-    keybinds_xml = _build_keybinds_xml()
+    # Default keybindings. Structured as a dict keyed by labwc key
+    # string so user overrides (which also come in keyed by key
+    # string) can REPLACE the default rather than augment it.
+    # Previous versions of this file hardcoded each as a literal
+    # <keybind> XML block and appended user overrides after — so a
+    # user rebinding "Open Terminal" from C-A-T to C-A-Y ended up with
+    # BOTH bindings active in labwc, because the hardcoded C-A-T was
+    # still in the emitted rc.xml. The comment next to each entry is
+    # the human-readable action name the settings page's Reset button
+    # can use to restore defaults.
+    _default_keybinds: dict[str, str] = {
+        # Terminal
+        "C-A-T": '<action name="Execute" command="foot"/>',
+        # Audio (Chromebook top row)
+        "XF86AudioRaiseVolume": '<action name="Execute" command="/usr/libexec/universal-lite-volume up"/>',
+        "XF86AudioLowerVolume": '<action name="Execute" command="/usr/libexec/universal-lite-volume down"/>',
+        "XF86AudioMute": '<action name="Execute" command="/usr/libexec/universal-lite-volume mute"/>',
+        # Brightness (Chromebook top row)
+        "XF86MonBrightnessUp": '<action name="Execute" command="/usr/libexec/universal-lite-brightness up"/>',
+        "XF86MonBrightnessDown": '<action name="Execute" command="/usr/libexec/universal-lite-brightness down"/>',
+        # Chromebook function keys
+        "XF86FullScreen": '<action name="ToggleFullscreen"/>',
+        # Screenshots
+        "Print": '<action name="Execute" command="sh -c \'grim - | wl-copy\'"/>',
+        "S-Print": '<action name="Execute" command="sh -c \'grim -g &quot;$(slurp)&quot; - | wl-copy\'"/>',
+        # Super-key shortcuts
+        "W-l": '<action name="Execute" command="swaylock -f"/>',
+        "W-e": '<action name="Execute" command="Thunar"/>',
+        "W-Escape": '<action name="Execute" command="xfce4-taskmanager"/>',
+        "W-comma": '<action name="Execute" command="universal-lite-settings"/>',
+        "W-space": '<action name="Execute" command="universal-lite-app-menu"/>',
+        # Window management
+        "A-Tab": '<action name="NextWindow"/>',
+        "A-S-Tab": '<action name="PreviousWindow"/>',
+        "A-bracketleft": '<action name="SnapToEdge"><direction>left</direction></action>',
+        "A-bracketright": '<action name="SnapToEdge"><direction>right</direction></action>',
+        "A-F4": '<action name="Close"/>',
+        "W-Up": '<action name="ToggleMaximize"/>',
+        "W-Down": '<action name="Iconify"/>',
+    }
+    keybinds_xml = _build_merged_keybinds_xml(_default_keybinds)
 
     rc = f"""\
 <?xml version="1.0"?>
@@ -1135,84 +1272,6 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     <repeatDelay>{repeat_delay}</repeatDelay>
     <repeatRate>{repeat_rate}</repeatRate>
 
-    <!-- Terminal -->
-    <keybind key="C-A-T">
-      <action name="Execute" command="foot"/>
-    </keybind>
-
-    <!-- Audio (Chromebook top row) -->
-    <keybind key="XF86AudioRaiseVolume">
-      <action name="Execute" command="/usr/libexec/universal-lite-volume up"/>
-    </keybind>
-    <keybind key="XF86AudioLowerVolume">
-      <action name="Execute" command="/usr/libexec/universal-lite-volume down"/>
-    </keybind>
-    <keybind key="XF86AudioMute">
-      <action name="Execute" command="/usr/libexec/universal-lite-volume mute"/>
-    </keybind>
-
-    <!-- Brightness (Chromebook top row) -->
-    <keybind key="XF86MonBrightnessUp">
-      <action name="Execute" command="/usr/libexec/universal-lite-brightness up"/>
-    </keybind>
-    <keybind key="XF86MonBrightnessDown">
-      <action name="Execute" command="/usr/libexec/universal-lite-brightness down"/>
-    </keybind>
-
-    <!-- Chromebook function keys -->
-    <keybind key="XF86FullScreen">
-      <action name="ToggleFullscreen"/>
-    </keybind>
-
-    <!-- Screenshots -->
-    <keybind key="Print">
-      <action name="Execute" command="sh -c 'grim - | wl-copy'"/>
-    </keybind>
-    <keybind key="S-Print">
-      <action name="Execute" command="sh -c 'grim -g &quot;$(slurp)&quot; - | wl-copy'"/>
-    </keybind>
-
-    <!-- Super key shortcuts -->
-    <keybind key="W-l">
-      <action name="Execute" command="swaylock -f"/>
-    </keybind>
-    <keybind key="W-e">
-      <action name="Execute" command="Thunar"/>
-    </keybind>
-    <keybind key="W-Escape">
-      <action name="Execute" command="xfce4-taskmanager"/>
-    </keybind>
-    <keybind key="W-comma">
-      <action name="Execute" command="universal-lite-settings"/>
-    </keybind>
-    <keybind key="W-space">
-      <action name="Execute" command="universal-lite-app-menu"/>
-    </keybind>
-
-    <!-- Window management -->
-    <keybind key="A-Tab">
-      <action name="NextWindow"/>
-    </keybind>
-    <keybind key="A-S-Tab">
-      <action name="PreviousWindow"/>
-    </keybind>
-    <keybind key="A-bracketleft">
-      <action name="SnapToEdge"><direction>left</direction></action>
-    </keybind>
-    <keybind key="A-bracketright">
-      <action name="SnapToEdge"><direction>right</direction></action>
-    </keybind>
-    <keybind key="A-F4">
-      <action name="Close"/>
-    </keybind>
-    <keybind key="W-Up">
-      <action name="ToggleMaximize"/>
-    </keybind>
-    <keybind key="W-Down">
-      <action name="Iconify"/>
-    </keybind>
-
-    <!-- User custom keybinds -->
 {keybinds_xml}\
     <xkb>
       <xkbLayout>{kb_layout}</xkbLayout>{variant_line}{options_line}
@@ -1364,7 +1423,13 @@ separator-color={transparent}
 def restart_program(name: str, command: list[str]) -> None:
     if shutil.which(command[0]) is None:
         return
-    subprocess.run(["pkill", "-x", name], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # Scope pkill to the current user so we don't accidentally kill
+    # the greeter's swaybg (running as the greetd user) or a sibling
+    # user's copy of the same program on a multi-user system.
+    subprocess.run(
+        ["pkill", "-U", str(os.getuid()), "-x", name],
+        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
     time.sleep(0.15)  # Let old process exit before spawning replacement
     # start_new_session=True puts the child in its own process group and
     # session, detaching from apply-settings's group. Without it, the
@@ -1393,7 +1458,7 @@ def reload_waybar() -> None:
     if shutil.which("waybar") is None:
         return
     result = subprocess.run(
-        ["pkill", "-USR2", "-x", "waybar"],
+        ["pkill", "-U", str(os.getuid()), "-USR2", "-x", "waybar"],
         check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
     # pkill returns 1 when no process matched. Anything else (0 = sent,
@@ -1413,9 +1478,15 @@ def _current_swaybg_wallpaper() -> str:
     try:
         out = subprocess.check_output(
             ["pgrep", "-af", "swaybg"], text=True,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, timeout=5,
         ).strip()
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError,
+            subprocess.TimeoutExpired, OSError):
+        # CalledProcessError: no swaybg running (exit 1).
+        # FileNotFoundError / OSError: pgrep not on PATH (minimal images).
+        # TimeoutExpired: shouldn't happen for pgrep but defensive.
+        # Returning "" forces a swaybg restart; callers compare against
+        # the desired wallpaper path.
         return ""
     for line in out.splitlines():
         parts = line.split()
@@ -1441,7 +1512,7 @@ def _sync_power_profile(settings: dict) -> None:
             stderr=subprocess.DEVNULL,
         ).strip()
     except (FileNotFoundError, subprocess.CalledProcessError,
-            subprocess.TimeoutExpired):
+            subprocess.TimeoutExpired, OSError):
         return
     if current == target:
         return
@@ -1463,7 +1534,22 @@ def _sync_lid_action(settings: dict) -> None:
             encoding="utf-8")
     except OSError:
         body = ""
-    if f"HandleLidSwitch={logind_value}" in body:
+    # Walk the file line-by-line and pick the last uncommented
+    # HandleLidSwitch= setting. Raw substring match would treat a
+    # commented "#HandleLidSwitch=suspend" paired with an active
+    # "HandleLidSwitch=lock" as already-in-sync when target=suspend
+    # — we'd never trigger the pkexec to fix the live value.
+    current = None
+    for raw in body.splitlines():
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith("HandleLidSwitch="):
+            # Only match the exact key, not HandleLidSwitchExternalPower.
+            before, _, after = stripped.partition("=")
+            if before == "HandleLidSwitch":
+                current = after.strip()
+    if current == logind_value:
         return
     _run_best_effort(
         ["pkexec", "/usr/libexec/universal-lite-lid-action", target],

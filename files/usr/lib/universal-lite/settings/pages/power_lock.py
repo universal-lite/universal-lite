@@ -133,7 +133,16 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
             idx = r.get_selected()
             if 0 <= idx < len(values):
-                self._power_helper.set_active_profile(values[idx])
+                value = values[idx]
+                # Write through settings.json as well as D-Bus. Without
+                # this, apply-settings' _sync_power_profile reads the
+                # stored (old) value on the next unrelated apply and
+                # forces the daemon back, silently reverting the user's
+                # pick. The D-Bus set still happens first so the profile
+                # takes effect immediately; save_and_apply persists for
+                # the reconciler and triggers a full apply run.
+                self._power_helper.set_active_profile(value)
+                self.store.save_and_apply("power_profile", value)
 
         row.connect("notify::selected", _on_selected)
         self._profile_row = row
@@ -166,11 +175,20 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
 
         current = self.store.get("lid_close_action", "suspend")
         row.set_selected(values.index(current) if current in values else 0)
+        self._lid_row = row
+        self._lid_row_values = values
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
             idx = r.get_selected()
-            if 0 <= idx < len(values):
-                self._on_lid_action_changed(values[idx])
+            if not (0 <= idx < len(values)):
+                return
+            # Disable the row while pkexec is in flight. Rapid taps
+            # would otherwise stack auth prompts and race the
+            # save_and_apply callbacks; the last handler to win would
+            # decide the stored value, regardless of what the user
+            # ends up clicking Allow on.
+            r.set_sensitive(False)
+            self._on_lid_action_changed(values[idx])
 
         row.connect("notify::selected", _on_selected)
 
@@ -227,6 +245,27 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         a background thread; on success, persist via the store on the
         GLib main loop; on failure, show a toast.
         """
+        def _reenable_and_reconcile(success: bool) -> bool:
+            # Restore interactivity and — on failure — revert the
+            # ComboRow to the stored value so the UI reflects actual
+            # system state instead of the user's attempted pick.
+            row = getattr(self, "_lid_row", None)
+            if row is not None:
+                row.set_sensitive(True)
+                if not success:
+                    stored = self.store.get("lid_close_action", "suspend")
+                    values = getattr(self, "_lid_row_values", [])
+                    if stored in values:
+                        idx = values.index(stored)
+                        if row.get_selected() != idx:
+                            # set_selected re-fires notify::selected but
+                            # that handler only acts on user picks that
+                            # differ from stored state — since we're
+                            # setting to the stored value, this won't
+                            # trigger a second pkexec.
+                            row.set_selected(idx)
+            return False
+
         def _run() -> None:
             try:
                 result = subprocess.run(
@@ -234,30 +273,28 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
                     capture_output=True, timeout=60,
                 )
             except subprocess.TimeoutExpired:
-                GLib.idle_add(
-                    lambda: self.store.show_toast(
-                        _("Lid action change timed out"), True) or False
-                )
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Lid action change timed out"), True) or False)
+                GLib.idle_add(_reenable_and_reconcile, False)
                 return
             except OSError:
-                GLib.idle_add(
-                    lambda: self.store.show_toast(
-                        _("pkexec not available"), True) or False
-                )
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Authentication tool not available"), True) or False)
+                GLib.idle_add(_reenable_and_reconcile, False)
                 return
 
             if result.returncode == 0:
-                GLib.idle_add(
-                    lambda: self.store.save_and_apply(
-                        "lid_close_action", action) or False
-                )
+                GLib.idle_add(lambda: self.store.save_and_apply(
+                    "lid_close_action", action) or False)
+                GLib.idle_add(_reenable_and_reconcile, True)
             elif result.returncode == 126:
-                # Polkit auth declined — silent, user already knows.
-                pass
+                # Polkit auth declined — revert silently so the UI
+                # matches reality without annoying the user with a
+                # toast they already understand.
+                GLib.idle_add(_reenable_and_reconcile, False)
             else:
-                GLib.idle_add(
-                    lambda: self.store.show_toast(
-                        _("Failed to change lid close action"), True) or False
-                )
+                GLib.idle_add(lambda: self.store.show_toast(
+                    _("Failed to change lid close action"), True) or False)
+                GLib.idle_add(_reenable_and_reconcile, False)
 
         threading.Thread(target=_run, daemon=True).start()

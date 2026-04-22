@@ -31,6 +31,7 @@ class SettingsStore:
         self._apply_running = False
         self._apply_pending = False
         self._apply_wait_source: int | None = None
+        self._last_apply_spawn_failed: bool = False
 
     def _load(self) -> dict:
         self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -71,7 +72,8 @@ class SettingsStore:
                 self._data[key] = defaults[key]
             else:
                 self._data.pop(key, None)
-        self._write()
+        if not self._write():
+            return  # disk error; _write toasted the reason
         self._run_apply()
 
     def remove_keys_matching(self, predicate) -> None:
@@ -86,12 +88,14 @@ class SettingsStore:
 
     def save_and_apply(self, key: str, value) -> None:
         self._data[key] = value
-        self._write()
+        if not self._write():
+            return  # disk error; _write toasted the reason
         self._run_apply()
 
     def save_dict_and_apply(self, updates: dict) -> None:
         self._data.update(updates)
-        self._write()
+        if not self._write():
+            return
         self._run_apply()
 
     def apply(self) -> None:
@@ -141,15 +145,49 @@ class SettingsStore:
         if self._apply_wait_source is not None:
             GLib.source_remove(self._apply_wait_source)
             self._apply_wait_source = None
+        # Clear the queued-apply flag too. Without this, _on_apply_done
+        # of an in-flight apply would see _apply_pending=True and
+        # respawn apply-settings against a destroyed window with no
+        # toast sink. The apply itself is still harmless (it just
+        # rewrites the same configs), but it's wasted cycles.
+        self._apply_pending = False
         self._toast_callback = None
 
-    def _write(self) -> None:
+    def _write(self) -> bool:
+        """Persist self._data atomically. Returns True on success.
+
+        Failures (ENOSPC on a 2 GB Chromebook, read-only bind mount on
+        ~/.config, wrong ownership after a chown) previously propagated
+        out of save_and_apply as unhandled exceptions through GTK signal
+        handlers — the user's click flipped back with no toast. Now the
+        error is caught, toasted, and the caller is informed so it can
+        skip the doomed apply run.
+
+        Uses fsync before rename so an abrupt power loss can't leave a
+        truncated settings.json that would be replaced with defaults on
+        next boot — losing every previously-saved preference.
+        """
         tmp = self._path.with_suffix(".tmp")
-        tmp.write_text(
-            json.dumps(self._data, indent=2) + "\n", encoding="utf-8"
-        )
-        os.chmod(tmp, 0o600)
-        os.rename(tmp, self._path)
+        try:
+            with tmp.open("w", encoding="utf-8") as handle:
+                handle.write(json.dumps(self._data, indent=2) + "\n")
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.chmod(tmp, 0o600)
+            os.replace(tmp, self._path)
+            return True
+        except OSError as exc:
+            if self._toast_callback is not None:
+                self._toast_callback(
+                    _("Could not save settings: {reason}").format(reason=exc.strerror or str(exc)),
+                    True,
+                )
+            # Clean up the tmp file if it exists; ignore secondary failure.
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+            return False
 
     def _run_apply(self) -> None:
         if self._apply_running:
@@ -174,10 +212,20 @@ class SettingsStore:
             # attempt to re-enter this same broken state immediately.
             self._apply_running = False
             self._apply_pending = False
+            # Record the spawn failure so wait_for_apply's restart
+            # callback can choose to skip rather than os.execv against
+            # a system whose on-disk configs don't reflect the new
+            # settings.json (since apply-settings never ran). Cleared
+            # on the next successful spawn.
+            self._last_apply_spawn_failed = True
             if self._toast_callback:
                 detail = str(exc) or exc.__class__.__name__
-                self._toast_callback(f"Failed to apply settings: {detail}", True)
+                self._toast_callback(
+                    _("Failed to apply settings: {detail}").format(detail=detail),
+                    True,
+                )
             return
+        self._last_apply_spawn_failed = False
 
         def _wait():
             try:
@@ -198,13 +246,16 @@ class SettingsStore:
         self._apply_running = False
         if self._toast_callback is not None:
             if returncode == 0:
-                self._toast_callback("Settings applied", False)
+                self._toast_callback(_("Settings applied"), False)
             elif returncode == -1:
                 msg = _("Apply timed out after {n}s").format(n=self.APPLY_TIMEOUT_SEC)
                 self._toast_callback(msg, True)
             else:
                 err = stderr_bytes.decode("utf-8", errors="replace").strip()
-                msg = f"Failed to apply: {err[:80]}" if err else "Failed to apply settings"
+                if err:
+                    msg = _("Failed to apply: {err}").format(err=err[:80])
+                else:
+                    msg = _("Failed to apply settings")
                 self._toast_callback(msg, True)
         if self._apply_pending:
             self._apply_pending = False

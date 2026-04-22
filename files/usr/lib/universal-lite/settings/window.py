@@ -70,7 +70,11 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._sidebar.set_margin_bottom(8)
         # Adwaita's standard class for a sidebar-style ListBox - gives
         # rows the right navigation look, hover, and selected colours.
+        # Also add our own "sidebar" class so the custom CSS in
+        # css/style.css (.sidebar .category-icon, .category-label)
+        # actually applies — without it those rules were dead code.
         self._sidebar.add_css_class("navigation-sidebar")
+        self._sidebar.add_css_class("sidebar")
         sidebar_scroll.set_child(self._sidebar)
 
         sidebar_toolbar = Adw.ToolbarView()
