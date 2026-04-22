@@ -21,6 +21,16 @@ from .events import EventBus
 NM = None  # type: ignore[assignment]
 
 
+# Bounded default timeout for synchronous D-Bus calls made on the GTK
+# main thread. BlueZ's Adapter1 methods (StartDiscovery especially) are
+# known to hang ~25 s after suspend/resume on some Chromebook
+# hardware; power-profiles-daemon is much faster but can still stall
+# briefly during pstate transitions. Using -1 (infinite) froze the
+# whole settings UI during those stalls. 5 s is long enough for any
+# normal call, short enough that the user sees a responsive UI.
+_DBUS_CALL_TIMEOUT_MS = 5000
+
+
 def _ensure_nm() -> None:
     global NM
     if NM is not None:
@@ -110,8 +120,17 @@ class NetworkManagerHelper:
         return self._client.wireless_get_enabled() if self._client else False
 
     def set_wifi_enabled(self, enabled: bool) -> None:
-        if self._client:
+        if not self._client:
+            return
+        try:
             self._client.wireless_set_enabled(enabled)
+        except GLib.Error as exc:
+            print(f"dbus_helpers: NM: wireless_set_enabled failed: {exc.message}", file=sys.stderr)
+            # Publish network-changed so the wifi SwitchRow re-reads
+            # is_wifi_enabled() and reverts to match NM's real state.
+            # Matches the reconciliation pattern used for BlueZ powered
+            # and PowerProfiles active-profile failures.
+            self._event_bus.publish("network-changed")
 
     def get_access_points(self) -> list[AccessPointInfo]:
         if self._wifi_device is None:
@@ -302,7 +321,7 @@ class BlueZHelper:
                 "org.bluez", "/",
                 "org.freedesktop.DBus.ObjectManager", "GetManagedObjects",
                 None, GLib.VariantType("(a{oa{sa{sv}}})"),
-                Gio.DBusCallFlags.NONE, -1, None,
+                Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
             objects = result.unpack()[0]
             for path, interfaces in objects.items():
@@ -325,7 +344,7 @@ class BlueZHelper:
                 "org.freedesktop.DBus.Properties", "Get",
                 GLib.Variant("(ss)", ("org.bluez.Adapter1", "Powered")),
                 GLib.VariantType("(v)"),
-                Gio.DBusCallFlags.NONE, -1, None,
+                Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
             return result.unpack()[0]
         except GLib.Error as exc:
@@ -340,10 +359,17 @@ class BlueZHelper:
                 "org.bluez", self._adapter_path,
                 "org.freedesktop.DBus.Properties", "Set",
                 GLib.Variant("(ssv)", ("org.bluez.Adapter1", "Powered", GLib.Variant("b", enabled))),
-                None, Gio.DBusCallFlags.NONE, -1, None,
+                None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: set Powered failed: {exc.message}", file=sys.stderr)
+            # Publish bluetooth-changed on failure so the SwitchRow
+            # re-reads `is_powered()` and flips back to match the real
+            # adapter state. Without this, the switch stays visually
+            # "on" while the adapter is still off, and the user has to
+            # click twice to retry (GTK's toggle is sticky past the
+            # second click because `_updating` guards block it).
+            self._event_bus.publish("bluetooth-changed")
 
     def get_devices(self) -> list[BluetoothDevice]:
         if self._bus is None:
@@ -353,7 +379,7 @@ class BlueZHelper:
                 "org.bluez", "/",
                 "org.freedesktop.DBus.ObjectManager", "GetManagedObjects",
                 None, GLib.VariantType("(a{oa{sa{sv}}})"),
-                Gio.DBusCallFlags.NONE, -1, None,
+                Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
             objects = result.unpack()[0]
         except GLib.Error as exc:
@@ -381,7 +407,7 @@ class BlueZHelper:
             self._bus.call_sync(
                 "org.bluez", self._adapter_path,
                 "org.bluez.Adapter1", "StartDiscovery",
-                None, None, Gio.DBusCallFlags.NONE, -1, None,
+                None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: StartDiscovery failed: {exc.message}", file=sys.stderr)
@@ -393,7 +419,7 @@ class BlueZHelper:
             self._bus.call_sync(
                 "org.bluez", self._adapter_path,
                 "org.bluez.Adapter1", "StopDiscovery",
-                None, None, Gio.DBusCallFlags.NONE, -1, None,
+                None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: StopDiscovery failed: {exc.message}", file=sys.stderr)
@@ -432,7 +458,7 @@ class BlueZHelper:
             self._bus.call_sync(
                 "org.bluez", device_path,
                 "org.bluez.Device1", "Disconnect",
-                None, None, Gio.DBusCallFlags.NONE, -1, None,
+                None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: Disconnect failed: {exc.message}", file=sys.stderr)
@@ -446,7 +472,7 @@ class BlueZHelper:
                 "org.bluez", self._adapter_path,
                 "org.bluez.Adapter1", "RemoveDevice",
                 GLib.Variant("(o)", (device_path,)),
-                None, Gio.DBusCallFlags.NONE, -1, None,
+                None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: RemoveDevice failed: {exc.message}", file=sys.stderr)
@@ -525,7 +551,7 @@ class PowerProfilesHelper:
                 "org.freedesktop.DBus.Properties", "Get",
                 GLib.Variant("(ss)", (self.IFACE, "ActiveProfile")),
                 GLib.VariantType("(v)"),
-                Gio.DBusCallFlags.NONE, -1, None,
+                Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
             return result.unpack()[0]
         except GLib.Error as exc:
@@ -540,10 +566,16 @@ class PowerProfilesHelper:
                 self.BUS_NAME, self.OBJECT_PATH,
                 "org.freedesktop.DBus.Properties", "Set",
                 GLib.Variant("(ssv)", (self.IFACE, "ActiveProfile", GLib.Variant("s", profile))),
-                None, Gio.DBusCallFlags.NONE, -1, None,
+                None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
             )
         except GLib.Error as exc:
             print(f"dbus_helpers: PowerProfiles: set ActiveProfile failed: {exc.message}", file=sys.stderr)
+            # On success, power-profiles-daemon emits PropertiesChanged
+            # and _on_props_changed reconciles the UI. On failure no
+            # signal fires, so the ComboRow would sit on the value the
+            # user picked while the daemon is still on the old one.
+            # Publish our own event to force a re-read.
+            self._event_bus.publish("power-profile-changed")
 
     def _on_props_changed(self, _conn, _sender, _path, _iface, _signal, params, _data) -> None:
         changed = params.unpack()[1]

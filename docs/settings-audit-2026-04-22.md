@@ -58,7 +58,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ## Wave 2 — User-visible now
 
-### [ ] C3. BlueZ helper uses `call_sync(-1)` on main thread — 25 s UI freeze on wedged adapter
+### [x] C3. BlueZ helper uses `call_sync(-1)` on main thread — 25 s UI freeze on wedged adapter
 
 **Location:** `dbus_helpers.py:377-387` (`start_discovery`, `stop_discovery`, `set_powered`, `is_powered`, `get_devices`, `remove_device`)
 **Confidence:** High
@@ -69,7 +69,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] C4. `_sync_lid_action` triggers pkexec on every apply when drop-in is missing
+### [x] C4. `_sync_lid_action` triggers pkexec on every apply when drop-in is missing
 
 **Location:** `apply-settings:1404-1424`
 **Confidence:** High
@@ -80,7 +80,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] C5. `lock_timeout` / `display_off_timeout` never validated → corrupt JSON aborts apply silently
+### [x] C5. `lock_timeout` / `display_off_timeout` never validated → corrupt JSON aborts apply silently
 
 **Location:** `ensure_settings` in `apply-settings` (around lines 289-450), consumed at `apply-settings:1460`
 **Confidence:** High
@@ -91,7 +91,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I9. xkb values in labwc rc.xml aren't XML-escaped
+### [x] I9. xkb values in labwc rc.xml aren't XML-escaped
 
 **Location:** `apply-settings:1034-1054, 1171`
 **Confidence:** High
@@ -102,7 +102,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I10. Wallpaper / accent toggle-off leaves UI and settings.json desynced
+### [x] I10. Wallpaper / accent toggle-off leaves UI and settings.json desynced
 
 **Location:** `appearance.py:103-109` (accent), `appearance.py:267-273` (wallpaper)
 **Confidence:** High
@@ -113,7 +113,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I3. Set-failure in NM / BlueZ / PowerProfiles doesn't reconcile UI
+### [x] I3. Set-failure in NM / BlueZ / PowerProfiles doesn't reconcile UI
 
 **Location:** `dbus_helpers.py:112-114` (wifi), `335-346` (bluez powered), `535-546` (power profile)
 **Confidence:** Medium-High

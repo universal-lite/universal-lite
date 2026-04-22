@@ -397,10 +397,23 @@ def ensure_settings() -> dict:
     night_light_start = str(data.get("night_light_start", "20:00"))
     night_light_end = str(data.get("night_light_end", "06:00"))
 
-    # Validate power settings
-    suspend_timeout = int(data.get("suspend_timeout", 0))
-    if suspend_timeout not in (0, 60, 120, 300, 600, 900, 1800):
-        suspend_timeout = 0
+    # Validate power settings. All three timers share the same allowed
+    # set. Coerce to int defensively — a stale/hand-edited settings.json
+    # with a non-numeric value would previously crash the apply run on
+    # int() downstream in main(), silently failing every subsequent
+    # apply. Fall back to each key's safe default if the cast fails.
+    _timeout_choices = (0, 60, 120, 300, 600, 900, 1800)
+
+    def _coerce_timeout(key: str, default: int) -> int:
+        try:
+            v = int(data.get(key, default))
+        except (TypeError, ValueError):
+            return default
+        return v if v in _timeout_choices else default
+
+    suspend_timeout = _coerce_timeout("suspend_timeout", 0)
+    lock_timeout = _coerce_timeout("lock_timeout", 300)
+    display_off_timeout = _coerce_timeout("display_off_timeout", 600)
     lid_close_action = data.get("lid_close_action", "suspend")
     if lid_close_action not in ("suspend", "lock", "nothing"):
         lid_close_action = "suspend"
@@ -434,6 +447,8 @@ def ensure_settings() -> dict:
         "night_light_start": night_light_start,
         "night_light_end": night_light_end,
         "suspend_timeout": suspend_timeout,
+        "lock_timeout": lock_timeout,
+        "display_off_timeout": display_off_timeout,
         "lid_close_action": lid_close_action,
         "power_profile": power_profile,
         "clock_24h": clock_24h,
@@ -1031,8 +1046,15 @@ def write_labwc_rc_overrides(settings: dict) -> None:
     m_speed = settings.get("mouse_pointer_speed", 0.0)
     m_accel = settings.get("mouse_accel_profile", "adaptive")
 
-    kb_layout = settings.get("keyboard_layout", "us")
-    kb_variant = settings.get("keyboard_variant", "")
+    # xkb values come from settings.json and can be user- or migration-
+    # edited. Escape every interpolation into rc.xml — an unescaped "<"
+    # or "]]>" in a variant or layout string would corrupt the XML and
+    # make labwc fall back to compiled defaults, potentially leaving the
+    # user without a working keyboard layout. _build_keybinds_xml above
+    # already escapes its output; these were the missing parts.
+    from xml.sax.saxutils import escape as _xml_escape
+    kb_layout = _xml_escape(settings.get("keyboard_layout", "us"))
+    kb_variant = _xml_escape(settings.get("keyboard_variant", ""))
     repeat_delay = settings.get("keyboard_repeat_delay", 300)
     repeat_rate = settings.get("keyboard_repeat_rate", 40)
 
@@ -1051,7 +1073,10 @@ def write_labwc_rc_overrides(settings: dict) -> None:
 
     options_line = ""
     if xkb_options:
-        options_line = f"\n      <xkbOptions>{xkb_options}</xkbOptions>"
+        # Constant-string values from a closed set above, but escape on
+        # principle so nobody adds a free-form branch later that bypasses
+        # the rest of this block.
+        options_line = f"\n      <xkbOptions>{_xml_escape(xkb_options)}</xkbOptions>"
 
     keybinds_xml = _build_keybinds_xml()
 

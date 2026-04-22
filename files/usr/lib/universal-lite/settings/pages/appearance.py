@@ -102,6 +102,12 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
 
         def _on_accent_toggled(btn, name):
             if not btn.get_active():
+                # ToggleButton lets the user click an already-active
+                # tile to deactivate it, but these tiles represent a
+                # single-selection group — no accent is never a valid
+                # state. Force the button back on so the UI can't drift
+                # away from whatever settings.json actually holds.
+                btn.set_active(True)
                 return
             for other in accent_buttons:
                 if other is not btn and other.get_active():
@@ -266,6 +272,11 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
 
     def _on_wallpaper_toggled(self, btn: Gtk.ToggleButton, wp_id: str) -> None:
         if not btn.get_active():
+            # Same rationale as the accent picker: these tiles are a
+            # single-selection group. Deactivating the only active tile
+            # would leave no wallpaper selected in the UI while
+            # settings.json still holds the old value.
+            btn.set_active(True)
             return
         for other_btn, _id in self._wallpaper_buttons:
             if other_btn is not btn and other_btn.get_active():
