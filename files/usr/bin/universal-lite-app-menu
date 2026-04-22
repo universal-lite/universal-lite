@@ -714,6 +714,13 @@ class AppMenu(Gtk.Window):
         btn.set_hexpand(False)
         btn.set_vexpand(False)
         btn.set_size_request(92, 82)
+        # valign=START keeps the hover/focus background from painting
+        # the full FlowBoxChild cell height. With a single search hit
+        # the flowbox row expands to fill the scrolled-window viewport;
+        # a button with default valign=FILL stretches with it and its
+        # :hover tint bleeds down the whole column.
+        btn.set_valign(Gtk.Align.START)
+        btn.set_halign(Gtk.Align.CENTER)
 
         display = app.get_display_name() or ""
         generic = _generic_name_for(app)
