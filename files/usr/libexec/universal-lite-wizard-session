@@ -28,7 +28,7 @@ cat > /root/.config/labwc/rc.xml <<'RCEOF'
 <labwc_config>
   <keyboard>
     <keybind key="C-A-T">
-      <action name="Execute" command="foot"/>
+      <action name="Execute" command="ptyxis"/>
     </keybind>
   </keyboard>
 </labwc_config>

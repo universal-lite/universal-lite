@@ -30,7 +30,6 @@ WAYBAR_DIR = CONFIG_HOME / "waybar"
 GTK3_DIR = CONFIG_HOME / "gtk-3.0"
 GTK4_DIR = CONFIG_HOME / "gtk-4.0"
 MAKO_DIR = CONFIG_HOME / "mako"
-FOOT_DIR = CONFIG_HOME / "foot"
 LABWC_DIR = CONFIG_HOME / "labwc"
 SWAYLOCK_DIR = CONFIG_HOME / "swaylock"
 
@@ -55,51 +54,6 @@ _palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
 
 ACCENTS = _palette["accents"]
 ADWAITA = {"light": _palette["light"], "dark": _palette["dark"]}
-
-# Standard Adwaita / GNOME Terminal ANSI palette
-ADWAITA_TERMINAL = {
-    "light": {
-        "foreground": "1e1e1e",
-        "background": "fafafa",
-        "regular0": "1e1e1e",
-        "regular1": "c01c28",
-        "regular2": "26a269",
-        "regular3": "a2734c",
-        "regular4": "1c71d8",
-        "regular5": "a347ba",
-        "regular6": "2aa1b3",
-        "regular7": "c0bfbc",
-        "bright0": "5e5c64",
-        "bright1": "f66151",
-        "bright2": "33d17a",
-        "bright3": "e5a50a",
-        "bright4": "62a0ea",
-        "bright5": "c061cb",
-        "bright6": "33c7de",
-        "bright7": "ffffff",
-    },
-    "dark": {
-        "foreground": "ffffff",
-        "background": "1e1e1e",
-        "regular0": "1e1e1e",
-        "regular1": "c01c28",
-        "regular2": "26a269",
-        "regular3": "a2734c",
-        "regular4": "1c71d8",
-        "regular5": "a347ba",
-        "regular6": "2aa1b3",
-        "regular7": "c0bfbc",
-        "bright0": "5e5c64",
-        "bright1": "f66151",
-        "bright2": "33d17a",
-        "bright3": "e5a50a",
-        "bright4": "62a0ea",
-        "bright5": "c061cb",
-        "bright6": "33c7de",
-        "bright7": "ffffff",
-    },
-}
-
 
 _ICON_SEARCH_ROOTS = (
     Path("/var/lib/flatpak/exports/share/icons/hicolor"),
@@ -808,6 +762,11 @@ def write_gtk_settings(tokens: dict) -> None:
         ],
         ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", tokens["accent"]],
         ["gsettings", "set", "org.gnome.desktop.interface", "font-name", f"Roboto {tokens['font_size_mono']}"],
+        # ptyxis reads monospace-font-name when its profile is set to use the
+        # system monospace font (the default), so this keeps the terminal font
+        # size in sync with the user's chosen UI font size.
+        ["gsettings", "set", "org.gnome.desktop.interface", "monospace-font-name",
+         f"{tokens['font_mono']} {tokens['font_size_mono']}"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", "Adwaita"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(tokens["cursor_size"])],
     ]
@@ -839,53 +798,6 @@ max-icon-size=48
 
     with (MAKO_DIR / "config").open("w", encoding="utf-8") as handle:
         handle.write(config)
-
-
-def write_foot_config(tokens: dict) -> None:
-    FOOT_DIR.mkdir(parents=True, exist_ok=True)
-
-    theme = tokens["theme"]
-    accent = tokens["accent_hex"]
-    term = ADWAITA_TERMINAL[theme]
-    alpha = "0.97" if theme == "light" else "0.95"
-    selection_bg = _strip_hash(accent)
-
-    ini = f"""\
-[main]
-font={tokens["font_mono"]}:size={tokens["font_size_mono"]}
-pad=12x12 center
-
-[scrollback]
-lines=10000
-
-[colors]
-alpha={alpha}
-foreground={term["foreground"]}
-background={term["background"]}
-selection-foreground=ffffff
-selection-background={selection_bg}
-
-regular0={term["regular0"]}
-regular1={term["regular1"]}
-regular2={term["regular2"]}
-regular3={term["regular3"]}
-regular4={term["regular4"]}
-regular5={term["regular5"]}
-regular6={term["regular6"]}
-regular7={term["regular7"]}
-
-bright0={term["bright0"]}
-bright1={term["bright1"]}
-bright2={term["bright2"]}
-bright3={term["bright3"]}
-bright4={term["bright4"]}
-bright5={term["bright5"]}
-bright6={term["bright6"]}
-bright7={term["bright7"]}
-"""
-
-    with (FOOT_DIR / "foot.ini").open("w", encoding="utf-8") as handle:
-        handle.write(ini)
 
 
 def write_labwc_themerc(tokens: dict) -> None:
@@ -1090,7 +1002,7 @@ def write_labwc_rc_overrides(settings: dict) -> None:
 
     <!-- Terminal -->
     <keybind key="C-A-T">
-      <action name="Execute" command="foot"/>
+      <action name="Execute" command="ptyxis"/>
     </keybind>
 
     <!-- Audio (Chromebook top row) -->
@@ -1371,7 +1283,6 @@ def main() -> int:
     waybar_changed = write_waybar_config(tokens)
     write_gtk_settings(tokens)
     write_mako_config(tokens)
-    write_foot_config(tokens)
     write_labwc_themerc(tokens)
     write_swaylock_config(tokens)
     write_labwc_rc_overrides(settings)

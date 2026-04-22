@@ -19,7 +19,7 @@
 
     <!-- Terminal -->
     <keybind key="C-A-T">
-      <action name="Execute" command="foot"/>
+      <action name="Execute" command="ptyxis"/>
     </keybind>
 
     <!-- Audio (Chromebook top row) — with OSD notification -->

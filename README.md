@@ -181,7 +181,7 @@ changes take effect on the next reboot.
 | App menu | `universal-lite-app-menu` (in-process GTK4) | Token-aware search, categorized launcher, triggered by Super+Space or the panel launcher |
 | Browser | Google Chrome | Familiar to Chromebook users, installed via Flatpak on first boot |
 | File manager | `Thunar` | Lightweight, thumbnail support |
-| Terminal | `foot` | GPU-accelerated, minimal |
+| Terminal | `ptyxis` | libadwaita-native; inherits the system theme + accent automatically |
 | Greeter | `greetd` + custom GTK4 greeter | Login screen via `cage` kiosk, palette-synced to the user's theme + accent |
 | Notifications | `mako` | Low-overhead notification daemon |
 | Screen lock | `swayidle` + `swaylock` | Configurable timeouts from the Settings app |
@@ -273,8 +273,9 @@ accessibility scaling).
 | About | System info, hardware, disk usage, update check, restore-defaults |
 
 Changes apply immediately — no restart — and are applied consistently
-across labwc (SSD titlebars), waybar (panel), mako (notifications), foot
-(terminal), swaylock, and every CSD GTK app.
+across labwc (SSD titlebars), waybar (panel), mako (notifications),
+swaylock, every CSD GTK app, and ptyxis (terminal, which picks up accent
+and monospace-font changes through libadwaita + gsettings).
 
 Translated to 22 languages (am, ar, de, es, fa, fr, ha, hi, it, ja, ko,
 nl, pl, pt-BR, ru, sv, sw, th, tr, vi, yo, zh-Hans). Human translator
@@ -356,7 +357,7 @@ files/
   etc/
     gtk-3.0/, gtk-4.0/                     # Decoration-layout defaults (min/max/close)
     xdg/
-      foot/, fuzzel/, labwc/, mako/,
+      fuzzel/, labwc/, mako/,
       swaylock/, gtk-3.0/, gtk-4.0/        # App defaults
       mimeapps.list                        # Default app associations (pdf, image, etc.)
     sysctl.d/                              # Memory tuning (swappiness for zswap)
