@@ -1,5 +1,7 @@
+import json
 import sys
 from gettext import gettext as _
+from pathlib import Path
 
 import gi
 
@@ -8,13 +10,37 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Adw, Gdk, GdkPixbuf, Gio, Gtk
 
 from ..base import BasePage
-from ..wallpapers import Wallpaper, add_custom, list_wallpapers, remove_custom
+from ..wallpapers import (
+    ADD_CUSTOM_IO_ERROR, ADD_CUSTOM_MISSING, ADD_CUSTOM_OK,
+    ADD_CUSTOM_TOO_LARGE, ADD_CUSTOM_UNSUPPORTED,
+    Wallpaper, add_custom_detailed, list_wallpapers, remove_custom,
+)
 
-ACCENT_COLORS = [
-    ("blue", "#3584e4"), ("teal", "#2190a4"), ("green", "#3a944a"),
-    ("yellow", "#c88800"), ("orange", "#ed5b00"), ("red", "#e62d42"),
-    ("pink", "#d56199"), ("purple", "#9141ac"), ("slate", "#6f8396"),
+# Accent order displayed in the picker. Names must match palette.json
+# keys; the visible fill color comes from the CSS rule .accent-<name>
+# generated at app startup from palette.json (see app.py), so the hex
+# is not referenced at runtime — only the name, and only as a CSS
+# class suffix + the key passed to save_and_apply. A previous version
+# hardcoded (name, hex) tuples here, giving us three separate places
+# accent names had to stay in sync (this file, apply-settings'
+# VALID_ACCENT, and palette.json). Now we read the palette once and
+# let it drive the picker.
+_PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
+_ACCENT_FALLBACK = [
+    "blue", "teal", "green", "yellow", "orange",
+    "red", "pink", "purple", "slate",
 ]
+
+
+def _load_accent_names() -> list[str]:
+    try:
+        palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
+        names = list(palette.get("accents", {}).keys())
+        return names or _ACCENT_FALLBACK
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"appearance: palette.json unreadable ({exc}); "
+              f"using fallback accent list", file=sys.stderr)
+        return _ACCENT_FALLBACK
 
 # Tile geometry — a compact, ChromeOS-ish grid.
 TILE_W = 160
@@ -50,6 +76,14 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         Adw.PreferencesPage.__init__(self)
         self._wallpaper_flow: Gtk.FlowBox | None = None
         self._wallpaper_buttons: list[tuple[Gtk.ToggleButton, str]] = []
+        # Re-entry guard for accent & wallpaper pickers. Both handlers
+        # emulate radio-button semantics by calling set_active(False)
+        # on sibling buttons, but set_active re-fires `toggled`, which
+        # re-enters the handler. Without this guard, a single user
+        # click recurses forever: sibling goes off -> its handler
+        # force-reactivates it -> that handler deactivates the newly-
+        # clicked tile -> its handler force-reactivates, etc.
+        self._group_updating: bool = False
 
     @property
     def search_keywords(self):
@@ -71,6 +105,14 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
 
         def _on_dark_mode(row, _pspec):
             self.store.save_and_apply("theme", "dark" if row.get_active() else "light")
+            # Wallpaper tiles render light_path in light mode and
+            # dark_path in dark mode; without a refresh, the grid keeps
+            # showing stale thumbnails until the page is destroyed and
+            # rebuilt (typically only on app restart, since pages are
+            # cached). Repopulate so the thumbnails track the theme
+            # the user just picked.
+            if self._wallpaper_flow is not None:
+                self._populate_wallpapers(self)
 
         dark_row.connect("notify::active", _on_dark_mode)
         theme_group.add(dark_row)
@@ -101,20 +143,29 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         current_accent = self.store.get("accent", "blue")
 
         def _on_accent_toggled(btn, name):
-            if not btn.get_active():
-                # ToggleButton lets the user click an already-active
-                # tile to deactivate it, but these tiles represent a
-                # single-selection group — no accent is never a valid
-                # state. Force the button back on so the UI can't drift
-                # away from whatever settings.json actually holds.
-                btn.set_active(True)
+            # Re-entry guard: sibling set_active(False) below re-fires
+            # this handler on each deselected button. Without the guard,
+            # each of those re-entries would force the sibling back on
+            # and then recursively deselect the freshly-clicked tile,
+            # creating an unbounded signal loop that crashes the page.
+            if self._group_updating:
                 return
-            for other in accent_buttons:
-                if other is not btn and other.get_active():
-                    other.set_active(False)
-            self.store.save_and_apply("accent", name)
+            self._group_updating = True
+            try:
+                if not btn.get_active():
+                    # Single-selection group — no accent is never valid.
+                    # Force the button back on so the UI can't drift
+                    # away from settings.json.
+                    btn.set_active(True)
+                    return
+                for other in accent_buttons:
+                    if other is not btn and other.get_active():
+                        other.set_active(False)
+                self.store.save_and_apply("accent", name)
+            finally:
+                self._group_updating = False
 
-        for name, _hex in ACCENT_COLORS:
+        for name in _load_accent_names():
             btn = Gtk.ToggleButton()
             btn.add_css_class("accent-circle")
             btn.add_css_class(f"accent-{name}")
@@ -271,25 +322,50 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         return btn
 
     def _on_wallpaper_toggled(self, btn: Gtk.ToggleButton, wp_id: str) -> None:
-        if not btn.get_active():
-            # Same rationale as the accent picker: these tiles are a
-            # single-selection group. Deactivating the only active tile
-            # would leave no wallpaper selected in the UI while
-            # settings.json still holds the old value.
-            btn.set_active(True)
+        # Same re-entry pattern as the accent handler — sibling
+        # set_active(False) calls re-fire this handler, so gate the
+        # entire body behind _group_updating to prevent recursion.
+        if self._group_updating:
             return
-        for other_btn, _id in self._wallpaper_buttons:
-            if other_btn is not btn and other_btn.get_active():
-                other_btn.set_active(False)
-        self.store.save_and_apply("wallpaper", wp_id)
+        self._group_updating = True
+        try:
+            if not btn.get_active():
+                # Single-selection group — force the active-tile click
+                # back on.
+                btn.set_active(True)
+                return
+            for other_btn, _id in self._wallpaper_buttons:
+                if other_btn is not btn and other_btn.get_active():
+                    other_btn.set_active(False)
+            self.store.save_and_apply("wallpaper", wp_id)
+        finally:
+            self._group_updating = False
 
     def _on_custom_clicked(self, _btn: Gtk.Button, page: Gtk.Widget) -> None:
         dialog = Gtk.FileDialog()
         dialog.set_title(_("Choose Wallpaper"))
         image_filter = Gtk.FileFilter()
         image_filter.set_name(_("Images"))
-        for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp", "*.svg"):
+        # Keep the filter patterns in sync with what add_custom will
+        # actually accept (wallpapers._CUSTOM_WALLPAPER_ALLOWED_TYPES
+        # sniffs MIME via Gio, but file dialogs only filter by pattern).
+        # Previously the dialog only offered jpg/jpeg/png/webp/svg, so
+        # users couldn't even select a JXL, BMP, TIFF, AVIF, or HEIF
+        # file that add_custom would otherwise happily accept.
+        for ext in (
+            "*.jpg", "*.jpeg", "*.png", "*.webp", "*.svg",
+            "*.bmp", "*.tiff", "*.tif", "*.jxl",
+            "*.avif", "*.heif", "*.heic",
+        ):
             image_filter.add_pattern(ext)
+        # Matching MIME types let Flatpak portals that don't honour
+        # glob patterns (rare but possible) still include our formats.
+        for mime in (
+            "image/jpeg", "image/png", "image/webp", "image/svg+xml",
+            "image/bmp", "image/tiff", "image/jxl",
+            "image/avif", "image/heif",
+        ):
+            image_filter.add_mime_type(mime)
         filters = Gio.ListStore.new(Gtk.FileFilter)
         filters.append(image_filter)
         dialog.set_filters(filters)
@@ -304,9 +380,26 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             source = file.get_path()
             if not source:
                 return
-            wp = add_custom(source)
-            if wp is None:
-                self.store.show_toast(_("Could not add wallpaper"), True)
+            status, wp = add_custom_detailed(source)
+            if status != ADD_CUSTOM_OK or wp is None:
+                # Give the user a reason specific enough to act on.
+                # A generic "could not add wallpaper" left them
+                # guessing whether the file was too big, wrong
+                # format, or an I/O glitch.
+                messages = {
+                    ADD_CUSTOM_MISSING:
+                        _("Picture not found"),
+                    ADD_CUSTOM_TOO_LARGE:
+                        _("Picture is too large (50 MB limit)"),
+                    ADD_CUSTOM_UNSUPPORTED:
+                        _("Picture format not supported"),
+                    ADD_CUSTOM_IO_ERROR:
+                        _("Could not add wallpaper"),
+                }
+                self.store.show_toast(
+                    messages.get(status, _("Could not add wallpaper")),
+                    True,
+                )
                 return
             self.store.save_and_apply("wallpaper", wp.id)
             self._populate_wallpapers(page)

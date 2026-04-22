@@ -317,18 +317,40 @@ def ensure_settings() -> dict:
             _resolve_wallpaper(DEFAULT_WALLPAPER_ID, theme)
             or DEFAULT_WALLPAPER_FALLBACK
         )
+    elif wallpaper_stored.startswith("/"):
+        # Migrate legacy absolute-path wallpaper entries to the
+        # matching manifest ID so the appearance picker can mark the
+        # tile selected. Previously the picker did a one-shot path->id
+        # lookup in _populate_wallpapers but didn't persist the
+        # migration, so every apply ran the same resolution and every
+        # re-open of Appearance showed no tile as selected. Match
+        # against either the light or dark variant of each manifest.
+        from settings.wallpapers import list_wallpapers as _list_wp
+        for _wp in _list_wp():
+            if wallpaper_stored in (_wp.light_path, _wp.dark_path):
+                wallpaper_stored = _wp.id
+                break
 
-    greeter_theme_path = Path("/var/lib/universal-lite/greeter-theme")
+    # The greeter runs pre-login with no access to the user's home dir,
+    # so theme + accent are propagated via these shared /var/lib files.
+    # Ensure the parent dir exists — on a freshly booted system the
+    # install-config.json seeder usually creates /var/lib/universal-lite
+    # already, but on upgrade paths or minimal first-boot scenarios it
+    # may not, and write_text would silently fail with ENOENT before
+    # the greeter ever got a chance to read the user's choice.
+    greeter_state_dir = Path("/var/lib/universal-lite")
+    try:
+        greeter_state_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
+
+    greeter_theme_path = greeter_state_dir / "greeter-theme"
     try:
         greeter_theme_path.write_text(theme + "\n", encoding="utf-8")
     except OSError:
         pass
 
-    # The greeter runs pre-login with no access to the user's home dir,
-    # so propagate the accent choice via the same shared /var/lib path
-    # the theme uses. Greeter reads this and looks up the hex in the
-    # same palette.json. Falls back to "blue" if the file is absent.
-    greeter_accent_path = Path("/var/lib/universal-lite/greeter-accent")
+    greeter_accent_path = greeter_state_dir / "greeter-accent"
     try:
         greeter_accent_path.write_text(accent + "\n", encoding="utf-8")
     except OSError:

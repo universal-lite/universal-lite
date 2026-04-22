@@ -205,23 +205,43 @@ _CUSTOM_WALLPAPER_ALLOWED_TYPES = {
 }
 
 
+#: Reasons add_custom can fail, surfaced via the tuple return so the
+#: caller can show a meaningful toast instead of a generic error.
+ADD_CUSTOM_OK = "ok"
+ADD_CUSTOM_MISSING = "missing"
+ADD_CUSTOM_TOO_LARGE = "too_large"
+ADD_CUSTOM_UNSUPPORTED = "unsupported"
+ADD_CUSTOM_IO_ERROR = "io_error"
+
+
 def add_custom(source_path: str) -> Wallpaper | None:
     """Copy *source_path* into the user wallpaper dir and register a manifest.
 
-    The resulting tile persists in the picker across sessions. Returns the
-    created :class:`Wallpaper`, or ``None`` on validation/I/O failure.
-    Validation: file exists, is under _CUSTOM_WALLPAPER_MAX_BYTES, and
-    its sniffed MIME type is in _CUSTOM_WALLPAPER_ALLOWED_TYPES.
+    Thin wrapper around :func:`add_custom_detailed` for callers that
+    only need the success case. Returns the new Wallpaper on success,
+    ``None`` on any failure.
+    """
+    _status, wallpaper = add_custom_detailed(source_path)
+    return wallpaper
+
+
+def add_custom_detailed(source_path: str) -> tuple[str, Wallpaper | None]:
+    """Same as :func:`add_custom` but returns a (status, wallpaper) tuple.
+
+    Status is one of the ADD_CUSTOM_* constants so the picker can
+    show a specific error: "file too large", "file type not supported",
+    etc., instead of a generic "could not add wallpaper". The wallpaper
+    is only non-None when status == ADD_CUSTOM_OK.
     """
     src = Path(source_path).resolve()
     if not src.is_file():
-        return None
+        return ADD_CUSTOM_MISSING, None
 
     try:
         if src.stat().st_size > _CUSTOM_WALLPAPER_MAX_BYTES:
-            return None
+            return ADD_CUSTOM_TOO_LARGE, None
     except OSError:
-        return None
+        return ADD_CUSTOM_IO_ERROR, None
 
     # Sniff the MIME from file content via Gio (not just the extension).
     try:
@@ -233,7 +253,7 @@ def add_custom(source_path: str) -> Wallpaper | None:
     except Exception:
         content_type = ""
     if content_type and content_type not in _CUSTOM_WALLPAPER_ALLOWED_TYPES:
-        return None
+        return ADD_CUSTOM_UNSUPPORTED, None
 
     CUSTOM_WALLPAPER_DIR.mkdir(parents=True, exist_ok=True)
     USER_MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
@@ -246,7 +266,7 @@ def add_custom(source_path: str) -> Wallpaper | None:
         if not dest.exists():
             shutil.copy2(src, dest)
     except OSError:
-        return None
+        return ADD_CUSTOM_IO_ERROR, None
 
     display_name = src.stem.replace("_", " ").replace("-", " ").strip()
     display_name = display_name.title() if display_name else "Custom"
@@ -268,7 +288,7 @@ def add_custom(source_path: str) -> Wallpaper | None:
         encoding="utf-8",
     )
 
-    return Wallpaper(
+    return ADD_CUSTOM_OK, Wallpaper(
         id=wp_id, name=display_name,
         light_path=str(dest), dark_path=str(dest),
         manifest_path=str(manifest_path), is_custom=True,
