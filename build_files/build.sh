@@ -221,7 +221,24 @@ chmod 0755 \
     /usr/libexec/universal-lite-volume \
     /usr/libexec/universal-lite-brightness
 
-systemctl mask plymouth-quit-wait.service plymouth-quit.service
+# Disable Plymouth entirely by masking the unit that starts it.
+#
+# An earlier version of this file masked plymouth-quit.service and
+# plymouth-quit-wait.service instead, which is the WRONG end of the
+# lifecycle to cut: plymouth-start would still run, Plymouth would
+# grab DRM master on the primary display, and then there was no
+# plymouth-quit-wait for downstream services to order against — so
+# the DRM handoff to cage (the greeter's compositor) was a naked race.
+# Sometimes cage won DRM master, sometimes Plymouth held it and cage
+# hung silently on VT acquisition. That matched the intermittent
+# "stuck at Started greetd.service" boot the user kept hitting.
+#
+# Masking plymouth-start.service prevents Plymouth from ever running,
+# so the quit services have nothing to do and can stay at their
+# defaults (greetd's stock After=plymouth-quit.service is satisfied
+# instantly because plymouth-start never activated). Boot is pure text
+# since we don't pass rhgb/splash kargs, which matches the current UX.
+systemctl mask plymouth-start.service
 systemctl enable greetd.service
 systemctl enable power-profiles-daemon.service
 systemctl enable accounts-daemon.service
