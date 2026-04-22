@@ -44,18 +44,18 @@ You need:
   pre-downloaded Flatpaks)
 - A target drive in the machine, **16 GB minimum** (32+ GB recommended)
 
-**Step 1 — Get the image.** Build locally or download the latest from
-[GitHub Actions → Build disk images → Artifacts](../../actions/workflows/build-disk.yml):
-
-```bash
-just build-raw
-```
+**Step 1 — Download the image.** Open
+[GitHub Actions → Build disk images](../../actions/workflows/build-disk.yml),
+click the most recent successful run, and download the
+**universal-lite-raw** artifact from the Artifacts section at the
+bottom of the page. Unzip it — you'll get a `disk.raw` file a few GB
+in size.
 
 **Step 2 — Flash the image to a USB drive:**
 
 ```bash
 lsblk   # identify the USB drive — double-check before writing
-sudo dd if=output/raw/disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
+sudo dd if=disk.raw of=/dev/sdX bs=4M status=progress conv=fsync
 ```
 
 Or use [Impression](https://flathub.org/apps/io.gitlab.adhami3310.Impression)
@@ -71,18 +71,18 @@ up with your chosen username pre-filled.
 ### ISO installer (Anaconda)
 
 For machines with 4+ GB of RAM or anything where the raw USB path is
-inconvenient:
+inconvenient, grab the **universal-lite-anaconda-iso** artifact from
+the most recent successful run of
+[Build disk images](../../actions/workflows/build-disk.yml), unzip it,
+and flash the `.iso` file inside to a USB drive the same way as the
+raw image.
 
-```bash
-just build-iso
-```
-
-Flash the ISO to a USB drive and boot from it. Anaconda handles
-partitioning, user creation, and timezone setup. A kickstart `%post`
-rebases the installed system to the published Universal-Lite image,
-seeds `/var/lib/universal-lite/install-config.json` with sensible
-defaults (zram memory strategy, anaconda-created UID 1000 as the
-primary user), and triggers the same first-boot flow the USB path uses.
+Anaconda handles partitioning, user creation, and timezone setup on
+boot. A kickstart `%post` rebases the installed system to the published
+Universal-Lite image, seeds `/var/lib/universal-lite/install-config.json`
+with sensible defaults (zram memory strategy, anaconda-created UID 1000
+as the primary user), and triggers the same first-boot flow the USB
+path uses.
 
 After first login the flatpak-install service pulls Chrome and Bazaar
 from Flathub.
