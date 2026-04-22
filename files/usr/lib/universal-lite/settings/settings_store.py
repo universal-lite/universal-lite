@@ -122,6 +122,23 @@ class SettingsStore:
         if self._toast_callback is not None:
             self._toast_callback(message, is_error)
 
+    def flush_and_detach(self) -> None:
+        """Cancel pending debounces and detach the toast callback.
+
+        Called from SettingsWindow.close-request. Without this, a user
+        who changes a setting and closes the window within ~300 ms
+        leaves a debounce timer scheduled; when it fires it runs
+        save_and_apply, which spawns apply-settings, which completes
+        on a background thread and calls self._toast_callback(...) ->
+        self._show_toast on a freed Adw.ToastOverlay. Also detaches
+        the callback so a pending apply from the old window doesn't
+        toast on a new window's overlay after reopen.
+        """
+        for source_id in self._debounce_timers.values():
+            GLib.source_remove(source_id)
+        self._debounce_timers.clear()
+        self._toast_callback = None
+
     def _write(self) -> None:
         tmp = self._path.with_suffix(".tmp")
         tmp.write_text(
@@ -142,10 +159,20 @@ class SettingsStore:
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError, OSError) as exc:
+            # Any OS-level failure to launch the apply script would
+            # otherwise leave _apply_running stuck True, silently
+            # disabling every future save-and-apply for the session.
+            # ENOMEM on 2 GB hardware, a transient bootc overlay swap
+            # making the script briefly unreadable, or a permission
+            # glitch during a rebase all hit this path. Also reset
+            # _apply_pending so the retry-loop in _on_apply_done doesn't
+            # attempt to re-enter this same broken state immediately.
             self._apply_running = False
+            self._apply_pending = False
             if self._toast_callback:
-                self._toast_callback("Apply script not found", True)
+                detail = str(exc) or exc.__class__.__name__
+                self._toast_callback(f"Failed to apply settings: {detail}", True)
             return
 
         def _wait():

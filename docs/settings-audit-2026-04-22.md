@@ -11,7 +11,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ## Wave 1 — Lifecycle foundation (do first; many downstream findings depend on these)
 
-### [ ] S1. Subscriptions wiped on first unmap, never re-registered
+### [x] S1. Subscriptions wiped on first unmap, never re-registered
 
 **Location:** `base.py:53-62` (root cause) + `window.py:142-146` (lazy page cache)
 **Affects:** `network.py`, `bluetooth.py`, `sound.py`, and any page calling `setup_cleanup`
@@ -23,7 +23,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] S2. `setup_cleanup(self)` wired to the wrong widget in nav-view pages
+### [x] S2. `setup_cleanup(self)` wired to the wrong widget in nav-view pages
 
 **Location:** `panel.py:100`, `keyboard.py:267`
 **Confidence:** High
@@ -34,7 +34,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] C1. `_run_apply` silently disables all future applies on transient Popen failure
+### [x] C1. `_run_apply` silently disables all future applies on transient Popen failure
 
 **Location:** `settings_store.py:133-149`
 **Confidence:** High
@@ -45,7 +45,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] C2. Toast + debounce callbacks fire on a destroyed window
+### [x] C2. Toast + debounce callbacks fire on a destroyed window
 
 **Location:** `settings_store.py:107-116` (debounce), `122-177` (apply), `window.py:136` (toast cb registration)
 **Confidence:** High

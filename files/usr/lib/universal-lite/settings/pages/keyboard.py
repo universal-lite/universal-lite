@@ -262,10 +262,6 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         self.add(self._build_capslock_group())
         self.add(self._build_shortcuts_group())
 
-        # Tear down event-bus subscriptions on unmap. Called on self
-        # (the PreferencesPage) so it fires the same way wave-1 pages do.
-        self.setup_cleanup(self)
-
         # Wrap self in a NavigationView so _push_capture_page can push
         # sub-pages. Back button, back gesture, and Escape are handled
         # natively by AdwNavigationView.
@@ -274,6 +270,12 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         root_page.set_title(_("Keyboard"))
         root_page.set_child(self)
         self._nav.add(root_page)
+
+        # Tear down event-bus subscriptions when the nav (our outermost
+        # widget) is destroyed. Attaching to self would fire on every
+        # capture sub-page push (the PreferencesPage unmaps during
+        # nav-view navigation) and permanently silence the page.
+        self.setup_cleanup(self._nav)
         return self._nav
 
     # -- group builders -------------------------------------------------

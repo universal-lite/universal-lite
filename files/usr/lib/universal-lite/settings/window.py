@@ -157,6 +157,20 @@ class SettingsWindow(Adw.ApplicationWindow):
         search_action.connect("activate", lambda *_: self.toggle_search())
         self.add_action(search_action)
 
+        # -- Teardown coordination -----------------------------------
+        # Cancel any in-flight debounces and detach the toast callback
+        # before the window's overlay is freed. Without this, a setting
+        # changed within ~300 ms of hitting Close would fire its
+        # debounced apply after close-request returns, and the apply's
+        # completion handler would invoke our now-dead _show_toast on a
+        # disposed Adw.ToastOverlay. Returning False lets the default
+        # handler proceed with the close.
+        self.connect("close-request", self._on_close_request)
+
+    def _on_close_request(self, _window) -> bool:
+        self._store.flush_and_detach()
+        return False
+
     # -- Toast -------------------------------------------------------
 
     def _show_toast(self, message: str, is_error: bool = False,

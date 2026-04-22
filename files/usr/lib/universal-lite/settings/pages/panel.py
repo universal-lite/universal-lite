@@ -95,10 +95,6 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         self.add(self._build_layout_reset_group())
         self.add(self._build_pinned_apps_group())
 
-        # Tear down event-bus subscriptions on unmap. Call on self
-        # (the PreferencesPage), not on the nav wrapper.
-        self.setup_cleanup(self)
-
         # Wrap the preferences page in a NavigationView so the Add
         # Pinned App picker can push a sub-page. Back button + Escape
         # are handled natively by AdwNavigationView.
@@ -107,6 +103,12 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         root_page.set_title(_("Panel"))
         root_page.set_child(self)
         self._nav.add(root_page)
+
+        # Tear down event-bus subscriptions when the nav (our outermost
+        # widget) is destroyed. Attaching to self would fire on every
+        # sub-page push (the PreferencesPage unmaps during nav-view
+        # navigation) and permanently silence the page's subscriptions.
+        self.setup_cleanup(self._nav)
         return self._nav
 
     # -- Position / Density / Twilight ---------------------------------

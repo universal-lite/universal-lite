@@ -51,12 +51,22 @@ class BasePage:
         self._subscriptions.clear()
 
     def setup_cleanup(self, widget: Gtk.Widget) -> None:
-        """Connect the widget's unmap signal to unsubscribe_all.
+        """Connect the widget's unrealize signal to unsubscribe_all.
 
-        Call this from build() on whichever widget actually leaves
-        the visible tree when the user navigates away from the page -
-        for most pages that's self (the PreferencesPage); for pages
-        wrapped in an AdwNavigationView, it's self._nav, because the
-        PreferencesPage itself unmaps when sub-pages are pushed.
+        unrealize only fires when the widget is being destroyed for
+        good (window close, page removed from the stack), not on the
+        transient unmaps that happen when:
+          - the window collapses to small-width mode and the sidebar
+            back button hides the content page
+          - an AdwNavigationView pushes a sub-page over a root page
+          - the window minimizes
+        An earlier version used `unmap` and silently tore down every
+        page's event-bus subscriptions on the first such transient
+        event, leaving pages frozen until app restart (no wifi updates,
+        no Bluetooth pair events, no hardware volume-key feedback).
+
+        Pages are built lazily by window._ensure_page_built and then
+        cached, so subscribe() only ever runs once per session; we
+        only need cleanup when the whole widget tree is being disposed.
         """
-        widget.connect("unmap", lambda _: self.unsubscribe_all())
+        widget.connect("unrealize", lambda _: self.unsubscribe_all())
