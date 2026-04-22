@@ -297,6 +297,13 @@ table inet filter {
         ct state invalid drop comment "bogus packets"
         ip protocol icmp accept comment "IPv4 ICMP"
         ip6 nexthdr icmpv6 accept comment "IPv6 ICMP/ND"
+        # DHCPv4 client: offers/acks come in as broadcast/unicast from
+        # the server's port 67 to our port 68. Conntrack normally
+        # marks these as RELATED but the broadcast-to-unicast
+        # asymmetry can miss, so be explicit.
+        udp sport 67 udp dport 68 accept comment "DHCPv4 client"
+        # DHCPv6 client: server->client replies land on 546.
+        udp sport 547 udp dport 546 accept comment "DHCPv6 client"
         # mDNS so zeroconf-aware apps keep working if they talk to
         # the kernel stack directly even with avahi masked.
         udp dport 5353 accept comment "mDNS"
