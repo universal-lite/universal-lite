@@ -56,6 +56,12 @@ _palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
 ACCENTS = _palette["accents"]
 ADWAITA = {"light": _palette["light"], "dark": _palette["dark"]}
 
+# Debounce waybar respawns. Two rapid applies (e.g. Appearance page
+# chaining theme + accent writes) can both observe "no waybar running"
+# from pkill and both spawn, producing a duplicate panel. Using a
+# monotonic guard suppresses the second spawn within a 2s window.
+_waybar_spawn_ts = 0.0
+
 # Standard Adwaita / GNOME Terminal ANSI palette
 ADWAITA_TERMINAL = {
     "light": {
@@ -157,6 +163,26 @@ def _run_best_effort(cmd: list[str], **kwargs) -> bool:
     except subprocess.TimeoutExpired:
         print(f"apply-settings: {cmd[0]} timed out", file=sys.stderr)
         return False
+    except OSError as exc:
+        print(f"apply-settings: {cmd[0]} os error: {exc}", file=sys.stderr)
+        return False
+
+
+def _atomic_write_text(path: Path, content: str) -> None:
+    """Write content to path atomically: tmp + fsync + os.replace."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    try:
+        with tmp.open("w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except OSError:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
 
 
 def _strip_hash(color: str) -> str:
@@ -289,7 +315,12 @@ def _build_tokens(settings: dict) -> dict:
 def ensure_settings() -> dict:
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
     if not SETTINGS_PATH.exists():
-        shutil.copy2(DEFAULTS_PATH, SETTINGS_PATH)
+        # Atomic initial copy: an OOM or crash mid-copy would otherwise
+        # leave a zero-byte settings.json that JSONDecodeErrors on the
+        # next run and erases all defaults.
+        tmp = SETTINGS_PATH.with_suffix(".json.tmp")
+        shutil.copy2(DEFAULTS_PATH, tmp)
+        os.replace(tmp, SETTINGS_PATH)
 
     with SETTINGS_PATH.open("r", encoding="utf-8") as handle:
         data = json.load(handle)
@@ -354,15 +385,20 @@ def ensure_settings() -> dict:
 
     greeter_theme_path = greeter_state_dir / "greeter-theme"
     try:
+        # On bootc/ostree, files in shared state dirs can be hardlinked
+        # into the read-only object store. unlink() first so write_text
+        # isn't defeated by EACCES on a hardlinked inode.
+        greeter_theme_path.unlink(missing_ok=True)
         greeter_theme_path.write_text(theme + "\n", encoding="utf-8")
-    except OSError:
-        pass
+    except OSError as exc:
+        print(f"apply-settings: greeter-theme: {exc}", file=sys.stderr)
 
     greeter_accent_path = greeter_state_dir / "greeter-accent"
     try:
+        greeter_accent_path.unlink(missing_ok=True)
         greeter_accent_path.write_text(accent + "\n", encoding="utf-8")
-    except OSError:
-        pass
+    except OSError as exc:
+        print(f"apply-settings: greeter-accent: {exc}", file=sys.stderr)
 
     scale = data.get("scale", 1.0)
     if scale not in VALID_SCALE:
@@ -847,6 +883,9 @@ def write_waybar_config(tokens: dict) -> bool:
     # Using waybar's built-in image module (not custom with format={icon},
     # which is a format-icons lookup, not a JSON icon field — that was why
     # the tiles were rendering empty).
+    # NOTE: on-click runs via sh -c; ensure panel.py normalized the
+    # command string (e.g. shlex.join(shlex.split(cmd))) so tokens with
+    # spaces or shell metacharacters stay quoted correctly.
     for i, app in enumerate(pinned):
         icon_path = _resolve_icon_path(app.get("icon", ""))
         config[f"image#pin-{i}"] = {
@@ -857,8 +896,12 @@ def write_waybar_config(tokens: dict) -> bool:
         }
 
     new_config = json.dumps(config, indent=2) + "\n"
-    with (WAYBAR_DIR / "config.jsonc").open("w", encoding="utf-8") as handle:
-        handle.write(new_config)
+    try:
+        _atomic_write_text(WAYBAR_DIR / "config.jsonc", new_config)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {WAYBAR_DIR / 'config.jsonc'}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
     css = _waybar_css_common(tokens)
     if is_vertical:
@@ -866,33 +909,51 @@ def write_waybar_config(tokens: dict) -> bool:
     else:
         css += _waybar_css_horizontal(tokens)
 
-    with (WAYBAR_DIR / "style.css").open("w", encoding="utf-8") as handle:
-        handle.write(css)
+    try:
+        _atomic_write_text(WAYBAR_DIR / "style.css", css)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {WAYBAR_DIR / 'style.css'}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
     return new_config != old_config or css != old_css
 
 
 def write_gtk_settings(tokens: dict) -> None:
+    # TODO: audit A14 — when tokens["high_contrast"] is True, swap
+    # theme_name to "HighContrast" (and set color-scheme to
+    # prefer-high-contrast). Requires confirming the HighContrast
+    # theme package is present on the image before we ship it.
     theme_name = "adw-gtk3-dark" if tokens["theme"] == "dark" else "adw-gtk3"
     icon_theme = "Adwaita"
     dark_pref = 1 if tokens["theme"] == "dark" else 0
 
+    ini_content = (
+        "[Settings]\n"
+        f"gtk-application-prefer-dark-theme={dark_pref}\n"
+        f"gtk-theme-name={theme_name}\n"
+        f"gtk-icon-theme-name={icon_theme}\n"
+        # UI font size (monospace size is used separately by foot)
+        f"gtk-font-name=Roboto {tokens['font_size_ui']}\n"
+        "gtk-cursor-theme-name=Adwaita\n"
+        f"gtk-cursor-theme-size={tokens['cursor_size']}\n"
+        f"gtk-enable-animations={'1' if not tokens['reduce_motion'] else '0'}\n"
+        # Per-user settings.ini shadows /etc/gtk-*/settings.ini entirely
+        # for keys it declares, so we must repeat the decoration-layout
+        # line here - otherwise first apply-settings run wipes the
+        # min/max buttons shipped by the system default.
+        "gtk-decoration-layout=:minimize,maximize,close\n"
+    )
+
     for directory in (GTK3_DIR, GTK4_DIR):
         directory.mkdir(parents=True, exist_ok=True)
-        with (directory / "settings.ini").open("w", encoding="utf-8") as handle:
-            handle.write("[Settings]\n")
-            handle.write(f"gtk-application-prefer-dark-theme={dark_pref}\n")
-            handle.write(f"gtk-theme-name={theme_name}\n")
-            handle.write(f"gtk-icon-theme-name={icon_theme}\n")
-            handle.write(f"gtk-font-name=Roboto {tokens['font_size_mono']}\n")
-            handle.write("gtk-cursor-theme-name=Adwaita\n")
-            handle.write(f"gtk-cursor-theme-size={tokens['cursor_size']}\n")
-            handle.write(f"gtk-enable-animations={'1' if not tokens['reduce_motion'] else '0'}\n")
-            # Per-user settings.ini shadows /etc/gtk-*/settings.ini entirely
-            # for keys it declares, so we must repeat the decoration-layout
-            # line here - otherwise first apply-settings run wipes the
-            # min/max buttons shipped by the system default.
-            handle.write("gtk-decoration-layout=:minimize,maximize,close\n")
+        target = directory / "settings.ini"
+        try:
+            _atomic_write_text(target, ini_content)
+        except OSError as exc:
+            print(f"apply-settings: failed to write {target}: {exc}",
+                  file=sys.stderr)
+            sys.exit(1)
 
     gsettings_commands = [
         ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
@@ -905,7 +966,7 @@ def write_gtk_settings(tokens: dict) -> None:
             "prefer-dark" if tokens["theme"] == "dark" else "default",
         ],
         ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", tokens["accent"]],
-        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", f"Roboto {tokens['font_size_mono']}"],
+        ["gsettings", "set", "org.gnome.desktop.interface", "font-name", f"Roboto {tokens['font_size_ui']}"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-theme", "Adwaita"],
         ["gsettings", "set", "org.gnome.desktop.interface", "cursor-size", str(tokens["cursor_size"])],
     ]
@@ -935,8 +996,13 @@ icon-location=left
 max-icon-size=48
 """
 
-    with (MAKO_DIR / "config").open("w", encoding="utf-8") as handle:
-        handle.write(config)
+    target = MAKO_DIR / "config"
+    try:
+        _atomic_write_text(target, config)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {target}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def write_foot_config(tokens: dict) -> None:
@@ -982,8 +1048,13 @@ bright6={term["bright6"]}
 bright7={term["bright7"]}
 """
 
-    with (FOOT_DIR / "foot.ini").open("w", encoding="utf-8") as handle:
-        handle.write(ini)
+    target = FOOT_DIR / "foot.ini"
+    try:
+        _atomic_write_text(target, ini)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {target}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def write_labwc_themerc(tokens: dict) -> None:
@@ -1071,8 +1142,13 @@ window.switcher.item.border.width: 3
 window.switcher.item.border.color: {accent}
 """
 
-    with (LABWC_DIR / "themerc-override").open("w", encoding="utf-8") as handle:
-        handle.write(themerc)
+    target = LABWC_DIR / "themerc-override"
+    try:
+        _atomic_write_text(target, themerc)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {target}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def _user_keybind_overrides() -> dict[str, str]:
@@ -1105,7 +1181,13 @@ def _user_keybind_overrides() -> dict[str, str]:
         menu = entry.get("menu", "")
         if not isinstance(key, str) or not key:
             continue
-        if not isinstance(action_name, str) or not action_name:
+        if not isinstance(action_name, str):
+            continue
+        if not action_name:
+            # Sentinel: empty action = "unbind this default". The
+            # merge step (_build_merged_keybinds_xml) drops any default
+            # whose override is an empty string.
+            out[key] = ""
             continue
         if command:
             frag = f'<action name={quoteattr(action_name)} command={quoteattr(str(command))}/>'
@@ -1368,8 +1450,13 @@ def write_labwc_rc_overrides(settings: dict) -> None:
 </labwc_config>
 """
 
-    with (LABWC_DIR / "rc.xml").open("w", encoding="utf-8") as handle:
-        handle.write(rc)
+    target = LABWC_DIR / "rc.xml"
+    try:
+        _atomic_write_text(target, rc)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {target}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def write_swaylock_config(tokens: dict) -> None:
@@ -1416,8 +1503,13 @@ bs-hl-color={wrong}
 separator-color={transparent}
 """
 
-    with (SWAYLOCK_DIR / "config").open("w", encoding="utf-8") as handle:
-        handle.write(config)
+    target = SWAYLOCK_DIR / "config"
+    try:
+        _atomic_write_text(target, config)
+    except OSError as exc:
+        print(f"apply-settings: failed to write {target}: {exc}",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def restart_program(name: str, command: list[str]) -> None:
@@ -1426,10 +1518,16 @@ def restart_program(name: str, command: list[str]) -> None:
     # Scope pkill to the current user so we don't accidentally kill
     # the greeter's swaybg (running as the greetd user) or a sibling
     # user's copy of the same program on a multi-user system.
-    subprocess.run(
-        ["pkill", "-U", str(os.getuid()), "-x", name],
-        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
+    # Absence of pkill (minimal images / procps-ng not installed) must
+    # fall through to Popen rather than abort the restart.
+    try:
+        subprocess.run(
+            ["pkill", "-U", str(os.getuid()), "-x", name],
+            check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=5,
+        )
+    except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
+        pass
     time.sleep(0.15)  # Let old process exit before spawning replacement
     # start_new_session=True puts the child in its own process group and
     # session, detaching from apply-settings's group. Without it, the
@@ -1455,15 +1553,28 @@ def reload_waybar() -> None:
     handshake, and the reload is atomic from the compositor's POV.
     Falls back to spawning a fresh instance if no waybar was running.
     """
+    global _waybar_spawn_ts
     if shutil.which("waybar") is None:
         return
-    result = subprocess.run(
-        ["pkill", "-U", str(os.getuid()), "-USR2", "-x", "waybar"],
-        check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
+    try:
+        result = subprocess.run(
+            ["pkill", "-U", str(os.getuid()), "-USR2", "-x", "waybar"],
+            check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=5,
+        )
+        rc = result.returncode
+    except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
+        # Treat pkill absence as "no waybar running" and fall through
+        # to spawn (guarded by the debounce below).
+        rc = 1
     # pkill returns 1 when no process matched. Anything else (0 = sent,
     # 2+ = error) means there was a waybar to signal and we're done.
-    if result.returncode == 1:
+    if rc == 1:
+        # Debounce: two rapid applies in the same 2s window must not
+        # both spawn waybar or we end up with duplicate panels.
+        if time.monotonic() - _waybar_spawn_ts < 2.0:
+            return
+        _waybar_spawn_ts = time.monotonic()
         subprocess.Popen(
             ["waybar"],
             stdin=subprocess.DEVNULL,
@@ -1562,6 +1673,15 @@ def main() -> int:
     tokens = _build_tokens(settings)
     waybar_changed = write_waybar_config(tokens)
     write_gtk_settings(tokens)
+
+    # Snapshot pre-write content of consumer configs that get reloaded
+    # via external CLI. Skipping the reload when nothing changed saves
+    # a round-trip and avoids a needless notification redraw / labwc
+    # re-layout pass on every apply.
+    mako_before = _read_if_exists(MAKO_DIR / "config")
+    labwc_themerc_before = _read_if_exists(LABWC_DIR / "themerc-override")
+    labwc_rc_before = _read_if_exists(LABWC_DIR / "rc.xml")
+
     write_mako_config(tokens)
     write_foot_config(tokens)
     write_labwc_themerc(tokens)
@@ -1569,6 +1689,12 @@ def main() -> int:
     write_labwc_rc_overrides(settings)
     _sync_power_profile(settings)
     _sync_lid_action(settings)
+
+    mako_changed = _read_if_exists(MAKO_DIR / "config") != mako_before
+    labwc_changed = (
+        _read_if_exists(LABWC_DIR / "themerc-override") != labwc_themerc_before
+        or _read_if_exists(LABWC_DIR / "rc.xml") != labwc_rc_before
+    )
 
     if os.environ.get("WAYLAND_DISPLAY"):
         # Only restart swaybg when the effective wallpaper path changed.
@@ -1580,8 +1706,10 @@ def main() -> int:
             restart_program("swaybg", ["swaybg", "-i", tokens["wallpaper"], "-m", "fill"])
         if waybar_changed:
             reload_waybar()
-        _run_best_effort(["makoctl", "reload"], timeout=5)
-        _run_best_effort(["labwc", "--reconfigure"], timeout=5)
+        if mako_changed:
+            _run_best_effort(["makoctl", "reload"], timeout=5)
+        if labwc_changed:
+            _run_best_effort(["labwc", "--reconfigure"], timeout=5)
         # Night-light reconciliation lives in its own helper so the
         # labwc autostart can invoke the same logic at session login
         # without duplicating schedule math. Also fixes the previous
@@ -1611,8 +1739,10 @@ if __name__ == "__main__":
     try:
         sys.exit(main())
     except Exception as exc:
-        # Never crash the session — labwc can still start with stale configs
+        # Return nonzero so the settings store surfaces an error toast
+        # rather than silently swallowing write/apply failures. The
+        # session itself is unaffected — labwc keeps its prior config.
         print(f"apply-settings: FATAL: {exc}", file=sys.stderr)
         import traceback
         traceback.print_exc()
-        sys.exit(0)
+        sys.exit(1)

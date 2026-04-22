@@ -27,6 +27,16 @@ def _signal_icon(strength: int) -> str:
     return _SIGNAL_ICONS[-1][1]
 
 
+def _signal_label(strength: int) -> str:
+    if strength >= 75:
+        return _("Signal: excellent")
+    if strength >= 50:
+        return _("Signal: good")
+    if strength >= 25:
+        return _("Signal: fair")
+    return _("Signal: weak")
+
+
 class NetworkPage(BasePage, Adw.PreferencesPage):
     """Network settings: WiFi toggle + scan, available networks, active
     connection details, wired status, and a jump to nm-connection-editor.
@@ -47,6 +57,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         self._active_group: Adw.PreferencesGroup | None = None
         self._wired_row: Adw.ActionRow | None = None
         self._updating = False
+        self._connect_in_flight: bool = False
 
     @property
     def search_keywords(self):
@@ -113,6 +124,12 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         scan_btn = Gtk.Button.new_from_icon_name("view-refresh-symbolic")
         scan_btn.add_css_class("flat")
         scan_btn.set_tooltip_text(_("Scan for networks"))
+        try:
+            scan_btn.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Scan for networks")]
+            )
+        except Exception:
+            pass
         scan_btn.set_valign(Gtk.Align.CENTER)
         scan_btn.connect("clicked", lambda _b: self._nm.request_scan() if self._nm else None)
         group.set_header_suffix(scan_btn)
@@ -194,6 +211,8 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
             self._wifi_toggle.set_active(self._nm.is_wifi_enabled())
             self._updating = False
         self._refresh_all()
+        if self._nm and hasattr(self._nm, "request_scan"):
+            self._nm.request_scan()
 
     def _on_nm_unavailable(self):
         """NM.Client init failed — show the banner and lock the UI.
@@ -283,6 +302,17 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
                 # Update in-place: subtitle (Connected), signal icon.
                 row = existing.pop(ap.ssid)
                 row.set_subtitle(_("Connected") if ap.active else "")
+                signal_image = getattr(row, "_signal_image", None)
+                if signal_image is not None:
+                    signal_image.set_from_icon_name(
+                        _signal_icon(ap.strength))
+                    label = _signal_label(ap.strength)
+                    signal_image.set_tooltip_text(label)
+                    try:
+                        signal_image.update_property(
+                            [Gtk.AccessibleProperty.LABEL], [label])
+                    except Exception:
+                        pass
             else:
                 self._networks_group.add(self._build_network_row(ap))
 
@@ -309,11 +339,28 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
 
         # Signal-strength icon (always present).
         signal = Gtk.Image.new_from_icon_name(_signal_icon(ap.strength))
+        signal_label = _signal_label(ap.strength)
+        signal.set_tooltip_text(signal_label)
+        try:
+            signal.update_property(
+                [Gtk.AccessibleProperty.LABEL], [signal_label])
+        except Exception:
+            pass
         row.add_prefix(signal)
+        # Stamp reference on the row so _refresh_networks can update the
+        # icon in-place when a live scan changes the strength reading.
+        row._signal_image = signal
 
         # Lock icon on secured networks (second prefix).
         if ap.secured:
             lock = Gtk.Image.new_from_icon_name("channel-secure-symbolic")
+            lock.set_tooltip_text(_("Password protected"))
+            try:
+                lock.update_property(
+                    [Gtk.AccessibleProperty.LABEL],
+                    [_("Password protected")])
+            except Exception:
+                pass
             row.add_prefix(lock)
 
         if ap.active:
@@ -331,7 +378,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         return row
 
     def _connect(self, ap):
-        if getattr(self, "_connect_in_flight", False):
+        if self._connect_in_flight:
             # A previous connect is still pending. Firing a second
             # connect_wifi would race the first; NM would run both
             # and publish generic success/error for whichever settled
@@ -349,6 +396,23 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
             self._nm.connect_wifi(ap.ssid, None)
 
     def _forget(self, ssid):
+        dialog = Adw.AlertDialog.new(
+            _("Forget network?"),
+            _("This will remove the saved password for {ssid}.").format(
+                ssid=ssid),
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("forget", _("Forget"))
+        dialog.set_response_appearance(
+            "forget", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_close_response("cancel")
+        dialog.set_default_response("cancel")
+        dialog.connect("response", self._on_forget_response, ssid)
+        dialog.present(self.get_root())
+
+    def _on_forget_response(self, _dialog, response, ssid):
+        if response != "forget":
+            return
         if self._nm:
             self._nm.forget_connection(ssid)
 
@@ -394,10 +458,15 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         if not pw:
             self.store.show_toast(_("Password cannot be empty"), True)
             return
+        if len(pw) < 8:
+            self.store.show_toast(
+                _("Password must be at least 8 characters"), True)
+            return
         self.store.show_toast(
             _("Connecting to {ssid}...").format(ssid=ap.ssid)
         )
         if self._nm:
+            self._connect_in_flight = True
             self._nm.connect_wifi(ap.ssid, pw)
         self._nav.pop()
 
@@ -465,6 +534,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
             _("Connecting to {ssid}...").format(ssid=ssid)
         )
         if self._nm:
+            self._connect_in_flight = True
             self._nm.connect_wifi(ssid, pw, hidden=True)
         self._nav.pop()
 

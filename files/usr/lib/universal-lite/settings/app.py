@@ -48,23 +48,25 @@ class SettingsApp(Adw.Application):
         if win is not None:
             win.present()
             return
-        display = Gdk.Display.get_default()
-        base_provider = Gtk.CssProvider()
-        base_provider.load_from_path(str(CSS_PATH))
-        Gtk.StyleContext.add_provider_for_display(
-            display,
-            base_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
-        )
-        accent_css = _build_accent_css()
-        if accent_css:
-            accent_provider = Gtk.CssProvider()
-            accent_provider.load_from_string(accent_css)
+        if not getattr(self, "_css_providers_loaded", False):
+            self._css_providers_loaded = True
+            display = Gdk.Display.get_default()
+            base_provider = Gtk.CssProvider()
+            base_provider.load_from_path(str(CSS_PATH))
             Gtk.StyleContext.add_provider_for_display(
                 display,
-                accent_provider,
+                base_provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
             )
+            accent_css = _build_accent_css()
+            if accent_css:
+                accent_provider = Gtk.CssProvider()
+                accent_provider.load_from_string(accent_css)
+                Gtk.StyleContext.add_provider_for_display(
+                    display,
+                    accent_provider,
+                    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+                )
         win = SettingsWindow(self, self._store, self._event_bus)
         win.present()
 

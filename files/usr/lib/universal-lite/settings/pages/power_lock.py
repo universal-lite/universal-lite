@@ -61,6 +61,9 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         # handlers, test hooks) are held as attributes. Initialised
         # to None here; populated in build().
         self._profile_row: Adw.ComboRow | None = None
+        self._updating_profile: bool = False
+        self._reverting_lid: bool = False
+        self._updating_suspend: bool = False
 
     @property
     def search_keywords(self):
@@ -87,7 +90,16 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
 
         # Tear down event-bus subscriptions on unmap.
         self.setup_cleanup(self)
+        self.connect("unmap", lambda _w: self._teardown_helpers())
         return self
+
+    def _teardown_helpers(self) -> None:
+        helper = getattr(self, "_power_helper", None)
+        if helper is not None and hasattr(helper, "teardown"):
+            try:
+                helper.teardown()
+            except Exception:
+                pass
 
     # -- group builders -------------------------------------------------
 
@@ -131,6 +143,8 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         )
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
+            if self._updating_profile:
+                return
             idx = r.get_selected()
             if 0 <= idx < len(values):
                 value = values[idx]
@@ -158,12 +172,54 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         group.set_description(
             _("Put the computer to sleep after a period of inactivity.")
         )
-        group.add(self._make_timeout_row(
-            title=_("Suspend after"),
-            key="suspend_timeout",
-            default=0,  # Never, by default
-        ))
+        group.add(self._make_suspend_row())
         return group
+
+    def _make_suspend_row(self) -> Adw.ComboRow:
+        """Suspend timeout row with lock-timeout guard.
+
+        If the user picks a suspend delay shorter than the configured
+        lock delay, the machine would be asleep with the screen still
+        unlocked — bail and toast instead of committing.
+        """
+        row = Adw.ComboRow()
+        row.set_title(_("Suspend after"))
+        labels = [label for label, _secs in TIMEOUT_OPTIONS]
+        values = [secs for _label, secs in TIMEOUT_OPTIONS]
+        row.set_model(Gtk.StringList.new(labels))
+
+        current = self.store.get("suspend_timeout", 0)
+        row.set_selected(values.index(current) if current in values else 0)
+
+        def _on_suspend_selected(r: Adw.ComboRow, _pspec) -> None:
+            if self._updating_suspend:
+                return
+            idx = r.get_selected()
+            if not (0 <= idx < len(values)):
+                return
+            new_val = values[idx]
+            lock_val = self.store.get("lock_timeout", 0)
+            # new_val > 0 and lock_val > 0 filters out "Never" on either
+            # side — no clamp makes sense when the comparison is against
+            # an infinite delay.
+            if new_val > 0 and lock_val > 0 and new_val < lock_val:
+                self.store.show_toast(
+                    _("Suspend delay must be at least as long as the lock delay."),
+                    True,
+                )
+                stored = self.store.get("suspend_timeout", 0)
+                if stored in values:
+                    stored_idx = values.index(stored)
+                    self._updating_suspend = True
+                    try:
+                        r.set_selected(stored_idx)
+                    finally:
+                        self._updating_suspend = False
+                return
+            self.store.save_and_apply("suspend_timeout", new_val)
+
+        row.connect("notify::selected", _on_suspend_selected)
+        return row
 
     def _build_lid_group(self) -> Adw.PreferencesGroup:
         row = Adw.ComboRow()
@@ -179,6 +235,8 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         self._lid_row_values = values
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
+            if self._reverting_lid:
+                return
             idx = r.get_selected()
             if not (0 <= idx < len(values)):
                 return
@@ -236,7 +294,11 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
             return
         idx = values.index(new_profile)
         if self._profile_row.get_selected() != idx:
-            self._profile_row.set_selected(idx)
+            self._updating_profile = True
+            try:
+                self._profile_row.set_selected(idx)
+            finally:
+                self._updating_profile = False
 
     def _on_lid_action_changed(self, action: str) -> None:
         """Apply a new lid action via the privileged helper.
@@ -251,19 +313,27 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
             # system state instead of the user's attempted pick.
             row = getattr(self, "_lid_row", None)
             if row is not None:
-                row.set_sensitive(True)
                 if not success:
                     stored = self.store.get("lid_close_action", "suspend")
                     values = getattr(self, "_lid_row_values", [])
                     if stored in values:
                         idx = values.index(stored)
                         if row.get_selected() != idx:
-                            # set_selected re-fires notify::selected but
-                            # that handler only acts on user picks that
-                            # differ from stored state — since we're
-                            # setting to the stored value, this won't
-                            # trigger a second pkexec.
-                            row.set_selected(idx)
+                            # Guard with _reverting_lid so the notify::selected
+                            # handler bails early instead of firing a second
+                            # pkexec against the stored value.
+                            self._reverting_lid = True
+                            try:
+                                row.set_sensitive(True)
+                                row.set_selected(idx)
+                            finally:
+                                self._reverting_lid = False
+                        else:
+                            row.set_sensitive(True)
+                    else:
+                        row.set_sensitive(True)
+                else:
+                    row.set_sensitive(True)
             return False
 
         def _run() -> None:

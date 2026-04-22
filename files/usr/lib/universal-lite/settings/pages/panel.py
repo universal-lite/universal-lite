@@ -1,6 +1,7 @@
 import copy
 import json
 import re
+import shlex
 from gettext import gettext as _
 from pathlib import Path
 
@@ -269,7 +270,15 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             up_btn = Gtk.Button.new_from_icon_name("go-up-symbolic")
             up_btn.add_css_class("flat")
             up_btn.set_valign(Gtk.Align.CENTER)
-            up_btn.set_tooltip_text(_("Move up in section"))
+            up_tip = _("Move up in section")
+            up_btn.set_tooltip_text(up_tip)
+            # Accessible label so Orca announces the arrow-button purpose
+            # — icon-only Gtk.Buttons have no intrinsic label.
+            try:
+                up_btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [up_tip])
+            except Exception:
+                pass
             up_btn.connect(
                 "clicked",
                 lambda _b, k=mod_key, s=section: self._reorder_module(k, s, -1),
@@ -279,7 +288,13 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             down_btn = Gtk.Button.new_from_icon_name("go-down-symbolic")
             down_btn.add_css_class("flat")
             down_btn.set_valign(Gtk.Align.CENTER)
-            down_btn.set_tooltip_text(_("Move down in section"))
+            down_tip = _("Move down in section")
+            down_btn.set_tooltip_text(down_tip)
+            try:
+                down_btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [down_tip])
+            except Exception:
+                pass
             down_btn.connect(
                 "clicked",
                 lambda _b, k=mod_key, s=section: self._reorder_module(k, s, 1),
@@ -289,10 +304,14 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             prev_btn = Gtk.Button.new_from_icon_name(prev_icon)
             prev_btn.add_css_class("flat")
             prev_btn.set_valign(Gtk.Align.CENTER)
-            prev_btn.set_tooltip_text(
-                _("Move to {section}").format(
-                    section=labels[SECTION_ORDER[sec_idx - 1]])
-            )
+            prev_tip = _("Move to {section}").format(
+                section=labels[SECTION_ORDER[sec_idx - 1]])
+            prev_btn.set_tooltip_text(prev_tip)
+            try:
+                prev_btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [prev_tip])
+            except Exception:
+                pass
             prev_btn.connect(
                 "clicked",
                 lambda _b, k=mod_key, s=section: self._move_module(
@@ -304,10 +323,14 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             next_btn = Gtk.Button.new_from_icon_name(next_icon)
             next_btn.add_css_class("flat")
             next_btn.set_valign(Gtk.Align.CENTER)
-            next_btn.set_tooltip_text(
-                _("Move to {section}").format(
-                    section=labels[SECTION_ORDER[sec_idx + 1]])
-            )
+            next_tip = _("Move to {section}").format(
+                section=labels[SECTION_ORDER[sec_idx + 1]])
+            next_btn.set_tooltip_text(next_tip)
+            try:
+                next_btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [next_tip])
+            except Exception:
+                pass
             next_btn.connect(
                 "clicked",
                 lambda _b, k=mod_key, s=section: self._move_module(
@@ -487,6 +510,19 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             self.store.show_toast(
                 _("{app} has no launch command").format(app=name), True)
             return
+
+        # Normalize shell quoting so paths with spaces survive a round-trip
+        # through waybar's shell-exec consumer. Unparseable quoting (e.g.
+        # a stray single quote in a hand-edited .desktop Exec line) falls
+        # back to the raw string rather than dropping the entry — worst
+        # case it launches a little oddly, best case the user can still
+        # fix it from the Pinned Apps UI.
+        try:
+            tokens = shlex.split(cmd)
+            if tokens:
+                cmd = shlex.join(tokens)
+        except ValueError:
+            pass
 
         icon_gicon = app_info.get_icon()
         icon = ""

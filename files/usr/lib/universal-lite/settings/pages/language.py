@@ -1,3 +1,4 @@
+import os
 import subprocess
 import threading
 from gettext import gettext as _
@@ -29,39 +30,34 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
         self._banner = Adw.Banner.new(_("Changes take effect after logging out"))
         self._banner.set_revealed(True)
 
-        # Gather locale data before building rows.
-        locales = self._get_locales()
-        current_locale = self._get_current_locale()
-        current_fmt = self._get_current_format()
         loaded = [False]  # mutable so nested lambdas can read it
+        # Placeholder list of locales used until the background thread
+        # finishes enumerating them. Starting with the single canonical
+        # en_US.UTF-8 avoids leaving an empty ComboRow (which renders
+        # as a blank dropdown with no list popup).
+        locales_ref: list[list[str]] = [["en_US.UTF-8"]]
 
         # System language row
         lang_row = Adw.ComboRow()
         lang_row.set_title(_("System language"))
-        lang_row.set_model(Gtk.StringList.new(locales if locales else ["en_US.UTF-8"]))
-        try:
-            lang_row.set_selected(locales.index(current_locale))
-        except (ValueError, IndexError):
-            lang_row.set_selected(0)
+        lang_row.set_model(Gtk.StringList.new(locales_ref[0]))
+        lang_row.set_sensitive(False)
         lang_row.connect(
             "notify::selected",
-            lambda r, _: None if not loaded[0] or not locales
-            else self._set_locale(locales[r.get_selected()]),
+            lambda r, _: None if not loaded[0] or not locales_ref[0]
+            else self._set_locale(locales_ref[0][r.get_selected()]),
         )
 
         # Regional formats row
         fmt_row = Adw.ComboRow()
         fmt_row.set_title(_("Regional formats"))
         fmt_row.set_subtitle(_("Date, number, and currency format"))
-        fmt_row.set_model(Gtk.StringList.new(locales if locales else ["en_US.UTF-8"]))
-        try:
-            fmt_row.set_selected(locales.index(current_fmt))
-        except (ValueError, IndexError):
-            fmt_row.set_selected(0)
+        fmt_row.set_model(Gtk.StringList.new(locales_ref[0]))
+        fmt_row.set_sensitive(False)
         fmt_row.connect(
             "notify::selected",
-            lambda r, _: None if not loaded[0] or not locales
-            else self._set_format(locales[r.get_selected()]),
+            lambda r, _: None if not loaded[0] or not locales_ref[0]
+            else self._set_format(locales_ref[0][r.get_selected()]),
         )
 
         group = Adw.PreferencesGroup()
@@ -70,9 +66,38 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
         group.add(fmt_row)
         self.add(group)
 
-        # Flip the flag AFTER both initial selections have fired so the
-        # page-load set_selected calls don't trigger localectl/polkit.
-        loaded[0] = True
+        # Three back-to-back localectl invocations (10s + 5s + 5s) used
+        # to run on the main thread and froze the page for up to 20 s
+        # before it ever appeared. Defer them to a worker and populate
+        # the rows once all three have returned.
+        def _load_worker():
+            locales = self._get_locales()
+            current_locale = self._get_current_locale()
+            current_fmt = self._get_current_format()
+
+            def _populate():
+                if locales:
+                    locales_ref[0] = locales
+                    lang_row.set_model(Gtk.StringList.new(locales))
+                    fmt_row.set_model(Gtk.StringList.new(locales))
+                try:
+                    lang_row.set_selected(locales_ref[0].index(current_locale))
+                except (ValueError, IndexError):
+                    lang_row.set_selected(0)
+                try:
+                    fmt_row.set_selected(locales_ref[0].index(current_fmt))
+                except (ValueError, IndexError):
+                    fmt_row.set_selected(0)
+                lang_row.set_sensitive(True)
+                fmt_row.set_sensitive(True)
+                # Flip loaded AFTER set_selected so the initial
+                # selections don't round-trip through localectl/polkit.
+                loaded[0] = True
+                return False
+
+            GLib.idle_add(_populate)
+
+        threading.Thread(target=_load_worker, daemon=True).start()
 
         wrapper = Adw.ToolbarView()
         wrapper.add_top_bar(self._banner)
@@ -85,30 +110,37 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
             r = subprocess.run(["localectl", "list-locales"],
                                capture_output=True, text=True, timeout=10)
             return [l.strip() for l in r.stdout.splitlines() if l.strip()]
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return ["en_US.UTF-8"]
 
     @staticmethod
     def _get_current_locale():
+        # Force C locale so the "System Locale: LANG=..." line label
+        # isn't translated by the caller's session env; we parse
+        # literal "LANG=" below.
+        env = {**os.environ, "LC_ALL": "C"}
         try:
             r = subprocess.run(["localectl", "status"],
-                               capture_output=True, text=True, timeout=5)
+                               capture_output=True, text=True, timeout=5,
+                               env=env)
             for line in r.stdout.splitlines():
                 if "LANG=" in line:
                     return line.split("LANG=")[-1].strip()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             pass
         return "en_US.UTF-8"
 
     @staticmethod
     def _get_current_format():
+        env = {**os.environ, "LC_ALL": "C"}
         try:
             r = subprocess.run(["localectl", "status"],
-                               capture_output=True, text=True, timeout=5)
+                               capture_output=True, text=True, timeout=5,
+                               env=env)
             for line in r.stdout.splitlines():
                 if "LC_TIME=" in line:
                     return line.split("LC_TIME=")[-1].strip()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             pass
         return LanguagePage._get_current_locale()
 
@@ -128,9 +160,16 @@ class LanguagePage(BasePage, Adw.PreferencesPage):
         )
 
     def _set_format(self, locale):
+        # systemd ≥ 246 unsets LANG when `localectl set-locale` is
+        # called without one, so read the current LANG and pass it
+        # through alongside the per-category overrides.
+        current_lang = self._get_current_locale()
         self._run_localectl_async(
-            ["localectl", "set-locale", f"LC_TIME={locale}",
-             f"LC_NUMERIC={locale}", f"LC_MONETARY={locale}"],
+            ["localectl", "set-locale",
+             f"LANG={current_lang}",
+             f"LC_TIME={locale}",
+             f"LC_NUMERIC={locale}",
+             f"LC_MONETARY={locale}"],
             _("Failed to set regional format"),
             _("Format change timed out"),
         )

@@ -1,6 +1,7 @@
 import shlex
 import shutil
 import subprocess
+import threading
 from gettext import gettext as _
 from pathlib import Path
 
@@ -8,7 +9,7 @@ import gi
 
 gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Adw, Gio, Gtk
+from gi.repository import Adw, Gio, GLib, Gtk
 
 from ..base import BasePage
 
@@ -68,18 +69,32 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
                                  _l=_loading, _store=self.store):
                     if _l[0]:
                         return
-                    try:
-                        result = subprocess.run(
-                            ["xdg-mime", "default", ids[r.get_selected()], mt],
-                            check=False, timeout=5,
-                            capture_output=True, text=True,
-                        )
-                        if result.returncode != 0:
-                            _store.show_toast(
-                                _("Could not change default app"), True)
-                    except (subprocess.TimeoutExpired, OSError):
-                        _store.show_toast(
-                            _("Could not change default app"), True)
+                    # xdg-mime shells out to gio/update-desktop-database and
+                    # can stall the whole UI on a wedged session bus. Run it
+                    # off the main thread; surface failures via idle_add so
+                    # the toast lives on the GTK thread.
+                    selected_id = ids[r.get_selected()]
+
+                    def _worker():
+                        try:
+                            result = subprocess.run(
+                                ["xdg-mime", "default", selected_id, mt],
+                                check=False, timeout=5,
+                                capture_output=True, text=True,
+                            )
+                            if result.returncode != 0:
+                                GLib.idle_add(
+                                    lambda: (_store.show_toast(
+                                        _("Could not change default app"),
+                                        True), False)[1])
+                        except (subprocess.TimeoutExpired,
+                                FileNotFoundError, OSError):
+                            GLib.idle_add(
+                                lambda: (_store.show_toast(
+                                    _("Could not change default app"),
+                                    True), False)[1])
+
+                    threading.Thread(target=_worker, daemon=True).start()
                 row.connect("notify::selected", _set_default)
 
             group.add(row)

@@ -1,6 +1,7 @@
 import json
 import re
 import subprocess
+import threading
 from gettext import gettext as _
 
 import gi
@@ -25,6 +26,7 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         self._pending_in_volume: int | None = None
         self._out_vol_source: int | None = None
         self._in_vol_source: int | None = None
+        self._refresh_source: int | None = None
         # Widget refs for live updates — rewritten by _refresh()
         # After conversion: ComboRow / inner Gtk.Scale / SwitchRow
         self._sink_dd = None    # Adw.ComboRow
@@ -141,6 +143,15 @@ class SoundPage(BasePage, Adw.PreferencesPage):
                 self._refresh()
 
         def _on_unmap(_widget):
+            if self._out_vol_source is not None:
+                GLib.source_remove(self._out_vol_source)
+                self._out_vol_source = None
+            if self._in_vol_source is not None:
+                GLib.source_remove(self._in_vol_source)
+                self._in_vol_source = None
+            if self._refresh_source is not None:
+                GLib.source_remove(self._refresh_source)
+                self._refresh_source = None
             if self._pa is not None:
                 self._pa.stop()
                 self._pa = None
@@ -158,13 +169,18 @@ class SoundPage(BasePage, Adw.PreferencesPage):
             return
         idx = dropdown.get_selected()
         if self._sink_names and idx < len(self._sink_names):
-            try:
-                subprocess.run(
-                    ["pactl", "set-default-sink", self._sink_names[idx]],
-                    capture_output=True, timeout=5,
-                )
-            except (subprocess.TimeoutExpired, OSError):
-                pass
+            sink = self._sink_names[idx]
+
+            def _worker():
+                try:
+                    subprocess.run(
+                        ["pactl", "set-default-sink", sink],
+                        capture_output=True, timeout=5,
+                    )
+                except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                    pass
+
+            threading.Thread(target=_worker, daemon=True).start()
 
     def _on_out_vol_changed(self, scale):
         if self._updating:
@@ -197,26 +213,35 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         if self._updating:
             return
         state = switch_row.get_active()
-        try:
-            subprocess.run(
-                ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "1" if state else "0"],
-                capture_output=True, timeout=5,
-            )
-        except (subprocess.TimeoutExpired, OSError):
-            pass
+
+        def _worker():
+            try:
+                subprocess.run(
+                    ["pactl", "set-sink-mute", "@DEFAULT_SINK@", "1" if state else "0"],
+                    capture_output=True, timeout=5,
+                )
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                pass
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _on_source_selected(self, dropdown, _pspec):
         if self._updating:
             return
         idx = dropdown.get_selected()
         if self._source_names and idx < len(self._source_names):
-            try:
-                subprocess.run(
-                    ["pactl", "set-default-source", self._source_names[idx]],
-                    capture_output=True, timeout=5,
-                )
-            except (subprocess.TimeoutExpired, OSError):
-                pass
+            source = self._source_names[idx]
+
+            def _worker():
+                try:
+                    subprocess.run(
+                        ["pactl", "set-default-source", source],
+                        capture_output=True, timeout=5,
+                    )
+                except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                    pass
+
+            threading.Thread(target=_worker, daemon=True).start()
 
     def _on_in_vol_changed(self, scale):
         if self._updating:
@@ -244,13 +269,17 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         if self._updating:
             return
         state = switch_row.get_active()
-        try:
-            subprocess.run(
-                ["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "1" if state else "0"],
-                capture_output=True, timeout=5,
-            )
-        except (subprocess.TimeoutExpired, OSError):
-            pass
+
+        def _worker():
+            try:
+                subprocess.run(
+                    ["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "1" if state else "0"],
+                    capture_output=True, timeout=5,
+                )
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                pass
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     # -- Live event handling --
 
@@ -266,31 +295,57 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         if self._refresh_pending:
             return
         self._refresh_pending = True
-        GLib.timeout_add(self._REFRESH_DEBOUNCE_MS, self._run_pending_refresh)
+        self._refresh_source = GLib.timeout_add(
+            self._REFRESH_DEBOUNCE_MS, self._run_pending_refresh,
+        )
 
     def _run_pending_refresh(self) -> bool:
         self._refresh_pending = False
+        self._refresh_source = None
         self._refresh()
         return False  # one-shot
 
-    # Main-loop-only. _updating guards against handler re-entry when we
-    # set scale values during refresh (not thread concurrency).
+    # _refresh kicks a worker thread that reads 8 pactl values then
+    # hops back to idle_add for the UI update. The synchronous version
+    # froze the main loop for up to 5 s per refresh on slow adapters
+    # (see G8).
     def _refresh(self):
+        def _worker():
+            try:
+                sinks = self._get_sinks()
+                default_sink = self._get_default_sink()
+                out_vol = self._get_volume("@DEFAULT_SINK@")
+                out_mute = self._get_mute("@DEFAULT_SINK@")
+                sources = self._get_sources()
+                default_source = self._get_default_source()
+                in_vol = self._get_volume("@DEFAULT_SOURCE@", is_source=True)
+                in_mute = self._get_mute("@DEFAULT_SOURCE@", is_source=True)
+            except Exception:
+                return
+            GLib.idle_add(
+                self._apply_refresh,
+                sinks, default_sink, out_vol, out_mute,
+                sources, default_source, in_vol, in_mute,
+            )
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _apply_refresh(self, sinks, default_sink, out_vol, out_mute,
+                       sources, default_source, in_vol, in_mute):
+        # Page may have been unmapped between worker dispatch and idle
+        # callback. Widget refs are torn to None on unmap; bail quietly.
+        if self._sink_dd is None or self._out_vol is None:
+            return False
         self._updating = True
         try:
-            # Re-read sinks
-            sinks = self._get_sinks()
             new_sink_names = [n for n, _ in sinks]
             sink_descs = [d for _, d in sinks]
 
-            # Update sink dropdown if device list changed
             if new_sink_names != self._sink_names:
                 self._sink_names = new_sink_names
                 model = Gtk.StringList.new(sink_descs if sink_descs else [_("(No output devices)")])
                 self._sink_dd.set_model(model)
 
-            # Select current default sink
-            default_sink = self._get_default_sink()
             try:
                 sink_idx = self._sink_names.index(default_sink)
             except ValueError:
@@ -298,23 +353,17 @@ class SoundPage(BasePage, Adw.PreferencesPage):
             if self._sink_names:
                 self._sink_dd.set_selected(sink_idx)
 
-            # Update output volume and mute
-            self._out_vol.set_value(self._get_volume("@DEFAULT_SINK@"))
-            self._out_mute.set_active(self._get_mute("@DEFAULT_SINK@"))
+            self._out_vol.set_value(out_vol)
+            self._out_mute.set_active(out_mute)
 
-            # Re-read sources
-            sources = self._get_sources()
             new_source_names = [n for n, _ in sources]
             source_descs = [d for _, d in sources]
 
-            # Update source dropdown if device list changed
             if new_source_names != self._source_names:
                 self._source_names = new_source_names
                 model = Gtk.StringList.new(source_descs if source_descs else [_("(No input devices)")])
                 self._source_dd.set_model(model)
 
-            # Select current default source
-            default_source = self._get_default_source()
             try:
                 source_idx = self._source_names.index(default_source)
             except ValueError:
@@ -322,11 +371,11 @@ class SoundPage(BasePage, Adw.PreferencesPage):
             if self._source_names:
                 self._source_dd.set_selected(source_idx)
 
-            # Update input volume and mute
-            self._in_vol.set_value(self._get_volume("@DEFAULT_SOURCE@", is_source=True))
-            self._in_mute.set_active(self._get_mute("@DEFAULT_SOURCE@", is_source=True))
+            self._in_vol.set_value(in_vol)
+            self._in_mute.set_active(in_mute)
         finally:
             self._updating = False
+        return False
 
     # -- Static helpers: read current PulseAudio state --
 
@@ -344,7 +393,7 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         try:
             return subprocess.run(["pactl", "get-default-sink"],
                                   capture_output=True, text=True, timeout=5).stdout.strip()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return ""
 
     @staticmethod
@@ -362,7 +411,7 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         try:
             return subprocess.run(["pactl", "get-default-source"],
                                   capture_output=True, text=True, timeout=5).stdout.strip()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return ""
 
     @staticmethod
@@ -372,7 +421,7 @@ class SoundPage(BasePage, Adw.PreferencesPage):
             r = subprocess.run(["pactl", cmd, target], capture_output=True, text=True, timeout=5)
             m = re.search(r"(\d+)%", r.stdout)
             return int(m.group(1)) if m else 50
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return 50
 
     @staticmethod
@@ -381,5 +430,5 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         try:
             return "yes" in subprocess.run(["pactl", cmd, target],
                                            capture_output=True, text=True, timeout=5).stdout.lower()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return False

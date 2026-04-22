@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import xml.etree.ElementTree as ET
 from gettext import gettext as _
@@ -36,6 +37,13 @@ LAYOUT_NAMES = {
 
 SYSTEM_RC_XML = Path("/etc/xdg/labwc/rc.xml")
 USER_KEYBINDINGS = Path.home() / ".config/universal-lite/keybindings.json"
+
+# Lazily populated caches for `localectl list-x11-keymap-*` output.
+# Each subprocess call blocks the GTK main thread for up to 10s on cold
+# xkeyboard-config reads. Caching at module scope means subsequent page
+# opens within the same settings-app process reuse the first result.
+_layouts_cache: list | None = None
+_variants_cache: dict[str, list] = {}
 
 # Human-readable names for action+command combos. Values wrapped so
 # xgettext extracts them and the Keyboard shortcut rows render in the
@@ -104,7 +112,7 @@ def _get_action_name(action_name, command, direction):
         key = ("SnapToEdge", direction)
         if key in SHORTCUT_NAMES:
             return SHORTCUT_NAMES[key]
-        return f"Snap {direction.capitalize()}"
+        return _("Snap {direction}").format(direction=direction.capitalize())
 
     # Check exact match first
     key = (action_name, command)
@@ -122,21 +130,21 @@ def _get_action_name(action_name, command, direction):
     if command:
         cmd_lower = command.lower()
         if "volume up" in cmd_lower:
-            return "Volume Up"
+            return _("Volume Up")
         if "volume down" in cmd_lower:
-            return "Volume Down"
+            return _("Volume Down")
         if "volume mute" in cmd_lower:
-            return "Mute"
+            return _("Mute")
         if "brightness up" in cmd_lower:
-            return "Brightness Up"
+            return _("Brightness Up")
         if "brightness down" in cmd_lower:
-            return "Brightness Down"
+            return _("Brightness Down")
         if "grim -g" in cmd_lower:
-            return "Screenshot (Region)"
+            return _("Screenshot (Region)")
         if "grim" in cmd_lower:
-            return "Screenshot"
+            return _("Screenshot")
 
-    return f"Run: {command}" if command else action_name
+    return _("Run: {command}").format(command=command) if command else action_name
 
 
 def _parse_system_keybindings() -> list[dict]:
@@ -227,11 +235,20 @@ def _load_user_keybindings() -> list[dict] | None:
 
 
 def _save_user_keybindings(bindings: list[dict]) -> None:
-    """Save keybinding overrides to JSON."""
+    """Save keybinding overrides to JSON atomically.
+
+    Writes to a `.tmp` sibling, fsyncs the file data, then os.replace()s
+    it onto USER_KEYBINDINGS. fsync guards against a crash between write
+    and rename leaving a zero-byte or truncated JSON that the next
+    _load_user_keybindings treats as "no overrides".
+    """
     USER_KEYBINDINGS.parent.mkdir(parents=True, exist_ok=True)
     tmp = USER_KEYBINDINGS.with_suffix(".tmp")
-    tmp.write_text(json.dumps(bindings, indent=2) + "\n", encoding="utf-8")
-    tmp.rename(USER_KEYBINDINGS)
+    with tmp.open("w", encoding="utf-8") as f:
+        f.write(json.dumps(bindings, indent=2) + "\n")
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, USER_KEYBINDINGS)
 
 
 class KeyboardPage(BasePage, Adw.PreferencesPage):
@@ -270,6 +287,12 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         self._capture_page: Adw.NavigationPage | None = None
         self._capture_index: int = -1
         self._capture_done: bool = False
+        # Guard flag for programmatic ComboRow updates — see
+        # _build_variant_dropdown. set_model/set_selected both emit
+        # notify::selected while the handler is still connected, which
+        # would otherwise save a spurious empty variant every time the
+        # layout changes.
+        self._updating_variant: bool = False
 
     @property
     def search_keywords(self):
@@ -332,6 +355,8 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         self._variant_row = variant_row
 
         def _on_variant_changed(row: Adw.ComboRow, _pspec) -> None:
+            if self._updating_variant:
+                return
             idx = row.get_selected()
             if idx == Gtk.INVALID_LIST_POSITION or not self._variant_codes:
                 return
@@ -377,20 +402,26 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         variants = self._get_variants(layout_code)
         self._variant_codes = [""] + list(variants)
 
-        # Temporarily disconnect the notify handler while swapping the
-        # model so we don't spuriously save_and_apply during rebuild.
+        # Guard _on_variant_changed against the notify::selected signals
+        # emitted by set_model/set_selected during this rebuild; otherwise
+        # each layout change would spuriously save_and_apply an empty
+        # variant before the real selection lands.
         current_variant = self.store.get("keyboard_variant", "")
         labels = [_("(Default)")] + list(variants)
-        self._variant_row.set_model(Gtk.StringList.new(labels))
-        self._variant_row.set_visible(bool(variants))
-
         try:
             sel = self._variant_codes.index(
                 current_variant if layout_code == self._current_layout_code else ""
             )
         except ValueError:
             sel = 0
-        self._variant_row.set_selected(sel)
+
+        self._updating_variant = True
+        try:
+            self._variant_row.set_model(Gtk.StringList.new(labels))
+            self._variant_row.set_visible(bool(variants))
+            self._variant_row.set_selected(sel)
+        finally:
+            self._updating_variant = False
 
     def _build_repeat_group(self) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup()
@@ -495,6 +526,15 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
             reset_btn = Gtk.Button.new_from_icon_name("edit-undo-symbolic")
             reset_btn.add_css_class("flat")
             reset_btn.set_tooltip_text(_("Reset to default"))
+            # Icon-only buttons have no inherent accessible name, so
+            # orca/AT-SPI would announce them as "push button". Attach an
+            # explicit label for screen readers.
+            try:
+                reset_btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [_("Reset to default")]
+                )
+            except Exception:
+                pass
             reset_btn.set_valign(Gtk.Align.CENTER)
             reset_btn.connect(
                 "clicked", lambda _b, idx=index: self._reset_shortcut(idx)
@@ -536,6 +576,12 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
             reset_btn = Gtk.Button.new_from_icon_name("edit-undo-symbolic")
             reset_btn.add_css_class("flat")
             reset_btn.set_tooltip_text(_("Reset to default"))
+            try:
+                reset_btn.update_property(
+                    [Gtk.AccessibleProperty.LABEL], [_("Reset to default")]
+                )
+            except Exception:
+                pass
             reset_btn.set_valign(Gtk.Align.CENTER)
             reset_btn.connect(
                 "clicked", lambda _b, idx=index: self._reset_shortcut(idx)
@@ -652,8 +698,9 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
             )
             dialog.add_response("ok", _("OK"))
             dialog.set_default_response("ok")
+            dialog.set_close_response("ok")
             dialog.connect("response", lambda _d, _r: self._nav.pop())
-            dialog.present(self)
+            dialog.present(self.get_root())
             return True
 
         # Conflict check uses the same logic as before.
@@ -688,8 +735,15 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         if state & Gdk.ModifierType.SUPER_MASK:
             parts.append("W")
         key_name = Gdk.keyval_name(keyval)
-        if key_name:
-            parts.append(key_name)
+        if key_name is None:
+            return ""
+        # labwc expects the unshifted keysym; GDK reports the shifted
+        # character. For single-letter keys with Shift held, downshift
+        # so "S-t" matches instead of "S-T". Multi-char keysym names
+        # like "Tab", "Return", "Print" are left untouched.
+        if (state & Gdk.ModifierType.SHIFT_MASK) and len(key_name) == 1:
+            key_name = key_name.lower()
+        parts.append(key_name)
         return "-".join(parts) if parts else ""
 
     def _find_conflict(self, new_key: str, exclude_index: int) -> int | None:
@@ -731,11 +785,25 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
 
         def _on_response(_dialog, response_id: str) -> None:
             if response_id == "reassign":
-                # Fall back the conflicting binding to its default (or
-                # empty if it had none), update its row, then apply the
-                # new key to the target.
+                # Fall back the conflicting binding to its default if it
+                # had one; otherwise leave it keyless and explicitly tell
+                # the user so they can rebind it rather than silently
+                # producing a blank row.
                 old_default = self._get_default_key(conflict_idx)
-                self._bindings[conflict_idx]["key"] = old_default or ""
+                if old_default:
+                    self._bindings[conflict_idx]["key"] = old_default
+                else:
+                    self._bindings[conflict_idx]["key"] = ""
+                    displaced_name = self._bindings[conflict_idx].get(
+                        "display_name", self._bindings[conflict_idx].get(
+                            "action", "")
+                    )
+                    self.store.show_toast(
+                        _("No default key for {action}; please rebind it.").format(
+                            action=displaced_name
+                        ),
+                        True,
+                    )
                 self._update_shortcut_row(conflict_idx)
                 self._apply_new_key(target_idx, new_key)
             # Whether reassigned or cancelled, pop back to the list.
@@ -795,7 +863,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
                 self._save_and_reconfigure()
 
             dialog.connect("response", _on_response)
-            dialog.present(self)
+            dialog.present(self.get_root())
             return
 
         self._bindings[index]["key"] = default_key
@@ -803,7 +871,31 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         self._save_and_reconfigure()
 
     def _reset_all_shortcuts(self) -> None:
-        """Reset all shortcuts to system defaults."""
+        """Prompt the user before resetting all shortcuts.
+
+        Reset All is destructive and unrecoverable once apply-settings
+        regenerates rc.xml, so the actual reset is gated behind an
+        AdwAlertDialog. The real work happens in
+        _on_reset_all_response.
+        """
+        dialog = Adw.AlertDialog.new(
+            _("Reset all shortcuts?"),
+            _("This will restore every shortcut to its system default. "
+              "This cannot be undone."),
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("reset", _("Reset All"))
+        dialog.set_response_appearance(
+            "reset", Adw.ResponseAppearance.DESTRUCTIVE
+        )
+        dialog.set_close_response("cancel")
+        dialog.set_default_response("cancel")
+        dialog.connect("response", self._on_reset_all_response)
+        dialog.present(self.get_root())
+
+    def _on_reset_all_response(self, _dialog, response):
+        if response != "reset":
+            return
         self._bindings = list(self._default_bindings)
         # Update every row in place.
         for i in range(len(self._bindings)):
@@ -845,22 +937,32 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
 
     @staticmethod
     def _get_layouts():
+        global _layouts_cache
+        if _layouts_cache is not None:
+            return _layouts_cache
         try:
             r = subprocess.run(
                 ["localectl", "list-x11-keymap-layouts"],
                 capture_output=True, text=True, timeout=10,
             )
-            return [l.strip() for l in r.stdout.splitlines() if l.strip()]
+            result = [l.strip() for l in r.stdout.splitlines() if l.strip()]
         except (FileNotFoundError, subprocess.TimeoutExpired):
-            return ["us"]
+            result = ["us"]
+        _layouts_cache = result
+        return result
 
     @staticmethod
     def _get_variants(layout):
+        cached = _variants_cache.get(layout)
+        if cached is not None:
+            return cached
         try:
             r = subprocess.run(
                 ["localectl", "list-x11-keymap-variants", layout],
                 capture_output=True, text=True, timeout=10,
             )
-            return [v.strip() for v in r.stdout.splitlines() if v.strip()]
+            result = [v.strip() for v in r.stdout.splitlines() if v.strip()]
         except (FileNotFoundError, subprocess.TimeoutExpired):
-            return []
+            result = []
+        _variants_cache[layout] = result
+        return result

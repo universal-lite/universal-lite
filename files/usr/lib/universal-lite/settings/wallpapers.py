@@ -11,10 +11,13 @@ slash is how we tell them apart.
 from __future__ import annotations
 
 import hashlib
+import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from xml.etree import ElementTree as ET
+
+from gi.repository import GLib
 
 SYSTEM_MANIFEST_DIRS = (
     Path("/usr/share/gnome-background-properties"),
@@ -250,15 +253,19 @@ def add_custom_detailed(source_path: str) -> tuple[str, Wallpaper | None]:
             "standard::content-type", Gio.FileQueryInfoFlags.NONE, None,
         )
         content_type = info.get_content_type() or ""
-    except Exception:
+    except GLib.Error:
         content_type = ""
-    if content_type and content_type not in _CUSTOM_WALLPAPER_ALLOWED_TYPES:
+    # Reject if content_type is empty OR not in allowed list
+    if content_type not in _CUSTOM_WALLPAPER_ALLOWED_TYPES:
         return ADD_CUSTOM_UNSUPPORTED, None
 
     CUSTOM_WALLPAPER_DIR.mkdir(parents=True, exist_ok=True)
     USER_MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
 
-    digest = hashlib.sha1(str(src).encode("utf-8")).hexdigest()[:10]
+    try:
+        digest = hashlib.sha1(src.read_bytes()).hexdigest()[:10]
+    except OSError:
+        return ADD_CUSTOM_IO_ERROR, None
     wp_id = f"custom-{digest}"
     dest = CUSTOM_WALLPAPER_DIR / f"{wp_id}{src.suffix.lower()}"
 
@@ -272,7 +279,7 @@ def add_custom_detailed(source_path: str) -> tuple[str, Wallpaper | None]:
     display_name = display_name.title() if display_name else "Custom"
 
     manifest_path = USER_MANIFEST_DIR / f"{wp_id}.xml"
-    manifest_path.write_text(
+    xml_content = (
         '<?xml version="1.0"?>\n'
         '<!DOCTYPE wallpapers SYSTEM "gnome-wp-list.dtd">\n'
         '<wallpapers>\n'
@@ -284,9 +291,23 @@ def add_custom_detailed(source_path: str) -> tuple[str, Wallpaper | None]:
         '    <pcolor>#000000</pcolor>\n'
         '    <scolor>#000000</scolor>\n'
         '  </wallpaper>\n'
-        '</wallpapers>\n',
-        encoding="utf-8",
+        '</wallpapers>\n'
     )
+    manifest_tmp = manifest_path.with_suffix(".xml.tmp")
+    try:
+        manifest_tmp.write_text(xml_content, encoding="utf-8")
+        os.replace(manifest_tmp, manifest_path)
+    except OSError:
+        # Clean up orphan image copy
+        try:
+            dest.unlink(missing_ok=True)
+        except OSError:
+            pass
+        try:
+            manifest_tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        return ADD_CUSTOM_IO_ERROR, None
 
     return ADD_CUSTOM_OK, Wallpaper(
         id=wp_id, name=display_name,

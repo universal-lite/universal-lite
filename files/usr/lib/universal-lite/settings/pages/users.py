@@ -1,5 +1,6 @@
 import os
 import subprocess
+import threading
 from gettext import gettext as _
 
 import gi
@@ -140,42 +141,67 @@ class UsersPage(BasePage, Adw.PreferencesPage):
         new_name = row.get_text().strip()
         if not new_name:
             return
-        try:
-            self._bus.call_sync(
-                "org.freedesktop.Accounts", self._user_path,
-                "org.freedesktop.Accounts.User", "SetRealName",
-                GLib.Variant("(s)", (new_name,)),
-                None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
-            )
-        except GLib.Error as exc:
-            self.store.show_toast(
-                _("Could not save name: {msg}").format(msg=exc.message), True)
+
+        # SetRealName is a PolicyKit-guarded D-Bus call, so it can block
+        # the UI for up to _DBUS_TIMEOUT_MS (5s) waiting for authentication
+        # or a stalled accounts-daemon. Dispatch to a worker thread and
+        # surface any failure via idle_add so the Users page stays
+        # responsive.
+        def _worker():
+            try:
+                self._bus.call_sync(
+                    "org.freedesktop.Accounts", self._user_path,
+                    "org.freedesktop.Accounts.User", "SetRealName",
+                    GLib.Variant("(s)", (new_name,)),
+                    None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
+                )
+            except GLib.Error as exc:
+                msg = exc.message
+                GLib.idle_add(
+                    lambda m=msg: (self.store.show_toast(
+                        _("Could not save name: {msg}").format(msg=m), True),
+                        False)[1])
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def _on_autologin_set(self, row, _pspec):
         if getattr(self, "_autologin_updating", False):
             return
-        try:
-            self._bus.call_sync(
-                "org.freedesktop.Accounts", self._user_path,
-                "org.freedesktop.Accounts.User", "SetAutomaticLogin",
-                GLib.Variant("(b)", (row.get_active(),)),
-                None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
-            )
-        except GLib.Error as exc:
-            self.store.show_toast(
-                _("Could not change auto-login"), True)
-            # Flip the switch back to the pre-click state. GTK already
-            # animated to the new position before our signal handler
-            # fired, so without reconciliation the switch lies about
-            # the actual daemon state until the user clicks again.
-            # The _autologin_updating guard prevents the reconciling
-            # set_active from re-entering this handler and re-trying
-            # the failing call.
-            self._autologin_updating = True
+
+        # SetAutomaticLogin is a PolicyKit-guarded D-Bus call. Run it in
+        # a background thread so the switch-animated main loop stays
+        # responsive; on failure, reconcile the switch back to the
+        # pre-click state from the UI thread.
+        desired = row.get_active()
+
+        def _worker():
             try:
-                row.set_active(not row.get_active())
-            finally:
-                self._autologin_updating = False
+                self._bus.call_sync(
+                    "org.freedesktop.Accounts", self._user_path,
+                    "org.freedesktop.Accounts.User", "SetAutomaticLogin",
+                    GLib.Variant("(b)", (desired,)),
+                    None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
+                )
+            except GLib.Error:
+                GLib.idle_add(self._on_autologin_error, row, desired)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _on_autologin_error(self, row, attempted):
+        self.store.show_toast(_("Could not change auto-login"), True)
+        # Flip the switch back to the pre-click state. GTK already
+        # animated to the new position before our signal handler
+        # fired, so without reconciliation the switch lies about
+        # the actual daemon state until the user clicks again.
+        # The _autologin_updating guard prevents the reconciling
+        # set_active from re-entering this handler and re-trying
+        # the failing call.
+        self._autologin_updating = True
+        try:
+            row.set_active(not attempted)
+        finally:
+            self._autologin_updating = False
+        return False
 
     def _push_change_password(self, *_):
         sub = Adw.NavigationPage()
@@ -211,6 +237,9 @@ class UsersPage(BasePage, Adw.PreferencesPage):
         apply_row.add_suffix(apply_btn)
         action_group.add(apply_row)
         inner.add(action_group)
+        # Stash the apply button so the async password worker can
+        # re-enable it from the UI thread when the D-Bus call returns.
+        self._apply_btn = apply_btn
 
         toolbar.set_content(inner)
         sub.set_child(toolbar)
@@ -225,19 +254,47 @@ class UsersPage(BasePage, Adw.PreferencesPage):
         if pw != cpw:
             self.store.show_toast(_("Passwords do not match"), True)
             return
-        try:
-            hashed = _hash_password(pw)
-            self._bus.call_sync(
-                "org.freedesktop.Accounts", self._user_path,
-                "org.freedesktop.Accounts.User", "SetPassword",
-                GLib.Variant("(ss)", (hashed, "")),
-                None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
-            )
+
+        # openssl passwd -6 takes ~200-500ms and AccountsService SetPassword
+        # can block up to the full 5s D-Bus timeout when accounts-daemon is
+        # queued behind PolicyKit — do both off the UI thread so the window
+        # stays responsive. The apply button is disabled for the duration so
+        # a frustrated user can't queue a second hash while the first is in
+        # flight.
+        apply_btn = getattr(self, "_apply_btn", None)
+        if apply_btn is not None:
+            apply_btn.set_sensitive(False)
+
+        def _worker():
+            try:
+                hashed = _hash_password(pw)
+                self._bus.call_sync(
+                    "org.freedesktop.Accounts", self._user_path,
+                    "org.freedesktop.Accounts.User", "SetPassword",
+                    GLib.Variant("(ss)", (hashed, "")),
+                    None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
+                )
+                GLib.idle_add(self._on_password_success, sub)
+            except (GLib.Error, subprocess.CalledProcessError,
+                    subprocess.TimeoutExpired, FileNotFoundError, OSError):
+                # FileNotFoundError covers the case where openssl is absent
+                # from PATH (rare on a Fedora bootc image, but defensive on
+                # a stripped-down build); OSError covers permission issues
+                # on the openssl binary or accounts-daemon bus drop.
+                GLib.idle_add(self._on_password_error)
+            finally:
+                if apply_btn is not None:
+                    GLib.idle_add(
+                        lambda: (apply_btn.set_sensitive(True), False)[1])
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _on_password_success(self, _sub):
+        self.store.show_toast(_("Password changed"))
+        if self._nav is not None:
             self._nav.pop()
-        except (GLib.Error, subprocess.CalledProcessError,
-                subprocess.TimeoutExpired, FileNotFoundError, OSError):
-            # FileNotFoundError covers the case where openssl is absent
-            # from PATH (rare on a Fedora bootc image, but defensive on
-            # a stripped-down build); OSError covers permission issues
-            # on the openssl binary or accounts-daemon bus drop.
-            self.store.show_toast(_("Failed to set password"), True)
+        return False
+
+    def _on_password_error(self):
+        self.store.show_toast(_("Failed to set password"), True)
+        return False

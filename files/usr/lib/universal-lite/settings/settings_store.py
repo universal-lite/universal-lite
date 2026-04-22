@@ -53,7 +53,9 @@ class SettingsStore:
             return {}
         if write_to_user:
             try:
-                self._path.write_text(default_text, encoding="utf-8")
+                tmp = self._path.with_suffix(".tmp")
+                tmp.write_text(default_text, encoding="utf-8")
+                os.replace(tmp, self._path)
             except OSError:
                 pass
         return data

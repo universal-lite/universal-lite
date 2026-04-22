@@ -122,9 +122,13 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         theme_group = Adw.PreferencesGroup()
         theme_group.set_title(_("Theme"))
 
+        hc_active = self.store.get("high_contrast", False)
         dark_row = Adw.SwitchRow()
         dark_row.set_title(_("Dark mode"))
-        dark_row.set_active(self.store.get("theme", "light") == "dark")
+        # Reflect High Contrast's forced-dark state in the UI — otherwise
+        # the switch would show "light" while the applied theme is dark.
+        dark_row.set_active(
+            self.store.get("theme", "light") == "dark" or hc_active)
 
         def _on_dark_mode(row, _pspec):
             self.store.save_and_apply("theme", "dark" if row.get_active() else "light")
@@ -137,11 +141,19 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             if self._wallpaper_flow is not None:
                 self._populate_wallpapers(self)
 
-        dark_row.connect("notify::active", _on_dark_mode)
+        if hc_active:
+            # High Contrast forces dark — disable the switch and surface
+            # the reason in the group description. Only connect the
+            # notify::active handler when HC is off, so toggling can't
+            # silently write theme="light" while HC keeps the effective
+            # theme dark (which would then flip light unexpectedly when
+            # the user disables HC later).
+            dark_row.set_sensitive(False)
+            theme_group.set_description(
+                _("Theme is set to Dark by High Contrast mode"))
+        else:
+            dark_row.connect("notify::active", _on_dark_mode)
         theme_group.add(dark_row)
-
-        if self.store.get("high_contrast", False):
-            theme_group.set_description(_("Theme is set to Dark by High Contrast mode"))
 
         self.add(theme_group)
 
@@ -332,6 +344,15 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         btn.set_child(pic)
         btn.set_active(wp.id == current_id)
         btn.set_tooltip_text(wp.name)
+        # Accessible label so Orca announces the wallpaper name — without
+        # it each tile reads as an anonymous "toggle button" since the
+        # ToggleButton's only child is a Gtk.Picture with no label text.
+        try:
+            btn.update_property([Gtk.AccessibleProperty.LABEL], [wp.name])
+        except Exception:
+            # update_property requires GTK 4.10+; tooltip fallback still
+            # provides the accessible name on older GTK builds.
+            pass
         btn.connect("toggled", self._on_wallpaper_toggled, wp.id)
         self._wallpaper_buttons.append((btn, wp.id))
 
@@ -356,6 +377,14 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         btn = Gtk.Button()
         btn.add_css_class("wallpaper-add")
         btn.set_tooltip_text(_("Add picture…"))
+        # Accessible label so Orca announces "Add picture" instead of an
+        # anonymous "button" — the button's only child is a + icon with
+        # no text label.
+        try:
+            btn.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Add picture…")])
+        except Exception:
+            pass
         btn.set_size_request(TILE_W, TILE_H)
         icon = Gtk.Image.new_from_icon_name("list-add-symbolic")
         icon.set_pixel_size(24)

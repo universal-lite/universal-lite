@@ -24,7 +24,7 @@ CATEGORY_KEYS = {
         "night_light_schedule", "night_light_start", "night_light_end",
     ],
     "Panel": [
-        "edge", "layout", "pinned", "clock_24h", "density",
+        "edge", "layout", "pinned", "density",
         "panel_twilight",
     ],
     "Mouse & Touchpad": [
@@ -42,11 +42,12 @@ CATEGORY_KEYS = {
         "suspend_timeout", "lid_close_action",
         "power_profile",
     ],
-    # Date & Time and Language categories live in OS state (timedatectl /
-    # localectl) rather than settings.json, so the actual reset work is
-    # done via the out-of-band cleanup block in _run_restore below —
-    # these empty lists are here so the category appears in the picker.
-    "Date & Time": [],
+    # Date & Time and Language categories live mostly in OS state
+    # (timedatectl / localectl) rather than settings.json, so the actual
+    # reset work is done via the out-of-band cleanup block in
+    # _run_restore below. clock_24h is the one Date & Time key that does
+    # live in settings.json, so it's listed here.
+    "Date & Time": ["clock_24h"],
     "Language & Region": [],
 }
 
@@ -122,25 +123,25 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         # meaningful subset of our 2 GB Chromebook targets are ARM
         # (Mediatek MT8173/MT8183, Rockchip RK3399), so fall back to
         # the ARM fields when "model name" is absent.
-        cpu = "Unknown"
+        cpu = _("Unknown")
         try:
             cpuinfo = Path("/proc/cpuinfo").read_text().splitlines()
             for line in cpuinfo:
                 if line.startswith("model name"):
                     cpu = line.split(":", 1)[1].strip()
                     break
-            if cpu == "Unknown":
+            if cpu == _("Unknown"):
                 for key in ("Model", "Hardware", "CPU part"):
                     for line in cpuinfo:
                         if line.startswith(key):
                             cpu = line.split(":", 1)[1].strip()
                             break
-                    if cpu != "Unknown":
+                    if cpu != _("Unknown"):
                         break
         except OSError:
             pass
 
-        ram = "Unknown"
+        ram = _("Unknown")
         try:
             for line in Path("/proc/meminfo").read_text().splitlines():
                 if line.startswith("MemTotal:"):
@@ -154,18 +155,20 @@ class AboutPage(BasePage, Adw.PreferencesPage):
             st = os.statvfs("/")
             total = st.f_blocks * st.f_frsize
             used = (st.f_blocks - st.f_bfree) * st.f_frsize
-            disk_value = f"{used / 1073741824:.1f} GB used of {total / 1073741824:.1f} GB"
+            disk_value = _("{used:.1f} GB used of {total:.1f} GB").format(
+                used=used / 1073741824, total=total / 1073741824,
+            )
         except OSError:
             pass
 
-        gpu = "Unknown"
+        gpu = _("Unknown")
         try:
             r = subprocess.run(["lspci"], capture_output=True, text=True, timeout=5)
             for line in r.stdout.splitlines():
                 if "VGA" in line or "3D" in line or "Display" in line:
                     gpu = line.split(": ", 1)[-1] if ": " in line else line
                     break
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             pass
 
         labwc_ver = "unknown"
@@ -271,6 +274,9 @@ class AboutPage(BasePage, Adw.PreferencesPage):
                 return
             except FileNotFoundError:
                 GLib.idle_add(self._set_update_subtitle, _("Update system not available"))
+                return
+            except OSError:
+                GLib.idle_add(self._set_update_subtitle, _("Update check failed"))
                 return
             if r.returncode == 77:
                 GLib.idle_add(self._set_update_subtitle, _("Update available"))
@@ -479,9 +485,21 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         if self._nav is not None:
             self._nav.pop()
 
-        def _restart():
-            os.execv(sys.executable, [sys.executable] + sys.argv)
+        # Wait for apply-settings to finish (or 10s fallback) and then
+        # re-exec so every page re-reads values from disk/OS state.
+        # restarted[0] guard avoids a double-exec when both
+        # wait_for_apply and the timeout fire.
+        restarted = [False]
+
+        def _do_restart():
+            if restarted[0]:
+                return GLib.SOURCE_REMOVE
+            restarted[0] = True
+            GLib.idle_add(lambda: os.execv(sys.executable, [sys.executable] + sys.argv))
             return GLib.SOURCE_REMOVE
+
+        self.store.wait_for_apply(_do_restart)
+        GLib.timeout_add_seconds(10, _do_restart)
 
     def _restore_datetime_defaults(self):
         """Reset timezone to UTC and re-enable NTP via timedatectl.
@@ -525,19 +543,3 @@ class AboutPage(BasePage, Adw.PreferencesPage):
                 pass
 
         threading.Thread(target=_worker, daemon=True).start()
-
-        # Defer restart one idle tick so GTK finishes unmapping the
-        # sub-page. Fallback timeout guards against wait_for_apply
-        # never firing if apply-settings has already raced to
-        # completion by the time we call it.
-        restarted = [False]
-
-        def _do_restart():
-            if restarted[0]:
-                return GLib.SOURCE_REMOVE
-            restarted[0] = True
-            GLib.idle_add(_restart)
-            return GLib.SOURCE_REMOVE
-
-        self.store.wait_for_apply(_do_restart)
-        GLib.timeout_add_seconds(10, _do_restart)

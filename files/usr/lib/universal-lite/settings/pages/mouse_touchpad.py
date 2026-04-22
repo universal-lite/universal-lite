@@ -127,7 +127,12 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         mouse_speed_scale.set_value(self.store.get("mouse_pointer_speed", 0.0))
         mouse_speed_scale.set_size_request(120, -1)
         mouse_speed_scale.set_hexpand(True)
-        mouse_speed_scale.set_draw_value(False)
+        # Match the touchpad slider: show the "Slow"/"Default"/"Fast"
+        # readout so the value is announced by Orca and visible to
+        # sighted users.
+        mouse_speed_scale.set_draw_value(True)
+        mouse_speed_scale.set_value_pos(Gtk.PositionType.RIGHT)
+        mouse_speed_scale.set_format_value_func(_pointer_speed_label)
         mouse_speed_scale.set_valign(Gtk.Align.CENTER)
         mouse_speed_scale.connect("value-changed", self._on_mouse_pointer_speed)
 

@@ -21,6 +21,7 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         self._scan_btn: Gtk.Button | None = None
         self._scan_timer: int | None = None
         self._updating = False
+        self._pairing_in_flight: bool = False
 
     @property
     def search_keywords(self):
@@ -139,6 +140,8 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         return GLib.SOURCE_REMOVE
 
     def _refresh_devices(self):
+        if self._bt is None:
+            return
         if self._paired_group is None or self._available_group is None:
             return
         self._updating = True
@@ -196,6 +199,12 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         row.set_title(dev.name or _("Unknown device"))
 
         icon = Gtk.Image.new_from_icon_name(dev.icon or "bluetooth-symbolic")
+        icon_label = dev.name or _("Bluetooth device")
+        icon.set_tooltip_text(icon_label)
+        try:
+            icon.update_property([Gtk.AccessibleProperty.LABEL], [icon_label])
+        except Exception:
+            pass
         row.add_prefix(icon)
 
         if dev.paired:
@@ -225,13 +234,18 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         return row
 
     def _pair(self, device_path):
+        if self._pairing_in_flight:
+            return
+        self._pairing_in_flight = True
         self.store.show_toast(_("Pairing..."))
         self._bt.pair_device(device_path)
 
     def _on_pair_success(self, _data):
+        self._pairing_in_flight = False
         self.store.show_toast(_("Paired successfully"))
 
     def _on_pair_error(self, message):
+        self._pairing_in_flight = False
         # is_error=True paints the toast red; without it, users see a
         # pair failure as a neutral informational toast. The {message}
         # is a D-Bus error string from BlueZ — translators can't
@@ -239,10 +253,14 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         self.store.show_toast(_("Pairing failed: {message}").format(message=message), True)
 
     def _cleanup(self, *_args):
-        if self._scan_timer is not None:
-            GLib.source_remove(self._scan_timer)
-            self._scan_timer = None
-        self._bt.stop_discovery()
+        if self._bt is not None:
+            if self._scan_timer is not None:
+                GLib.source_remove(self._scan_timer)
+                self._scan_timer = None
+            self._bt.stop_discovery()
+            if hasattr(self._bt, "teardown"):
+                self._bt.teardown()
+            self._bt = None
         if self._scan_btn:
             self._scan_btn.set_sensitive(True)
             self._scan_btn.set_label(_("Search for devices"))

@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from dataclasses import dataclass, field
+from gettext import gettext as _
 
 from gi.repository import Gio, GLib
 
@@ -182,9 +183,9 @@ class NetworkManagerHelper:
             return ConnectionInfo(
                 name=ac.get_id(),
                 type=ac.get_connection_type(),
-                ip_address=addresses[0].get_address() if addresses else "N/A",
-                gateway=ip4.get_gateway() or "N/A",
-                dns=", ".join(str(ns) for ns in nameservers) if nameservers else "N/A",
+                ip_address=addresses[0].get_address() if addresses else _("N/A"),
+                gateway=ip4.get_gateway() or _("N/A"),
+                dns=", ".join(str(ns) for ns in nameservers) if nameservers else _("N/A"),
             )
         return None
 
@@ -241,9 +242,9 @@ class NetworkManagerHelper:
             err = exc.message
             print(f"dbus_helpers: WiFi connect failed: {err}", file=sys.stderr)
             if "802-11-wireless-security.psk" in err:
-                self._publish("network-connect-error", "Wrong password.")
+                self._publish("network-connect-error", _("Wrong password."))
             else:
-                self._publish("network-connect-error", f"Connection failed: {err}")
+                self._publish("network-connect-error", _("Could not connect to network"))
 
     def _on_activate_done(self, client: NM.Client, result: Gio.AsyncResult) -> None:
         try:
@@ -253,17 +254,24 @@ class NetworkManagerHelper:
             err = exc.message
             print(f"dbus_helpers: WiFi activate failed: {err}", file=sys.stderr)
             if "802-11-wireless-security.psk" in err:
-                self._publish("network-connect-error", "Wrong password.")
+                self._publish("network-connect-error", _("Wrong password."))
             else:
-                self._publish("network-connect-error", f"Connection failed: {err}")
+                self._publish("network-connect-error", _("Could not connect to network"))
 
     def disconnect_wifi(self) -> None:
         if self._client is None:
             return
         for ac in self._client.get_active_connections():
             if ac.get_connection_type() == "802-11-wireless":
-                self._client.deactivate_connection_async(ac, None, None)
+                self._client.deactivate_connection_async(ac, None, self._on_deactivate_done)
                 break
+
+    def _on_deactivate_done(self, client: NM.Client, result: Gio.AsyncResult) -> None:
+        try:
+            client.deactivate_connection_finish(result)
+        except GLib.Error as exc:
+            print(f"dbus_helpers: deactivate failed: {exc.message}", file=sys.stderr)
+        self._publish("network-changed")
 
     def forget_connection(self, ssid: str) -> None:
         if self._client is None:
@@ -271,8 +279,15 @@ class NetworkManagerHelper:
         for conn in self._client.get_connections():
             s_con = conn.get_setting_connection()
             if s_con and s_con.get_id() == ssid:
-                conn.delete_async(None, None)
+                conn.delete_async(None, self._on_delete_done)
                 break
+
+    def _on_delete_done(self, conn, result: Gio.AsyncResult) -> None:
+        try:
+            conn.delete_finish(result)
+        except GLib.Error as exc:
+            print(f"dbus_helpers: delete failed: {exc.message}", file=sys.stderr)
+        self._publish("network-changed")
 
     def _find_connection_by_ssid(self, ssid: str) -> "NM.RemoteConnection | None":
         if self._client is None:
@@ -338,6 +353,8 @@ class BlueZHelper:
     def is_powered(self) -> bool:
         if not self.available:
             return False
+        if self._bus is None:
+            return False
         try:
             result = self._bus.call_sync(
                 "org.bluez", self._adapter_path,
@@ -352,24 +369,28 @@ class BlueZHelper:
             return False
 
     def set_powered(self, enabled: bool) -> None:
-        if not self.available:
+        if not self.available or self._bus is None:
             return
+        self._bus.call(
+            "org.bluez", self._adapter_path,
+            "org.freedesktop.DBus.Properties", "Set",
+            GLib.Variant("(ssv)", ("org.bluez.Adapter1", "Powered", GLib.Variant("b", enabled))),
+            None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
+            self._on_set_powered_done,
+        )
+
+    def _on_set_powered_done(self, bus: Gio.DBusConnection, result: Gio.AsyncResult) -> None:
         try:
-            self._bus.call_sync(
-                "org.bluez", self._adapter_path,
-                "org.freedesktop.DBus.Properties", "Set",
-                GLib.Variant("(ssv)", ("org.bluez.Adapter1", "Powered", GLib.Variant("b", enabled))),
-                None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
-            )
+            bus.call_finish(result)
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: set Powered failed: {exc.message}", file=sys.stderr)
-            # Publish bluetooth-changed on failure so the SwitchRow
-            # re-reads `is_powered()` and flips back to match the real
-            # adapter state. Without this, the switch stays visually
-            # "on" while the adapter is still off, and the user has to
-            # click twice to retry (GTK's toggle is sticky past the
-            # second click because `_updating` guards block it).
-            self._event_bus.publish("bluetooth-changed")
+        # Publish bluetooth-changed on BOTH success and failure so the
+        # SwitchRow re-reads `is_powered()` and reconciles with the real
+        # adapter state. Without this on failure, the switch stays
+        # visually "on" while the adapter is still off, and the user has
+        # to click twice to retry (GTK's toggle is sticky past the
+        # second click because `_updating` guards block it).
+        self._event_bus.publish("bluetooth-changed")
 
     def get_devices(self) -> list[BluetoothDevice]:
         if self._bus is None:
@@ -390,9 +411,10 @@ class BlueZHelper:
             if "org.bluez.Device1" not in interfaces:
                 continue
             props = interfaces["org.bluez.Device1"]
+            name = props.get("Name") or props.get("Alias") or props.get("Address") or ""
             devices.append(BluetoothDevice(
                 path=path,
-                name=props.get("Name", props.get("Alias", props.get("Address", "Unknown"))),
+                name=name,
                 paired=props.get("Paired", False),
                 connected=props.get("Connected", False),
                 icon=props.get("Icon", "bluetooth-symbolic"),
@@ -401,28 +423,38 @@ class BlueZHelper:
         return devices
 
     def start_discovery(self) -> None:
-        if not self.available:
+        if not self.available or self._bus is None:
             return
+        self._bus.call(
+            "org.bluez", self._adapter_path,
+            "org.bluez.Adapter1", "StartDiscovery",
+            None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
+            self._on_start_discovery_done,
+        )
+
+    def _on_start_discovery_done(self, bus: Gio.DBusConnection, result: Gio.AsyncResult) -> None:
         try:
-            self._bus.call_sync(
-                "org.bluez", self._adapter_path,
-                "org.bluez.Adapter1", "StartDiscovery",
-                None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
-            )
+            bus.call_finish(result)
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: StartDiscovery failed: {exc.message}", file=sys.stderr)
+        self._event_bus.publish("bluetooth-changed")
 
     def stop_discovery(self) -> None:
-        if not self.available:
+        if not self.available or self._bus is None:
             return
+        self._bus.call(
+            "org.bluez", self._adapter_path,
+            "org.bluez.Adapter1", "StopDiscovery",
+            None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
+            self._on_stop_discovery_done,
+        )
+
+    def _on_stop_discovery_done(self, bus: Gio.DBusConnection, result: Gio.AsyncResult) -> None:
         try:
-            self._bus.call_sync(
-                "org.bluez", self._adapter_path,
-                "org.bluez.Adapter1", "StopDiscovery",
-                None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
-            )
+            bus.call_finish(result)
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: StopDiscovery failed: {exc.message}", file=sys.stderr)
+        self._event_bus.publish("bluetooth-changed")
 
     def pair_device(self, device_path: str) -> None:
         if self._bus is None:
@@ -439,7 +471,7 @@ class BlueZHelper:
             bus.call_finish(result)
             self._event_bus.publish("bluetooth-pair-success")
         except GLib.Error as e:
-            self._event_bus.publish("bluetooth-pair-error", str(e))
+            self._event_bus.publish("bluetooth-pair-error", e.message)
 
     def connect_device(self, device_path: str) -> None:
         if self._bus is None:
@@ -454,26 +486,34 @@ class BlueZHelper:
     def disconnect_device(self, device_path: str) -> None:
         if self._bus is None:
             return
+        self._bus.call(
+            "org.bluez", device_path,
+            "org.bluez.Device1", "Disconnect",
+            None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
+            self._on_disconnect_device_done,
+        )
+
+    def _on_disconnect_device_done(self, bus: Gio.DBusConnection, result: Gio.AsyncResult) -> None:
         try:
-            self._bus.call_sync(
-                "org.bluez", device_path,
-                "org.bluez.Device1", "Disconnect",
-                None, None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
-            )
+            bus.call_finish(result)
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: Disconnect failed: {exc.message}", file=sys.stderr)
         self._event_bus.publish("bluetooth-changed")
 
     def remove_device(self, device_path: str) -> None:
-        if not self.available:
+        if not self.available or self._bus is None:
             return
+        self._bus.call(
+            "org.bluez", self._adapter_path,
+            "org.bluez.Adapter1", "RemoveDevice",
+            GLib.Variant("(o)", (device_path,)),
+            None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
+            self._on_remove_device_done,
+        )
+
+    def _on_remove_device_done(self, bus: Gio.DBusConnection, result: Gio.AsyncResult) -> None:
         try:
-            self._bus.call_sync(
-                "org.bluez", self._adapter_path,
-                "org.bluez.Adapter1", "RemoveDevice",
-                GLib.Variant("(o)", (device_path,)),
-                None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
-            )
+            bus.call_finish(result)
         except GLib.Error as exc:
             print(f"dbus_helpers: BlueZ: RemoveDevice failed: {exc.message}", file=sys.stderr)
         self._event_bus.publish("bluetooth-changed")
@@ -486,29 +526,49 @@ class BlueZHelper:
         self._event_bus.publish("bluetooth-changed")
 
     def _subscribe_signals(self) -> None:
+        self._sub_ids: list[int] = []
         if self._bus is None:
             return
-        self._bus.signal_subscribe(
+        sub_id = self._bus.signal_subscribe(
             "org.bluez", "org.freedesktop.DBus.ObjectManager",
             "InterfacesAdded", "/", None,
             Gio.DBusSignalFlags.NONE, self._on_changed, None,
         )
-        self._bus.signal_subscribe(
+        self._sub_ids.append(sub_id)
+        sub_id = self._bus.signal_subscribe(
             "org.bluez", "org.freedesktop.DBus.ObjectManager",
             "InterfacesRemoved", "/", None,
             Gio.DBusSignalFlags.NONE, self._on_changed, None,
         )
-        self._bus.signal_subscribe(
+        self._sub_ids.append(sub_id)
+        sub_id = self._bus.signal_subscribe(
             "org.bluez", "org.freedesktop.DBus.Properties",
             "PropertiesChanged", None, None,
             Gio.DBusSignalFlags.NONE, self._on_props_changed, None,
         )
+        self._sub_ids.append(sub_id)
+
+    def teardown(self) -> None:
+        if self._bus is None:
+            return
+        for sub_id in getattr(self, "_sub_ids", []):
+            try:
+                self._bus.signal_unsubscribe(sub_id)
+            except Exception:
+                pass
+        self._sub_ids = []
 
     def _on_changed(self, *_args) -> None:
         self._event_bus.publish("bluetooth-changed")
 
     def _on_props_changed(self, _conn, _sender, _path, _iface, _signal, params, _data) -> None:
-        iface_name = params.unpack()[0]
+        try:
+            unpacked = params.unpack()
+            if not unpacked or len(unpacked) < 2:
+                return
+            iface_name = unpacked[0]
+        except Exception:
+            return
         if iface_name in ("org.bluez.Adapter1", "org.bluez.Device1"):
             self._event_bus.publish("bluetooth-changed")
 
@@ -527,16 +587,27 @@ class PowerProfilesHelper:
     def __init__(self, event_bus: EventBus) -> None:
         self._event_bus = event_bus
         self._bus: Gio.DBusConnection | None = None
+        self._sub_id: int | None = None
         try:
             self._bus = Gio.bus_get_sync(Gio.BusType.SYSTEM)
         except GLib.Error as exc:
             print(f"dbus_helpers: PowerProfiles: failed to connect to system bus: {exc.message}", file=sys.stderr)
             return
-        self._bus.signal_subscribe(
+        self._sub_id = self._bus.signal_subscribe(
             self.BUS_NAME, "org.freedesktop.DBus.Properties",
             "PropertiesChanged", self.OBJECT_PATH, None,
             Gio.DBusSignalFlags.NONE, self._on_props_changed, None,
         )
+
+    def teardown(self) -> None:
+        if self._bus is None:
+            return
+        if self._sub_id is not None:
+            try:
+                self._bus.signal_unsubscribe(self._sub_id)
+            except Exception:
+                pass
+        self._sub_id = None
 
     @property
     def available(self) -> bool:
@@ -616,6 +687,7 @@ class PulseAudioSubscriber:
                         stdout=subprocess.PIPE,
                         stderr=subprocess.DEVNULL,
                         text=True,
+                        start_new_session=True,
                     )
                     for line in self._proc.stdout:
                         if self._stopped:
@@ -634,15 +706,28 @@ class PulseAudioSubscriber:
 
     def stop(self) -> None:
         self._stopped = True
-        if self._proc is not None:
-            self._proc.terminate()
+        if self._proc is None:
+            return
+        try:
             try:
-                self._proc.wait(timeout=2)
-            except Exception as exc:
-                print(f"dbus_helpers: PulseAudio: process wait failed, killing: {exc}", file=sys.stderr)
-                self._proc.kill()
+                self._proc.terminate()
+                try:
+                    self._proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    try:
+                        self._proc.kill()
+                    except OSError:
+                        pass
+                    try:
+                        self._proc.wait(timeout=2)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        finally:
             try:
-                self._proc.stdout.close()
-            except Exception as exc:
-                print(f"dbus_helpers: PulseAudio: stdout close failed: {exc}", file=sys.stderr)
+                if self._proc.stdout is not None:
+                    self._proc.stdout.close()
+            except Exception:
+                pass
             self._proc = None

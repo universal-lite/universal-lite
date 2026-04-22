@@ -7,5 +7,11 @@ sys.path.insert(0, "/usr/lib/universal-lite")
 gettext.bindtextdomain("universal-lite-settings", "/usr/share/locale")
 gettext.textdomain("universal-lite-settings")
 
+import locale
+try:
+    locale.setlocale(locale.LC_ALL, "")
+except locale.Error:
+    pass
+
 from settings.app import main
 main()
