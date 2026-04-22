@@ -179,7 +179,7 @@ changes take effect on the next reboot.
 | Compositor | `labwc` | wlroots-based, minimal memory footprint |
 | Panel | `waybar` | Chromebook-style shelf (bottom by default) |
 | App menu | `universal-lite-app-menu` (in-process GTK4) | Token-aware search, categorized launcher, triggered by Super+Space or the panel launcher |
-| Browser | Google Chrome | Familiar to Chromebook users, installed via Flatpak on first boot |
+| Browser | Google Chrome (flatpak), Firefox (rpm) | Familiar to Chromebook users, installed via Flatpak on first boot |
 | File manager | `Thunar` | Lightweight, thumbnail support |
 | Terminal | `ptyxis` | libadwaita-native; inherits the system theme + accent automatically |
 | Greeter | `greetd` + custom GTK4 greeter | Login screen via `cage` kiosk, palette-synced to the user's theme + accent |
