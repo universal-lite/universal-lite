@@ -111,12 +111,26 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         except OSError:
             pass
 
+        # CPU model: x86 exposes "model name" in /proc/cpuinfo; ARM
+        # uses "Model" / "Hardware" / "CPU implementer" instead. A
+        # meaningful subset of our 2 GB Chromebook targets are ARM
+        # (Mediatek MT8173/MT8183, Rockchip RK3399), so fall back to
+        # the ARM fields when "model name" is absent.
         cpu = "Unknown"
         try:
-            for line in Path("/proc/cpuinfo").read_text().splitlines():
+            cpuinfo = Path("/proc/cpuinfo").read_text().splitlines()
+            for line in cpuinfo:
                 if line.startswith("model name"):
                     cpu = line.split(":", 1)[1].strip()
                     break
+            if cpu == "Unknown":
+                for key in ("Model", "Hardware", "CPU part"):
+                    for line in cpuinfo:
+                        if line.startswith(key):
+                            cpu = line.split(":", 1)[1].strip()
+                            break
+                    if cpu != "Unknown":
+                        break
         except OSError:
             pass
 

@@ -62,6 +62,15 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         self._scan_btn.connect("clicked", self._on_scan_clicked)
         self._available_group.set_header_suffix(self._scan_btn)
 
+        # Without an adapter, start_discovery() is a no-op in the
+        # helper. The scan button would still visually disable for 30 s
+        # ("Scanning..."), then revert, implying a search actually
+        # happened. Disable the scan and toggle controls up front so
+        # the user can't trigger the phantom state.
+        if not self._bt.available:
+            self._scan_btn.set_sensitive(False)
+            self._toggle_row.set_sensitive(False)
+
         self.add(self._available_group)
 
         # -- Group 4: Advanced --

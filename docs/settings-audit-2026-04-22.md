@@ -126,7 +126,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ## Wave 3 — Polish / edge cases
 
-### [ ] I1. Display revert-timer races on rapid second pick
+### [x] I1. Display revert-timer races on rapid second pick
 
 **Location:** `display.py:316-318` (scale), `479-481` (resolution)
 **Confidence:** High
@@ -137,7 +137,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I2. Display revert triggers on category switch, not just timeout
+### [x] I2. Display revert triggers on category switch, not just timeout
 
 **Location:** `display.py:76, 278-292`
 **Confidence:** Medium
@@ -148,7 +148,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I4. `nm-unavailable` event has no subscriber
+### [x] I4. `nm-unavailable` event has no subscriber
 
 **Location:** `dbus_helpers.py:86`, `network.py` (subscribes to `nm-ready` only)
 **Confidence:** High
@@ -159,7 +159,16 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I5. `BlueZHelper` leaks three D-Bus signal subscriptions per page build
+### [~] I5. `BlueZHelper` leaks three D-Bus signal subscriptions per page build — deferred
+
+*Re-evaluated after Wave 1 S1 landed: pages are built lazily once per
+window instance and cached (`window._built`), and `setup_cleanup` now
+fires on `unrealize` (not `unmap`), so the helper is only instantiated
+once per open-window session. Subscriptions only leak across explicit
+close-and-reopen of the whole Settings window, which is uncommon
+enough that adding a `stop()` method + page-side cleanup wiring isn't
+justified. Revisit if profiling shows accumulating D-Bus handlers on
+long-running sessions.*
 
 **Location:** `dbus_helpers.py:462-479`
 **Confidence:** Medium-High
@@ -170,7 +179,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I6. Phantom Bluetooth scan when adapter absent
+### [x] I6. Phantom Bluetooth scan when adapter absent
 
 **Location:** `bluetooth.py:107-112`
 **Confidence:** High
@@ -181,7 +190,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I7. NetworkPage rebuilds whole list on every `access-point-added` — kills focus + screen-reader
+### [x] I7. NetworkPage rebuilds whole list on every `access-point-added` — kills focus + screen-reader
 
 **Location:** `network.py:211-244`
 **Confidence:** Medium-High
@@ -192,7 +201,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] I8. SoundPage `_refresh()` does 6–8 synchronous `pactl` calls with 5 s timeouts on main loop
+### [x] I8. SoundPage `_refresh()` does 6–8 synchronous `pactl` calls with 5 s timeouts on main loop
 
 **Location:** `sound.py:229-280`
 **Confidence:** High
@@ -203,7 +212,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M1. `EventBus` `idle_add` delivery races with `unsubscribe_all`
+### [x] M1. `EventBus` `idle_add` delivery races with `unsubscribe_all`
 
 **Location:** `events.py:21-29`
 **Confidence:** High
@@ -214,7 +223,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M2. Corrupt `keybindings.json` crashes Keyboard page build
+### [x] M2. Corrupt `keybindings.json` crashes Keyboard page build
 
 **Location:** `keyboard.py:181-199` (loader), `459-460` (consumer)
 **Confidence:** Medium-High
@@ -225,7 +234,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M3. Keyboard capture silently collides with system-reserved keys
+### [x] M3. Keyboard capture silently collides with system-reserved keys
 
 **Location:** `keyboard.py:51, 636-643`
 **Confidence:** Medium
@@ -236,7 +245,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M4. `about.py` processor shows "Unknown" on ARM Chromebooks
+### [x] M4. `about.py` processor shows "Unknown" on ARM Chromebooks
 
 **Location:** `about.py:114-121`
 **Confidence:** High
@@ -247,7 +256,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M5. `_hash_password` doesn't catch `FileNotFoundError`
+### [x] M5. `_hash_password` doesn't catch `FileNotFoundError`
 
 **Location:** `users.py:20-28, 215`
 **Confidence:** Medium-High
@@ -258,7 +267,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M6. `default_apps.py` terminal validation rejects paths containing `.`
+### [x] M6. `default_apps.py` terminal validation rejects paths containing `.`
 
 **Location:** `default_apps.py:100`
 **Confidence:** Medium-High
@@ -269,7 +278,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M7. `wlr-randr` parser picks wrong token when `wlr-randr` prints an `Outputs:` banner
+### [x] M7. `wlr-randr` parser picks wrong token when `wlr-randr` prints an `Outputs:` banner
 
 **Location:** `display.py:336-345, 442-458`
 **Confidence:** Medium
@@ -280,7 +289,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M8. `wait_for_apply` poll source ID never stored → leaks on window close
+### [x] M8. `wait_for_apply` poll source ID never stored → leaks on window close
 
 **Location:** `settings_store.py:183-195`
 **Confidence:** Medium
@@ -291,7 +300,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M9. `datetime.py` error CSS class only removed on success
+### [x] M9. `datetime.py` error CSS class only removed on success
 
 **Location:** `datetime.py:110-131`
 **Confidence:** Medium-High
@@ -302,7 +311,7 @@ Findings below are organized by proposed fix wave. Check off each box as the fix
 
 ---
 
-### [ ] M10. `wallpapers.add_custom` runs unbounded file copy on main thread
+### [x] M10. `wallpapers.add_custom` runs unbounded file copy on main thread
 
 **Location:** `wallpapers.py:190-237`
 **Confidence:** Medium

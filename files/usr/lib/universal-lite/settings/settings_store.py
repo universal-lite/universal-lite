@@ -30,6 +30,7 @@ class SettingsStore:
         self._data = self._load()
         self._apply_running = False
         self._apply_pending = False
+        self._apply_wait_source: int | None = None
 
     def _load(self) -> dict:
         self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -137,6 +138,9 @@ class SettingsStore:
         for source_id in self._debounce_timers.values():
             GLib.source_remove(source_id)
         self._debounce_timers.clear()
+        if self._apply_wait_source is not None:
+            GLib.source_remove(self._apply_wait_source)
+            self._apply_wait_source = None
         self._toast_callback = None
 
     def _write(self) -> None:
@@ -209,7 +213,16 @@ class SettingsStore:
 
     def wait_for_apply(self, callback) -> None:
         """Call callback once the current apply-settings finishes.
-        If no apply is running, calls immediately via idle_add."""
+        If no apply is running, calls immediately via idle_add.
+
+        The poll source ID is tracked on the store so flush_and_detach
+        can cancel it when the window closes; previously, a user
+        clicking Restart from About and then closing the window while
+        the apply was still running would leave a 50 ms poll firing
+        until the 30 s APPLY_TIMEOUT_SEC expired (or the apply
+        finished), at which point the callback would invoke _do_restart
+        on a dead window.
+        """
         if not self._apply_running:
             GLib.idle_add(callback)
             return
@@ -217,6 +230,7 @@ class SettingsStore:
         def _poll():
             if self._apply_running:
                 return GLib.SOURCE_CONTINUE
+            self._apply_wait_source = None
             callback()
             return GLib.SOURCE_REMOVE
-        GLib.timeout_add(50, _poll)
+        self._apply_wait_source = GLib.timeout_add(50, _poll)

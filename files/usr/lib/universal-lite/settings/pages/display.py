@@ -277,17 +277,36 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
 
     def _cleanup_dialogs(self) -> None:
         """Cancel any running countdown timers and dismiss live revert
-        dialogs when the page is unmapped."""
+        dialogs when the page is unmapped.
+
+        Treats unmap as implicit *Keep*, not Revert. Previously the
+        dialog's close-response ("revert") fired on every unmap,
+        silently rolling back a scale/resolution choice the user had
+        already committed to in their mind — e.g. navigating sidebar
+        categories during the countdown. We now disconnect the
+        response handler before force_close so the dialog dismisses
+        without running the revert branch. The applied scale/resolution
+        stays put; the user's Keep/Revert choice just didn't need to
+        happen once they walked away.
+        """
         if self._revert_timer_id is not None:
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
         if self._revert_dialog is not None:
+            try:
+                self._revert_dialog.disconnect_by_func(self._on_revert_response)
+            except TypeError:
+                pass
             self._revert_dialog.force_close()
             self._revert_dialog = None
         if self._res_revert_timer_id is not None:
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         if self._res_revert_dialog is not None:
+            try:
+                self._res_revert_dialog.disconnect_by_func(self._on_res_revert_response)
+            except TypeError:
+                pass
             self._res_revert_dialog.force_close()
             self._res_revert_dialog = None
 
@@ -314,6 +333,18 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
             GLib.source_remove(self._revert_timer_id)
             self._revert_timer_id = None
         if self._revert_dialog is not None:
+            # Before force_close: the close-response ("revert") fires
+            # synchronously against the original handler, which captures
+            # the *first* pick's old/new scales and rolls the scale all
+            # the way back before we apply the third pick. Net effect:
+            # the display flickers through the pre-first-pick scale,
+            # and the ComboRow briefly shows the pre-first-pick value.
+            # Disconnect the response handler first; we're reopening a
+            # fresh dialog with the correct captured values below.
+            try:
+                self._revert_dialog.disconnect_by_func(self._on_revert_response)
+            except TypeError:
+                pass
             self._revert_dialog.force_close()
             self._revert_dialog = None
 
@@ -327,22 +358,32 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         self._show_revert_dialog(old_scale, new_scale)
 
     def _set_scale(self, scale: float) -> None:
-        try:
-            result = subprocess.run(
-                ["wlr-randr"], capture_output=True, text=True, timeout=5,
-            )
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            return
-        for line in result.stdout.splitlines():
-            if line and not line[0].isspace():
-                output_name = line.split()[0]
-                try:
-                    subprocess.run(
-                        ["wlr-randr", "--output", output_name, "--scale", str(scale)],
-                        check=False, timeout=5,
-                    )
-                except (FileNotFoundError, subprocess.TimeoutExpired):
-                    pass
+        # Use the shared output-enumeration helper instead of re-
+        # parsing wlr-randr here. The previous inline parser trusted
+        # line.split()[0] as an output name for any column-0 line,
+        # which picked up noise like an "Outputs:" banner on some
+        # wlr-randr versions and silently ran `--output Outputs
+        # --scale <x>` (exit code ignored). scale changes then
+        # appeared to succeed in settings.json while never actually
+        # applying to the display.
+        for name, _current, _modes in self._get_displays():
+            if not name:
+                continue
+            try:
+                result = subprocess.run(
+                    ["wlr-randr", "--output", name, "--scale", str(scale)],
+                    check=False, timeout=5, capture_output=True, text=True,
+                )
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                continue
+            if result.returncode != 0:
+                # Surface the failure so the user isn't left staring at
+                # an unchanged display while the revert dialog counts
+                # down against an apply that never happened.
+                self.store.show_toast(
+                    _("Failed to set display scale on {output}").format(output=name),
+                    True,
+                )
 
     def _show_revert_dialog(self, old_scale: float, new_scale: float) -> None:
         dialog = Adw.AlertDialog.new(
@@ -477,6 +518,13 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
             GLib.source_remove(self._res_revert_timer_id)
             self._res_revert_timer_id = None
         if self._res_revert_dialog is not None:
+            # Disconnect before force_close so the close-response's
+            # "revert" branch doesn't roll back against captured old
+            # values from the first pick — same pattern as _apply_scale.
+            try:
+                self._res_revert_dialog.disconnect_by_func(self._on_res_revert_response)
+            except TypeError:
+                pass
             self._res_revert_dialog.force_close()
             self._res_revert_dialog = None
         self._apply_resolution(output_name, new_mode)

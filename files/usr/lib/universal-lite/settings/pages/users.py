@@ -220,5 +220,10 @@ class UsersPage(BasePage, Adw.PreferencesPage):
                 None, Gio.DBusCallFlags.NONE, self._DBUS_TIMEOUT_MS, None,
             )
             self._nav.pop()
-        except (GLib.Error, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        except (GLib.Error, subprocess.CalledProcessError,
+                subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            # FileNotFoundError covers the case where openssl is absent
+            # from PATH (rare on a Fedora bootc image, but defensive on
+            # a stripped-down build); OSError covers permission issues
+            # on the openssl binary or accounts-daemon bus drop.
             self.store.show_toast(_("Failed to set password"))

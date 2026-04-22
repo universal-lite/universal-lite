@@ -7,7 +7,7 @@ import gi
 
 gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Adw, Gtk
+from gi.repository import Adw, GLib, Gtk
 
 from ..base import BasePage
 from ..dbus_helpers import PulseAudioSubscriber
@@ -19,6 +19,7 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         Adw.PreferencesPage.__init__(self)
         self._pa = None
         self._updating = False
+        self._refresh_pending = False
         # Widget refs for live updates — rewritten by _refresh()
         # After conversion: ComboRow / inner Gtk.Scale / SwitchRow
         self._sink_dd = None    # Adw.ComboRow
@@ -221,8 +222,24 @@ class SoundPage(BasePage, Adw.PreferencesPage):
 
     # -- Live event handling --
 
+    # Coalesce rapid-fire audio-changed events (pactl subscribe publishes
+    # one per volume tick) into a single refresh per ~100 ms window.
+    # Each _refresh runs 6-8 subprocess calls with 5 s timeouts on the
+    # GTK main thread; a sustained volume-key press otherwise micro-
+    # freezes the UI. _DEBOUNCE_MS is short enough that users don't
+    # perceive lag, long enough to absorb the typical event burst.
+    _REFRESH_DEBOUNCE_MS = 100
+
     def _on_audio_changed(self, _data):
+        if self._refresh_pending:
+            return
+        self._refresh_pending = True
+        GLib.timeout_add(self._REFRESH_DEBOUNCE_MS, self._run_pending_refresh)
+
+    def _run_pending_refresh(self) -> bool:
+        self._refresh_pending = False
         self._refresh()
+        return False  # one-shot
 
     # Main-loop-only. _updating guards against handler re-entry when we
     # set scale values during refresh (not thread concurrency).

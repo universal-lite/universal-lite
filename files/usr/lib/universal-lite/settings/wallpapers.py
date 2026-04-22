@@ -187,14 +187,52 @@ def resolve_for_theme(value: str, theme: str) -> str | None:
     return wp.path_for_theme(theme) if wp is not None else None
 
 
+#: Maximum size of a file the user can pick as a custom wallpaper.
+#: A 50 MB cap comfortably accommodates every reasonable photo size
+#: while preventing a user (or a renamed non-image file) from driving
+#: shutil.copy2 into a multi-gigabyte synchronous copy on the main
+#: thread. Enforced before the copy starts so the UI doesn't freeze.
+_CUSTOM_WALLPAPER_MAX_BYTES = 50 * 1024 * 1024
+
+#: Content types we're willing to treat as wallpapers. Sniffed via
+#: Gio.File.query_info against the actual file header, not the
+#: extension — a .mp4 renamed to .jpg would previously land in the
+#: manifest and break thumbnail decode on every re-render.
+_CUSTOM_WALLPAPER_ALLOWED_TYPES = {
+    "image/jpeg", "image/png", "image/webp", "image/bmp",
+    "image/tiff", "image/svg+xml", "image/x-portable-pixmap",
+    "image/jxl", "image/avif", "image/heif",
+}
+
+
 def add_custom(source_path: str) -> Wallpaper | None:
     """Copy *source_path* into the user wallpaper dir and register a manifest.
 
     The resulting tile persists in the picker across sessions. Returns the
-    created :class:`Wallpaper`, or ``None`` on I/O failure.
+    created :class:`Wallpaper`, or ``None`` on validation/I/O failure.
+    Validation: file exists, is under _CUSTOM_WALLPAPER_MAX_BYTES, and
+    its sniffed MIME type is in _CUSTOM_WALLPAPER_ALLOWED_TYPES.
     """
     src = Path(source_path).resolve()
     if not src.is_file():
+        return None
+
+    try:
+        if src.stat().st_size > _CUSTOM_WALLPAPER_MAX_BYTES:
+            return None
+    except OSError:
+        return None
+
+    # Sniff the MIME from file content via Gio (not just the extension).
+    try:
+        from gi.repository import Gio
+        info = Gio.File.new_for_path(str(src)).query_info(
+            "standard::content-type", Gio.FileQueryInfoFlags.NONE, None,
+        )
+        content_type = info.get_content_type() or ""
+    except Exception:
+        content_type = ""
+    if content_type and content_type not in _CUSTOM_WALLPAPER_ALLOWED_TYPES:
         return None
 
     CUSTOM_WALLPAPER_DIR.mkdir(parents=True, exist_ok=True)

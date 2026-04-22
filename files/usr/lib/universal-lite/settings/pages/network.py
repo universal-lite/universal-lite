@@ -90,6 +90,12 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
 
         # Subscriptions preserved from the pre-migration version.
         self.subscribe("nm-ready", self._on_nm_ready)
+        # nm-unavailable fires when NM.Client.new_async failed outright
+        # (NetworkManager daemon missing or masked). Without a handler,
+        # the page looks frozen — wifi toggle stuck in default state,
+        # no banner, no indication anything is wrong. Reveal the banner
+        # and disable interaction.
+        self.subscribe("nm-unavailable", lambda _d: self._on_nm_unavailable())
         self.subscribe("network-changed", lambda _d: self._refresh_all())
         self.subscribe("network-connect-success", self._on_connect_success)
         self.subscribe("network-connect-error", self._on_connect_error)
@@ -189,6 +195,19 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
             self._updating = False
         self._refresh_all()
 
+    def _on_nm_unavailable(self):
+        """NM.Client init failed — show the banner and lock the UI.
+
+        Called from the nm-unavailable event. Flips the banner visible
+        and disables the wifi switch so the user can't fire doomed
+        toggle events into a daemon that isn't there.
+        """
+        if self._banner is not None:
+            self._banner.set_title(_("NetworkManager is not available"))
+            self._banner.set_revealed(True)
+        if self._wifi_toggle is not None:
+            self._wifi_toggle.set_sensitive(False)
+
     def _on_wifi_toggled(self, row, _pspec):
         if self._updating:
             return
@@ -212,39 +231,78 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         if self._networks_group is None or self._nm is None:
             return
 
-        # Clear existing rows (iterate via first_child / next_sibling;
-        # AdwPreferencesGroup exposes rows as children).
-        rows: list[Adw.PreferencesRow] = []
-        child = self._networks_group.get_first_child()
-        while child is not None:
-            nxt = child.get_next_sibling()
-            if isinstance(child, Adw.PreferencesRow):
-                rows.append(child)
-            child = nxt
-        for row in rows:
-            self._networks_group.remove(row)
-
-        if not self._nm.ready:
-            self._networks_group.set_description(_("No networks found"))
-            return
-
         # Sync the WiFi switch without re-entering _on_wifi_toggled.
         if self._wifi_toggle is not None:
             self._updating = True
             self._wifi_toggle.set_active(self._nm.is_wifi_enabled())
             self._updating = False
 
+        # Collect current rows indexed by the SSID they represent.
+        # AdwPreferencesGroup exposes rows via the standard widget
+        # iteration API. Each row stores its SSID in a ._ssid attribute
+        # assigned in _build_network_row; rows that predate that field
+        # (e.g. a static placeholder) are treated as orphan and removed.
+        if not self._nm.ready:
+            self._clear_network_rows()
+            self._networks_group.set_description(_("No networks found"))
+            return
+
         aps = self._nm.get_access_points()
         if not aps:
+            self._clear_network_rows()
             self._networks_group.set_description(_("No networks found"))
             return
 
         self._networks_group.set_description("")
+
+        # Diff: keep rows whose SSID is still in the AP list and move
+        # them to the correct position; remove rows whose SSID is gone;
+        # add new rows for SSIDs that weren't rendered before. This
+        # preserves row identity (and thus keyboard focus / screen-
+        # reader cursor) across scan updates, which matters for the
+        # vision-impaired primary user who might be mid-click on a
+        # weak-signal SSID when access-point-added fires.
+        existing: dict[str, Adw.PreferencesRow] = {}
+        child = self._networks_group.get_first_child()
+        while child is not None:
+            nxt = child.get_next_sibling()
+            if isinstance(child, Adw.PreferencesRow):
+                ssid = getattr(child, "_ssid", None)
+                if ssid is not None and ssid not in existing:
+                    existing[ssid] = child
+                else:
+                    self._networks_group.remove(child)
+            child = nxt
+
+        seen_ssids: set[str] = set()
         for ap in aps:
-            self._networks_group.add(self._build_network_row(ap))
+            if ap.ssid in seen_ssids:
+                continue
+            seen_ssids.add(ap.ssid)
+            if ap.ssid in existing:
+                # Update in-place: subtitle (Connected), signal icon.
+                row = existing.pop(ap.ssid)
+                row.set_subtitle(_("Connected") if ap.active else "")
+            else:
+                self._networks_group.add(self._build_network_row(ap))
+
+        # Remove rows for SSIDs that are no longer present.
+        for leftover in existing.values():
+            self._networks_group.remove(leftover)
+
+    def _clear_network_rows(self) -> None:
+        child = self._networks_group.get_first_child()
+        while child is not None:
+            nxt = child.get_next_sibling()
+            if isinstance(child, Adw.PreferencesRow):
+                self._networks_group.remove(child)
+            child = nxt
 
     def _build_network_row(self, ap) -> Adw.ActionRow:
         row = Adw.ActionRow()
+        # Stamp the SSID so _refresh_networks can diff rather than
+        # rebuild on every network-changed event.
+        row._ssid = ap.ssid
         row.set_title(ap.ssid)
         if ap.active:
             row.set_subtitle(_("Connected"))

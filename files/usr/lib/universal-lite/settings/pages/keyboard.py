@@ -179,22 +179,39 @@ def _parse_system_keybindings() -> list[dict]:
 
 
 def _load_user_keybindings() -> list[dict] | None:
-    """Load user keybinding overrides. Returns None if no overrides exist."""
+    """Load user keybinding overrides. Returns None if no overrides exist.
+
+    Validates each entry before returning. A partially-written or
+    hand-edited JSON with missing "key" / "action" fields previously
+    crashed the Keyboard page build via KeyError, leaving the user
+    with no UI to repair it. Malformed rows are dropped with a stderr
+    warning; the valid remainder is used.
+    """
     if not USER_KEYBINDINGS.exists():
         return None
     try:
         data = json.loads(USER_KEYBINDINGS.read_text(encoding="utf-8"))
         if not isinstance(data, list):
             return None
-        # Reconstruct display_name for each binding
+        cleaned: list[dict] = []
         for entry in data:
-            if "display_name" not in entry:
-                entry["display_name"] = _get_action_name(
-                    entry.get("action", ""),
-                    entry.get("command", ""),
-                    entry.get("direction", ""),
-                )
-        return data
+            if not isinstance(entry, dict):
+                continue
+            key = entry.get("key")
+            action = entry.get("action")
+            if not isinstance(key, str) or not key:
+                continue
+            if not isinstance(action, str) or not action:
+                continue
+            # command / direction are action-dependent; accept missing
+            # and let _get_action_name deal with empty strings.
+            entry.setdefault("command", "")
+            entry.setdefault("direction", "")
+            entry["display_name"] = entry.get("display_name") or _get_action_name(
+                entry["action"], entry["command"], entry["direction"],
+            )
+            cleaned.append(entry)
+        return cleaned if cleaned else None
     except (json.JSONDecodeError, OSError):
         return None
 
@@ -597,6 +614,24 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
 
         new_key = self._build_key_string(keyval, state)
         if not new_key:
+            return True
+
+        # Reject system-reserved keys outright. _SKIP_KEYS are bindings
+        # we deliberately hide from the editor (internal/debug). If the
+        # user captures one, the conflict check wouldn't catch it
+        # because those bindings aren't in self._bindings, and at
+        # runtime both the user binding and the system binding would
+        # compete with only one silently winning.
+        if new_key in _SKIP_KEYS:
+            self._capture_done = True
+            dialog = Adw.AlertDialog.new(
+                _("Reserved key combination"),
+                _("{key} is reserved by the system and can't be reassigned.").format(key=new_key),
+            )
+            dialog.add_response("ok", _("OK"))
+            dialog.set_default_response("ok")
+            dialog.connect("response", lambda _d, _r: self._nav.pop())
+            dialog.present(self)
             return True
 
         # Conflict check uses the same logic as before.

@@ -108,6 +108,15 @@ class DateTimePage(BasePage, Adw.PreferencesPage):
             return "UTC"
 
     def _set_timezone(self, tz, entry=None):
+        # Clear any previous error tint before we start the attempt.
+        # Previously the "error" CSS class was only removed on success,
+        # so a user fixing a typo but then hitting a different failure
+        # mode (timeout, missing tool) kept staring at a red-tinted row
+        # even after editing the text. Clear once up front; failure
+        # paths re-add as needed.
+        if entry is not None:
+            entry.remove_css_class("error")
+
         def _run():
             try:
                 result = subprocess.run(
@@ -125,8 +134,6 @@ class DateTimePage(BasePage, Adw.PreferencesPage):
                         entry.add_css_class("error")
                     return False
                 GLib.idle_add(_on_fail)
-            elif entry is not None:
-                GLib.idle_add(lambda: entry.remove_css_class("error") or False)
 
         threading.Thread(target=_run, daemon=True).start()
 

@@ -1,3 +1,5 @@
+import shlex
+import shutil
 import subprocess
 from gettext import gettext as _
 from pathlib import Path
@@ -96,8 +98,23 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
         name = name.replace("\n", " ").replace("\r", " ")
         cmd = cmd.replace("\n", " ").replace("\r", " ")
 
-        # Reject obviously invalid commands (empty or containing shell operators)
-        if not cmd or not cmd.split()[0].replace("/", "").replace("-", "").replace("_", "").isalnum():
+        # Reject invalid/empty commands. The previous implementation
+        # used a character whitelist that rejected any legitimate path
+        # containing a dot (e.g. /usr/libexec/foot-wrapper.sh or
+        # /usr/bin/python3.12 -m foo), silently no-op'ing the terminal
+        # selection. Use shlex to split correctly and resolve the
+        # executable via shutil.which / Path.is_file instead.
+        if not cmd:
+            return
+        try:
+            argv = shlex.split(cmd)
+        except ValueError:
+            return
+        if not argv:
+            return
+        exe = argv[0]
+        resolved = shutil.which(exe) if "/" not in exe else exe
+        if not resolved or not Path(resolved).is_file():
             return
 
         desktop_dir = Path.home() / ".local/share/applications"

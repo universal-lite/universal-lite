@@ -20,7 +20,16 @@ class EventBus:
 
     def publish(self, event: str, data=None) -> None:
         for cb in list(self._subscribers.get(event, [])):
-            def _deliver(callback=cb, payload=data):
+            def _deliver(event=event, callback=cb, payload=data):
+                # Re-check subscriber membership at delivery time. The
+                # idle-add queue defers callbacks by at least one main-
+                # loop iteration even when publish is called from the
+                # main thread, so a page that unsubscribes (via
+                # unsubscribe_all on widget unrealize) before the idle
+                # dispatcher runs would previously still receive the
+                # already-queued event and touch torn-down widgets.
+                if callback not in self._subscribers.get(event, ()):
+                    return GLib.SOURCE_REMOVE
                 try:
                     callback(payload)
                 except Exception as exc:
