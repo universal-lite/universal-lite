@@ -97,6 +97,30 @@
   <!-- Mouse bindings: defining ANY mousebind replaces ALL labwc
        built-in defaults, so we must include the full set. -->
   <mouse>
+    <!-- Client context: clicks on a window's content area (the only
+         thing labwc can see on CSD apps like GTK/libadwaita). Without
+         this, CSD windows don't raise when clicked — they stay behind
+         whichever SSD window had focus, because the default Focus+Raise
+         bindings were wiped out along with everything else when we
+         defined our own mousebinds. Not specific to CSD in principle —
+         SSD apps also rely on this for clicks that land on the body
+         instead of the titlebar — but CSD apps have no titlebar to
+         click, so the bug is visible there first. These actions don't
+         consume the click; the client still gets its pointer event. -->
+    <context name="Client">
+      <mousebind button="Left" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="Middle" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="Right" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+    </context>
     <context name="TitleBar">
       <mousebind button="Left" action="Press">
         <action name="Focus"/>
