@@ -242,8 +242,36 @@ systemctl mask plymouth-start.service
 systemctl enable greetd.service
 systemctl enable power-profiles-daemon.service
 systemctl enable accounts-daemon.service
-systemctl enable cups.service
+# CUPS: socket-activated instead of always-on. cups.socket listens on
+# the IPP socket; the first client connection brings cups.service up on
+# demand. Saves ~10 MiB resident on boots where nothing prints, which
+# is the common case on a home laptop. When a user prints, cups.service
+# starts and stays up for the remainder of the session.
+systemctl disable cups.service
+systemctl enable cups.socket
 systemctl enable bluetooth.service
+
+# Mask daemons we never use but the base image ships enabled.
+# Each is an idle process that would otherwise sit resident for the
+# entire session on 2 GB hardware.
+#
+#   ModemManager         cellular modem daemon — Chromebooks have no modem
+#   systemd-homed        encrypted/portable home-dir machinery — unused
+#   systemd-userdbd      backing store for systemd-homed — unused
+#   systemd-nsresourced  varlink NSS resource daemon — unused (basic NSS
+#                        via /etc/nsswitch.conf covers our needs)
+#   gssproxy             Kerberos/GSS proxy for NFS — no NFS on this image
+#   sshd                 remote shell — no current use case; we can
+#                        unmask it for development if needed
+#
+# Total savings on a typical boot: ~60 MiB resident.
+systemctl mask \
+    ModemManager.service \
+    systemd-homed.service \
+    systemd-userdbd.service \
+    systemd-nsresourced.service \
+    gssproxy.service \
+    sshd.service
 # Explicit: NM is enabled by the base image, but re-enabling is a cheap
 # safeguard against any preset drift. NetworkManager-wait-online stays
 # at its preset default (enabled) to match bluefin exactly - nothing
