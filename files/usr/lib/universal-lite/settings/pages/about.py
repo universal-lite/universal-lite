@@ -274,12 +274,11 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         return False
 
     def _run_update(self) -> None:
-        # Spawn a ptyxis terminal so the user sees the ujust update
-        # progress and can respond to the sudo prompt. ptyxis uses
-        # `--` to separate its own flags from the command to run.
+        # Spawn a foot terminal so the user sees the ujust update
+        # progress and can respond to the sudo prompt.
         try:
             subprocess.Popen(
-                ["ptyxis", "--", "ujust", "update"],
+                ["foot", "-e", "ujust", "update"],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             )
         except FileNotFoundError:

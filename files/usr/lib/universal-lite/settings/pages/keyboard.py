@@ -31,7 +31,7 @@ USER_KEYBINDINGS = Path.home() / ".config/universal-lite/keybindings.json"
 
 # Human-readable names for action+command combos
 SHORTCUT_NAMES = {
-    ("Execute", "ptyxis"): "Open Terminal",
+    ("Execute", "foot"): "Open Terminal",
     ("Execute", "Thunar"): "Open File Manager",
     ("Execute", "universal-lite-app-menu"): "App Launcher",
     ("Execute", "universal-lite-settings"): "Open Settings",

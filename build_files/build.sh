@@ -33,7 +33,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     ffmpegthumbnailer \
     file-roller \
     flatpak \
-    ptyxis \
+    foot \
     labwc-menu-generator \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
@@ -190,7 +190,7 @@ cat > /etc/xdg/labwc/menu.xml <<'MENU_EOF'
   <menu id="desktop-menu" label="Desktop">
     <item label="Settings"><action name="Execute" command="universal-lite-settings"/></item>
     <item label="File Manager"><action name="Execute" command="Thunar"/></item>
-    <item label="Terminal"><action name="Execute" command="ptyxis"/></item>
+    <item label="Terminal"><action name="Execute" command="foot"/></item>
     <separator/>
     <item label="Lock Screen"><action name="Execute" command="swaylock -f"/></item>
     <item label="Log Out"><action name="Exit"/></item>
