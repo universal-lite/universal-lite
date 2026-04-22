@@ -35,7 +35,7 @@ Flathub via Bazaar.
 
 ## Install
 
-### USB installer (recommended for Chromebooks)
+### .raw USB installer (recommended for Chromebooks under 4GB of ram)
 
 You need:
 
