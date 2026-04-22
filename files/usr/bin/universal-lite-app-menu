@@ -156,8 +156,27 @@ window.app-menu {
 .app-menu-grid {
     background: transparent;
 }
-.app-menu-grid > flowboxchild {
+/* The FlowBoxChild that GTK wraps around each tile inherits Adwaita's
+   default :focus-within / :hover / :selected tints, which paint the
+   entire cell - and because the flowbox is homogeneous + vexpanded
+   inside a scrolled window, a cell stretches to the full column
+   height. Before this nullification, a single-result search (e.g.
+   "task") showed the tile button's hover highlight on top plus a
+   fainter column-long rectangle underneath it from the flowboxchild's
+   own state background. The tile button already carries every hover/
+   focus affordance we want; there's nothing for the flowboxchild
+   layer to add. */
+.app-menu-grid > flowboxchild,
+.app-menu-grid > flowboxchild:hover,
+.app-menu-grid > flowboxchild:focus,
+.app-menu-grid > flowboxchild:focus-within,
+.app-menu-grid > flowboxchild:focus-visible,
+.app-menu-grid > flowboxchild:selected,
+.app-menu-grid > flowboxchild:active {
     padding: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
 }
 /* Tiles are flat buttons - no border, no background, no stock shadow
    - with their own hover/focus affordances that match Adwaita's
