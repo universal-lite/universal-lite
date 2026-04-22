@@ -275,11 +275,19 @@ class AboutPage(BasePage, Adw.PreferencesPage):
 
     def _run_update(self) -> None:
         # Spawn a foot terminal so the user sees the ujust update
-        # progress and can respond to the sudo prompt.
+        # progress and can respond to the sudo prompt. start_new_session
+        # detaches from the settings app's process group so the terminal
+        # (and its ujust child) survives if the user closes Settings
+        # mid-update -- critical because ujust is rewriting the bootc
+        # image and interrupting it can leave the system in a partial
+        # state.
         try:
             subprocess.Popen(
                 ["foot", "-e", "ujust", "update"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
             )
         except FileNotFoundError:
             self.store.show_toast(_("Terminal not available"), True)

@@ -247,7 +247,10 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         try:
             subprocess.Popen(
                 ["wdisplays"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
             )
         except (FileNotFoundError, OSError):
             pass

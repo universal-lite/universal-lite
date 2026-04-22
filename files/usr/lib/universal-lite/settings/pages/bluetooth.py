@@ -71,7 +71,11 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
         adv_row.set_activatable(True)
         adv_row.add_suffix(Gtk.Image.new_from_icon_name("go-next-symbolic"))
         adv_row.connect("activated", lambda _: subprocess.Popen(
-            ["blueman-manager"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+            ["blueman-manager"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True))
         advanced_group.add(adv_row)
         self.add(advanced_group)
 

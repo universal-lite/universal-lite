@@ -170,7 +170,10 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         try:
             subprocess.Popen(
                 ["nm-connection-editor"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
             )
         except FileNotFoundError:
             self.store.show_toast(_("Connection editor not found"), True)
