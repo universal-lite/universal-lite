@@ -80,6 +80,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     mousepad \
     mpv \
     network-manager-applet \
+    nftables \
     nm-connection-editor \
     parted \
     pavucontrol \
@@ -272,6 +273,86 @@ systemctl mask \
     systemd-nsresourced.service \
     gssproxy.service \
     sshd.service
+
+# Replace firewalld with nftables. firewalld is a Python daemon that
+# loads XML zone configs and sits resident at ~50 MiB; for a single-
+# user home Chromebook behind a router NAT we just need "drop new
+# incoming connections, allow established + loopback + outgoing",
+# which nftables.service can do with a ~20-line ruleset at ~10 MiB
+# resident. Net savings: ~40 MiB.
+systemctl disable firewalld.service 2>/dev/null || true
+systemctl mask firewalld.service
+mkdir -p /etc/sysconfig
+cat > /etc/sysconfig/nftables.conf <<'NFT_EOF'
+# Universal-Lite minimal nftables ruleset.
+# Replaces firewalld on this image. Intended for a single-user
+# laptop behind a home router NAT: drop unsolicited inbound, allow
+# everything outbound plus return traffic for connections we
+# initiated. No forwarding (we're not a router).
+table inet filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+        iif lo accept comment "loopback"
+        ct state established,related accept comment "return traffic"
+        ct state invalid drop comment "bogus packets"
+        ip protocol icmp accept comment "IPv4 ICMP"
+        ip6 nexthdr icmpv6 accept comment "IPv6 ICMP/ND"
+        # mDNS so zeroconf-aware apps keep working if they talk to
+        # the kernel stack directly even with avahi masked.
+        udp dport 5353 accept comment "mDNS"
+        # IPP-over-USB / CUPS printer responses land here when a
+        # print job is active. Socket activation keeps cupsd off
+        # otherwise, so this rule only matters during actual prints.
+        udp dport 631 accept comment "IPP browse"
+    }
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+    }
+    chain output {
+        type filter hook output priority 0; policy accept;
+    }
+}
+NFT_EOF
+chmod 0644 /etc/sysconfig/nftables.conf
+systemctl enable nftables.service
+
+# Mask more base-image daemons whose features we don't expose:
+#
+#   avahi-daemon           mDNS/DNS-SD discovery — the nftables rule
+#                          above still permits inbound mDNS so
+#                          zeroconf-aware apps can work via the kernel
+#                          stack alone if something ever needs it.
+#   colord                 color management for calibrated displays
+#                          — irrelevant on Chromebook panels.
+#   geoclue                location services — unused.
+#   iio-sensor-proxy       accel/ambient-light sensor bridge — the
+#                          Chromebook EC handles brightness directly
+#                          and we don't expose auto-rotate.
+#   switcheroo-control     dual-GPU switching — Chromebooks have one
+#                          GPU.
+#   abrtd + abrt-*         crash reporter daemon and its satellite
+#                          hook services. Useful for distro package
+#                          maintainers, not home users.
+#   packagekit             software-management daemon. We use bootc
+#                          + flatpak; nothing talks PackageKit.
+#
+# Masks are idempotent — services that aren't actually enabled on
+# the base image ignore this no-op, so the list doesn't have to
+# match the current preset exactly.
+systemctl mask \
+    avahi-daemon.service \
+    avahi-daemon.socket \
+    colord.service \
+    geoclue.service \
+    iio-sensor-proxy.service \
+    switcheroo-control.service \
+    abrtd.service \
+    abrt-journal-core.service \
+    abrt-oops.service \
+    abrt-vmcore.service \
+    abrt-xorg.service \
+    packagekit.service \
+    packagekit-offline-update.service 2>/dev/null || true
 # Explicit: NM is enabled by the base image, but re-enabling is a cheap
 # safeguard against any preset drift. NetworkManager-wait-online stays
 # at its preset default (enabled) to match bluefin exactly - nothing
