@@ -357,7 +357,7 @@ files/
   etc/
     gtk-3.0/, gtk-4.0/                     # Decoration-layout defaults (min/max/close)
     xdg/
-      fuzzel/, labwc/, mako/,
+      labwc/, mako/,
       swaylock/, gtk-3.0/, gtk-4.0/        # App defaults
       mimeapps.list                        # Default app associations (pdf, image, etc.)
     sysctl.d/                              # Memory tuning (swappiness for zswap)
