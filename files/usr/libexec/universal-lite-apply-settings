@@ -1086,6 +1086,26 @@ def write_labwc_rc_overrides(settings: dict) -> None:
   <!-- Mouse bindings: defining ANY mousebind replaces ALL labwc
        built-in defaults, so we must include the full set. -->
   <mouse>
+    <!-- Client context: clicks on a window's content area. Required
+         for CSD apps (GTK/libadwaita) to raise on click — they have no
+         labwc titlebar, so the content area is the only click target.
+         Omitting this context broke click-to-focus between CSD and SSD
+         apps until 2026-04-22. These actions don't consume the click;
+         the app still receives its pointer events as usual. -->
+    <context name="Client">
+      <mousebind button="Left" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="Middle" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+      <mousebind button="Right" action="Press">
+        <action name="Focus"/>
+        <action name="Raise"/>
+      </mousebind>
+    </context>
     <context name="TitleBar">
       <mousebind button="Left" action="Press">
         <action name="Focus"/>
