@@ -25,5 +25,29 @@ ExecStart=/usr/libexec/universal-lite-flatpak-setup
 StandardOutput=journal+console
 StandardError=journal+console
 
+# --- Hardening ---
+# flatpak install is a heavyweight operation: downloads from dl.flathub.org,
+# writes to /var/lib/flatpak, /var/tmp, creates OSTree refs, may spawn bwrap
+# for triggers. Skip NoNewPrivileges (flatpak's sandbox helpers can legitimately
+# need setuid bwrap on non-userns kernels) and ProtectKernelTunables (some
+# flatpak runtimes poke sysfs via triggers).
+ProtectSystem=strict
+# flatpak writes /var/lib/flatpak, /var/tmp, and we write /run/universal-lite/
+ReadWritePaths=/var /run
+# Not ProtectHome=yes: flatpak's system installs don't touch /home, but
+# user-mode triggers may. Use read-only as a safe middle ground.
+ProtectHome=read-only
+PrivateTmp=yes
+RestrictSUIDSGID=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectClock=yes
+LockPersonality=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+# flatpak uses TCP (HTTPS to flathub), AF_UNIX (dbus, journal), AF_NETLINK.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+
 [Install]
 WantedBy=graphical.target

@@ -2871,15 +2871,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         store.  Writing through the hardlink either fails (EACCES) or
         corrupts the store.  This helper:
           1. Unlinks the existing file (breaks the hardlink)
-          2. Writes to a temp file in the same directory
-          3. Sets permissions if mode is specified (e.g. 0o600 for shadow)
-          4. Renames atomically into place
+          2. Writes to a temp file in the same directory with the target
+             mode set BEFORE any bytes are written (avoids a window where
+             e.g. /etc/shadow.tmp is 0644 while holding a password hash)
+          3. Renames atomically into place
         """
         path.unlink(missing_ok=True)
         tmp = path.with_suffix(".tmp")
-        tmp.write_text(content)
         if mode is not None:
+            fd = os.open(str(tmp),
+                         os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
+            try:
+                os.write(fd, content.encode())
+            finally:
+                os.close(fd)
             os.chmod(tmp, mode)
+        else:
+            tmp.write_text(content)
         os.rename(tmp, path)
 
     def _step_configure_user(self) -> str | None:
@@ -3502,6 +3510,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._setup_hostname = self._hostname_entry.get_text().strip()
         # Hash passwords immediately — don't hold plaintext in memory
         # for the 30+ minute install duration.
+        root_pw = ""
         try:
             self._setup_hashed_password = _hash_password(
                 self._password_entry.get_text())
@@ -3511,6 +3520,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
             self._set_status(f"Failed to hash password: {exc}")
             return
+        finally:
+            root_pw = ""
+            del root_pw
         self._password_entry.set_text("")
         self._root_password_entry.set_text("")
 

@@ -321,6 +321,17 @@ table inet filter {
 }
 NFT_EOF
 chmod 0644 /etc/sysconfig/nftables.conf
+# Fail closed: make NetworkManager hard-require nftables.service so a
+# ruleset load failure blocks interface bring-up rather than leaving
+# the box on the network with no firewall. The stock nftables.service
+# only uses Before=/Wants=network-pre.target, which fails open.
+mkdir -p /etc/systemd/system/NetworkManager.service.d
+cat > /etc/systemd/system/NetworkManager.service.d/10-require-nftables.conf <<'FAIL_EOF'
+[Unit]
+Requires=nftables.service
+After=nftables.service
+FAIL_EOF
+chmod 0644 /etc/systemd/system/NetworkManager.service.d/10-require-nftables.conf
 systemctl enable nftables.service
 
 # Mask more base-image daemons whose features we don't expose:

@@ -20,5 +20,22 @@ ExecStart=/usr/libexec/universal-lite-flatpak-setup
 StandardOutput=journal
 StandardError=journal
 
+# --- Hardening ---
+# Mirror -install.service: same script, same requirements (downloads,
+# writes /var/lib/flatpak, may spawn bwrap triggers).
+ProtectSystem=strict
+ReadWritePaths=/var /run
+ProtectHome=read-only
+PrivateTmp=yes
+RestrictSUIDSGID=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectHostname=yes
+ProtectClock=yes
+LockPersonality=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+
 [Install]
 WantedBy=graphical.target
