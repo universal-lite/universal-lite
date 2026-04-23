@@ -29,6 +29,15 @@ if [ ! -e "$CONFIG" ]; then
 fi
 
 # --- Read config via Python (already available in the image) ---
+# Validate JSON once up front; a truncated file from a power loss mid-install
+# would otherwise crash every `read_config` call and, under `set -e`, take
+# the service down without writing `setup-done` (infinite boot-loop).
+if ! python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$CONFIG" 2>/dev/null; then
+    echo "universal-lite-first-boot: $CONFIG is malformed; skipping auto-setup." >&2
+    echo "Re-run manually once the file is repaired." >&2
+    exit 0
+fi
+
 read_config() {
     python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get(sys.argv[2], ''))" \
         "$CONFIG" "$1"
