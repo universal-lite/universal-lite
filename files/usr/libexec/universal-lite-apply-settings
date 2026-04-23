@@ -960,12 +960,15 @@ def write_waybar_config(tokens: dict) -> bool:
 
 
 def write_gtk_settings(tokens: dict) -> None:
-    # TODO: audit A14 — when tokens["high_contrast"] is True, swap
-    # theme_name to "HighContrast" (and set color-scheme to
-    # prefer-high-contrast). Requires confirming the HighContrast
-    # theme package is present on the image before we ship it.
-    theme_name = "adw-gtk3-dark" if tokens["theme"] == "dark" else "adw-gtk3"
-    icon_theme = "Adwaita"
+    # gnome-themes-extra ships /usr/share/themes/HighContrast (GTK3 +
+    # icon set). GTK4/libadwaita read the high-contrast preference via
+    # gsettings color-scheme=prefer-high-contrast, applied below.
+    if tokens["high_contrast"]:
+        theme_name = "HighContrast"
+        icon_theme = "HighContrast"
+    else:
+        theme_name = "adw-gtk3-dark" if tokens["theme"] == "dark" else "adw-gtk3"
+        icon_theme = "Adwaita"
     dark_pref = 1 if tokens["theme"] == "dark" else 0
 
     ini_content = (
@@ -1003,7 +1006,12 @@ def write_gtk_settings(tokens: dict) -> None:
             "set",
             "org.gnome.desktop.interface",
             "color-scheme",
-            "prefer-dark" if tokens["theme"] == "dark" else "default",
+            "prefer-high-contrast" if tokens["high_contrast"]
+            else ("prefer-dark" if tokens["theme"] == "dark" else "default"),
+        ],
+        [
+            "gsettings", "set", "org.gnome.desktop.a11y.interface",
+            "high-contrast", "true" if tokens["high_contrast"] else "false",
         ],
         ["gsettings", "set", "org.gnome.desktop.interface", "accent-color", tokens["accent"]],
         ["gsettings", "set", "org.gnome.desktop.interface", "font-name", f"Roboto {tokens['font_size_ui']}"],

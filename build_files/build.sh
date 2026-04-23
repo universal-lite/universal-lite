@@ -14,9 +14,25 @@ dnf5 install -y \
 
 dnf5 install -y --setopt=install_weak_deps=False \
     NetworkManager-libnm \
+    NetworkManager-openvpn \
+    NetworkManager-openvpn-gnome \
+    NetworkManager-vpnc \
+    NetworkManager-vpnc-gnome \
+    NetworkManager-openconnect \
+    NetworkManager-openconnect-gnome \
+    NetworkManager-ppp \
+    NetworkManager-ssh \
+    NetworkManager-ssh-gnome \
+    wireguard-tools \
+    bluez-obexd \
+    cups-pk-helper \
     accountsservice \
     adw-gtk3-theme \
+    adwaita-cursor-theme \
     alsa-utils \
+    at-spi2-atk \
+    at-spi2-core \
+    brltty \
     bash-completion \
     blueman \
     bluez \
@@ -37,6 +53,8 @@ dnf5 install -y --setopt=install_weak_deps=False \
     labwc-menu-generator \
     "f${FEDORA_MAJOR}-backgrounds-base" \
     "f${FEDORA_MAJOR}-backgrounds-gnome" \
+    dejavu-sans-fonts \
+    espeak-ng \
     gammastep \
     glibc-langpack-am \
     glibc-langpack-ar \
@@ -61,11 +79,16 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-yo \
     glibc-langpack-zh \
     gnome-backgrounds \
+    gnome-themes-extra \
     fedora-workstation-backgrounds \
     libjxl \
     webp-pixbuf-loader \
+    google-noto-emoji-fonts \
+    google-noto-sans-cjk-fonts \
+    google-noto-sans-fonts \
     google-roboto-fonts \
     google-roboto-mono-fonts \
+    liberation-sans-fonts \
     greetd \
     grubby \
     grim \
@@ -82,6 +105,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     network-manager-applet \
     nftables \
     nm-connection-editor \
+    orca \
     parted \
     pavucontrol \
     pipewire \
@@ -93,6 +117,8 @@ dnf5 install -y --setopt=install_weak_deps=False \
     rsync \
     ristretto \
     slurp \
+    speech-dispatcher \
+    speech-dispatcher-espeak-ng \
     swaybg \
     swayidle \
     swaylock \
@@ -118,7 +144,26 @@ dnf5 install -y --setopt=install_weak_deps=False \
     xfsprogs \
     btrfs-progs
 
-dnf5 install -y --setopt=install_weak_deps=False gstreamer1-plugins-ugly
+# Multimedia codecs + hardware video acceleration (needs rpmfusion, enabled
+# above). Native mpv + any GTK4 media widgets otherwise fall back to the
+# Fedora-default openh264-only stack, which can't play H.265/HEVC, VP9,
+# AV1-in-MKV, AC3/DTS audio, etc., and leaves GPU decode off on the
+# Chromebook's Intel iGPU (CPU-only decode at ~30% battery hit on a 2 GB
+# box). mesa-*-freeworld unlocks VA-API / VDPAU closed-codec paths in
+# mesa. gstreamer1-plugins-bad-freeworld + gstreamer1-plugins-ugly +
+# gstreamer1-plugin-openh264 cover the broad gst-based playback surface
+# (tumbler thumbnailer, anything portal-based). ffmpeg-free is the full
+# ffmpeg stack (not the stripped libavcodec-free shipped by default).
+# Bluefin gets this story "for free" via GNOME's Videos/Celluloid Flatpaks
+# which bundle their own codecs; we play through the host stack so the
+# host stack has to be complete.
+dnf5 install -y --setopt=install_weak_deps=False \
+    gstreamer1-plugins-ugly \
+    gstreamer1-plugins-bad-freeworld \
+    gstreamer1-plugin-openh264 \
+    ffmpeg-free \
+    mesa-va-drivers-freeworld \
+    mesa-vdpau-drivers-freeworld
 
 # Build a GdkPixbuf loader for JPEG-XL so swaybg and the settings
 # picker can display vendor .jxl wallpapers directly. Fedora 43
@@ -334,18 +379,10 @@ FAIL_EOF
 chmod 0644 /etc/systemd/system/NetworkManager.service.d/10-require-nftables.conf
 systemctl enable nftables.service
 
-# Mask more base-image daemons whose features we don't expose:
+# Mask base-image daemons whose features we don't expose AND whose
+# masking actually saves RAM (i.e. always-on services, not D-Bus-
+# activated ones whose masking just breaks clients without any savings):
 #
-#   avahi-daemon           mDNS/DNS-SD discovery — the nftables rule
-#                          above still permits inbound mDNS so
-#                          zeroconf-aware apps can work via the kernel
-#                          stack alone if something ever needs it.
-#   colord                 color management for calibrated displays
-#                          — irrelevant on Chromebook panels.
-#   geoclue                location services — unused.
-#   iio-sensor-proxy       accel/ambient-light sensor bridge — the
-#                          Chromebook EC handles brightness directly
-#                          and we don't expose auto-rotate.
 #   switcheroo-control     dual-GPU switching — Chromebooks have one
 #                          GPU.
 #   abrtd + abrt-*         crash reporter daemon and its satellite
@@ -354,15 +391,20 @@ systemctl enable nftables.service
 #   packagekit             software-management daemon. We use bootc
 #                          + flatpak; nothing talks PackageKit.
 #
+# Deliberately NOT masked (all D-Bus / socket-activated upstream, so
+# masking saves zero RAM but breaks clients that query them):
+#   avahi-daemon           mDNS — leave socket-activated so AirPrint
+#                          / network-printer auto-discovery works.
+#   colord                 ICC profile daemon — socket-activated.
+#   geoclue                location service — D-Bus-activated; Firefox
+#                          location prompt and auto-timezone need it.
+#   iio-sensor-proxy       accel/light sensor — D-Bus-activated;
+#                          essential for screen auto-rotation on
+#                          convertible Chromebooks.
+#
 # Masks are idempotent — services that aren't actually enabled on
-# the base image ignore this no-op, so the list doesn't have to
-# match the current preset exactly.
+# the base image ignore this no-op.
 systemctl mask \
-    avahi-daemon.service \
-    avahi-daemon.socket \
-    colord.service \
-    geoclue.service \
-    iio-sensor-proxy.service \
     switcheroo-control.service \
     abrtd.service \
     abrt-journal-core.service \
@@ -371,6 +413,10 @@ systemctl mask \
     abrt-xorg.service \
     packagekit.service \
     packagekit-offline-update.service 2>/dev/null || true
+# Restore socket-activation for avahi (network-printer auto-discovery)
+# so AirPrint works when a printer appears on the LAN. The service
+# stays inactive until a client queries the mDNS socket.
+systemctl enable avahi-daemon.socket 2>/dev/null || true
 # Explicit: NM is enabled by the base image, but re-enabling is a cheap
 # safeguard against any preset drift. NetworkManager-wait-online stays
 # at its preset default (enabled) to match bluefin exactly - nothing
