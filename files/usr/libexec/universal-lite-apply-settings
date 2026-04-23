@@ -169,8 +169,16 @@ def _run_best_effort(cmd: list[str], **kwargs) -> bool:
 
 
 def _atomic_write_text(path: Path, content: str) -> None:
-    """Write content to path atomically: tmp + fsync + os.replace."""
-    tmp = path.with_suffix(path.suffix + ".tmp")
+    """Write content to path atomically: tmp + fsync + os.replace.
+
+    Pid-suffixed tmp name so a second apply-settings invocation that
+    overlaps this one (session-start spawn still running when the user
+    triggers one from Settings on a slow 2 GB Chromebook) can't
+    os.replace the same tmp path out from under us — which surfaces
+    as a FileNotFoundError that crashes the apply mid-way and leaves
+    on-disk configs partially updated.
+    """
+    tmp = path.with_suffix(f"{path.suffix}.{os.getpid()}.tmp")
     try:
         with tmp.open("w", encoding="utf-8") as f:
             f.write(content)
@@ -589,7 +597,10 @@ def _waybar_css_common(tokens: dict) -> str:
     m = tokens["panel_margin"]
     inset = tokens["panel_bar_inset"]
     icon_sz = tokens["panel_icon_size"]
-    bar_pad = f"padding: {inset}px 0;" if tokens["is_vertical"] else f"padding: 0 {inset}px;"
+    # Vertical bars still need a touch of side padding so module highlights
+    # never contact the outer rounded window; the per-module CSS then
+    # insets content from that small gutter.
+    bar_pad = f"padding: {inset}px {inset // 2}px;" if tokens["is_vertical"] else f"padding: 0 {inset}px;"
     return f"""\
 * {{
     font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
@@ -694,8 +705,18 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 def _waybar_css_vertical(tokens: dict) -> str:
     w = tokens["panel_width"]
     pm = tokens["panel_pad_module"]
+    inset = tokens["panel_bar_inset"]
     pinned = tokens.get("pinned", [])
     active_border = "border-right" if tokens["edge"] == "left" else "border-left"
+
+    # Highlight shape is a rounded square, not a 999px pill. On a narrow
+    # vertical bar a near-square button + 999px radius renders as a circle
+    # whose corners bleed past the bar edges; 10px gives a soft rectangle
+    # that fits cleanly inside the bar.
+    radius = 10
+    # Button width insets from the bar edge so the highlight never kisses
+    # the outer rounded window; side padding doubles as breathing room.
+    btn_w = max(w - 2 * inset, 16)
 
     pin_css = ""
     if pinned:
@@ -703,9 +724,10 @@ def _waybar_css_vertical(tokens: dict) -> str:
         hover_selectors = ", ".join(f"#image.pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
-    padding: {pm}px 0;
-    min-width: {w}px;
-    border-radius: 999px;
+    padding: {pm}px {inset}px;
+    min-width: {btn_w}px;
+    min-height: {btn_w}px;
+    border-radius: {radius}px;
 }}
 {hover_selectors} {{ background: {tokens["panel_hover"]}; }}
 """
@@ -714,16 +736,18 @@ def _waybar_css_vertical(tokens: dict) -> str:
 window#waybar {{ min-width: {w}px; }}
 
 #custom-launcher {{
-    padding: {pm}px 0;
-    min-width: {w}px;
-    border-radius: 999px;
+    padding: {pm}px {inset}px;
+    min-width: {btn_w}px;
+    min-height: {btn_w}px;
+    border-radius: {radius}px;
 }}
 
 #taskbar {{ padding: 0; }}
 #taskbar button {{
-    padding: {pm}px 0;
-    border-radius: 999px;
-    min-width: {w}px;
+    padding: {pm}px {inset}px;
+    border-radius: {radius}px;
+    min-width: {btn_w}px;
+    min-height: {btn_w}px;
 }}
 #taskbar button.active {{
     background: {tokens["accent_rgba_15"]};
@@ -732,10 +756,16 @@ window#waybar {{ min-width: {w}px; }}
 #taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
-    padding: {pm}px 0;
-    min-width: {w}px;
-    border-radius: 999px;
+    padding: {pm}px {inset}px;
+    min-width: {btn_w}px;
+    min-height: {btn_w}px;
+    border-radius: {radius}px;
 }}
+
+/* Override the common-CSS hover rule that uses 999px pill radius;
+   vertical bar uses the softer radius applied to all modules above. */
+#clock:hover, #battery:hover, #backlight:hover,
+#pulseaudio:hover {{ border-radius: {radius}px; }}
 
 #clock {{ font-weight: bold; }}
 """
@@ -868,8 +898,18 @@ def write_waybar_config(tokens: dict) -> bool:
     # waybar's fmt-based formatter, and a single unrecognised specifier
     # makes the whole clock module fail to render with no error in the
     # default logs. Pad with zeros instead (`%I:%M` → "09:30 AM").
+    # Vertical bars are too narrow for "HH:MM AM" on one line; split AM/PM
+    # onto a second line so 12h users still fit. 24h is always short enough.
+    # Multi-reference format strings need the {0:...} indexed form — waybar's
+    # fmt-based formatter rejects bare {:...} when the arg appears twice.
+    if tokens.get("clock_24h", False):
+        clock_format = "{:%H:%M}"
+    elif is_vertical:
+        clock_format = "{0:%I:%M}\n{0:%p}"
+    else:
+        clock_format = "{:%I:%M %p}"
     config["clock"] = {
-        "format": "{:%H:%M}" if tokens.get("clock_24h", False) else "{:%I:%M %p}",
+        "format": clock_format,
         "tooltip-format": "{:%A, %B %d, %Y}",
         "interval": 60,
     }
