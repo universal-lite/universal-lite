@@ -462,6 +462,14 @@ dnf5 remove -y nvtop || true
 rm -f /usr/share/applications/xfce4-panel.desktop \
       /usr/share/applications/nvtop.desktop
 
+# distrobox ships on ublue-os/base-main and comes with a ujust recipe
+# file. We keep it off main for memory reasons on 2 GB targets;
+# container workflows belong on the forthcoming universal-lite-dx
+# variant (distrobox + brew). Remove both the binary and the recipes
+# so `ujust` doesn't list unreachable commands.
+dnf5 remove -y distrobox || true
+rm -f /usr/share/ublue-os/just/30-distrobox.just
+
 # Flatpak apps are installed by the first-boot service from Flathub —
 # not pre-installed in the image.  This keeps the raw image small for
 # constrained target hardware (16 GB eMMC).

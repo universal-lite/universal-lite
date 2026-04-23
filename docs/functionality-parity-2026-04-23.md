@@ -111,9 +111,10 @@ Without these, Intel iGPU sat idle and CPU did 100% video decode
 - `xdg-desktop-portal-wlr` + `xdg-desktop-portal` +
   `xdg-desktop-portal-gtk` all present. Bluefin's `-gnome` backend
   would actually be wrong for labwc.
-- `toolbox` + `distrobox` inherited free from `base-main`, including
-  their `ujust distrobox-*` recipes (our `90-universal-lite.just`
-  stacks on top).
+- `toolbox` inherited from `base-main`. `distrobox` is deliberately
+  removed (planned for a forthcoming universal-lite-dx variant with
+  distrobox + brew) — we also delete `30-distrobox.just` so `ujust`
+  doesn't list unreachable commands.
 - Container runtime defaults unchanged — `/etc/containers/*.conf`
   inherited.
 - Wayland utilities (`grim`, `slurp`, `wl-clipboard`, `wdisplays`,
