@@ -204,10 +204,10 @@ class TestVerticalCssBorder:
         assert "border-left:" in css
         assert "border-bottom:" not in css
 
-    def test_horizontal_css_still_uses_border_bottom(self):
+    def test_horizontal_css_no_border_bottom(self):
         tokens = _make_tokens(edge="bottom")
         css = apply_settings._waybar_css_horizontal(tokens)
-        assert "border-bottom:" in css
+        assert "border-bottom:" not in css
 
 
 # ---------------------------------------------------------------------------
@@ -375,3 +375,43 @@ class TestCommonCssDesign:
         assert "#clock:hover" in css
         assert "#battery:hover" in css
         assert "#pulseaudio:hover" in css
+
+
+# ---------------------------------------------------------------------------
+# Horizontal CSS — pill consistency
+# ---------------------------------------------------------------------------
+
+class TestHorizontalCss:
+    def test_horizontal_pill_radius_on_modules(self):
+        tokens = _make_tokens(edge="bottom")
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "border-radius: 999px" in css
+
+    def test_horizontal_has_min_height_not_min_width(self):
+        tokens = _make_tokens(edge="bottom")
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "min-height:" in css
+        assert "min-width:" not in css
+
+    def test_horizontal_no_border_bottom_active(self):
+        tokens = _make_tokens(edge="bottom")
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "border-bottom:" not in css
+
+    def test_horizontal_window_padding_horizontal_only(self):
+        tokens = _make_tokens(edge="bottom")
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "padding: 0 " in css
+
+    def test_horizontal_pinned_pill_radius(self):
+        tokens = _make_tokens(
+            edge="bottom",
+            pinned=[
+                {"name": "Chrome", "command": "chrome", "icon": "chrome"},
+                {"name": "Firefox", "command": "firefox", "icon": "firefox"},
+            ],
+        )
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#image.pin-0" in css
+        assert "#image.pin-1" in css
+        assert "border-radius: 999px" in css

@@ -690,7 +690,9 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     pl = tokens["panel_pad_launcher"]
     pm = tokens["panel_pad_module"]
     pp = tokens["panel_pad_pin"]
+    inset = tokens["panel_bar_inset"]
     pinned = tokens.get("pinned", [])
+    fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
 
     pin_css = ""
     if pinned:
@@ -706,6 +708,8 @@ def _waybar_css_horizontal(tokens: dict) -> str:
 """
 
     return f"""
+window#waybar {{ padding: 0 {inset}px; }}
+
 #custom-launcher {{ padding: 0 {pl}px; min-height: {h}px; }}
 
 #taskbar {{ padding: 0; }}
@@ -714,19 +718,29 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     border-radius: 999px;
     min-height: {h}px;
 }}
-#taskbar button.active {{
-    background: {tokens["accent_rgba_15"]};
-    border-bottom: 3px solid {tokens["accent_hex"]};
-}}
 #taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: 0 {pm}px;
     min-height: {h}px;
-    border-radius: 999px;
 }}
 
 #clock {{ font-weight: bold; }}
+
+#status {{
+    background: rgba({fr}, {fg_}, {fb}, 0.06);
+    border-radius: 999px;
+    padding: 0 4px;
+}}
+#status > * {{
+    background: transparent;
+    border-radius: 999px;
+    transition: background-color 200ms ease;
+}}
+#status > *:hover {{
+    background: rgba({fr}, {fg_}, {fb}, 0.08);
+    border-radius: 999px;
+}}
 """
 
 
