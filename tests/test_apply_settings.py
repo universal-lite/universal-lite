@@ -522,3 +522,31 @@ class TestStatusGroup:
         all_modules = config["modules-left"] + config["modules-center"] + config["modules-right"]
         assert "pulseaudio" in all_modules
         assert "battery" in all_modules
+
+
+# ---------------------------------------------------------------------------
+# Grouped status pill CSS
+# ---------------------------------------------------------------------------
+
+class TestGroupedPillCss:
+    def test_horizontal_group_pill_background(self):
+        tokens = _make_tokens()
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#status" in css
+        assert "#status > *" in css
+
+    def test_vertical_group_pill_background(self):
+        tokens = _make_tokens(edge="left", is_vertical=True)
+        css = apply_settings._waybar_css_vertical(tokens)
+        assert "#status" in css
+        assert "#status > *" in css
+
+    def test_group_has_transparent_children(self):
+        tokens = _make_tokens()
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "background: transparent" in css
+
+    def test_group_children_hover(self):
+        tokens = _make_tokens()
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#status > *:hover" in css
