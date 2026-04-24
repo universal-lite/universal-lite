@@ -76,6 +76,8 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         self._pinned_group: Adw.PreferencesGroup | None = None
         self._pinned_rows: list[Adw.ActionRow] = []
         self._nav: Adw.NavigationView | None = None
+        self._updating: bool = False
+        self._built: bool = False
 
     @property
     def search_keywords(self):
@@ -110,6 +112,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         # sub-page push (the PreferencesPage unmaps during nav-view
         # navigation) and permanently silence the page's subscriptions.
         self.setup_cleanup(self._nav)
+        self._built = True
         return self._nav
 
     # -- Position / Density / Twilight ---------------------------------
@@ -129,9 +132,15 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         row.set_selected(values.index(current) if current in values else 0)
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
-            idx = r.get_selected()
-            if 0 <= idx < len(values):
-                self._on_edge_changed(values[idx])
+            if self._updating or not self._built:
+                return
+            self._updating = True
+            try:
+                idx = r.get_selected()
+                if 0 <= idx < len(values):
+                    self._on_edge_changed(values[idx])
+            finally:
+                self._updating = False
 
         row.connect("notify::selected", _on_selected)
         group.add(row)
@@ -152,9 +161,15 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         row.set_selected(values.index(current) if current in values else 0)
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
-            idx = r.get_selected()
-            if 0 <= idx < len(values):
-                self.store.save_and_apply("density", values[idx])
+            if self._updating or not self._built:
+                return
+            self._updating = True
+            try:
+                idx = r.get_selected()
+                if 0 <= idx < len(values):
+                    self.store.save_and_apply("density", values[idx])
+            finally:
+                self._updating = False
 
         row.connect("notify::selected", _on_selected)
         group.add(row)
@@ -170,7 +185,13 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         row.set_active(self.store.get("panel_twilight", False))
 
         def _on_active(r: Adw.SwitchRow, _pspec) -> None:
-            self.store.save_and_apply("panel_twilight", r.get_active())
+            if self._updating or not self._built:
+                return
+            self._updating = True
+            try:
+                self.store.save_and_apply("panel_twilight", r.get_active())
+            finally:
+                self._updating = False
 
         row.connect("notify::active", _on_active)
         group.add(row)
@@ -214,9 +235,15 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         return group
 
     def _on_edge_changed(self, edge):
-        self.store.save_and_apply("edge", edge)
-        self._update_section_labels()
-        self._refresh_module_lists()
+        if self._updating:
+            return
+        self._updating = True
+        try:
+            self.store.save_and_apply("edge", edge)
+            self._update_section_labels()
+            self._refresh_module_lists()
+        finally:
+            self._updating = False
 
     def _update_section_labels(self):
         edge = self.store.get("edge", "bottom")
