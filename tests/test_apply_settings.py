@@ -438,3 +438,87 @@ class TestHorizontalCss:
         assert "#image.pin-0" in css
         assert "#image.pin-1" in css
         assert "border-radius: 999px" in css
+
+
+# ---------------------------------------------------------------------------
+# group/status module
+# ---------------------------------------------------------------------------
+
+class TestStatusGroup:
+    def test_group_status_in_config(self, tmp_path):
+        tokens = _make_tokens()
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert "group/status" in config
+
+    def test_group_status_orientation_horizontal(self, tmp_path):
+        tokens = _make_tokens(edge="bottom", is_vertical=False)
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert config["group/status"]["orientation"] == "horizontal"
+
+    def test_group_status_orientation_vertical(self, tmp_path):
+        tokens = _make_tokens(edge="left", is_vertical=True)
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert config["group/status"]["orientation"] == "vertical"
+
+    def test_status_modules_in_group(self, tmp_path):
+        tokens = _make_tokens()
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        modules = config["group/status"]["modules"]
+        for m in ["pulseaudio", "backlight", "battery", "clock"]:
+            assert m in modules
+
+    def test_tray_not_in_group(self, tmp_path):
+        tokens = _make_tokens()
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert "tray" not in config["group/status"]["modules"]
+
+    def test_module_list_uses_group_not_individual(self, tmp_path):
+        tokens = _make_tokens()
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        all_modules = (
+            config["modules-left"]
+            + config["modules-center"]
+            + config["modules-right"]
+        )
+        for m in ["pulseaudio", "backlight", "battery", "clock"]:
+            assert m not in all_modules
+        assert "group/status" in all_modules
+
+    def test_no_group_when_no_status_modules(self, tmp_path):
+        tokens = _make_tokens(
+            layout={
+                "start": ["custom/launcher"],
+                "center": ["wlr/taskbar"],
+                "end": ["custom/power", "tray"],
+            },
+        )
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert "group/status" not in config
+
+    def test_no_group_when_status_modules_not_contiguous(self, tmp_path):
+        tokens = _make_tokens(layout={
+            "start": ["custom/launcher"],
+            "center": ["wlr/taskbar"],
+            "end": ["pulseaudio", "tray", "battery", "clock"],
+        })
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert "group/status" not in config
+        all_modules = config["modules-left"] + config["modules-center"] + config["modules-right"]
+        assert "pulseaudio" in all_modules
+        assert "battery" in all_modules

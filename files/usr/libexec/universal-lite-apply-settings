@@ -845,6 +845,25 @@ def write_waybar_config(tokens: dict) -> bool:
         if not injected:
             modules_left[:0] = pin_ids
 
+    STATUS_MODULES = frozenset(["pulseaudio", "backlight", "battery", "clock"])
+    all_modules_flat = modules_left + modules_center + modules_right
+    status_in_layout = [m for m in all_modules_flat if m in STATUS_MODULES]
+
+    if status_in_layout:
+        def _inject_status_group(mlist):
+            indices = [i for i, m in enumerate(mlist) if m in STATUS_MODULES]
+            if not indices:
+                return mlist
+            first, last = indices[0], indices[-1]
+            between = mlist[first:last + 1]
+            if any(m not in STATUS_MODULES for m in between):
+                return mlist
+            return mlist[:first] + ["group/status"] + mlist[last + 1:]
+
+        modules_left = _inject_status_group(modules_left)
+        modules_center = _inject_status_group(modules_center)
+        modules_right = _inject_status_group(modules_right)
+
     config: dict = {
         "layer": "top",
         "position": tokens["edge"],
@@ -956,6 +975,13 @@ def write_waybar_config(tokens: dict) -> bool:
         "icon-size": icon_size,
         "spacing": 8,
     }
+
+    all_modules_after_grouping = modules_left + modules_center + modules_right
+    if "group/status" in all_modules_after_grouping:
+        config["group/status"] = {
+            "orientation": "vertical" if is_vertical else "horizontal",
+            "modules": status_in_layout,
+        }
 
     # Generate image#pin-N modules for each pinned app.
     # Using waybar's built-in image module (not custom with format={icon},
