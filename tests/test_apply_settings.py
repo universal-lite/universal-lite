@@ -188,26 +188,49 @@ class TestPinInjection:
 
 
 # ---------------------------------------------------------------------------
-# C2: Vertical CSS border direction
+# Vertical CSS — pill consistency
 # ---------------------------------------------------------------------------
 
-class TestVerticalCssBorder:
-    def test_left_edge_uses_border_right(self):
+class TestVerticalCss:
+    def test_vertical_has_min_width_and_min_height(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
-        assert "border-right:" in css
-        assert "border-bottom:" not in css
+        assert "min-width:" in css
+        assert "min-height:" in css
 
-    def test_right_edge_uses_border_left(self):
-        tokens = _make_tokens(edge="right", is_vertical=True)
+    def test_vertical_pill_radius_on_modules(self):
+        tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
-        assert "border-left:" in css
+        assert "border-radius: 999px" in css
+
+    def test_vertical_no_border_direction(self):
+        tokens = _make_tokens(edge="left", is_vertical=True)
+        css = apply_settings._waybar_css_vertical(tokens)
+        assert "border-right:" not in css
+        assert "border-left:" not in css
         assert "border-bottom:" not in css
 
-    def test_horizontal_css_no_border_bottom(self):
-        tokens = _make_tokens(edge="bottom")
-        css = apply_settings._waybar_css_horizontal(tokens)
-        assert "border-bottom:" not in css
+    def test_vertical_window_has_min_width(self):
+        tokens = _make_tokens(edge="left", is_vertical=True)
+        css = apply_settings._waybar_css_vertical(tokens)
+        assert "window#waybar" in css
+        assert "min-width:" in css
+
+    def test_vertical_window_padding_both_axes(self):
+        tokens = _make_tokens(edge="left", is_vertical=True)
+        inset = tokens["panel_bar_inset"]
+        css = apply_settings._waybar_css_vertical(tokens)
+        assert f"padding: {inset}px {inset // 2}px" in css
+
+    def test_vertical_pinned_pill_radius(self):
+        tokens = _make_tokens(
+            edge="left",
+            is_vertical=True,
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_vertical(tokens)
+        assert "#image.pin-0" in css
+        assert "border-radius: 999px" in css
 
 
 # ---------------------------------------------------------------------------

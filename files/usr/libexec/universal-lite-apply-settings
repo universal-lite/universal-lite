@@ -749,16 +749,8 @@ def _waybar_css_vertical(tokens: dict) -> str:
     pm = tokens["panel_pad_module"]
     inset = tokens["panel_bar_inset"]
     pinned = tokens.get("pinned", [])
-    active_border = "border-right" if tokens["edge"] == "left" else "border-left"
-
-    # Highlight shape is a rounded square, not a 999px pill. On a narrow
-    # vertical bar a near-square button + 999px radius renders as a circle
-    # whose corners bleed past the bar edges; 10px gives a soft rectangle
-    # that fits cleanly inside the bar.
-    radius = 10
-    # Button width insets from the bar edge so the highlight never kisses
-    # the outer rounded window; side padding doubles as breathing room.
     btn_w = max(w - 2 * inset, 16)
+    fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
 
     pin_css = ""
     if pinned:
@@ -769,31 +761,26 @@ def _waybar_css_vertical(tokens: dict) -> str:
     padding: {pm}px {inset}px;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
-    border-radius: {radius}px;
+    border-radius: 999px;
 }}
 {hover_selectors} {{ background: {tokens["panel_hover"]}; }}
 """
 
     return f"""
-window#waybar {{ min-width: {w}px; }}
+window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 
 #custom-launcher {{
     padding: {pm}px {inset}px;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
-    border-radius: {radius}px;
 }}
 
 #taskbar {{ padding: 0; }}
 #taskbar button {{
     padding: {pm}px {inset}px;
-    border-radius: {radius}px;
+    border-radius: 999px;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
-}}
-#taskbar button.active {{
-    background: {tokens["accent_rgba_15"]};
-    {active_border}: 3px solid {tokens["accent_hex"]};
 }}
 #taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
 {pin_css}
@@ -801,15 +788,24 @@ window#waybar {{ min-width: {w}px; }}
     padding: {pm}px {inset}px;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
-    border-radius: {radius}px;
 }}
 
-/* Override the common-CSS hover rule that uses 999px pill radius;
-   vertical bar uses the softer radius applied to all modules above. */
-#clock:hover, #battery:hover, #backlight:hover,
-#pulseaudio:hover {{ border-radius: {radius}px; }}
-
 #clock {{ font-weight: bold; }}
+
+#status {{
+    background: rgba({fr}, {fg_}, {fb}, 0.06);
+    border-radius: 999px;
+    padding: 4px 0;
+}}
+#status > * {{
+    background: transparent;
+    border-radius: 999px;
+    transition: background-color 200ms ease;
+}}
+#status > *:hover {{
+    background: rgba({fr}, {fg_}, {fb}, 0.08);
+    border-radius: 999px;
+}}
 """
 
 
