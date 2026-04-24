@@ -369,27 +369,45 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         return row
 
     def _reorder_module(self, mod_key, section, direction):
-        modules = self._layout_data.get(section, [])
-        if mod_key not in modules:
+        if self._updating:
             return
-        idx = modules.index(mod_key)
-        new_idx = idx + direction
-        if 0 <= new_idx < len(modules):
-            modules[idx], modules[new_idx] = modules[new_idx], modules[idx]
-            self._refresh_module_lists()
-            self.store.save_and_apply("layout", self._layout_data)
+        self._updating = True
+        try:
+            modules = self._layout_data.get(section, [])
+            if mod_key not in modules:
+                return
+            idx = modules.index(mod_key)
+            new_idx = idx + direction
+            if 0 <= new_idx < len(modules):
+                modules[idx], modules[new_idx] = modules[new_idx], modules[idx]
+                self._refresh_module_lists()
+                self.store.save_and_apply("layout", self._layout_data)
+        finally:
+            self._updating = False
 
     def _move_module(self, mod_key, from_section, to_section):
-        if mod_key in self._layout_data.get(from_section, []):
-            self._layout_data[from_section].remove(mod_key)
-        self._layout_data.setdefault(to_section, []).append(mod_key)
-        self._refresh_module_lists()
-        self.store.save_and_apply("layout", self._layout_data)
+        if self._updating:
+            return
+        self._updating = True
+        try:
+            if mod_key in self._layout_data.get(from_section, []):
+                self._layout_data[from_section].remove(mod_key)
+            self._layout_data.setdefault(to_section, []).append(mod_key)
+            self._refresh_module_lists()
+            self.store.save_and_apply("layout", self._layout_data)
+        finally:
+            self._updating = False
 
     def _reset_layout(self):
-        self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
-        self._refresh_module_lists()
-        self.store.save_and_apply("layout", self._layout_data)
+        if self._updating:
+            return
+        self._updating = True
+        try:
+            self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
+            self._refresh_module_lists()
+            self.store.save_and_apply("layout", self._layout_data)
+        finally:
+            self._updating = False
         # Pinned apps are not affected by layout reset
 
     # -- Pinned apps ---------------------------------------------------
