@@ -125,8 +125,8 @@ class TestPinInjection:
         config = json.loads((tmp_path / "config.jsonc").read_text())
         left = config["modules-left"]
         assert "custom/launcher" in left
-        assert "custom/pin-0" in left
-        assert left.index("custom/pin-0") == left.index("custom/launcher") + 1
+        assert "image#pin-0" in left
+        assert left.index("image#pin-0") == left.index("custom/launcher") + 1
 
     def test_pins_follow_launcher_in_center(self, tmp_path):
         tokens = _make_tokens(
@@ -144,10 +144,10 @@ class TestPinInjection:
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
         # Pins should be in modules-center, not modules-left
-        assert "custom/pin-0" not in config["modules-left"]
+        assert "image#pin-0" not in config["modules-left"]
         center = config["modules-center"]
-        assert center.index("custom/pin-0") == center.index("custom/launcher") + 1
-        assert center.index("custom/pin-1") == center.index("custom/launcher") + 2
+        assert center.index("image#pin-0") == center.index("custom/launcher") + 1
+        assert center.index("image#pin-1") == center.index("custom/launcher") + 2
 
     def test_pins_follow_launcher_in_end(self, tmp_path):
         tokens = _make_tokens(
@@ -161,9 +161,9 @@ class TestPinInjection:
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert "custom/pin-0" not in config["modules-left"]
+        assert "image#pin-0" not in config["modules-left"]
         right = config["modules-right"]
-        assert right.index("custom/pin-0") == right.index("custom/launcher") + 1
+        assert right.index("image#pin-0") == right.index("custom/launcher") + 1
 
     def test_pins_fallback_to_left_when_no_launcher(self, tmp_path):
         tokens = _make_tokens(
@@ -177,7 +177,7 @@ class TestPinInjection:
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert config["modules-left"][0] == "custom/pin-0"
+        assert config["modules-left"][0] == "image#pin-0"
 
     def test_no_pins_no_injection(self, tmp_path):
         tokens = _make_tokens(pinned=[])
