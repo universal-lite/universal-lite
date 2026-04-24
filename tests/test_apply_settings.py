@@ -58,6 +58,11 @@ def _make_tokens(**overrides):
         "accent_rgba_15": "rgba(53, 132, 228, 0.15)",
         "color_warning": "#e5a50a",
         "color_error": "#c01c28",
+        "panel_surface": "#1e1e1e",
+        "panel_fg": "#ffffff",
+        "panel_secondary_fg": "#9a9a9a",
+        "panel_hover": "rgba(255, 255, 255, 0.08)",
+        "panel_bar_inset": 4,
     }
     base.update(overrides)
     return base
@@ -339,3 +344,34 @@ class TestConfigChangeDetection:
             apply_settings.write_waybar_config(tokens)
             tokens["panel_height"] = 36
             assert apply_settings.write_waybar_config(tokens) is True
+
+
+# ---------------------------------------------------------------------------
+# ChromeOS design language — common CSS
+# ---------------------------------------------------------------------------
+
+class TestCommonCssDesign:
+    def test_common_has_launcher_circle(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        assert "border-radius: 50%" in css
+
+    def test_common_has_dot_indicator(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        assert "::after" in css
+        assert "width: 6px" in css
+        assert "width: 16px" in css
+
+    def test_common_has_transitions(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        assert "transition:" in css
+
+    def test_common_pill_radius_on_window(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        assert "border-radius: 999px" in css
+
+    def test_common_hover_on_modules(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        assert "#custom-launcher:hover" in css
+        assert "#clock:hover" in css
+        assert "#battery:hover" in css
+        assert "#pulseaudio:hover" in css

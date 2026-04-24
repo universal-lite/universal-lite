@@ -594,13 +594,9 @@ def ensure_settings() -> dict:
 
 def _waybar_css_common(tokens: dict) -> str:
     pr, pg, pb = _hex_to_rgb_tuple(tokens["panel_surface"])
+    fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
     m = tokens["panel_margin"]
-    inset = tokens["panel_bar_inset"]
     icon_sz = tokens["panel_icon_size"]
-    # Vertical bars still need a touch of side padding so module highlights
-    # never contact the outer rounded window; the per-module CSS then
-    # insets content from that small gutter.
-    bar_pad = f"padding: {inset}px {inset // 2}px;" if tokens["is_vertical"] else f"padding: 0 {inset}px;"
     return f"""\
 * {{
     font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
@@ -614,7 +610,6 @@ window#waybar {{
     color: {tokens["panel_fg"]};
     border-radius: 999px;
     margin: {m}px;
-    {bar_pad}
 }}
 
 /* Material Icons glyphs sized to match theme icons (standard {icon_sz}px) */
@@ -624,19 +619,52 @@ window#waybar {{
 }}
 
 #custom-launcher {{
-    border-radius: 999px;
+    border-radius: 50%;
+    background: rgba({fr}, {fg_}, {fb}, 0.08);
+    transition: background-color 200ms ease;
+}}
+#custom-launcher:hover {{
+    background: rgba({fr}, {fg_}, {fb}, 0.15);
 }}
 
-#custom-launcher:hover {{ background: {tokens["panel_hover"]}; }}
+#taskbar button {{
+    position: relative;
+    transition: background-color 200ms ease;
+}}
+
+#taskbar button::after {{
+    content: "";
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba({fr}, {fg_}, {fb}, 0.25);
+    transition: width 200ms ease, background-color 200ms ease;
+}}
+
+#taskbar button.active::after {{
+    width: 16px;
+    background: {tokens["accent_hex"]};
+}}
+
+#taskbar button:hover {{
+    background: {tokens["panel_hover"]};
+}}
 
 #battery.warning {{ color: {tokens["color_warning"]}; }}
 #battery.critical {{ color: {tokens["color_error"]}; }}
 #pulseaudio.muted {{ color: {tokens["panel_secondary_fg"]}; }}
 
+#clock, #battery, #backlight, #pulseaudio, #tray {{
+    transition: background-color 200ms ease;
+}}
+
 #clock:hover, #battery:hover, #backlight:hover,
-#pulseaudio:hover {{
+#pulseaudio:hover, #tray:hover {{
     background: {tokens["panel_hover"]};
-    border-radius: 999px;
 }}
 
 tooltip {{
