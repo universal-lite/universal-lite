@@ -478,7 +478,7 @@ class TestCommonCssDesign:
 
     def test_common_has_modern_floating_panel_frame(self):
         css = apply_settings._waybar_css_common(_make_tokens())
-        assert 'font-family: "Adwaita Sans", "Roboto"' in css
+        assert 'font-family: "Roboto", "Adwaita Sans"' in css
         assert "background: rgba(30, 30, 30, 0.90)" in css
         assert "border: 1px solid rgba(255, 255, 255, 0.14)" in css
 

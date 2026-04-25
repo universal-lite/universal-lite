@@ -627,7 +627,7 @@ def _waybar_css_common(tokens: dict) -> str:
     icon_sz = tokens["panel_icon_size"]
     return f"""\
 * {{
-    font-family: "Adwaita Sans", "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
+    font-family: "{tokens["font_ui"]}", "Adwaita Sans", "Material Icons Outlined", sans-serif;
     font-size: {tokens["font_size_ui"]}px;
     border: none;
 }}
