@@ -17,6 +17,7 @@ swap-status:
 # Switch memory strategy between zram (in-memory compression) and zswap
 # (zram + encrypted disk swap for overflow). The target user's wizard
 # picks one at install; this lets you change your mind later. Requires
+
 # a reboot to take effect.
 toggle-swap:
     #!/usr/bin/env bash

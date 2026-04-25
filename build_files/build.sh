@@ -473,6 +473,22 @@ rm -f /usr/share/applications/xfce4-panel.desktop \
 # so `ujust` doesn't list unreachable commands.
 dnf5 remove -y distrobox || true
 rm -f /usr/share/ublue-os/just/30-distrobox.just
+_ujust_tmp=$(mktemp)
+awk '
+    /^# Imports$/ {
+        print
+        exit
+    }
+    { print }
+' /usr/share/ublue-os/justfile > "$_ujust_tmp"
+find /usr/share/ublue-os/just -maxdepth 1 -type f -name '*.just' ! -name '60-custom.just' -printf '%f\n' \
+    | sort \
+    | while read -r _just_file; do
+        printf 'import "/usr/share/ublue-os/just/%s"\n' "$_just_file"
+    done >> "$_ujust_tmp"
+printf 'import? "/usr/share/ublue-os/just/60-custom.just"\n' >> "$_ujust_tmp"
+install -m 0644 "$_ujust_tmp" /usr/share/ublue-os/justfile
+rm -f "$_ujust_tmp"
 
 # Flatpak apps are installed by the first-boot service from Flathub —
 # not pre-installed in the image.  This keeps the raw image small for
