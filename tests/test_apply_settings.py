@@ -129,7 +129,7 @@ class TestPanelThemeTokens:
         tokens = apply_settings._build_tokens(_make_settings(theme="light"))
         assert tokens["panel_surface"] == "#fafafa"
         assert tokens["panel_fg"] == "#1e1e1e"
-        assert tokens["panel_alpha"] == "0.92"
+        assert tokens["panel_alpha"] == "0.90"
         assert tokens["panel_border"] == "rgba(30, 30, 30, 0.1)"
         assert tokens["panel_control_bg"] == "rgba(30, 30, 30, 0.1)"
         assert tokens["panel_control_hover"] == "rgba(30, 30, 30, 0.15)"

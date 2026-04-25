@@ -277,7 +277,7 @@ def _build_tokens(settings: dict) -> dict:
     panel_fg = _panel_pal["fg"]
     panel_secondary_fg = _panel_pal["secondary_fg"]
     panel_is_light = _is_light_color(panel_surface)
-    panel_alpha = "0.92" if panel_is_light else "0.90"
+    panel_alpha = "0.90"
     panel_border = _rgba_css(_panel_pal["fg"], 0.10 if panel_is_light else 0.14)
     panel_control_bg = _rgba_css(_panel_pal["fg"], 0.10 if panel_is_light else 0.10)
     panel_control_hover = _rgba_css(_panel_pal["fg"], 0.15 if panel_is_light else 0.16)
