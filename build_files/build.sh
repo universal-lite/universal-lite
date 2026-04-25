@@ -13,6 +13,7 @@ dnf5 install -y \
     "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-${FEDORA_MAJOR}.noarch.rpm"
 
 dnf5 install -y --setopt=install_weak_deps=False \
+    --disablerepo=fedora-multimedia \
     NetworkManager-libnm \
     NetworkManager-openvpn \
     NetworkManager-openvpn-gnome \
@@ -149,15 +150,18 @@ dnf5 install -y --setopt=install_weak_deps=False \
 # Fedora-default openh264-only stack, which can't play H.265/HEVC, VP9,
 # AV1-in-MKV, AC3/DTS audio, etc., and leaves GPU decode off on the
 # Chromebook's Intel iGPU (CPU-only decode at ~30% battery hit on a 2 GB
-# box). mesa-*-freeworld unlocks VA-API / VDPAU closed-codec paths in
-# mesa. gstreamer1-plugins-bad-freeworld + gstreamer1-plugins-ugly +
+# box). mesa-*-freeworld unlocks VA-API / VDPAU closed-codec paths in mesa.
+# Prefer RPM Fusion for the multimedia stack and explicitly avoid the base
+# image's negativo17 fedora-multimedia repo here, because its GStreamer
+# packages overlap with RPM Fusion freeworld packages and cause RPM file
+# conflicts. gstreamer1-plugins-bad-freeworld + gstreamer1-plugins-ugly +
 # gstreamer1-plugin-openh264 cover the broad gst-based playback surface
-# (tumbler thumbnailer, anything portal-based). ffmpeg-free is the full
-# ffmpeg stack (not the stripped libavcodec-free shipped by default).
-# Bluefin gets this story "for free" via GNOME's Videos/Celluloid Flatpaks
-# which bundle their own codecs; we play through the host stack so the
-# host stack has to be complete.
+# (tumbler thumbnailer, anything portal-based). ffmpeg-free is the full ffmpeg
+# stack (not the stripped libavcodec-free shipped by default). Bluefin gets this
+# story "for free" via GNOME's Videos/Celluloid Flatpaks which bundle their own
+# codecs; we play through the host stack so the host stack has to be complete.
 dnf5 install -y --setopt=install_weak_deps=False \
+    --disablerepo=fedora-multimedia \
     gstreamer1-plugins-ugly \
     gstreamer1-plugins-bad-freeworld \
     gstreamer1-plugin-openh264 \
