@@ -21,7 +21,8 @@ def _css() -> str:
 def test_start_menu_uses_waybar_aligned_theme_tokens():
     css = _css()
     assert 'font-family: "Roboto", "Adwaita Sans", sans-serif' in css
-    assert "background: alpha(@window_bg_color, 0.94)" in css
+    assert "background-color: alpha(@window_bg_color, 0.88)" in css
+    assert "background-color: transparent" in css
     assert "border-radius: 24px" in css
     assert "background: alpha(@window_fg_color, 0.08)" in css
     assert "background: alpha(@accent_color, 0.14)" in css

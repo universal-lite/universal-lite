@@ -114,10 +114,10 @@ CSS = b"""
 }
 
 window.app-menu {
-    background: transparent;
+    background-color: transparent;
 }
 .app-menu-surface {
-    background: alpha(@window_bg_color, 0.94);
+    background-color: alpha(@window_bg_color, 0.88);
     color: @window_fg_color;
     border-radius: 24px;
     border: 1px solid @borders;
