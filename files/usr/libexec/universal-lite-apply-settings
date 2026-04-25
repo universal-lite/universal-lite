@@ -643,6 +643,7 @@ window#waybar {{
 /* Material Icons glyphs sized to match theme icons (standard {icon_sz}px) */
 #custom-launcher,
 #pulseaudio, #backlight, #battery {{
+    font-family: "Material Icons Outlined", "{tokens["font_ui"]}", "Adwaita Sans", sans-serif;
     font-size: {icon_sz}px;
 }}
 

@@ -482,6 +482,16 @@ class TestCommonCssDesign:
         assert "background: rgba(30, 30, 30, 0.90)" in css
         assert "border: 1px solid rgba(255, 255, 255, 0.14)" in css
 
+    def test_icon_modules_force_material_icons_font(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        icon_block = re.search(
+            r"#custom-launcher,\n#pulseaudio, #backlight, #battery \{(?P<body>.*?)\n\}",
+            css,
+            re.S,
+        )
+        assert icon_block is not None
+        assert 'font-family: "Material Icons Outlined", "Roboto"' in icon_block.group("body")
+
 
 # ---------------------------------------------------------------------------
 # Horizontal CSS — pill consistency
