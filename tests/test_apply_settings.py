@@ -62,8 +62,15 @@ def _make_tokens(**overrides):
         "panel_surface": "#1e1e1e",
         "panel_fg": "#ffffff",
         "panel_secondary_fg": "#9a9a9a",
+        "panel_alpha": "0.90",
+        "panel_border": "rgba(255, 255, 255, 0.14)",
         "panel_control_bg": "rgba(255, 255, 255, 0.10)",
         "panel_control_hover": "rgba(255, 255, 255, 0.14)",
+        "panel_control_border": "rgba(255, 255, 255, 0.12)",
+        "panel_status_bg": "rgba(255, 255, 255, 0.14)",
+        "panel_status_border": "rgba(255, 255, 255, 0.18)",
+        "panel_accent_bg": "rgba(53, 132, 228, 0.26)",
+        "panel_accent_border": "rgba(53, 132, 228, 0.42)",
         "panel_bar_inset": 4,
     }
     base.update(overrides)
@@ -122,15 +129,25 @@ class TestPanelThemeTokens:
         tokens = apply_settings._build_tokens(_make_settings(theme="light"))
         assert tokens["panel_surface"] == "#fafafa"
         assert tokens["panel_fg"] == "#1e1e1e"
-        assert tokens["panel_control_bg"] == "rgba(30, 30, 30, 0.12)"
-        assert tokens["panel_control_hover"] == "rgba(30, 30, 30, 0.16)"
+        assert tokens["panel_alpha"] == "0.92"
+        assert tokens["panel_border"] == "rgba(30, 30, 30, 0.1)"
+        assert tokens["panel_control_bg"] == "rgba(30, 30, 30, 0.1)"
+        assert tokens["panel_control_hover"] == "rgba(30, 30, 30, 0.15)"
+        assert tokens["panel_status_bg"] == "rgba(30, 30, 30, 0.13)"
+        assert tokens["panel_status_border"] == "rgba(30, 30, 30, 0.14)"
+        assert tokens["panel_accent_bg"] == "rgba(53, 132, 228, 0.2)"
 
     def test_dark_theme_panel_controls_are_visible_neutral_tints(self):
         tokens = apply_settings._build_tokens(_make_settings(theme="dark"))
         assert tokens["panel_surface"] == "#222226"
         assert tokens["panel_fg"] == "#ffffff"
+        assert tokens["panel_alpha"] == "0.90"
+        assert tokens["panel_border"] == "rgba(255, 255, 255, 0.14)"
         assert tokens["panel_control_bg"] == "rgba(255, 255, 255, 0.1)"
-        assert tokens["panel_control_hover"] == "rgba(255, 255, 255, 0.14)"
+        assert tokens["panel_control_hover"] == "rgba(255, 255, 255, 0.16)"
+        assert tokens["panel_status_bg"] == "rgba(255, 255, 255, 0.14)"
+        assert tokens["panel_status_border"] == "rgba(255, 255, 255, 0.18)"
+        assert tokens["panel_accent_bg"] == "rgba(53, 132, 228, 0.26)"
 
     def test_twilight_panel_uses_opposite_theme_control_tints(self):
         tokens = apply_settings._build_tokens(
@@ -139,6 +156,7 @@ class TestPanelThemeTokens:
         assert tokens["panel_surface"] == "#222226"
         assert tokens["panel_fg"] == "#ffffff"
         assert tokens["panel_control_bg"] == "rgba(255, 255, 255, 0.1)"
+        assert tokens["panel_status_bg"] == "rgba(255, 255, 255, 0.14)"
 
 
 # ---------------------------------------------------------------------------
@@ -233,12 +251,17 @@ class TestVerticalCss:
         css = apply_settings._waybar_css_vertical(tokens)
         assert "border-radius: 999px" in css
 
-    def test_vertical_no_border_direction(self):
+    def test_vertical_active_state_avoids_edge_strip_indicator(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
-        css = apply_settings._waybar_css_vertical(tokens)
-        assert "border-right:" not in css
-        assert "border-left:" not in css
-        assert "border-bottom:" not in css
+        css = (
+            apply_settings._waybar_css_common(tokens)
+            + apply_settings._waybar_css_vertical(tokens)
+        )
+        active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
+        assert active is not None
+        assert "border-left:" not in active.group("body")
+        assert "border-right:" not in active.group("body")
+        assert "border-bottom:" not in active.group("body")
 
     def test_vertical_window_has_min_width(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
@@ -411,7 +434,8 @@ class TestCommonCssDesign:
     def test_common_has_active_taskbar_state(self):
         css = apply_settings._waybar_css_common(_make_tokens())
         assert "#taskbar button.active" in css
-        assert "rgba(53, 132, 228, 0.15)" in css
+        assert "rgba(53, 132, 228, 0.26)" in css
+        assert "rgba(53, 132, 228, 0.42)" in css
         assert "::after" not in css
 
     def test_common_avoids_unsupported_gtk_css(self):
@@ -421,6 +445,25 @@ class TestCommonCssDesign:
         assert "box-shadow:" not in css
         assert "position:" not in css
         assert "border-radius: 50%" not in css
+
+    def test_complete_css_avoids_unsupported_gtk_css(self):
+        for tokens, layout_css in (
+            (
+                _make_tokens(edge="bottom", is_vertical=False),
+                apply_settings._waybar_css_horizontal,
+            ),
+            (
+                _make_tokens(edge="left", is_vertical=True),
+                apply_settings._waybar_css_vertical,
+            ),
+        ):
+            css = apply_settings._waybar_css_common(tokens) + layout_css(tokens)
+            assert "::" not in css
+            assert "transition:" not in css
+            assert "box-shadow:" not in css
+            assert "position:" not in css
+            assert "border-radius: 50%" not in css
+            assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
 
     def test_common_pill_radius_on_window(self):
         css = apply_settings._waybar_css_common(_make_tokens())
@@ -432,6 +475,12 @@ class TestCommonCssDesign:
         assert "#clock:hover" in css
         assert "#battery:hover" in css
         assert "#pulseaudio:hover" in css
+
+    def test_common_has_modern_floating_panel_frame(self):
+        css = apply_settings._waybar_css_common(_make_tokens())
+        assert 'font-family: "Adwaita Sans", "Roboto"' in css
+        assert "background: rgba(30, 30, 30, 0.90)" in css
+        assert "border: 1px solid rgba(255, 255, 255, 0.14)" in css
 
 
 # ---------------------------------------------------------------------------
@@ -450,10 +499,15 @@ class TestHorizontalCss:
         assert "min-height:" in css
         assert "min-width:" not in css
 
-    def test_horizontal_no_border_bottom_active(self):
+    def test_horizontal_active_state_avoids_edge_strip_indicator(self):
         tokens = _make_tokens(edge="bottom")
-        css = apply_settings._waybar_css_horizontal(tokens)
-        assert "border-bottom:" not in css
+        css = (
+            apply_settings._waybar_css_common(tokens)
+            + apply_settings._waybar_css_horizontal(tokens)
+        )
+        active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
+        assert active is not None
+        assert "border-bottom:" not in active.group("body")
 
     def test_horizontal_window_padding_horizontal_only(self):
         tokens = _make_tokens(edge="bottom")
@@ -521,11 +575,14 @@ class TestStatusPillCss:
         tokens = _make_tokens(edge="bottom", is_vertical=False)
         css = apply_settings._waybar_css_horizontal(tokens)
         assert "#pulseaudio, #backlight, #battery, #clock" in css
-        assert "background: rgba(255, 255, 255, 0.10)" in css
+        assert "background: rgba(255, 255, 255, 0.14)" in css
+        assert "border-top: 1px solid rgba(255, 255, 255, 0.18)" in css
+        assert "border-bottom: 1px solid rgba(255, 255, 255, 0.18)" in css
         assert "border-top-left-radius: 999px" in css
         assert "border-bottom-left-radius: 999px" in css
         assert "border-top-right-radius: 999px" in css
         assert "border-bottom-right-radius: 999px" in css
+        assert "#tray" in css
         assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
         assert "margin-left: -10px" in css
 
@@ -533,10 +590,13 @@ class TestStatusPillCss:
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
         assert "#pulseaudio, #backlight, #battery, #clock" in css
-        assert "background: rgba(255, 255, 255, 0.10)" in css
+        assert "background: rgba(255, 255, 255, 0.14)" in css
+        assert "border-left: 1px solid rgba(255, 255, 255, 0.18)" in css
+        assert "border-right: 1px solid rgba(255, 255, 255, 0.18)" in css
         assert "border-top-left-radius: 999px" in css
         assert "border-top-right-radius: 999px" in css
         assert "border-bottom-left-radius: 999px" in css
         assert "border-bottom-right-radius: 999px" in css
+        assert "#tray" in css
         assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
         assert "margin-top: -10px" in css

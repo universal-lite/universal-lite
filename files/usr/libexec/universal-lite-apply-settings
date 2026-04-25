@@ -277,8 +277,15 @@ def _build_tokens(settings: dict) -> dict:
     panel_fg = _panel_pal["fg"]
     panel_secondary_fg = _panel_pal["secondary_fg"]
     panel_is_light = _is_light_color(panel_surface)
-    panel_control_bg = _rgba_css(_panel_pal["fg"], 0.12 if panel_is_light else 0.10)
-    panel_control_hover = _rgba_css(_panel_pal["fg"], 0.16 if panel_is_light else 0.14)
+    panel_alpha = "0.92" if panel_is_light else "0.90"
+    panel_border = _rgba_css(_panel_pal["fg"], 0.10 if panel_is_light else 0.14)
+    panel_control_bg = _rgba_css(_panel_pal["fg"], 0.10 if panel_is_light else 0.10)
+    panel_control_hover = _rgba_css(_panel_pal["fg"], 0.15 if panel_is_light else 0.16)
+    panel_control_border = _rgba_css(_panel_pal["fg"], 0.08 if panel_is_light else 0.12)
+    panel_status_bg = _rgba_css(_panel_pal["fg"], 0.13 if panel_is_light else 0.14)
+    panel_status_border = _rgba_css(_panel_pal["fg"], 0.14 if panel_is_light else 0.18)
+    panel_accent_bg = f"rgba({r}, {g}, {b}, {0.20 if panel_is_light else 0.26})"
+    panel_accent_border = f"rgba({r}, {g}, {b}, {0.34 if panel_is_light else 0.42})"
 
     return {
         **settings,
@@ -325,8 +332,15 @@ def _build_tokens(settings: dict) -> dict:
         "panel_surface": panel_surface,
         "panel_fg": panel_fg,
         "panel_secondary_fg": panel_secondary_fg,
+        "panel_alpha": panel_alpha,
+        "panel_border": panel_border,
         "panel_control_bg": panel_control_bg,
         "panel_control_hover": panel_control_hover,
+        "panel_control_border": panel_control_border,
+        "panel_status_bg": panel_status_bg,
+        "panel_status_border": panel_status_border,
+        "panel_accent_bg": panel_accent_bg,
+        "panel_accent_border": panel_accent_border,
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
@@ -613,14 +627,15 @@ def _waybar_css_common(tokens: dict) -> str:
     icon_sz = tokens["panel_icon_size"]
     return f"""\
 * {{
-    font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
+    font-family: "Adwaita Sans", "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
     font-size: {tokens["font_size_ui"]}px;
     border: none;
 }}
 
 window#waybar {{
-    background: rgba({pr}, {pg}, {pb}, 0.95);
+    background: rgba({pr}, {pg}, {pb}, {tokens["panel_alpha"]});
     color: {tokens["panel_fg"]};
+    border: 1px solid {tokens["panel_border"]};
     border-radius: 999px;
     margin: {m}px;
 }}
@@ -634,17 +649,20 @@ window#waybar {{
 #custom-launcher {{
     border-radius: 999px;
     background: {tokens["panel_control_bg"]};
+    border: 1px solid {tokens["panel_control_border"]};
 }}
 #custom-launcher:hover {{
     background: {tokens["panel_control_hover"]};
 }}
 
 #taskbar button.active {{
-    background: {tokens["accent_rgba_15"]};
+    background: {tokens["panel_accent_bg"]};
+    border: 1px solid {tokens["panel_accent_border"]};
 }}
 
 #taskbar button:hover {{
     background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_control_border"]};
 }}
 
 #battery.warning {{ color: {tokens["color_warning"]}; }}
@@ -692,8 +710,12 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     padding: 0 {pp}px;
     min-height: {h}px;
     border-radius: 999px;
+    border: 1px solid transparent;
 }}
-{hover_selectors} {{ background: {tokens["panel_control_hover"]}; }}
+{hover_selectors} {{
+    background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_control_border"]};
+}}
 """
 
     return f"""
@@ -705,9 +727,13 @@ window#waybar {{ padding: 0 {inset}px; }}
 #taskbar button {{
     padding: 0 {pp}px;
     border-radius: 999px;
+    border: 1px solid transparent;
     min-height: {h}px;
 }}
-#taskbar button:hover  {{ background: {tokens["panel_control_hover"]}; }}
+#taskbar button:hover {{
+    background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_control_border"]};
+}}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: 0 {pm}px;
@@ -717,11 +743,14 @@ window#waybar {{ padding: 0 {inset}px; }}
 #clock {{ font-weight: bold; }}
 
 #pulseaudio, #backlight, #battery, #clock {{
-    background: {tokens["panel_control_bg"]};
+    background: {tokens["panel_status_bg"]};
+    border-top: 1px solid {tokens["panel_status_border"]};
+    border-bottom: 1px solid {tokens["panel_status_border"]};
 }}
 #pulseaudio {{
     border-top-left-radius: 999px;
     border-bottom-left-radius: 999px;
+    border-left: 1px solid {tokens["panel_status_border"]};
 }}
 #backlight, #battery {{
     border-radius: 0;
@@ -730,7 +759,14 @@ window#waybar {{ padding: 0 {inset}px; }}
 #clock {{
     border-top-right-radius: 999px;
     border-bottom-right-radius: 999px;
+    border-right: 1px solid {tokens["panel_status_border"]};
     margin-left: -{spacing}px;
+}}
+
+#tray {{
+    background: {tokens["panel_control_bg"]};
+    border: 1px solid {tokens["panel_control_border"]};
+    border-radius: 999px;
 }}
 """
 
@@ -753,8 +789,12 @@ def _waybar_css_vertical(tokens: dict) -> str:
     min-width: {btn_w}px;
     min-height: {btn_w}px;
     border-radius: 999px;
+    border: 1px solid transparent;
 }}
-{hover_selectors} {{ background: {tokens["panel_control_hover"]}; }}
+{hover_selectors} {{
+    background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_control_border"]};
+}}
 """
 
     return f"""
@@ -770,10 +810,14 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 #taskbar button {{
     padding: {pm}px {inset}px;
     border-radius: 999px;
+    border: 1px solid transparent;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
 }}
-#taskbar button:hover  {{ background: {tokens["panel_control_hover"]}; }}
+#taskbar button:hover {{
+    background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_control_border"]};
+}}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: {pm}px {inset}px;
@@ -784,11 +828,14 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 #clock {{ font-weight: bold; }}
 
 #pulseaudio, #backlight, #battery, #clock {{
-    background: {tokens["panel_control_bg"]};
+    background: {tokens["panel_status_bg"]};
+    border-left: 1px solid {tokens["panel_status_border"]};
+    border-right: 1px solid {tokens["panel_status_border"]};
 }}
 #pulseaudio {{
     border-top-left-radius: 999px;
     border-top-right-radius: 999px;
+    border-top: 1px solid {tokens["panel_status_border"]};
 }}
 #backlight, #battery {{
     border-radius: 0;
@@ -797,7 +844,14 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 #clock {{
     border-bottom-left-radius: 999px;
     border-bottom-right-radius: 999px;
+    border-bottom: 1px solid {tokens["panel_status_border"]};
     margin-top: -{spacing}px;
+}}
+
+#tray {{
+    background: {tokens["panel_control_bg"]};
+    border: 1px solid {tokens["panel_control_border"]};
+    border-radius: 999px;
 }}
 """
 
