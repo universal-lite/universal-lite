@@ -105,53 +105,64 @@ POWER_ACTIONS = [
 ]
 
 # CSS - no libadwaita. Uses Adwaita colour vars so the menu tracks
-# whichever accent / theme apply-settings has set. The surface box
-# carries both the rounded corners and the drop shadow; the surface
-# needs enough room around it inside the (transparent) window for
-# the shadow to render without clipping, which is why the window is
-# larger than the surface and every content edge has a sizeable
-# margin.
+# whichever accent / theme apply-settings has set. The visual model
+# mirrors the Waybar shelf: a translucent Adwaita surface, neutral
+# control pods, accent focus, and ChromeOS-style rounded hit targets.
 CSS = b"""
+* {
+    font-family: "Roboto", "Adwaita Sans", sans-serif;
+}
+
 window.app-menu {
     background: transparent;
 }
 .app-menu-surface {
-    background: @window_bg_color;
+    background: alpha(@window_bg_color, 0.94);
     color: @window_fg_color;
-    /* 12 px matches libadwaita's $popover_radius - standard GNOME
-       popover corner. */
-    border-radius: 12px;
-    /* Subtle edge-definition line in both light and dark themes,
-       same approach Adwaita uses on popover contents. */
-    border: 1px solid alpha(@borders, 0.5);
-    /* Two-layer elevation shadow matching libadwaita's popover spec:
-       a tight near-shadow to anchor the edge, plus a broader ambient
-       shadow for depth. Total extent is ~12 px so it fits the
-       _SHADOW_PAD budget with no clipping on any side. */
+    border-radius: 24px;
+    border: 1px solid alpha(@window_fg_color, 0.12);
     box-shadow:
-        0 1px 2px 0 alpha(black, 0.12),
-        0 2px 8px 2px alpha(black, 0.14);
+        0 1px 2px 0 alpha(black, 0.18),
+        0 8px 24px 2px alpha(black, 0.22);
 }
 .app-menu-search {
     min-height: 36px;
-    padding: 2px 10px;
+    padding: 2px 12px;
     border-radius: 999px;
     font-size: 13px;
+    background: alpha(@window_fg_color, 0.08);
+    border: 1px solid alpha(@window_fg_color, 0.10);
+    box-shadow: none;
+}
+.app-menu-search:focus-within {
+    background: alpha(@accent_color, 0.14);
+    border: 1px solid alpha(@accent_color, 0.35);
 }
 /* Gtk.DropDown renders as a button - style the inner button to
    match the pill shape of the search entry so the two read as a
    paired control. */
 .app-menu-filter > button {
     border-radius: 999px;
-    padding: 4px 10px;
+    padding: 4px 12px;
     min-height: 36px;
+    background: alpha(@window_fg_color, 0.08);
+    border: 1px solid alpha(@window_fg_color, 0.10);
+    box-shadow: none;
+}
+.app-menu-filter > button:hover {
+    background: alpha(@window_fg_color, 0.14);
+}
+.app-menu-filter > button:checked,
+.app-menu-filter > button:focus {
+    background: alpha(@accent_color, 0.14);
+    border: 1px solid alpha(@accent_color, 0.35);
 }
 .app-menu-section-label {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
-    opacity: 0.55;
-    padding: 8px 4px 2px 4px;
+    color: alpha(@window_fg_color, 0.62);
+    padding: 10px 6px 3px 6px;
 }
 .app-menu-grid {
     background: transparent;
@@ -178,22 +189,24 @@ window.app-menu {
     box-shadow: none;
     outline: none;
 }
-/* Tiles are flat buttons - no border, no background, no stock shadow
-   - with their own hover/focus affordances that match Adwaita's
-   subtle tint patterns. */
+/* Tiles sit inside the translucent surface as quiet ChromeOS-style
+   launch targets. Resting tiles are almost flat; hover uses a neutral
+   shelf tint, while keyboard focus uses the configured accent. */
 .app-menu-tile {
-    background: transparent;
-    border: none;
+    background: alpha(@window_fg_color, 0.04);
+    border: 1px solid alpha(@window_fg_color, 0.06);
     box-shadow: none;
     padding: 6px 4px;
-    border-radius: 10px;
+    border-radius: 16px;
     min-width: 88px;
 }
 .app-menu-tile:hover {
-    background: alpha(@accent_color, 0.12);
+    background: alpha(@window_fg_color, 0.10);
+    border: 1px solid alpha(@window_fg_color, 0.12);
 }
 .app-menu-tile:focus {
     background: alpha(@accent_color, 0.18);
+    border: 1px solid alpha(@accent_color, 0.38);
     outline: none;
 }
 .app-menu-tile-name {
@@ -202,25 +215,29 @@ window.app-menu {
 }
 .app-menu-tile-generic {
     font-size: 9px;
-    opacity: 0.6;
+    color: alpha(@window_fg_color, 0.64);
 }
 .app-menu-power-bar {
-    padding: 6px 4px 2px 4px;
-    border-top: 1px solid alpha(@borders, 0.6);
-    margin-top: 4px;
+    padding: 8px 4px 0 4px;
+    border-top: 1px solid alpha(@window_fg_color, 0.10);
+    margin-top: 6px;
 }
 .app-menu-power-btn {
     min-width: 40px;
     min-height: 40px;
     padding: 0;
     border-radius: 999px;
-    background: transparent;
+    background: alpha(@window_fg_color, 0.06);
+    border: 1px solid alpha(@window_fg_color, 0.08);
+    box-shadow: none;
 }
 .app-menu-power-btn:hover {
-    background: alpha(@accent_color, 0.15);
+    background: alpha(@window_fg_color, 0.14);
+    border: 1px solid alpha(@window_fg_color, 0.14);
 }
 .app-menu-power-btn.destructive:hover {
     background: alpha(@error_color, 0.18);
+    border: 1px solid alpha(@error_color, 0.35);
 }
 .app-menu-confirm-label {
     font-size: 12px;
@@ -231,6 +248,9 @@ window.app-menu {
     padding: 4px 14px;
     min-height: 32px;
     font-size: 12px;
+    background: alpha(@window_fg_color, 0.08);
+    border: 1px solid alpha(@window_fg_color, 0.10);
+    box-shadow: none;
 }
 .app-menu-confirm-btn.ok {
     background: @error_color;
