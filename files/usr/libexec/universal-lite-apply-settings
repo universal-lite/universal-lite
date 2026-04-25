@@ -632,22 +632,8 @@ window#waybar {{
     transition: background-color 200ms ease;
 }}
 
-#taskbar button::after {{
-    content: "";
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 3px;
-    border-radius: 2px;
-    background: rgba({fr}, {fg_}, {fb}, 0.25);
-    transition: width 200ms ease, background-color 200ms ease;
-}}
-
-#taskbar button.active::after {{
-    width: 16px;
-    background: {tokens["accent_hex"]};
+#taskbar button.active {{
+    background: {tokens["accent_rgba_15"]};
 }}
 
 #taskbar button:hover {{
@@ -691,6 +677,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     pm = tokens["panel_pad_module"]
     pp = tokens["panel_pad_pin"]
     inset = tokens["panel_bar_inset"]
+    spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
     fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
 
@@ -727,19 +714,19 @@ window#waybar {{ padding: 0 {inset}px; }}
 
 #clock {{ font-weight: bold; }}
 
-#status {{
+#pulseaudio, #backlight, #battery, #clock {{
     background: rgba({fr}, {fg_}, {fb}, 0.06);
-    border-radius: 999px;
-    padding: 0 4px;
 }}
-#status > * {{
-    background: transparent;
-    border-radius: 999px;
-    transition: background-color 200ms ease;
+#pulseaudio {{
+    border-radius: 999px 0 0 999px;
 }}
-#status > *:hover {{
-    background: rgba({fr}, {fg_}, {fb}, 0.08);
-    border-radius: 999px;
+#backlight, #battery {{
+    border-radius: 0;
+    margin-left: -{spacing}px;
+}}
+#clock {{
+    border-radius: 0 999px 999px 0;
+    margin-left: -{spacing}px;
 }}
 """
 
@@ -748,6 +735,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     w = tokens["panel_width"]
     pm = tokens["panel_pad_module"]
     inset = tokens["panel_bar_inset"]
+    spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
     btn_w = max(w - 2 * inset, 16)
     fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
@@ -792,19 +780,19 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 
 #clock {{ font-weight: bold; }}
 
-#status {{
+#pulseaudio, #backlight, #battery, #clock {{
     background: rgba({fr}, {fg_}, {fb}, 0.06);
-    border-radius: 999px;
-    padding: 4px 0;
 }}
-#status > * {{
-    background: transparent;
-    border-radius: 999px;
-    transition: background-color 200ms ease;
+#pulseaudio {{
+    border-radius: 999px 999px 0 0;
 }}
-#status > *:hover {{
-    background: rgba({fr}, {fg_}, {fb}, 0.08);
-    border-radius: 999px;
+#backlight, #battery {{
+    border-radius: 0;
+    margin-top: -{spacing}px;
+}}
+#clock {{
+    border-radius: 0 0 999px 999px;
+    margin-top: -{spacing}px;
 }}
 """
 
@@ -844,25 +832,6 @@ def write_waybar_config(tokens: dict) -> bool:
                 break
         if not injected:
             modules_left[:0] = pin_ids
-
-    STATUS_MODULES = frozenset(["pulseaudio", "backlight", "battery", "clock"])
-    all_modules_flat = modules_left + modules_center + modules_right
-    status_in_layout = [m for m in all_modules_flat if m in STATUS_MODULES]
-
-    if status_in_layout:
-        def _inject_status_group(mlist):
-            indices = [i for i, m in enumerate(mlist) if m in STATUS_MODULES]
-            if not indices:
-                return mlist
-            first, last = indices[0], indices[-1]
-            between = mlist[first:last + 1]
-            if any(m not in STATUS_MODULES for m in between):
-                return mlist
-            return mlist[:first] + ["group/status"] + mlist[last + 1:]
-
-        modules_left = _inject_status_group(modules_left)
-        modules_center = _inject_status_group(modules_center)
-        modules_right = _inject_status_group(modules_right)
 
     config: dict = {
         "layer": "top",
@@ -975,13 +944,6 @@ def write_waybar_config(tokens: dict) -> bool:
         "icon-size": icon_size,
         "spacing": 8,
     }
-
-    all_modules_after_grouping = modules_left + modules_center + modules_right
-    if "group/status" in all_modules_after_grouping:
-        config["group/status"] = {
-            "orientation": "vertical" if is_vertical else "horizontal",
-            "modules": status_in_layout,
-        }
 
     # Generate image#pin-N modules for each pinned app.
     # Using waybar's built-in image module (not custom with format={icon},

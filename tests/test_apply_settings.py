@@ -378,11 +378,11 @@ class TestCommonCssDesign:
         css = apply_settings._waybar_css_common(_make_tokens())
         assert "border-radius: 50%" in css
 
-    def test_common_has_dot_indicator(self):
+    def test_common_has_active_taskbar_state(self):
         css = apply_settings._waybar_css_common(_make_tokens())
-        assert "::after" in css
-        assert "width: 6px" in css
-        assert "width: 16px" in css
+        assert "#taskbar button.active" in css
+        assert "rgba(53, 132, 228, 0.15)" in css
+        assert "::after" not in css
 
     def test_common_has_transitions(self):
         css = apply_settings._waybar_css_common(_make_tokens())
@@ -441,48 +441,31 @@ class TestHorizontalCss:
 
 
 # ---------------------------------------------------------------------------
-# group/status module
+# Waybar module compatibility
 # ---------------------------------------------------------------------------
 
-class TestStatusGroup:
-    def test_group_status_in_config(self, tmp_path):
+class TestWaybarModuleCompatibility:
+    def test_config_does_not_use_group_module(self, tmp_path):
         tokens = _make_tokens()
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert "group/status" in config
+        assert "group/status" not in config
 
-    def test_group_status_orientation_horizontal(self, tmp_path):
-        tokens = _make_tokens(edge="bottom", is_vertical=False)
-        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
-            apply_settings.write_waybar_config(tokens)
-        config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert config["group/status"]["orientation"] == "horizontal"
-
-    def test_group_status_orientation_vertical(self, tmp_path):
-        tokens = _make_tokens(edge="left", is_vertical=True)
-        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
-            apply_settings.write_waybar_config(tokens)
-        config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert config["group/status"]["orientation"] == "vertical"
-
-    def test_status_modules_in_group(self, tmp_path):
+    def test_status_modules_remain_direct_modules(self, tmp_path):
         tokens = _make_tokens()
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
-        modules = config["group/status"]["modules"]
+        modules = (
+            config["modules-left"]
+            + config["modules-center"]
+            + config["modules-right"]
+        )
         for m in ["pulseaudio", "backlight", "battery", "clock"]:
             assert m in modules
 
-    def test_tray_not_in_group(self, tmp_path):
-        tokens = _make_tokens()
-        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
-            apply_settings.write_waybar_config(tokens)
-        config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert "tray" not in config["group/status"]["modules"]
-
-    def test_module_list_uses_group_not_individual(self, tmp_path):
+    def test_tray_remains_direct_module(self, tmp_path):
         tokens = _make_tokens()
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
@@ -492,61 +475,26 @@ class TestStatusGroup:
             + config["modules-center"]
             + config["modules-right"]
         )
-        for m in ["pulseaudio", "backlight", "battery", "clock"]:
-            assert m not in all_modules
-        assert "group/status" in all_modules
-
-    def test_no_group_when_no_status_modules(self, tmp_path):
-        tokens = _make_tokens(
-            layout={
-                "start": ["custom/launcher"],
-                "center": ["wlr/taskbar"],
-                "end": ["custom/power", "tray"],
-            },
-        )
-        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
-            apply_settings.write_waybar_config(tokens)
-        config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert "group/status" not in config
-
-    def test_no_group_when_status_modules_not_contiguous(self, tmp_path):
-        tokens = _make_tokens(layout={
-            "start": ["custom/launcher"],
-            "center": ["wlr/taskbar"],
-            "end": ["pulseaudio", "tray", "battery", "clock"],
-        })
-        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
-            apply_settings.write_waybar_config(tokens)
-        config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert "group/status" not in config
-        all_modules = config["modules-left"] + config["modules-center"] + config["modules-right"]
-        assert "pulseaudio" in all_modules
-        assert "battery" in all_modules
+        assert "tray" in all_modules
 
 
 # ---------------------------------------------------------------------------
-# Grouped status pill CSS
+# Faux grouped status pill CSS
 # ---------------------------------------------------------------------------
 
-class TestGroupedPillCss:
-    def test_horizontal_group_pill_background(self):
-        tokens = _make_tokens()
+class TestStatusPillCss:
+    def test_horizontal_status_modules_share_background(self):
+        tokens = _make_tokens(edge="bottom", is_vertical=False)
         css = apply_settings._waybar_css_horizontal(tokens)
-        assert "#status" in css
-        assert "#status > *" in css
+        assert "#pulseaudio, #backlight, #battery, #clock" in css
+        assert "border-radius: 999px 0 0 999px" in css
+        assert "border-radius: 0 999px 999px 0" in css
+        assert "margin-left: -10px" in css
 
-    def test_vertical_group_pill_background(self):
+    def test_vertical_status_modules_stack_as_pill(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
-        assert "#status" in css
-        assert "#status > *" in css
-
-    def test_group_has_transparent_children(self):
-        tokens = _make_tokens()
-        css = apply_settings._waybar_css_horizontal(tokens)
-        assert "background: transparent" in css
-
-    def test_group_children_hover(self):
-        tokens = _make_tokens()
-        css = apply_settings._waybar_css_horizontal(tokens)
-        assert "#status > *:hover" in css
+        assert "#pulseaudio, #backlight, #battery, #clock" in css
+        assert "border-radius: 999px 999px 0 0" in css
+        assert "border-radius: 0 0 999px 999px" in css
+        assert "margin-top: -10px" in css
