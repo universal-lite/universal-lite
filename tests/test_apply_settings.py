@@ -4,6 +4,7 @@ import importlib.machinery
 import importlib.util
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -374,9 +375,9 @@ class TestConfigChangeDetection:
 # ---------------------------------------------------------------------------
 
 class TestCommonCssDesign:
-    def test_common_has_launcher_circle(self):
+    def test_common_has_launcher_pill(self):
         css = apply_settings._waybar_css_common(_make_tokens())
-        assert "border-radius: 50%" in css
+        assert "border-radius: 999px" in css
 
     def test_common_has_active_taskbar_state(self):
         css = apply_settings._waybar_css_common(_make_tokens())
@@ -384,9 +385,13 @@ class TestCommonCssDesign:
         assert "rgba(53, 132, 228, 0.15)" in css
         assert "::after" not in css
 
-    def test_common_has_transitions(self):
+    def test_common_avoids_unsupported_gtk_css(self):
         css = apply_settings._waybar_css_common(_make_tokens())
-        assert "transition:" in css
+        assert "::" not in css
+        assert "transition:" not in css
+        assert "box-shadow:" not in css
+        assert "position:" not in css
+        assert "border-radius: 50%" not in css
 
     def test_common_pill_radius_on_window(self):
         css = apply_settings._waybar_css_common(_make_tokens())
@@ -487,14 +492,20 @@ class TestStatusPillCss:
         tokens = _make_tokens(edge="bottom", is_vertical=False)
         css = apply_settings._waybar_css_horizontal(tokens)
         assert "#pulseaudio, #backlight, #battery, #clock" in css
-        assert "border-radius: 999px 0 0 999px" in css
-        assert "border-radius: 0 999px 999px 0" in css
+        assert "border-top-left-radius: 999px" in css
+        assert "border-bottom-left-radius: 999px" in css
+        assert "border-top-right-radius: 999px" in css
+        assert "border-bottom-right-radius: 999px" in css
+        assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
         assert "margin-left: -10px" in css
 
     def test_vertical_status_modules_stack_as_pill(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
         assert "#pulseaudio, #backlight, #battery, #clock" in css
-        assert "border-radius: 999px 999px 0 0" in css
-        assert "border-radius: 0 0 999px 999px" in css
+        assert "border-top-left-radius: 999px" in css
+        assert "border-top-right-radius: 999px" in css
+        assert "border-bottom-left-radius: 999px" in css
+        assert "border-bottom-right-radius: 999px" in css
+        assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
         assert "margin-top: -10px" in css

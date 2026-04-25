@@ -602,7 +602,6 @@ def _waybar_css_common(tokens: dict) -> str:
     font-family: "{tokens["font_ui"]}", "Material Icons Outlined", sans-serif;
     font-size: {tokens["font_size_ui"]}px;
     border: none;
-    box-shadow: none;
 }}
 
 window#waybar {{
@@ -619,17 +618,11 @@ window#waybar {{
 }}
 
 #custom-launcher {{
-    border-radius: 50%;
+    border-radius: 999px;
     background: rgba({fr}, {fg_}, {fb}, 0.08);
-    transition: background-color 200ms ease;
 }}
 #custom-launcher:hover {{
     background: rgba({fr}, {fg_}, {fb}, 0.15);
-}}
-
-#taskbar button {{
-    position: relative;
-    transition: background-color 200ms ease;
 }}
 
 #taskbar button.active {{
@@ -643,10 +636,6 @@ window#waybar {{
 #battery.warning {{ color: {tokens["color_warning"]}; }}
 #battery.critical {{ color: {tokens["color_error"]}; }}
 #pulseaudio.muted {{ color: {tokens["panel_secondary_fg"]}; }}
-
-#clock, #battery, #backlight, #pulseaudio, #tray {{
-    transition: background-color 200ms ease;
-}}
 
 #clock:hover, #battery:hover, #backlight:hover,
 #pulseaudio:hover, #tray:hover {{
@@ -718,14 +707,16 @@ window#waybar {{ padding: 0 {inset}px; }}
     background: rgba({fr}, {fg_}, {fb}, 0.06);
 }}
 #pulseaudio {{
-    border-radius: 999px 0 0 999px;
+    border-top-left-radius: 999px;
+    border-bottom-left-radius: 999px;
 }}
 #backlight, #battery {{
     border-radius: 0;
     margin-left: -{spacing}px;
 }}
 #clock {{
-    border-radius: 0 999px 999px 0;
+    border-top-right-radius: 999px;
+    border-bottom-right-radius: 999px;
     margin-left: -{spacing}px;
 }}
 """
@@ -784,14 +775,16 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
     background: rgba({fr}, {fg_}, {fb}, 0.06);
 }}
 #pulseaudio {{
-    border-radius: 999px 999px 0 0;
+    border-top-left-radius: 999px;
+    border-top-right-radius: 999px;
 }}
 #backlight, #battery {{
     border-radius: 0;
     margin-top: -{spacing}px;
 }}
 #clock {{
-    border-radius: 0 0 999px 999px;
+    border-bottom-left-radius: 999px;
+    border-bottom-right-radius: 999px;
     margin-top: -{spacing}px;
 }}
 """
