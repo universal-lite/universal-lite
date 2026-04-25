@@ -14,8 +14,8 @@ application/vnd.flatpak.ref=io.github.kolunmi.Bazaar.desktop
 application/vnd.appimage=noop.desktop
 
 # Text and source code open in Mousepad.
-text/plain=mousepad.desktop
-text/x-python=mousepad.desktop
+text/plain=org.xfce.mousepad.desktop
+text/x-python=org.xfce.mousepad.desktop
 
 # HTML and http/https schemes open in Chrome.
 text/html=com.google.Chrome.desktop
