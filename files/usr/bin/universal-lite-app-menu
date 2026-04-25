@@ -104,10 +104,19 @@ POWER_ACTIONS = [
     ("Shut Down", "system-shutdown",    ["systemctl", "poweroff"]),
 ]
 
+
+def _shell_theme_class(settings: dict) -> str | None:
+    """Return the menu palette override needed to match panel twilight."""
+    if not settings.get("panel_twilight", False):
+        return None
+    return "app-menu-shell-dark" if settings.get("theme") == "light" else "app-menu-shell-light"
+
 # CSS - no libadwaita. Uses Adwaita colour vars so the menu tracks
-# whichever accent / theme apply-settings has set. The visual model
-# mirrors the Waybar shelf: a translucent Adwaita surface, neutral
-# control pods, accent focus, and ChromeOS-style rounded hit targets.
+# whichever accent / theme apply-settings has set. Twilight classes
+# intentionally override those vars so the menu matches the opposite-
+# palette Waybar shelf. The visual model mirrors the shelf: a
+# translucent Adwaita surface, neutral control pods, accent focus, and
+# ChromeOS-style rounded hit targets.
 CSS = b"""
 * {
     font-family: "Roboto", "Adwaita Sans", sans-serif;
@@ -258,6 +267,124 @@ window.app-menu {
 }
 .app-menu-confirm-btn.ok:hover {
     background: shade(@error_color, 1.08);
+}
+
+window.app-menu.app-menu-shell-dark .app-menu-surface {
+    background-color: rgba(34, 34, 38, 0.90);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+window.app-menu.app-menu-shell-dark .app-menu-search,
+window.app-menu.app-menu-shell-dark .app-menu-filter > button,
+window.app-menu.app-menu-shell-dark .app-menu-confirm-btn {
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+window.app-menu.app-menu-shell-dark .app-menu-filter > button:hover,
+window.app-menu.app-menu-shell-dark .app-menu-power-btn:hover,
+window.app-menu.app-menu-shell-dark .app-menu-confirm-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+window.app-menu.app-menu-shell-dark .app-menu-search:focus-within,
+window.app-menu.app-menu-shell-dark .app-menu-filter > button:checked,
+window.app-menu.app-menu-shell-dark .app-menu-filter > button:focus {
+    background: alpha(@accent_color, 0.14);
+    border: 1px solid alpha(@accent_color, 0.35);
+}
+window.app-menu.app-menu-shell-dark .app-menu-section-label {
+    color: rgba(255, 255, 255, 0.70);
+}
+window.app-menu.app-menu-shell-dark .app-menu-tile {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+window.app-menu.app-menu-shell-dark .app-menu-tile:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+window.app-menu.app-menu-shell-dark .app-menu-tile:focus {
+    background: alpha(@accent_color, 0.18);
+    border: 1px solid alpha(@accent_color, 0.38);
+}
+window.app-menu.app-menu-shell-dark .app-menu-tile-generic {
+    color: rgba(255, 255, 255, 0.72);
+}
+window.app-menu.app-menu-shell-dark .app-menu-power-bar {
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+window.app-menu.app-menu-shell-dark .app-menu-power-btn {
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+window.app-menu.app-menu-shell-dark .app-menu-power-btn.destructive:hover {
+    background: alpha(@error_color, 0.18);
+    border: 1px solid alpha(@error_color, 0.35);
+}
+window.app-menu.app-menu-shell-dark .app-menu-confirm-btn.ok,
+window.app-menu.app-menu-shell-dark .app-menu-confirm-btn.ok:hover {
+    background: @error_color;
+    color: white;
+}
+
+window.app-menu.app-menu-shell-light .app-menu-surface {
+    background-color: rgba(250, 250, 250, 0.90);
+    color: #1e1e1e;
+    border: 1px solid rgba(30, 30, 30, 0.10);
+}
+window.app-menu.app-menu-shell-light .app-menu-search,
+window.app-menu.app-menu-shell-light .app-menu-filter > button,
+window.app-menu.app-menu-shell-light .app-menu-confirm-btn {
+    background: rgba(30, 30, 30, 0.10);
+    color: #1e1e1e;
+    border: 1px solid rgba(30, 30, 30, 0.08);
+}
+window.app-menu.app-menu-shell-light .app-menu-filter > button:hover,
+window.app-menu.app-menu-shell-light .app-menu-power-btn:hover,
+window.app-menu.app-menu-shell-light .app-menu-confirm-btn:hover {
+    background: rgba(30, 30, 30, 0.15);
+}
+window.app-menu.app-menu-shell-light .app-menu-search:focus-within,
+window.app-menu.app-menu-shell-light .app-menu-filter > button:checked,
+window.app-menu.app-menu-shell-light .app-menu-filter > button:focus {
+    background: alpha(@accent_color, 0.14);
+    border: 1px solid alpha(@accent_color, 0.35);
+}
+window.app-menu.app-menu-shell-light .app-menu-section-label {
+    color: rgba(30, 30, 30, 0.70);
+}
+window.app-menu.app-menu-shell-light .app-menu-tile {
+    background: rgba(30, 30, 30, 0.04);
+    border: 1px solid rgba(30, 30, 30, 0.05);
+}
+window.app-menu.app-menu-shell-light .app-menu-tile:hover {
+    background: rgba(30, 30, 30, 0.10);
+    border: 1px solid rgba(30, 30, 30, 0.10);
+}
+window.app-menu.app-menu-shell-light .app-menu-tile:focus {
+    background: alpha(@accent_color, 0.18);
+    border: 1px solid alpha(@accent_color, 0.38);
+}
+window.app-menu.app-menu-shell-light .app-menu-tile-generic {
+    color: rgba(30, 30, 30, 0.72);
+}
+window.app-menu.app-menu-shell-light .app-menu-power-bar {
+    border-top: 1px solid rgba(30, 30, 30, 0.10);
+}
+window.app-menu.app-menu-shell-light .app-menu-power-btn {
+    background: rgba(30, 30, 30, 0.10);
+    color: #1e1e1e;
+    border: 1px solid rgba(30, 30, 30, 0.08);
+}
+window.app-menu.app-menu-shell-light .app-menu-power-btn.destructive:hover {
+    background: alpha(@error_color, 0.18);
+    border: 1px solid alpha(@error_color, 0.35);
+}
+window.app-menu.app-menu-shell-light .app-menu-confirm-btn.ok,
+window.app-menu.app-menu-shell-light .app-menu-confirm-btn.ok:hover {
+    background: @error_color;
+    color: white;
 }
 """
 
@@ -438,7 +565,12 @@ class AppMenu(Gtk.Window):
         self.add_css_class("app-menu")
         self.set_decorated(False)
 
-        self._geom = _panel_geometry(_load_settings())
+        settings = _load_settings()
+        shell_class = _shell_theme_class(settings)
+        if shell_class:
+            self.add_css_class(shell_class)
+
+        self._geom = _panel_geometry(settings)
         self._edge = self._geom["edge"]
         self._setup_surface(self._edge)
 
