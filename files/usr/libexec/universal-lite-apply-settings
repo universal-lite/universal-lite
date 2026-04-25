@@ -220,6 +220,18 @@ def _rgba_css(color: str, opacity: float) -> str:
     return f"rgba({r}, {g}, {b}, {opacity})"
 
 
+def _is_light_color(color: str) -> bool:
+    """Return True when color is visually closer to a light surface."""
+    r, g, b = _hex_to_rgb_tuple(color)
+
+    def channel(c: int) -> float:
+        v = c / 255
+        return v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
+
+    luminance = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+    return luminance > 0.5
+
+
 def _build_tokens(settings: dict) -> dict:
     """Build the full design token dict from validated settings."""
     palette = ADWAITA[settings["theme"]]
@@ -264,7 +276,9 @@ def _build_tokens(settings: dict) -> dict:
     panel_surface = _panel_pal["window_bg"]
     panel_fg = _panel_pal["fg"]
     panel_secondary_fg = _panel_pal["secondary_fg"]
-    panel_hover = _rgba_css(_panel_pal["fg"], 0.08)
+    panel_is_light = _is_light_color(panel_surface)
+    panel_control_bg = _rgba_css(_panel_pal["fg"], 0.12 if panel_is_light else 0.10)
+    panel_control_hover = _rgba_css(_panel_pal["fg"], 0.16 if panel_is_light else 0.14)
 
     return {
         **settings,
@@ -311,7 +325,8 @@ def _build_tokens(settings: dict) -> dict:
         "panel_surface": panel_surface,
         "panel_fg": panel_fg,
         "panel_secondary_fg": panel_secondary_fg,
-        "panel_hover": panel_hover,
+        "panel_control_bg": panel_control_bg,
+        "panel_control_hover": panel_control_hover,
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
@@ -594,7 +609,6 @@ def ensure_settings() -> dict:
 
 def _waybar_css_common(tokens: dict) -> str:
     pr, pg, pb = _hex_to_rgb_tuple(tokens["panel_surface"])
-    fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
     m = tokens["panel_margin"]
     icon_sz = tokens["panel_icon_size"]
     return f"""\
@@ -619,10 +633,10 @@ window#waybar {{
 
 #custom-launcher {{
     border-radius: 999px;
-    background: rgba({fr}, {fg_}, {fb}, 0.08);
+    background: {tokens["panel_control_bg"]};
 }}
 #custom-launcher:hover {{
-    background: rgba({fr}, {fg_}, {fb}, 0.15);
+    background: {tokens["panel_control_hover"]};
 }}
 
 #taskbar button.active {{
@@ -630,7 +644,7 @@ window#waybar {{
 }}
 
 #taskbar button:hover {{
-    background: {tokens["panel_hover"]};
+    background: {tokens["panel_control_hover"]};
 }}
 
 #battery.warning {{ color: {tokens["color_warning"]}; }}
@@ -639,7 +653,7 @@ window#waybar {{
 
 #clock:hover, #battery:hover, #backlight:hover,
 #pulseaudio:hover, #tray:hover {{
-    background: {tokens["panel_hover"]};
+    background: {tokens["panel_control_hover"]};
 }}
 
 tooltip {{
@@ -668,7 +682,6 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     inset = tokens["panel_bar_inset"]
     spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
-    fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
 
     pin_css = ""
     if pinned:
@@ -680,7 +693,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     min-height: {h}px;
     border-radius: 999px;
 }}
-{hover_selectors} {{ background: {tokens["panel_hover"]}; }}
+{hover_selectors} {{ background: {tokens["panel_control_hover"]}; }}
 """
 
     return f"""
@@ -694,7 +707,7 @@ window#waybar {{ padding: 0 {inset}px; }}
     border-radius: 999px;
     min-height: {h}px;
 }}
-#taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
+#taskbar button:hover  {{ background: {tokens["panel_control_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: 0 {pm}px;
@@ -704,7 +717,7 @@ window#waybar {{ padding: 0 {inset}px; }}
 #clock {{ font-weight: bold; }}
 
 #pulseaudio, #backlight, #battery, #clock {{
-    background: rgba({fr}, {fg_}, {fb}, 0.06);
+    background: {tokens["panel_control_bg"]};
 }}
 #pulseaudio {{
     border-top-left-radius: 999px;
@@ -729,7 +742,6 @@ def _waybar_css_vertical(tokens: dict) -> str:
     spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
     btn_w = max(w - 2 * inset, 16)
-    fr, fg_, fb = _hex_to_rgb_tuple(tokens["panel_fg"])
 
     pin_css = ""
     if pinned:
@@ -742,7 +754,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     min-height: {btn_w}px;
     border-radius: 999px;
 }}
-{hover_selectors} {{ background: {tokens["panel_hover"]}; }}
+{hover_selectors} {{ background: {tokens["panel_control_hover"]}; }}
 """
 
     return f"""
@@ -761,7 +773,7 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
     min-width: {btn_w}px;
     min-height: {btn_w}px;
 }}
-#taskbar button:hover  {{ background: {tokens["panel_hover"]}; }}
+#taskbar button:hover  {{ background: {tokens["panel_control_hover"]}; }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: {pm}px {inset}px;
@@ -772,7 +784,7 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 #clock {{ font-weight: bold; }}
 
 #pulseaudio, #backlight, #battery, #clock {{
-    background: rgba({fr}, {fg_}, {fb}, 0.06);
+    background: {tokens["panel_control_bg"]};
 }}
 #pulseaudio {{
     border-top-left-radius: 999px;

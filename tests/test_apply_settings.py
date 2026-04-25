@@ -62,7 +62,8 @@ def _make_tokens(**overrides):
         "panel_surface": "#1e1e1e",
         "panel_fg": "#ffffff",
         "panel_secondary_fg": "#9a9a9a",
-        "panel_hover": "rgba(255, 255, 255, 0.08)",
+        "panel_control_bg": "rgba(255, 255, 255, 0.10)",
+        "panel_control_hover": "rgba(255, 255, 255, 0.14)",
         "panel_bar_inset": 4,
     }
     base.update(overrides)
@@ -110,6 +111,34 @@ def _run_ensure_settings(data, tmp_path):
     with patch.object(apply_settings, "SETTINGS_DIR", tmp_path), \
          patch.object(apply_settings, "SETTINGS_PATH", settings_file):
         return apply_settings.ensure_settings()
+
+
+# ---------------------------------------------------------------------------
+# Theme-derived panel colors
+# ---------------------------------------------------------------------------
+
+class TestPanelThemeTokens:
+    def test_light_theme_panel_controls_are_visible_neutral_tints(self):
+        tokens = apply_settings._build_tokens(_make_settings(theme="light"))
+        assert tokens["panel_surface"] == "#fafafa"
+        assert tokens["panel_fg"] == "#1e1e1e"
+        assert tokens["panel_control_bg"] == "rgba(30, 30, 30, 0.12)"
+        assert tokens["panel_control_hover"] == "rgba(30, 30, 30, 0.16)"
+
+    def test_dark_theme_panel_controls_are_visible_neutral_tints(self):
+        tokens = apply_settings._build_tokens(_make_settings(theme="dark"))
+        assert tokens["panel_surface"] == "#222226"
+        assert tokens["panel_fg"] == "#ffffff"
+        assert tokens["panel_control_bg"] == "rgba(255, 255, 255, 0.1)"
+        assert tokens["panel_control_hover"] == "rgba(255, 255, 255, 0.14)"
+
+    def test_twilight_panel_uses_opposite_theme_control_tints(self):
+        tokens = apply_settings._build_tokens(
+            _make_settings(theme="light", panel_twilight=True)
+        )
+        assert tokens["panel_surface"] == "#222226"
+        assert tokens["panel_fg"] == "#ffffff"
+        assert tokens["panel_control_bg"] == "rgba(255, 255, 255, 0.1)"
 
 
 # ---------------------------------------------------------------------------
@@ -492,6 +521,7 @@ class TestStatusPillCss:
         tokens = _make_tokens(edge="bottom", is_vertical=False)
         css = apply_settings._waybar_css_horizontal(tokens)
         assert "#pulseaudio, #backlight, #battery, #clock" in css
+        assert "background: rgba(255, 255, 255, 0.10)" in css
         assert "border-top-left-radius: 999px" in css
         assert "border-bottom-left-radius: 999px" in css
         assert "border-top-right-radius: 999px" in css
@@ -503,6 +533,7 @@ class TestStatusPillCss:
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
         assert "#pulseaudio, #backlight, #battery, #clock" in css
+        assert "background: rgba(255, 255, 255, 0.10)" in css
         assert "border-top-left-radius: 999px" in css
         assert "border-top-right-radius: 999px" in css
         assert "border-bottom-left-radius: 999px" in css
