@@ -3,14 +3,30 @@
 # If the greeter crashes 3 times consecutively, fall back to a plain
 # TTY login so the user isn't locked out on a black screen.
 
-FAIL_COUNT_FILE="/run/universal-lite-greeter-failures"
 MAX_FAILURES=3
+
+uid=$(id -u)
+FAIL_COUNT_DIR="/run/universal-lite-greeter"
+if [ ! -d "$FAIL_COUNT_DIR" ] || [ ! -w "$FAIL_COUNT_DIR" ]; then
+    FAIL_COUNT_DIR="/tmp/universal-lite-greeter-$uid"
+    mkdir -p "$FAIL_COUNT_DIR"
+    if [ "$(stat -c %u "$FAIL_COUNT_DIR" 2>/dev/null)" = "$uid" ]; then
+        chmod 700 "$FAIL_COUNT_DIR" 2>/dev/null || true
+    else
+        FAIL_COUNT_DIR="${XDG_RUNTIME_DIR:-/tmp}/universal-lite-greeter-fallback"
+        mkdir -p "$FAIL_COUNT_DIR"
+        chmod 700 "$FAIL_COUNT_DIR" 2>/dev/null || true
+    fi
+fi
+FAIL_COUNT_FILE="$FAIL_COUNT_DIR/failures"
 
 # Read current failure count (0 if file doesn't exist)
 failures=0
 [ -f "$FAIL_COUNT_FILE" ] && failures=$(cat "$FAIL_COUNT_FILE")
 failures=${failures:-0}
-failures=$((failures + 0))  # Force to integer (empty/non-numeric → 0)
+case "$failures" in
+    ''|*[!0-9]*) failures=0 ;;
+esac
 
 if [ "$failures" -ge "$MAX_FAILURES" ]; then
     echo "Greeter crashed $failures times. Falling back to TTY login." >&2

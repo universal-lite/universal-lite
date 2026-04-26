@@ -25,6 +25,8 @@ STATE_DIR=/var/lib/universal-lite
 CONFIG="$STATE_DIR/install-config.json"
 ZRAM_CONF=/etc/systemd/zram-generator.conf
 SYSCTL_CONF=/etc/sysctl.d/91-universal-lite-zswap.conf
+MIN_SWAP_GB=1
+MAX_SWAP_GB=256
 
 case "$STRATEGY" in
     zram|zswap) ;;
@@ -33,6 +35,28 @@ case "$STRATEGY" in
         exit 1
         ;;
 esac
+
+validate_swap_gb() {
+    case "$SWAP_GB" in
+        ''|*[!0-9]*)
+            echo "Swap size must be a whole number from ${MIN_SWAP_GB} to ${MAX_SWAP_GB} GB." >&2
+            exit 1
+            ;;
+    esac
+    if [ "${#SWAP_GB}" -gt 3 ]; then
+        echo "Swap size must be a whole number from ${MIN_SWAP_GB} to ${MAX_SWAP_GB} GB." >&2
+        exit 1
+    fi
+    SWAP_GB=$((10#$SWAP_GB))
+    if [ "$SWAP_GB" -lt "$MIN_SWAP_GB" ] || [ "$SWAP_GB" -gt "$MAX_SWAP_GB" ]; then
+        echo "Swap size must be a whole number from ${MIN_SWAP_GB} to ${MAX_SWAP_GB} GB." >&2
+        exit 1
+    fi
+}
+
+if [ "$STRATEGY" = "zswap" ]; then
+    validate_swap_gb
+fi
 
 mkdir -p "$STATE_DIR"
 

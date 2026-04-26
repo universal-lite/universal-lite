@@ -91,12 +91,10 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
 
         self._refresh_devices()
 
-        # Stop discovery if page is torn down
-        self.connect("unmap", lambda _: self._cleanup())
-
         wrapper = Adw.ToolbarView()
         wrapper.add_top_bar(self._banner)
         wrapper.set_content(self)
+        wrapper.connect("unrealize", self._cleanup)
         self.setup_cleanup(wrapper)
         return wrapper
 

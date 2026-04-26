@@ -204,9 +204,26 @@ class NetworkManagerHelper:
 
     # -- Actions --
 
-    def connect_wifi(self, ssid: str, password: str | None, hidden: bool = False) -> None:
+    def connect_wifi(
+        self,
+        ssid: str,
+        password: str | None,
+        hidden: bool = False,
+        security: str | None = None,
+    ) -> None:
         if self._client is None or self._wifi_device is None:
             return
+        if security is None:
+            security = "wpa-psk" if password else "open"
+        if security not in {"open", "wpa-psk"}:
+            self._publish("network-connect-error", _("Unsupported WiFi security"))
+            return
+        if security == "open":
+            password = None
+        elif not password:
+            self._publish("network-connect-error", _("Password cannot be empty"))
+            return
+
         # Reuse existing saved connection when no new password is being supplied.
         if not password and not hidden:
             existing = self._find_connection_by_ssid(ssid)
@@ -225,9 +242,9 @@ class NetworkManagerHelper:
         if hidden:
             s_wifi.set_property("hidden", True)
         conn.add_setting(s_wifi)
-        if password:
+        if security != "open":
             s_sec = NM.SettingWirelessSecurity.new()
-            s_sec.set_property("key-mgmt", "wpa-psk")
+            s_sec.set_property("key-mgmt", security)
             s_sec.set_property("psk", password)
             conn.add_setting(s_sec)
         self._client.add_and_activate_connection_async(

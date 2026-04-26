@@ -480,13 +480,68 @@ def _load_launches() -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _remove_pid_lock() -> None:
+    try:
+        PID_LOCK_PATH.unlink()
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        print(f"universal-lite-app-menu: could not remove PID lock: {exc}",
+              file=sys.stderr)
+
+
+def _pid_exists(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def _process_matches_lock_identity(pid: int) -> bool:
+    """Return True only when pid is this app-menu script for this user."""
+    try:
+        proc_stat = os.stat(f"/proc/{pid}")
+    except OSError:
+        return False
+    if proc_stat.st_uid != os.getuid():
+        return False
+
+    try:
+        raw_cmdline = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        return False
+    if not raw_cmdline:
+        return False
+
+    script_path = Path(__file__).resolve()
+    for raw_arg in raw_cmdline.split(b"\0"):
+        if not raw_arg:
+            continue
+        try:
+            arg = raw_arg.decode("utf-8", errors="surrogateescape")
+        except UnicodeDecodeError:
+            continue
+        if Path(arg).name != script_path.name:
+            continue
+        try:
+            if Path(arg).resolve() == script_path:
+                return True
+        except OSError:
+            if arg == str(script_path) or arg == __file__:
+                return True
+    return False
+
+
 def _toggle_or_lock() -> bool:
     """Acquire the singleton PID lock, or toggle an existing instance off.
 
     Returns True if this process should continue (no other instance
     was alive), False if it has asked a live instance to close and
-    should just exit. Stale lock files (process no longer alive) are
-    silently replaced.
+    should just exit. Stale or foreign lock files are replaced without
+    signalling unrelated processes.
     """
     if PID_LOCK_PATH.exists():
         try:
@@ -494,18 +549,17 @@ def _toggle_or_lock() -> bool:
         except (ValueError, OSError):
             other = 0
         if other > 0:
-            try:
-                # SIGTERM lets the other instance run its atexit cleanup
-                # (including removing the PID file). If it isn't alive
-                # any more, kill(0) / kill(SIGTERM) throws ProcessLookup.
-                os.kill(other, signal.SIGTERM)
-                return False
-            except ProcessLookupError:
-                pass  # fall through - stale lock
-            except PermissionError:
-                # Different user owns the PID; don't clobber, just open
-                # another menu and live with the overlap.
-                return True
+            if _pid_exists(other) and _process_matches_lock_identity(other):
+                try:
+                    # SIGTERM lets the other instance run its atexit cleanup
+                    # (including removing the PID file).
+                    os.kill(other, signal.SIGTERM)
+                    return False
+                except ProcessLookupError:
+                    pass
+                except PermissionError:
+                    return True
+            _remove_pid_lock()
     try:
         PID_LOCK_PATH.parent.mkdir(parents=True, exist_ok=True)
         PID_LOCK_PATH.write_text(str(os.getpid()))

@@ -19,6 +19,8 @@ _SIGNAL_ICONS: list[tuple[int, str]] = [
     (0, "network-wireless-signal-weak-symbolic"),
 ]
 
+_HIDDEN_SECURITY_VALUES = ("open", "wpa-psk")
+
 
 def _signal_icon(strength: int) -> str:
     for threshold, name in _SIGNAL_ICONS:
@@ -495,7 +497,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         sec_row = Adw.ComboRow()
         sec_row.set_title(_("Security"))
         sec_row.set_model(Gtk.StringList.new([
-            _("None"), _("WPA/WPA2"), _("WPA3"),
+            _("None"), _("WPA/WPA2"),
         ]))
         sec_row.set_selected(1)  # default WPA/WPA2
         group.add(sec_row)
@@ -528,14 +530,37 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
         if not ssid:
             self.store.show_toast(_("Network name cannot be empty"), True)
             return
-        # Security index 0 = None, otherwise use the password field.
-        pw = pw_row.get_text() if sec_row.get_selected() > 0 else None
+        try:
+            ssid.encode("utf-8")
+        except UnicodeEncodeError:
+            self.store.show_toast(_("Network name is invalid"), True)
+            return
+        if len(ssid.encode("utf-8")) > 32:
+            self.store.show_toast(_("Network name must be 32 bytes or less"), True)
+            return
+
+        sec_idx = sec_row.get_selected()
+        security = (
+            _HIDDEN_SECURITY_VALUES[sec_idx]
+            if 0 <= sec_idx < len(_HIDDEN_SECURITY_VALUES)
+            else "wpa-psk"
+        )
+        pw = None
+        if security != "open":
+            pw = pw_row.get_text()
+            if not pw:
+                self.store.show_toast(_("Password cannot be empty"), True)
+                return
+            if len(pw) < 8:
+                self.store.show_toast(
+                    _("Password must be at least 8 characters"), True)
+                return
         self.store.show_toast(
             _("Connecting to {ssid}...").format(ssid=ssid)
         )
         if self._nm:
             self._connect_in_flight = True
-            self._nm.connect_wifi(ssid, pw, hidden=True)
+            self._nm.connect_wifi(ssid, pw, hidden=True, security=security)
         self._nav.pop()
 
     # -- Connect-result feedback ---------------------------------------
