@@ -26,6 +26,7 @@ class SettingsStore:
             apply_script or "/usr/libexec/universal-lite-apply-settings"
         )
         self._debounce_timers: dict[str, int] = {}
+        self._debounce_pending: dict[str, object] = {}
         self._toast_callback = None
         self._data = self._load()
         self._apply_running = False
@@ -114,10 +115,12 @@ class SettingsStore:
     def save_debounced(self, key: str, value, delay_ms: int = 300) -> None:
         if key in self._debounce_timers:
             GLib.source_remove(self._debounce_timers[key])
+        self._debounce_pending[key] = value
 
         def _apply():
             self._debounce_timers.pop(key, None)
-            self.save_and_apply(key, value)
+            value_to_apply = self._debounce_pending.pop(key, value)
+            self.save_and_apply(key, value_to_apply)
             return GLib.SOURCE_REMOVE
 
         self._debounce_timers[key] = GLib.timeout_add(delay_ms, _apply)
@@ -141,18 +144,32 @@ class SettingsStore:
         the callback so a pending apply from the old window doesn't
         toast on a new window's overlay after reopen.
         """
+        pending_debounces = dict(self._debounce_pending)
         for source_id in self._debounce_timers.values():
             GLib.source_remove(source_id)
         self._debounce_timers.clear()
+        self._debounce_pending.clear()
+
+        flushed_debounces = False
+        if pending_debounces:
+            self._data.update(pending_debounces)
+            if self._write():
+                flushed_debounces = True
+                if self._apply_running:
+                    self._apply_pending = True
+                else:
+                    self._apply_pending = False
+                    self._run_apply()
+
         if self._apply_wait_source is not None:
             GLib.source_remove(self._apply_wait_source)
             self._apply_wait_source = None
-        # Clear the queued-apply flag too. Without this, _on_apply_done
-        # of an in-flight apply would see _apply_pending=True and
-        # respawn apply-settings against a destroyed window with no
-        # toast sink. The apply itself is still harmless (it just
-        # rewrites the same configs), but it's wasted cycles.
-        self._apply_pending = False
+        # Clear stale queued applies unless this close just flushed
+        # debounced values while apply-settings was already running.
+        # In that case the next apply is needed to reconcile the latest
+        # settings.json, but it still runs without a toast sink.
+        if not flushed_debounces:
+            self._apply_pending = False
         self._toast_callback = None
 
     def _write(self) -> bool:

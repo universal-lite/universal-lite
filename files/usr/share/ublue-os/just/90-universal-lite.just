@@ -43,6 +43,21 @@ toggle-swap:
     if [ "$next" = "zswap" ]; then
         read -rp "Swap file size in GB [4]: " size
         size=${size:-4}
+        case "$size" in
+            ''|*[!0-9]*)
+                echo "Swap size must be a whole number from 1 to 256 GB." >&2
+                exit 1
+                ;;
+        esac
+        if [ "${#size}" -gt 3 ]; then
+            echo "Swap size must be a whole number from 1 to 256 GB." >&2
+            exit 1
+        fi
+        size=$((10#$size))
+        if [ "$size" -lt 1 ] || [ "$size" -gt 256 ]; then
+            echo "Swap size must be a whole number from 1 to 256 GB." >&2
+            exit 1
+        fi
         sudo /usr/libexec/universal-lite-set-memory-strategy zswap "$size"
     else
         sudo /usr/libexec/universal-lite-set-memory-strategy zram

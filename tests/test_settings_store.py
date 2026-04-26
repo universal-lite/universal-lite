@@ -62,6 +62,38 @@ def test_atomic_write_creates_file(tmp_path):
     assert not (tmp_path / "settings.json.tmp").exists()
 
 
+def test_flush_and_detach_writes_latest_pending_debounce(tmp_path):
+    store = _make_store(tmp_path)
+
+    with patch("settings.settings_store.GLib.timeout_add", return_value=123), \
+         patch("settings.settings_store.GLib.source_remove") as source_remove, \
+         patch.object(store, "_run_apply") as run_apply:
+        store.save_debounced("theme", "dark")
+        store.save_debounced("theme", "blue")
+
+        store.flush_and_detach()
+
+    assert store.get("theme") == "blue"
+    written = json.loads((tmp_path / "settings.json").read_text())
+    assert written["theme"] == "blue"
+    assert source_remove.call_count == 2
+    run_apply.assert_called_once_with()
+
+
+def test_flush_and_detach_keeps_apply_queued_for_flushed_debounce(tmp_path):
+    store = _make_store(tmp_path)
+    store._apply_running = True
+
+    with patch("settings.settings_store.GLib.timeout_add", return_value=123), \
+         patch("settings.settings_store.GLib.source_remove"):
+        store.save_debounced("accent", "red")
+
+        store.flush_and_detach()
+
+    assert store.get("accent") == "red"
+    assert store._apply_pending is True
+
+
 def test_corrupted_file_resets_to_defaults(tmp_path):
     defaults = {"theme": "light"}
     defaults_file = tmp_path / "defaults.json"

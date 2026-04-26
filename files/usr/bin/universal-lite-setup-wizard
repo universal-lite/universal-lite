@@ -533,6 +533,35 @@ DEFAULT_FLATPAKS = [
     ("org.gtk.Gtk3theme.adw-gtk3-dark", "Adwaita GTK3 Dark Theme", N_("Dark variant for classic apps")),
 ]
 
+PINNED_FLATPAK_DEFAULTS = {
+    "com.google.Chrome": {
+        "name": "Chrome",
+        "command": "flatpak run com.google.Chrome",
+        "icon": "com.google.Chrome",
+    },
+    "io.github.kolunmi.Bazaar": {
+        "name": "Bazaar",
+        "command": "flatpak run io.github.kolunmi.Bazaar",
+        "icon": "io.github.kolunmi.Bazaar",
+    },
+}
+
+
+def _flatpak_app_list_contents(selected_ids: set[str]) -> str:
+    """Return APPS_FILE content; empty selection must be a zero-byte file."""
+    if not selected_ids:
+        return ""
+    return "\n".join(sorted(selected_ids)) + "\n"
+
+
+def _pinned_apps_for_selected_flatpaks(selected_ids: set[str]) -> list[dict[str, str]]:
+    """Keep pinned launchers aligned with apps the user chose to install."""
+    pinned: list[dict[str, str]] = []
+    for app_id, _name, _desc in DEFAULT_FLATPAKS:
+        app = PINNED_FLATPAK_DEFAULTS.get(app_id)
+        if app is not None and app_id in selected_ids:
+            pinned.append(dict(app))
+    return pinned
 
 
 def _hash_password(plaintext: str) -> str:
@@ -677,6 +706,57 @@ def _detect_boot_disk() -> str:
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError):
         pass
     return ""
+
+
+def _device_tree_sources(dev: str) -> list[str]:
+    """Return *dev* plus child partition device paths from lsblk.
+
+    Used before destructive partitioning.  If lsblk cannot enumerate the
+    target disk, callers should fail closed rather than risking a wipe
+    while an old child partition remains mounted.
+    """
+    result = subprocess.run(
+        ["lsblk", "-lnpo", "NAME,TYPE", dev],
+        capture_output=True, text=True, timeout=10,
+    )
+    if result.returncode != 0:
+        err = result.stderr.strip() or result.stdout.strip() or "lsblk failed"
+        raise RuntimeError(err)
+
+    sources = [dev]
+    seen = {dev}
+    for line in result.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[1] == "part" and parts[0] not in seen:
+            sources.append(parts[0])
+            seen.add(parts[0])
+    return sources
+
+
+def _mounted_targets_for_sources(sources: list[str]) -> list[str]:
+    """Return mount targets whose source is one of *sources*."""
+    targets: list[str] = []
+    seen: set[str] = set()
+    for source in sources:
+        result = subprocess.run(
+            ["findmnt", "-rno", "TARGET", "-S", source],
+            capture_output=True, text=True, timeout=10,
+        )
+        for target in result.stdout.strip().splitlines():
+            target = target.strip()
+            if target and target not in seen:
+                targets.append(target)
+                seen.add(target)
+    return targets
+
+
+def _sort_mount_targets_for_unmount(targets: list[str]) -> list[str]:
+    """Unmount nested mountpoints before their parents."""
+    return sorted(
+        targets,
+        key=lambda target: (target.count("/"), len(target)),
+        reverse=True,
+    )
 
 
 def _load_drives() -> list[dict]:
@@ -2846,37 +2926,43 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         subprocess.run(["umount", "-R", mount_point],
                        capture_output=True, timeout=10)
 
-        # Unmount any partitions on the target device that are mounted
-        # elsewhere (e.g. udisks2 automount).  Without this, sfdisk
-        # will fail or corrupt a live filesystem.
+        # Unmount the selected disk and any child partitions that are mounted
+        # elsewhere (e.g. udisks2 automount).  Checking only the whole disk
+        # misses normal partition sources such as /dev/sda1 or /dev/nvme0n1p3.
         try:
-            result = subprocess.run(
-                ["findmnt", "-rno", "TARGET", "-S", dev],
-                capture_output=True, text=True, timeout=10,
-            )
-            for mnt in result.stdout.strip().splitlines():
-                if mnt:
-                    subprocess.run(["umount", mnt],
-                                   capture_output=True, timeout=10)
-        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
-            pass  # findmnt returns non-zero if no mounts found — that's fine
+            sources = _device_tree_sources(dev)
+            for mnt in _sort_mount_targets_for_unmount(
+                _mounted_targets_for_sources(sources)
+            ):
+                result = subprocess.run(
+                    ["umount", mnt],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if result.returncode != 0:
+                    return _("Cannot unmount {mnt}: {err}").format(
+                        mnt=mnt, err=result.stderr.strip() or result.stdout.strip())
+        except RuntimeError as exc:
+            return _("Could not list target partitions: {err}").format(err=exc)
+        except subprocess.TimeoutExpired:
+            return _("Could not unmount target partitions (command timed out)")
+        except OSError as exc:
+            return _("Could not unmount target partitions: {err}").format(err=exc)
 
-        # Verify all partitions are actually unmounted before destructive ops
+        # Verify all target sources are actually unmounted before destructive ops.
         try:
-            verify = subprocess.run(
-                ["findmnt", "-rno", "TARGET", "-S", dev],
-                capture_output=True, text=True, timeout=10,
-            )
-            still_mounted = [m for m in verify.stdout.strip().splitlines() if m]
+            sources = _device_tree_sources(dev)
+            still_mounted = _mounted_targets_for_sources(sources)
             if still_mounted:
                 return _("Cannot proceed: partitions still mounted: {mounts}").format(
                     mounts=", ".join(still_mounted))
-        except subprocess.CalledProcessError:
-            pass  # findmnt returns non-zero when no matching mounts exist
+        except RuntimeError as exc:
+            return _("Could not list target partitions: {err}").format(err=exc)
         except subprocess.TimeoutExpired:
             # Timeout is NOT safe to ignore — proceeding would wipefs a
             # possibly-mounted disk.
             return _("Could not verify partitions are unmounted (findmnt timeout)")
+        except OSError as exc:
+            return _("Could not verify partitions are unmounted: {err}").format(err=exc)
 
         # Wipe all filesystem/RAID/partition-table signatures so sfdisk
         # starts from a clean slate (previous installs leave signatures
@@ -3020,8 +3106,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             (self._part_efi, f"{mount_point}/boot/efi"),
         ]:
             Path(mnt).mkdir(parents=True, exist_ok=True)
-            subprocess.run(["mount", part_dev, mnt],
-                           capture_output=True, timeout=30)
+            try:
+                self._run_logged(["mount", part_dev, mnt], check=True, timeout=30)
+            except subprocess.CalledProcessError as exc:
+                subprocess.run(["umount", "-R", f"{mount_point}/boot"],
+                               capture_output=True, timeout=10)
+                lines = (exc.output or exc.stderr or "").strip().splitlines()
+                return _("Failed to remount {mnt}: {err}").format(
+                    mnt=mnt, err=lines[-1] if lines else exc)
+            except subprocess.TimeoutExpired:
+                subprocess.run(["umount", "-R", f"{mount_point}/boot"],
+                               capture_output=True, timeout=10)
+                return _("Remounting {mnt} timed out").format(mnt=mnt)
 
         # Pre-flight DNS check — fail fast with a clear message instead of
         # letting bootc produce a cryptic "Temporary failure in name resolution".
@@ -3615,7 +3711,67 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         state_dir = Path(var_dir) / "lib" / "universal-lite"
         state_dir.mkdir(parents=True, exist_ok=True)
         _atomic_write_text(
-            state_dir / "flatpak-apps", "\n".join(selected_ids) + "\n")
+            state_dir / "flatpak-apps", _flatpak_app_list_contents(selected_ids))
+
+        default_settings = {}
+        defaults_path = (
+            Path(self._sysroot_deploy)
+            / "usr"
+            / "share"
+            / "universal-lite"
+            / "defaults"
+            / "settings.json"
+        )
+        for candidate in [
+            defaults_path,
+            Path("/usr/share/universal-lite/defaults/settings.json"),
+        ]:
+            try:
+                default_settings = json.loads(candidate.read_text())
+                if not isinstance(default_settings, dict):
+                    default_settings = {}
+                break
+            except (OSError, json.JSONDecodeError):
+                default_settings = {}
+        default_settings["pinned"] = _pinned_apps_for_selected_flatpaks(
+            selected_ids)
+        settings_text = json.dumps(default_settings, indent=2) + "\n"
+
+        for settings_path in [
+            Path(var_dir)
+            / "home"
+            / self._setup_username
+            / ".config"
+            / "universal-lite"
+            / "settings.json",
+            Path(self._sysroot_deploy)
+            / "etc"
+            / "skel"
+            / ".config"
+            / "universal-lite"
+            / "settings.json",
+        ]:
+            _atomic_write_text(settings_path, settings_text)
+
+        passwd_path = Path(self._sysroot_deploy) / "etc" / "passwd"
+        try:
+            for line in passwd_path.read_text().splitlines():
+                parts = line.split(":")
+                if len(parts) >= 4 and parts[0] == self._setup_username:
+                    uid, gid = int(parts[2]), int(parts[3])
+                    user_config = (
+                        Path(var_dir)
+                        / "home"
+                        / self._setup_username
+                        / ".config"
+                    )
+                    os.chown(user_config, uid, gid)
+                    os.chown(user_config / "universal-lite", uid, gid)
+                    os.chown(user_config / "universal-lite" / "settings.json",
+                             uid, gid)
+                    break
+        except (OSError, ValueError):
+            pass
 
         return None
 
