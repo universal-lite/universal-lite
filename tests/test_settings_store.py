@@ -108,6 +108,32 @@ def test_corrupted_file_resets_to_defaults(tmp_path):
     assert store.get("theme") == "light"
 
 
+def test_non_object_file_resets_to_defaults(tmp_path):
+    defaults = {"theme": "light"}
+    defaults_file = tmp_path / "defaults.json"
+    defaults_file.write_text(json.dumps(defaults))
+    settings_file = tmp_path / "settings.json"
+    settings_file.write_text("[]")
+    store = SettingsStore(
+        settings_path=settings_file,
+        defaults_path=defaults_file,
+        apply_script="/bin/true",
+    )
+    assert store.get("theme") == "light"
+
+
+def test_invalid_known_value_type_falls_back_but_unknown_keys_survive(tmp_path):
+    defaults = {"font_size": 11, "theme": "light"}
+    store = _make_store(
+        tmp_path,
+        defaults=defaults,
+        existing={"font_size": "large", "theme": "dark", "resolution_eDP-1": "1024x768@60Hz"},
+    )
+    assert store.get("font_size") == 11
+    assert store.get("theme") == "dark"
+    assert store.get("resolution_eDP-1") == "1024x768@60Hz"
+
+
 def test_missing_defaults_file_returns_empty(tmp_path):
     """App must not crash when the defaults file is absent."""
     missing_defaults = tmp_path / "nonexistent_defaults.json"

@@ -200,7 +200,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             self.store.show_toast(_("Connection editor not found"), True)
 
     # -- event handlers -------------------------------------------------

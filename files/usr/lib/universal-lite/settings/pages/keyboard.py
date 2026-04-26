@@ -251,6 +251,10 @@ def _save_user_keybindings(bindings: list[dict]) -> None:
     os.replace(tmp, USER_KEYBINDINGS)
 
 
+def _clone_bindings(bindings: list[dict]) -> list[dict]:
+    return [dict(binding) for binding in bindings]
+
+
 class KeyboardPage(BasePage, Adw.PreferencesPage):
     """Keyboard settings: layout/variant, repeat timing, caps-lock remap,
     and per-shortcut rebinding.
@@ -266,7 +270,10 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         Adw.PreferencesPage.__init__(self)
         self._default_bindings = _parse_system_keybindings()
         user = _load_user_keybindings()
-        self._bindings = user if user is not None else list(self._default_bindings)
+        self._bindings = (
+            _clone_bindings(user)
+            if user is not None else _clone_bindings(self._default_bindings)
+        )
         # References populated in build(). None-safe because event
         # handlers may fire before first navigation on some paths.
         self._nav: Adw.NavigationView | None = None
@@ -896,7 +903,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
     def _on_reset_all_response(self, _dialog, response):
         if response != "reset":
             return
-        self._bindings = list(self._default_bindings)
+        self._bindings = _clone_bindings(self._default_bindings)
         # Update every row in place.
         for i in range(len(self._bindings)):
             self._update_shortcut_row(i)
@@ -946,7 +953,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
                 capture_output=True, text=True, timeout=10,
             )
             result = [l.strip() for l in r.stdout.splitlines() if l.strip()]
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             result = ["us"]
         _layouts_cache = result
         return result
@@ -962,7 +969,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
                 capture_output=True, text=True, timeout=10,
             )
             result = [v.strip() for v in r.stdout.splitlines() if v.strip()]
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             result = []
         _variants_cache[layout] = result
         return result

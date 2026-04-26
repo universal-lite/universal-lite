@@ -1,3 +1,4 @@
+import os
 import shlex
 import shutil
 import subprocess
@@ -59,11 +60,15 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
 
             if mime_type is None:
                 # Terminal: write a wrapper desktop file so the choice takes effect
-                row.connect(
-                    "notify::selected",
-                    lambda r, _, ids=desktop_ids, _l=_loading:
-                        None if _l[0] else self._set_terminal_by_id(ids[r.get_selected()]),
-                )
+                def _set_terminal_default(r, _, ids=desktop_ids,
+                                          _l=_loading, _store=self.store):
+                    if _l[0]:
+                        return
+                    idx = r.get_selected()
+                    if 0 <= idx < len(ids) and not self._set_terminal_by_id(ids[idx]):
+                        _store.show_toast(_("Could not change default terminal"), True)
+
+                row.connect("notify::selected", _set_terminal_default)
             else:
                 def _set_default(r, _, mt=mime_type, ids=desktop_ids,
                                  _l=_loading, _store=self.store):
@@ -106,7 +111,8 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
     def _set_terminal_by_id(desktop_id):
         app_info = Gio.DesktopAppInfo.new(desktop_id)
         if app_info:
-            DefaultAppsPage._set_terminal(app_info)
+            return DefaultAppsPage._set_terminal(app_info)
+        return False
 
     @staticmethod
     def _set_terminal(app_info):
@@ -125,26 +131,43 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
         # selection. Use shlex to split correctly and resolve the
         # executable via shutil.which / Path.is_file instead.
         if not cmd:
-            return
+            return False
         try:
             argv = shlex.split(cmd)
         except ValueError:
-            return
+            return False
         if not argv:
-            return
+            return False
         exe = argv[0]
         resolved = shutil.which(exe) if "/" not in exe else exe
         if not resolved or not Path(resolved).is_file():
-            return
+            return False
 
         desktop_dir = Path.home() / ".local/share/applications"
-        desktop_dir.mkdir(parents=True, exist_ok=True)
         dest = desktop_dir / "terminal.desktop"
         tmp = dest.with_suffix(".desktop.tmp")
-        tmp.write_text(
-            f"[Desktop Entry]\nName={name}\nExec={cmd}\nType=Application\nTerminal=false\nCategories=TerminalEmulator;\n"
+        content = (
+            "[Desktop Entry]\n"
+            f"Name={name}\n"
+            f"Exec={cmd}\n"
+            "Type=Application\n"
+            "Terminal=false\n"
+            "Categories=TerminalEmulator;\n"
         )
-        tmp.rename(dest)
+        try:
+            desktop_dir.mkdir(parents=True, exist_ok=True)
+            with tmp.open("w", encoding="utf-8") as handle:
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp, dest)
+        except OSError:
+            try:
+                tmp.unlink(missing_ok=True)
+            except OSError:
+                pass
+            return False
+        return True
 
     @staticmethod
     def _get_apps_for_mime(mime_type):

@@ -152,6 +152,7 @@ class SoundPage(BasePage, Adw.PreferencesPage):
             if self._refresh_source is not None:
                 GLib.source_remove(self._refresh_source)
                 self._refresh_source = None
+                self._refresh_pending = False
             if self._pa is not None:
                 self._pa.stop()
                 self._pa = None
@@ -385,7 +386,8 @@ class SoundPage(BasePage, Adw.PreferencesPage):
             r = subprocess.run(["pactl", "-f", "json", "list", "sinks"],
                                capture_output=True, text=True, timeout=5)
             return [(s["name"], s.get("description", s["name"])) for s in json.loads(r.stdout)]
-        except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError,
+                json.JSONDecodeError, KeyError):
             return []
 
     @staticmethod
@@ -403,7 +405,8 @@ class SoundPage(BasePage, Adw.PreferencesPage):
                                capture_output=True, text=True, timeout=5)
             return [(s["name"], s.get("description", s["name"]))
                     for s in json.loads(r.stdout) if ".monitor" not in s["name"]]
-        except (FileNotFoundError, subprocess.TimeoutExpired, json.JSONDecodeError, KeyError):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError,
+                json.JSONDecodeError, KeyError):
             return []
 
     @staticmethod

@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -349,24 +350,76 @@ def _build_tokens(settings: dict) -> dict:
     }
 
 
+def _load_default_settings() -> dict:
+    try:
+        data = json.loads(DEFAULTS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _read_settings_object() -> dict:
+    if not SETTINGS_PATH.exists():
+        return _load_default_settings()
+    try:
+        data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"apply-settings: settings.json unreadable, using defaults: {exc}",
+              file=sys.stderr)
+        return _load_default_settings()
+    if not isinstance(data, dict):
+        print("apply-settings: settings.json is not an object, using defaults",
+              file=sys.stderr)
+        return _load_default_settings()
+    return data
+
+
+def _coerce_bool(value, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+        return default
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if value in (0, 1):
+            return bool(value)
+    return default
+
+
+def _coerce_hhmm(value, default: str) -> str:
+    text = str(value)
+    match = re.fullmatch(r"(\d{1,2}):(\d{2})", text)
+    if not match:
+        return default
+    hour, minute = int(match.group(1)), int(match.group(2))
+    if 0 <= hour < 24 and 0 <= minute < 60:
+        return f"{hour:02d}:{minute:02d}"
+    return default
+
+
 def ensure_settings() -> dict:
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
-    if not SETTINGS_PATH.exists():
-        # Atomic initial copy: an OOM or crash mid-copy would otherwise
-        # leave a zero-byte settings.json that JSONDecodeErrors on the
-        # next run and erases all defaults.
-        tmp = SETTINGS_PATH.with_suffix(".json.tmp")
-        shutil.copy2(DEFAULTS_PATH, tmp)
-        os.replace(tmp, SETTINGS_PATH)
-
-    with SETTINGS_PATH.open("r", encoding="utf-8") as handle:
-        data = json.load(handle)
+    data = _read_settings_object()
 
     edge = data.get("edge", "bottom")
     density = data.get("density", "normal")
     theme = data.get("theme", "light")
     wallpaper_stored = data.get("wallpaper", DEFAULT_WALLPAPER_ID)
     accent = data.get("accent", "blue")
+    if not isinstance(edge, str):
+        edge = "bottom"
+    if not isinstance(density, str):
+        density = "normal"
+    if not isinstance(theme, str):
+        theme = "light"
+    if not isinstance(accent, str):
+        accent = "blue"
+    if not isinstance(wallpaper_stored, str):
+        wallpaper_stored = DEFAULT_WALLPAPER_ID
 
     if edge not in VALID_EDGES:
         edge = "bottom"
@@ -417,7 +470,7 @@ def ensure_settings() -> dict:
     # paint light on a system that's otherwise in high-contrast dark
     # until the user triggers any other apply. We pre-read the flag
     # here; the final validation + writeback happens further down.
-    if bool(data.get("high_contrast", False)):
+    if _coerce_bool(data.get("high_contrast", False), False):
         theme = "dark"
 
     greeter_theme_path = greeter_state_dir / "greeter-theme"
@@ -438,6 +491,8 @@ def ensure_settings() -> dict:
         print(f"apply-settings: greeter-accent: {exc}", file=sys.stderr)
 
     scale = data.get("scale", 1.0)
+    if not isinstance(scale, (int, float)) or isinstance(scale, bool):
+        scale = 1.0
     if scale not in VALID_SCALE:
         scale = 1.0
 
@@ -484,21 +539,36 @@ def ensure_settings() -> dict:
     cursor_size = data.get("cursor_size", 24)
     if cursor_size not in (24, 32, 48):
         cursor_size = 24
-    high_contrast = bool(data.get("high_contrast", False))
-    reduce_motion = bool(data.get("reduce_motion", False))
+    high_contrast = _coerce_bool(data.get("high_contrast", False), False)
+    reduce_motion = _coerce_bool(data.get("reduce_motion", False), False)
     if high_contrast:
         theme = "dark"
 
+    def _coerce_float(key: str, default: float, lo: float, hi: float) -> float:
+        try:
+            v = float(data.get(key, default))
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, v))
+
+    def _coerce_int(key: str, default: int, lo: int, hi: int) -> int:
+        try:
+            v = int(data.get(key, default))
+        except (TypeError, ValueError):
+            return default
+        return max(lo, min(hi, v))
+
     # Validate night light settings
-    night_light_enabled = bool(data.get("night_light_enabled", False))
-    night_light_temp = int(data.get("night_light_temp", 4500))
+    night_light_enabled = _coerce_bool(
+        data.get("night_light_enabled", False), False)
+    night_light_temp = _coerce_int("night_light_temp", 4500, 3500, 6500)
     if not (3500 <= night_light_temp <= 6500):
         night_light_temp = 4500
     night_light_schedule = data.get("night_light_schedule", "sunset-sunrise")
     if night_light_schedule not in ("sunset-sunrise", "custom"):
         night_light_schedule = "sunset-sunrise"
-    night_light_start = str(data.get("night_light_start", "20:00"))
-    night_light_end = str(data.get("night_light_end", "06:00"))
+    night_light_start = _coerce_hhmm(data.get("night_light_start", "20:00"), "20:00")
+    night_light_end = _coerce_hhmm(data.get("night_light_end", "06:00"), "06:00")
 
     # Validate power settings. All three timers share the same allowed
     # set. Coerce to int defensively — a stale/hand-edited settings.json
@@ -524,11 +594,11 @@ def ensure_settings() -> dict:
     if power_profile not in ("balanced", "power-saver", "performance"):
         power_profile = "balanced"
 
-    clock_24h = bool(data.get("clock_24h", False))
+    clock_24h = _coerce_bool(data.get("clock_24h", False), False)
     capslock_behavior = data.get("capslock_behavior", "default")
     if capslock_behavior not in ("default", "ctrl", "escape", "disabled"):
         capslock_behavior = "default"
-    panel_twilight = bool(data.get("panel_twilight", False))
+    panel_twilight = _coerce_bool(data.get("panel_twilight", False), False)
 
     # Libinput input-speed + accel-profile values are interpolated into
     # the generated rc.xml. Without coercion a stale/hand-edited
@@ -536,29 +606,18 @@ def ensure_settings() -> dict:
     # crashes `(tp_scroll - 1) * ...` in write_labwc_rc_overrides with
     # TypeError, abortin the whole apply. Clamp to libinput's ranges
     # and write the coerced values back to settings.json.
-    def _coerce_float(key: str, default: float, lo: float, hi: float) -> float:
-        try:
-            v = float(data.get(key, default))
-        except (TypeError, ValueError):
-            return default
-        return max(lo, min(hi, v))
-
-    def _coerce_int(key: str, default: int, lo: int, hi: int) -> int:
-        try:
-            v = int(data.get(key, default))
-        except (TypeError, ValueError):
-            return default
-        return max(lo, min(hi, v))
-
     touchpad_pointer_speed = _coerce_float("touchpad_pointer_speed", 0.0, -1.0, 1.0)
     mouse_pointer_speed = _coerce_float("mouse_pointer_speed", 0.0, -1.0, 1.0)
     touchpad_scroll_speed = _coerce_int("touchpad_scroll_speed", 5, 1, 10)
     mouse_accel_profile = data.get("mouse_accel_profile", "adaptive")
     if mouse_accel_profile not in ("adaptive", "flat"):
         mouse_accel_profile = "adaptive"
-    touchpad_tap_to_click = bool(data.get("touchpad_tap_to_click", True))
-    touchpad_natural_scroll = bool(data.get("touchpad_natural_scroll", False))
-    mouse_natural_scroll = bool(data.get("mouse_natural_scroll", False))
+    touchpad_tap_to_click = _coerce_bool(
+        data.get("touchpad_tap_to_click", True), True)
+    touchpad_natural_scroll = _coerce_bool(
+        data.get("touchpad_natural_scroll", False), False)
+    mouse_natural_scroll = _coerce_bool(
+        data.get("mouse_natural_scroll", False), False)
     keyboard_repeat_delay = _coerce_int("keyboard_repeat_delay", 300, 150, 1000)
     keyboard_repeat_rate = _coerce_int("keyboard_repeat_rate", 40, 10, 100)
 

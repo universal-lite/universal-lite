@@ -39,9 +39,12 @@ class SettingsStore:
         if not self._path.exists():
             return self._load_defaults(write_to_user=True)
         try:
-            return json.loads(self._path.read_text(encoding="utf-8"))
+            data = json.loads(self._path.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             return self._load_defaults(write_to_user=True)
+        if not isinstance(data, dict):
+            return self._load_defaults(write_to_user=True)
+        return self._sanitize_loaded_data(data)
 
     def _load_defaults(self, write_to_user: bool = False) -> dict:
         try:
@@ -52,6 +55,8 @@ class SettingsStore:
             data = json.loads(default_text)
         except json.JSONDecodeError:
             return {}
+        if not isinstance(data, dict):
+            return {}
         if write_to_user:
             try:
                 tmp = self._path.with_suffix(".tmp")
@@ -60,6 +65,41 @@ class SettingsStore:
             except OSError:
                 pass
         return data
+
+    def _sanitize_loaded_data(self, data: dict) -> dict:
+        """Replace invalid known-key value types with factory defaults.
+
+        The apply-settings reconciler validates ranges and closed sets,
+        but the GTK pages read directly from SettingsStore before the
+        next apply. A hand-edited settings.json with e.g.
+        ``{"font_size": "large"}`` should not crash Accessibility or
+        Appearance before the user has a chance to repair it.
+        """
+        defaults = self._load_defaults()
+        if not defaults:
+            return data
+
+        cleaned = dict(data)
+        for key, default in defaults.items():
+            if key not in cleaned or not self._compatible_type(cleaned[key], default):
+                cleaned[key] = default
+        return cleaned
+
+    @staticmethod
+    def _compatible_type(value, default) -> bool:
+        if isinstance(default, bool):
+            return isinstance(value, bool)
+        if isinstance(default, int) and not isinstance(default, bool):
+            return isinstance(value, int) and not isinstance(value, bool)
+        if isinstance(default, float):
+            return isinstance(value, (int, float)) and not isinstance(value, bool)
+        if isinstance(default, str):
+            return isinstance(value, str)
+        if isinstance(default, list):
+            return isinstance(value, list)
+        if isinstance(default, dict):
+            return isinstance(value, dict)
+        return isinstance(value, type(default))
 
     def get(self, key: str, default=None):
         return self._data.get(key, default)

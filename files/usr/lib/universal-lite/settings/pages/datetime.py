@@ -133,7 +133,7 @@ class DateTimePage(BasePage, Adw.PreferencesPage):
                 capture_output=True, text=True, timeout=5,
             )
             return r.stdout.strip()
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return "UTC"
 
     def _set_timezone(self, tz, entry=None):
