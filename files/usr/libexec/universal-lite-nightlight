@@ -54,6 +54,26 @@ def _in_range(now_min: int, start_min: int, end_min: int) -> bool:
     return start_min <= now_min < end_min
 
 
+def _coerce_bool(value, default: bool = False) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"1", "true", "yes", "on"}:
+            return True
+        if lowered in {"0", "false", "no", "off"}:
+            return False
+    return default
+
+
+def _coerce_temp(value) -> int:
+    try:
+        temp = int(value)
+    except (TypeError, ValueError):
+        return 4500
+    return temp if 3500 <= temp <= 6500 else 4500
+
+
 TIMER_UNIT = "universal-lite-nightlight.timer"
 
 
@@ -108,14 +128,16 @@ def main() -> int:
         settings = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return 0
+    if not isinstance(settings, dict):
+        return 0
 
-    enabled = bool(settings.get("night_light_enabled", False))
+    enabled = _coerce_bool(settings.get("night_light_enabled", False), False)
     _reconcile_timer(enabled)
     if not enabled:
         _kill_gammastep()
         return 0
 
-    temp = int(settings.get("night_light_temp", 4500))
+    temp = _coerce_temp(settings.get("night_light_temp", 4500))
     schedule = settings.get("night_light_schedule", "sunset-sunrise")
 
     if schedule == "custom":

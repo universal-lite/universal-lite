@@ -299,6 +299,8 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
                 self._profile_row.set_selected(idx)
             finally:
                 self._updating_profile = False
+        if self.store.get("power_profile", "balanced") != new_profile:
+            self.store.save_and_apply("power_profile", new_profile)
 
     def _on_lid_action_changed(self, action: str) -> None:
         """Apply a new lid action via the privileged helper.

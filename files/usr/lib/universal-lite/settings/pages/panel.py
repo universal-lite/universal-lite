@@ -24,12 +24,14 @@ _DEFAULTS_PATH = Path("/usr/share/universal-lite/defaults/settings.json")
 def _load_default_layout():
     try:
         data = json.loads(_DEFAULTS_PATH.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError("defaults root is not an object")
         layout = data.get("layout")
         if isinstance(layout, dict) and all(
             k in layout and isinstance(layout[k], list) for k in ("start", "center", "end")
         ):
             return layout
-    except (OSError, json.JSONDecodeError, KeyError):
+    except (OSError, json.JSONDecodeError, KeyError, ValueError):
         pass
     return {
         "start": ["custom/launcher"],
@@ -134,13 +136,9 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
             if self._updating or not self._built:
                 return
-            self._updating = True
-            try:
-                idx = r.get_selected()
-                if 0 <= idx < len(values):
-                    self._on_edge_changed(values[idx])
-            finally:
-                self._updating = False
+            idx = r.get_selected()
+            if 0 <= idx < len(values):
+                self._on_edge_changed(values[idx])
 
         row.connect("notify::selected", _on_selected)
         group.add(row)
@@ -259,6 +257,22 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         ):
             return {k: list(saved[k]) for k in SECTION_ORDER}
         return copy.deepcopy(DEFAULT_LAYOUT)
+
+    @staticmethod
+    def _sanitize_pinned(raw) -> list[dict]:
+        if not isinstance(raw, list):
+            return []
+        pinned: list[dict] = []
+        for app in raw:
+            if not isinstance(app, dict):
+                continue
+            command = str(app.get("command", "")).strip()
+            if not command:
+                continue
+            name = str(app.get("name", "")).strip() or command
+            icon = str(app.get("icon", "")).strip() or "application-x-executable-symbolic"
+            pinned.append({"name": name, "command": command, "icon": icon})
+        return pinned
 
     def _refresh_module_lists(self):
         for section, group in self._section_groups.items():
@@ -414,7 +428,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
 
     def _build_pinned_apps_group(self) -> Adw.PreferencesGroup:
         raw = self.store.get("pinned", [])
-        self._pinned_data = list(raw) if isinstance(raw, list) else []
+        self._pinned_data = self._sanitize_pinned(raw)
 
         group = Adw.PreferencesGroup()
         group.set_title(_("Pinned Apps"))

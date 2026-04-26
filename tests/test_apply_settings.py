@@ -120,6 +120,17 @@ def _run_ensure_settings(data, tmp_path):
         return apply_settings.ensure_settings()
 
 
+def _run_ensure_settings_raw(raw_text, tmp_path):
+    settings_file = tmp_path / "settings.json"
+    settings_file.write_text(raw_text)
+    defaults_file = tmp_path / "defaults.json"
+    defaults_file.write_text(json.dumps(_make_settings()))
+    with patch.object(apply_settings, "SETTINGS_DIR", tmp_path), \
+         patch.object(apply_settings, "SETTINGS_PATH", settings_file), \
+         patch.object(apply_settings, "DEFAULTS_PATH", defaults_file):
+        return apply_settings.ensure_settings()
+
+
 # ---------------------------------------------------------------------------
 # Theme-derived panel colors
 # ---------------------------------------------------------------------------
@@ -358,6 +369,43 @@ class TestLayoutValidation:
         result = _run_ensure_settings(data, tmp_path)
         all_mods = result["layout"]["start"] + result["layout"]["center"] + result["layout"]["end"]
         assert "bogus_module" not in all_mods
+
+
+class TestSettingsRecovery:
+    def test_corrupt_settings_json_recovers_from_defaults(self, tmp_path):
+        result = _run_ensure_settings_raw("{not json", tmp_path)
+        assert result["theme"] == "light"
+        assert result["edge"] == "bottom"
+
+    def test_non_object_settings_json_recovers_from_defaults(self, tmp_path):
+        result = _run_ensure_settings_raw("[]", tmp_path)
+        assert result["theme"] == "light"
+        assert result["edge"] == "bottom"
+
+    def test_string_false_booleans_do_not_enable_features(self, tmp_path):
+        data = _make_settings(
+            high_contrast="false",
+            night_light_enabled="false",
+            reduce_motion="false",
+            touchpad_tap_to_click="false",
+        )
+        result = _run_ensure_settings(data, tmp_path)
+        assert result["high_contrast"] is False
+        assert result["theme"] == "light"
+        assert result["night_light_enabled"] is False
+        assert result["reduce_motion"] is False
+        assert result["touchpad_tap_to_click"] is False
+
+    def test_bad_night_light_values_are_normalized(self, tmp_path):
+        data = _make_settings(
+            night_light_temp="hot",
+            night_light_start="25:90",
+            night_light_end="bad",
+        )
+        result = _run_ensure_settings(data, tmp_path)
+        assert result["night_light_temp"] == 4500
+        assert result["night_light_start"] == "20:00"
+        assert result["night_light_end"] == "06:00"
 
 
 # ---------------------------------------------------------------------------

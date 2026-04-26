@@ -107,7 +107,7 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             self.store.show_toast(
                 _("Bluetooth manager not available"), True)
 

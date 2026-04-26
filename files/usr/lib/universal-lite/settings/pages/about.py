@@ -175,7 +175,7 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         try:
             r = subprocess.run(["labwc", "--version"], capture_output=True, text=True, timeout=5)
             labwc_ver = (r.stderr.strip() or r.stdout.strip()) or "unknown"
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             pass
 
         # Order matches the pre-migration layout: OS, hostname, CPU,
@@ -315,7 +315,7 @@ class AboutPage(BasePage, Adw.PreferencesPage):
                 stderr=subprocess.DEVNULL,
                 start_new_session=True,
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             self.store.show_toast(_("Terminal not available"), True)
 
     # -- Restore Defaults sub-page -------------------------------------
@@ -453,7 +453,10 @@ class AboutPage(BasePage, Adw.PreferencesPage):
             # this, a Keyboard-category reset leaves custom shortcuts in
             # place and only the repeat/layout/capslock keys inside
             # settings.json revert.
-            (config_dir / "keybindings.json").unlink(missing_ok=True)
+            try:
+                (config_dir / "keybindings.json").unlink(missing_ok=True)
+            except OSError:
+                self.store.show_toast(_("Could not reset keyboard shortcuts"), True)
         if "Display" in selected:
             # Per-output resolution picks are stored as ``resolution_<name>``
             # keys in settings.json but are never listed in CATEGORY_KEYS

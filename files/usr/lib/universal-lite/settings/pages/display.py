@@ -394,7 +394,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
                     ["wlr-randr", "--output", name, "--scale", str(scale)],
                     check=False, timeout=5, capture_output=True, text=True,
                 )
-            except (FileNotFoundError, subprocess.TimeoutExpired):
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
                 continue
             if result.returncode != 0:
                 # Surface the failure so the user isn't left staring at
@@ -503,7 +503,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
             result = subprocess.run(
                 ["wlr-randr"], capture_output=True, text=True, timeout=5,
             )
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             return []
         displays = []
         name = None
@@ -575,7 +575,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
                 ["wlr-randr", "--output", output_name, "--mode", mode_arg],
                 check=False, timeout=5,
             )
-        except (FileNotFoundError, subprocess.TimeoutExpired):
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             pass
 
     def _show_res_revert_dialog(
