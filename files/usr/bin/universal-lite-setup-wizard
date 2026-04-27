@@ -4,8 +4,8 @@
 Launched by greetd's initial_session inside a labwc desktop session on
 the USB live environment when no user accounts exist.  Installs the OS
 to a target disk via bootc, configures the sysroot directly (Anaconda
-pattern), and rsyncs pre-downloaded Flatpak apps from the live
-environment.
+pattern), and writes the selected Flatpak app list for the first-boot
+installer service.
 
 Eight-page flow:
   Page 0 — Language (locale selection)
@@ -13,7 +13,7 @@ Eight-page flow:
   Page 2 — Disk (target drive, filesystem, memory management)
   Page 3 — Account (name, username, password, admin, root password)
   Page 4 — System setup (timezone, hostname)
-  Page 5 — Apps (Flatpak app selection — rsync from USB)
+  Page 5 — Apps (Flatpak app selection — install from Flathub on first boot)
   Page 6 — Summary and confirmation
   Page 7 — Progress (real-time install execution)
 """
@@ -4312,7 +4312,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             # bootc install failed — user can go back and change settings
             self._progress_back_btn.set_visible(True)
         elif behavior == "skippable":
-            # Flatpak copy failed — user can skip or retry
+            # Optional step failed — user can skip or retry
             self._progress_retry_btn.set_visible(True)
             self._progress_skip_btn.set_visible(True)
             self._run_from_step = index

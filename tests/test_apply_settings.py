@@ -666,39 +666,39 @@ class TestWaybarModuleCompatibility:
 
 
 # ---------------------------------------------------------------------------
-# Faux grouped status pill CSS
+# Grouped status pill CSS
 # ---------------------------------------------------------------------------
 
 class TestStatusPillCss:
-    def test_horizontal_status_modules_share_background(self):
+    def test_horizontal_status_group_owns_single_pill_surface(self):
         tokens = _make_tokens(edge="bottom", is_vertical=False)
         css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#group-status-0, #status-0 {" in css
+        assert "border: 1px solid rgba(255, 255, 255, 0.18)" in css
+        assert "border-radius: 999px" in css
         assert "#pulseaudio, #backlight, #battery, #clock" in css
         assert "background: rgba(255, 255, 255, 0.14)" in css
-        assert "border-top: 1px solid rgba(255, 255, 255, 0.18)" in css
-        assert "border-bottom: 1px solid rgba(255, 255, 255, 0.18)" in css
-        assert "border-top-left-radius: 999px" in css
-        assert "border-bottom-left-radius: 999px" in css
-        assert "border-top-right-radius: 999px" in css
-        assert "border-bottom-right-radius: 999px" in css
+        assert "background: transparent" in css
+        assert "border: none" in css
         assert "#tray" in css
         assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
-        assert "margin-left: -10px" in css
+        assert "margin-left:" not in css
+        assert "margin-top:" not in css
 
-    def test_vertical_status_modules_stack_as_pill(self):
+    def test_vertical_status_group_owns_single_pill_surface(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = apply_settings._waybar_css_vertical(tokens)
+        assert "#group-status-0, #status-0 {" in css
+        assert "border: 1px solid rgba(255, 255, 255, 0.18)" in css
+        assert "border-radius: 999px" in css
         assert "#pulseaudio, #backlight, #battery, #clock" in css
         assert "background: rgba(255, 255, 255, 0.14)" in css
-        assert "border-left: 1px solid rgba(255, 255, 255, 0.18)" in css
-        assert "border-right: 1px solid rgba(255, 255, 255, 0.18)" in css
-        assert "border-top-left-radius: 999px" in css
-        assert "border-top-right-radius: 999px" in css
-        assert "border-bottom-left-radius: 999px" in css
-        assert "border-bottom-right-radius: 999px" in css
+        assert "background: transparent" in css
+        assert "border: none" in css
         assert "#tray" in css
         assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
-        assert "margin-top: -10px" in css
+        assert "margin-left:" not in css
+        assert "margin-top:" not in css
 
     def test_status_css_follows_layout_order_and_excludes_tray(self):
         tokens = _make_tokens(
@@ -709,12 +709,24 @@ class TestStatusPillCss:
             }
         )
         css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#group-status-0, #status-0, #group-status-1, #status-1 {" in css
         assert "#clock, #battery, #pulseaudio, #backlight" in css
         assert "#clock, #battery, #tray" not in css
-        assert "#clock {\n    border-top-left-radius: 999px;" in css
-        assert "#battery {\n    border-top-right-radius: 999px;" in css
-        assert "#pulseaudio {\n    border-top-left-radius: 999px;" in css
-        assert "#backlight {\n    border-top-right-radius: 999px;" in css
+        assert "margin-left:" not in css
+        assert "margin-top:" not in css
+
+    def test_single_status_module_remains_standalone_pill(self):
+        tokens = _make_tokens(
+            layout={
+                "start": ["custom/launcher"],
+                "center": ["wlr/taskbar"],
+                "end": ["clock", "tray"],
+            }
+        )
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#clock {" in css
+        assert "#group-status-0" not in css
+        assert "background: transparent" not in css
 
 
 class TestAccentForegroundContrast:

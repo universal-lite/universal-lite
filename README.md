@@ -35,13 +35,12 @@ Flathub via Bazaar.
 
 ## Install
 
-### .raw USB installer (recommended for Chromebooks under 4GB of ram)
+### .raw USB installer (recommended for Chromebooks under 4 GB of RAM)
 
 You need:
 
 - A second Linux machine (or VM) to prepare the USB
-- A USB drive, **16 GB minimum** (holds the live environment and
-  pre-downloaded Flatpaks)
+- A USB drive, **16 GB minimum** (holds the live installer environment)
 - A target drive in the machine, **16 GB minimum** (32+ GB recommended)
 
 **Step 1 — Download the image.** Open
@@ -62,11 +61,14 @@ Or use [Impression](https://flathub.org/apps/io.gitlab.adhami3310.Impression)
 if you'd rather not stare at `dd`.
 
 **Step 3 — Boot from USB.** The installer wizard launches automatically.
-It walks through network, target disk, account, timezone, apps, and a
-final confirmation before `bootc install to-disk` writes the system.
+It walks through language, network, target disk, account, system, apps,
+and a final confirmation before `bootc install to-filesystem` writes the
+system into the prepared target partitions.
 
 **Step 4 — Reboot.** Remove the USB when prompted. The login screen comes
-up with your chosen username pre-filled.
+up with your chosen username pre-filled. Selected Flatpaks are downloaded
+from Flathub on first boot; the greeter shows finishing-setup progress
+until requested app installation completes.
 
 ### ISO installer (Anaconda)
 
@@ -84,8 +86,9 @@ with sensible defaults (zram memory strategy, anaconda-created UID 1000
 as the primary user), and triggers the same first-boot flow the USB
 path uses.
 
-After first login the flatpak-install service pulls Chrome and Bazaar
-from Flathub.
+On first boot the flatpak-install service pulls the default Flatpaks
+(Chrome, Bazaar, and GTK3 theme helpers) from Flathub. Offline or failed
+installs retry on the next boot.
 
 ### Switch from an existing Fedora Atomic system
 
@@ -125,20 +128,24 @@ always available in the boot menu — select it to roll back.
 The USB installer boots into a labwc session running the setup wizard
 fullscreen. It walks through:
 
-1. **Network** — connect to WiFi if needed (skipped if already online)
-2. **Disk** — target drive, filesystem (ext4/xfs/btrfs), and memory
+1. **Language** — system language plus keyboard layout, with common
+   regional variants
+2. **Network** — connect to WiFi if needed (skipped if already online)
+3. **Disk** — target drive, filesystem (ext4/xfs/btrfs), and memory
    management strategy
-3. **Account** — full name, username, password
-4. **System** — timezone, sudo-capable flag, optional root password
-5. **Apps** — Flatpaks to install (pre-downloaded on the USB, copied
-   to the target via `rsync`)
-6. **Confirm** — review every choice before anything is written
-7. **Progress** — live status through `bootc install to-disk`, account
-   creation, network carryover, Flatpak install, memory setup
+4. **Account** — full name, username, password, administrator access,
+   optional root password
+5. **System** — timezone and hostname
+6. **Apps** — Flatpaks to install from Flathub on first boot
+7. **Confirm** — review every choice before anything is written
+8. **Progress** — live status through partitioning, `bootc install
+   to-filesystem`, account creation, network carryover, app selection
+   handoff, memory setup, and finalization
 
-Errors are handled per step: fatal errors (partitioning failures) return
-you to change settings, retryable errors show a retry button, and
-skippable errors (a single app failing to install) let you continue.
+Errors are handled per step: partitioning failures return you to change
+settings, and post-partition install/configuration failures show a retry
+button from the failed step. First-boot Flatpak installs retry on later
+boots until every selected app is present.
 
 ### Memory management
 
@@ -179,7 +186,7 @@ changes take effect on the next reboot.
 | Compositor | `labwc` | wlroots-based, minimal memory footprint |
 | Panel | `waybar` | Chromebook-style shelf (bottom by default) |
 | App menu | `universal-lite-app-menu` (in-process GTK4) | Token-aware search, categorized launcher, triggered by Super+Space or the panel launcher |
-| Browser | Google Chrome (flatpak), Firefox (rpm) | Chrome to replace ChromeOS effectively, Firefox as a backup |
+| Browser | Google Chrome (Flatpak, first boot) | Chrome to replace ChromeOS effectively; other browsers can be installed from Flathub |
 | File manager | `Thunar` | Lightweight, thumbnail support |
 | Terminal | `foot` | GPU-accelerated, minimal (~8-15 MiB resident) |
 | Greeter | `greetd` + custom GTK4 greeter | Login screen via `cage` kiosk, palette-synced to the user's theme + accent |
@@ -190,7 +197,7 @@ changes take effect on the next reboot.
 | Bluetooth | `bluez` | Pair devices via Settings app or system tray |
 | Printing | `CUPS` | Local and network printers |
 | App store | `Bazaar` (Flatpak, first-boot) | Browse and install apps from Flathub |
-| Settings | `universal-lite-settings` | Full libadwaita settings app — 15 pages, responsive layout, 22 languages |
+| Settings | `universal-lite-settings` | Full libadwaita settings app — 15 pages, responsive layout, 22 locale codes |
 | Night light | `gammastep` + per-user systemd timer | Reconciles every 15 min during a configured schedule |
 | Multimedia | RPM Fusion + GStreamer + JPEG-XL/WebP loaders | Codec + image-format support out of the box |
 
@@ -266,18 +273,20 @@ accessibility scaling).
 | Sound | Output/input device, volume, mute |
 | Power & Lock | Lock/display-off/suspend timeouts, power profile, lid close action |
 | Accessibility | Large text, cursor size, high contrast, reduce motion |
-| Date & Time | Timezone picker, NTP toggle, 12/24-hour clock |
+| Date & Time | Timezone entry, NTP toggle, 12/24-hour clock |
 | Users | Display name, password, automatic login |
 | Language & Region | System locale, regional formats |
 | Default Apps | Browser, file manager, terminal, editor, image/PDF/media/email |
 | About | System info, hardware, disk usage, update check, restore-defaults |
 
-Changes apply immediately — no restart — and are applied consistently
-across labwc (SSD titlebars), waybar (panel), mako (notifications), foot
-(terminal), swaylock, and every CSD GTK app.
+Most changes apply immediately and are applied consistently across labwc
+(SSD titlebars), waybar (panel), mako (notifications), foot (terminal),
+swaylock, and CSD GTK apps. Language and regional-format changes take
+effect after logging out; display scale and resolution changes use a
+timed confirmation dialog so a bad mode can revert automatically.
 
-Translated to 22 languages (am, ar, de, es, fa, fr, ha, hi, it, ja, ko,
-nl, pl, pt-BR, ru, sv, sw, th, tr, vi, yo, zh-Hans). Human translator
+Translated to 22 locale codes (am, ar, de, es, fa, fr, ha, hi, it, ja,
+ko, nl, pl, pt, ru, sv, sw, th, tr, vi, yo, zh). Human translator
 pass recommended before shipping widely — machine translation used to
 seed every entry, but native speakers will spot register mismatches.
 
@@ -295,6 +304,9 @@ Shipped in `/usr/bin/`:
 
 - [just](https://just.systems) — task runner
 - [podman](https://podman.io) — container runtime
+- `pytest` — unit tests
+- `shellcheck` — `just lint`
+- `qemu-img` — `just convert-raw`
 
 ### Build
 
@@ -311,6 +323,7 @@ just convert-raw    # Convert raw → QCOW2 (for GNOME Boxes import)
 ```bash
 just run-vm-qcow2   # Run QCOW2 in a browser-accessible VM (qemux/qemu)
 just run-vm-raw     # Run raw image the same way
+just run-vm-iso     # Run the Anaconda ISO image
 just spawn-vm       # Run with systemd-vmspawn (GUI)
 ```
 
@@ -324,10 +337,17 @@ just lint           # shellcheck on all shell scripts
 just check          # Justfile syntax check
 ```
 
+### Test
+
+```bash
+python -m pytest tests
+```
+
 ### CI/CD
 
-Every push to `main` and a daily schedule build and publish the OCI image
-to `ghcr.io/universal-lite/universal-lite`. Images are signed with
+Pull requests, non-README pushes to `main`, and the daily schedule build
+the OCI image. Default-branch builds publish
+`ghcr.io/universal-lite/universal-lite` and sign images with
 [cosign](https://github.com/sigstore/cosign).
 
 To set up signing on a fresh fork:
@@ -337,9 +357,11 @@ COSIGN_PASSWORD='' cosign generate-key-pair
 gh secret set SIGNING_SECRET < cosign.key
 ```
 
-Disk images (raw + anaconda-iso) build on manual dispatch via the
-[disk image workflow](../../actions/workflows/build-disk.yml). Dependencies
-are kept current by Dependabot and Renovate.
+Disk images (raw + anaconda-iso) build on manual dispatch and after
+successful scheduled container builds via the
+[disk image workflow](../../actions/workflows/build-disk.yml). Disk-config
+pull requests validate the image build without uploading artifacts.
+Dependencies are kept current by Dependabot and Renovate.
 
 ## Project layout
 
@@ -350,8 +372,8 @@ disk_config/
   disk.toml                                # Raw disk image config (10 GiB root)
   iso.toml                                 # ISO config (Anaconda + kickstart bootc-switch)
 po/                                        # Translation sources
-  settings/*.po                            # 22 languages for settings + greeter
-tests/                                     # Unit tests (settings store, event bus)
+  settings/*.po                            # 22 locale codes for settings + greeter
+tests/                                     # Unit tests for wizard, settings, desktop defaults, helpers
 files/
   etc/
     gtk-3.0/, gtk-4.0/                     # Decoration-layout defaults (min/max/close)
@@ -417,3 +439,7 @@ files/
   build.yml                                # OCI image build + sign + push
   build-disk.yml                           # Raw + anaconda-iso artifact builds
 ```
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).

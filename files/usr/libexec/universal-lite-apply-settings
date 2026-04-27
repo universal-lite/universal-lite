@@ -797,91 +797,76 @@ def _status_module_selector(module: str) -> str:
     return f"#{module.replace('/', '-')}"
 
 
+def _group_module_selectors(module: str) -> list[str]:
+    """Return CSS selectors for a Waybar group module name.
+
+    Waybar has varied across releases/plugins in whether a group named
+    ``group/status-0`` is exposed as ``#group-status-0`` or ``#status-0``.
+    Emit both selectors so the generated theme stays visually stable across
+    the supported Waybar versions.
+    """
+    selectors = [_status_module_selector(module)]
+    if "/" in module:
+        selectors.append(f"#{module.split('/', 1)[1].replace('/', '-')}")
+    return selectors
+
+
+def _status_pill_groups_for_layout(layout: dict) -> tuple[list[tuple[str, list[str]]], list[str]]:
+    """Return grouped status runs and standalone status modules.
+
+    This mirrors ``_group_status_runs`` so CSS selectors remain aligned with
+    the generated config even when users reorder modules between start,
+    center, and end sections.
+    """
+    groups: list[tuple[str, list[str]]] = []
+    singles: list[str] = []
+    group_index = 0
+    for section in ("start", "center", "end"):
+        for run in _status_runs_for_modules(list(layout.get(section, []))):
+            if len(run) == 1:
+                singles.append(run[0])
+                continue
+            groups.append((f"group/status-{group_index}", run))
+            group_index += 1
+    return groups, singles
+
+
 def _waybar_status_css(tokens: dict, *, vertical: bool) -> str:
     """Style status runs without assuming a fixed module order."""
-    runs = _status_runs_for_layout(tokens["layout"])
-    modules = [module for run in runs for module in run]
-    if not modules:
+    groups, singles = _status_pill_groups_for_layout(tokens["layout"])
+    if not groups and not singles:
         return ""
 
-    base_selectors = ", ".join(_status_module_selector(module) for module in modules)
-    spacing = tokens["panel_spacing"]
+    group_selectors = [
+        selector
+        for group_id, _run in groups
+        for selector in _group_module_selectors(group_id)
+    ]
+    single_selectors = [_status_module_selector(module) for module in singles]
+    pill_selectors = ", ".join(group_selectors + single_selectors)
     border = tokens["panel_status_border"]
     lines = [
-        f"{base_selectors} {{",
+        f"{pill_selectors} {{",
         f"    background: {tokens['panel_status_bg']};",
+        f"    border: 1px solid {border};",
+        "    border-radius: 999px;",
+        f"    transition: {tokens['panel_transition']};",
+        "}",
     ]
-    if vertical:
-        lines.extend([
-            f"    border-left: 1px solid {border};",
-            f"    border-right: 1px solid {border};",
-            "    border-radius: 0;",
-        ])
-    else:
-        lines.extend([
-            f"    border-top: 1px solid {border};",
-            f"    border-bottom: 1px solid {border};",
-            "    border-radius: 0;",
-        ])
-    lines.append("}")
 
-    for run in runs:
-        if not run:
-            continue
-        first = run[0]
-        last = run[-1]
-        if vertical:
-            lines.extend([
-                f"{_status_module_selector(first)} {{",
-                "    border-top-left-radius: 999px;",
-                "    border-top-right-radius: 999px;",
-                f"    border-top: 1px solid {border};",
-                "}",
-                f"{_status_module_selector(last)} {{",
-                "    border-bottom-left-radius: 999px;",
-                "    border-bottom-right-radius: 999px;",
-                f"    border-bottom: 1px solid {border};",
-                "}",
-            ])
-            if len(run) == 1:
-                lines.extend([
-                    f"{_status_module_selector(first)} {{",
-                    "    border-radius: 999px;",
-                    "}",
-                ])
-            else:
-                inner_selectors = ", ".join(_status_module_selector(module) for module in run[1:])
-                lines.extend([
-                    f"{inner_selectors} {{",
-                    f"    margin-top: -{spacing}px;",
-                    "}",
-                ])
-        else:
-            lines.extend([
-                f"{_status_module_selector(first)} {{",
-                "    border-top-left-radius: 999px;",
-                "    border-bottom-left-radius: 999px;",
-                f"    border-left: 1px solid {border};",
-                "}",
-                f"{_status_module_selector(last)} {{",
-                "    border-top-right-radius: 999px;",
-                "    border-bottom-right-radius: 999px;",
-                f"    border-right: 1px solid {border};",
-                "}",
-            ])
-            if len(run) == 1:
-                lines.extend([
-                    f"{_status_module_selector(first)} {{",
-                    "    border-radius: 999px;",
-                    "}",
-                ])
-            else:
-                inner_selectors = ", ".join(_status_module_selector(module) for module in run[1:])
-                lines.extend([
-                    f"{inner_selectors} {{",
-                    f"    margin-left: -{spacing}px;",
-                    "}",
-                ])
+    if groups:
+        child_selectors = ", ".join(
+            _status_module_selector(module)
+            for _group_id, run in groups
+            for module in run
+        )
+        lines.extend([
+            f"{child_selectors} {{",
+            "    background: transparent;",
+            "    border: none;",
+            "    border-radius: 999px;",
+            "}",
+        ])
 
     return "\n".join(lines) + "\n"
 
