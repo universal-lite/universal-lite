@@ -69,6 +69,54 @@ def _load_accent_name() -> str:
     return "blue"
 
 
+def _hex_to_rgb(color: str) -> tuple[int, int, int] | None:
+    color = color.strip().lstrip("#")
+    if len(color) != 6:
+        return None
+    try:
+        return tuple(int(color[i:i + 2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return None
+
+
+def _shade_hex(color: str, factor: float) -> str:
+    rgb = _hex_to_rgb(color)
+    if rgb is None:
+        return color
+    shaded = tuple(max(0, min(255, round(channel * factor))) for channel in rgb)
+    return "#{:02x}{:02x}{:02x}".format(*shaded)
+
+
+def _relative_luminance(color: str) -> float | None:
+    rgb = _hex_to_rgb(color)
+    if rgb is None:
+        return None
+
+    def channel(value: int) -> float:
+        normalized = value / 255
+        if normalized <= 0.04045:
+            return normalized / 12.92
+        return ((normalized + 0.055) / 1.055) ** 2.4
+
+    r, g, b = (channel(value) for value in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def _contrast_ratio(color_a: str, color_b: str) -> float:
+    lum_a = _relative_luminance(color_a)
+    lum_b = _relative_luminance(color_b)
+    if lum_a is None or lum_b is None:
+        return 0.0
+    lighter = max(lum_a, lum_b)
+    darker = min(lum_a, lum_b)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _accent_foreground(background: str) -> str:
+    """Choose the higher-contrast text colour for an accent-filled control."""
+    return max(("#ffffff", "#000000"), key=lambda color: _contrast_ratio(background, color))
+
+
 def _load_palettes() -> dict:
     """Load base palette from shared JSON file and extend with greeter-specific tokens."""
     try:
@@ -86,6 +134,9 @@ def _load_palettes() -> dict:
         }
     accent_name = _load_accent_name()
     accent = raw["accents"].get(accent_name) or raw["accents"].get("blue", "#3584e4")
+    accent_hover_light = _shade_hex(accent, 1.1)
+    accent_hover_dark = _shade_hex(accent, 1.15)
+    accent_active = _shade_hex(accent, 0.85)
     error = raw["accents"].get("red", "#e62d42")
     # Adwaita-style elevation: three stacked layers - a hairline
     # outline that defines the card's edge even against a similar-
@@ -108,11 +159,11 @@ def _load_palettes() -> dict:
             **raw["light"],
             "entry_bg": raw["light"].get("view_bg", raw["light"]["card_bg"]),
             "accent": accent,
-            # GTK CSS shade() lightens/darkens the accent proportionally,
-            # so hover and active states track whichever accent the user
-            # picked rather than hardcoded blue shades.
-            "accent_hover": f"shade({accent}, 1.1)",
-            "accent_active": f"shade({accent}, 0.85)",
+            "accent_fg": _accent_foreground(accent),
+            "accent_hover": accent_hover_light,
+            "accent_hover_fg": _accent_foreground(accent_hover_light),
+            "accent_active": accent_active,
+            "accent_active_fg": _accent_foreground(accent_active),
             "error": error,
             "hover": "rgba(0, 0, 0, 0.04)",
             "card_shadow": light_shadow,
@@ -121,8 +172,11 @@ def _load_palettes() -> dict:
             **raw["dark"],
             "entry_bg": raw["dark"].get("view_bg", "#1d1d20"),
             "accent": accent,
-            "accent_hover": f"shade({accent}, 1.15)",
-            "accent_active": f"shade({accent}, 0.85)",
+            "accent_fg": _accent_foreground(accent),
+            "accent_hover": accent_hover_dark,
+            "accent_hover_fg": _accent_foreground(accent_hover_dark),
+            "accent_active": accent_active,
+            "accent_active_fg": _accent_foreground(accent_active),
             "error": error,
             "hover": "rgba(255, 255, 255, 0.06)",
             "card_shadow": dark_shadow,
@@ -213,13 +267,13 @@ window {{
     padding: 10px 32px;
     border-radius: 999px;
     background: {p["accent"]};
-    color: #ffffff;
+    color: {p["accent_fg"]};
     border: none;
     min-height: 22px;
 }}
 
-.login-button:hover {{ background: {p["accent_hover"]}; }}
-.login-button:active {{ background: {p["accent_active"]}; }}
+.login-button:hover {{ background: {p["accent_hover"]}; color: {p["accent_hover_fg"]}; }}
+.login-button:active {{ background: {p["accent_active"]}; color: {p["accent_active_fg"]}; }}
 .login-button:disabled {{ background: {p["border"]}; color: {p["secondary_fg"]}; }}
 
 .switch-user {{

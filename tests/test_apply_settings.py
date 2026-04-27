@@ -28,6 +28,8 @@ def _make_tokens(**overrides):
     """Return a minimal tokens dict suitable for write_waybar_config."""
     base = {
         "edge": "bottom",
+        "theme": "light",
+        "accent": "blue",
         "is_vertical": False,
         "layout": {
             "start": ["custom/launcher"],
@@ -46,9 +48,12 @@ def _make_tokens(**overrides):
         "panel_pad_tray": 6,
         "panel_pad_pin": 8,
         "clock_24h": False,
+        "high_contrast": False,
         # Styling tokens
         "font_ui": "Roboto",
+        "font_mono": "Roboto Mono",
         "font_size_ui": 13,
+        "font_size_mono": 11,
         "text_primary": "#1e1e1e",
         "text_secondary": "#5e5c64",
         "surface_base": "#fafafa",
@@ -56,6 +61,7 @@ def _make_tokens(**overrides):
         "border_default": "#d3d3d3",
         "state_hover": "rgba(30, 30, 30, 0.08)",
         "accent_hex": "#3584e4",
+        "accent_fg_hex": "#ffffff",
         "accent_rgba_15": "rgba(53, 132, 228, 0.15)",
         "color_warning": "#e5a50a",
         "color_error": "#c01c28",
@@ -71,7 +77,9 @@ def _make_tokens(**overrides):
         "panel_status_border": "rgba(255, 255, 255, 0.18)",
         "panel_accent_bg": "rgba(53, 132, 228, 0.26)",
         "panel_accent_border": "rgba(53, 132, 228, 0.42)",
+        "panel_transition": "background-color 120ms ease, border-color 120ms ease, color 120ms ease",
         "panel_bar_inset": 4,
+        "mako_anchor": "top-right",
     }
     base.update(overrides)
     return base
@@ -262,7 +270,7 @@ class TestVerticalCss:
         css = apply_settings._waybar_css_vertical(tokens)
         assert "border-radius: 999px" in css
 
-    def test_vertical_active_state_avoids_edge_strip_indicator(self):
+    def test_vertical_active_state_uses_edge_running_indicator(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
         css = (
             apply_settings._waybar_css_common(tokens)
@@ -270,9 +278,9 @@ class TestVerticalCss:
         )
         active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
         assert active is not None
-        assert "border-left:" not in active.group("body")
-        assert "border-right:" not in active.group("body")
-        assert "border-bottom:" not in active.group("body")
+        assert "background: rgba(255, 255, 255, 0.10)" in active.group("body")
+        assert "border-left: 3px solid #3584e4" in css
+        assert "rgba(53, 132, 228, 0.26)" not in active.group("body")
 
     def test_vertical_window_has_min_width(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
@@ -482,19 +490,21 @@ class TestCommonCssDesign:
     def test_common_has_active_taskbar_state(self):
         css = apply_settings._waybar_css_common(_make_tokens())
         assert "#taskbar button.active" in css
-        assert "rgba(53, 132, 228, 0.26)" in css
-        assert "rgba(53, 132, 228, 0.42)" in css
+        active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
+        assert active is not None
+        assert "background: rgba(255, 255, 255, 0.10)" in active.group("body")
+        assert "rgba(53, 132, 228, 0.26)" not in active.group("body")
         assert "::after" not in css
 
-    def test_common_avoids_unsupported_gtk_css(self):
+    def test_common_avoids_pseudo_element_taskbar_indicator(self):
         css = apply_settings._waybar_css_common(_make_tokens())
         assert "::" not in css
-        assert "transition:" not in css
         assert "box-shadow:" not in css
         assert "position:" not in css
         assert "border-radius: 50%" not in css
+        assert "transition:" in css
 
-    def test_complete_css_avoids_unsupported_gtk_css(self):
+    def test_complete_css_avoids_pseudo_element_taskbar_indicator(self):
         for tokens, layout_css in (
             (
                 _make_tokens(edge="bottom", is_vertical=False),
@@ -507,10 +517,10 @@ class TestCommonCssDesign:
         ):
             css = apply_settings._waybar_css_common(tokens) + layout_css(tokens)
             assert "::" not in css
-            assert "transition:" not in css
             assert "box-shadow:" not in css
             assert "position:" not in css
             assert "border-radius: 50%" not in css
+            assert "transition:" in css
             assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
 
     def test_common_pill_radius_on_window(self):
@@ -557,7 +567,7 @@ class TestHorizontalCss:
         assert "min-height:" in css
         assert "min-width:" not in css
 
-    def test_horizontal_active_state_avoids_edge_strip_indicator(self):
+    def test_horizontal_active_state_uses_edge_running_indicator(self):
         tokens = _make_tokens(edge="bottom")
         css = (
             apply_settings._waybar_css_common(tokens)
@@ -565,7 +575,9 @@ class TestHorizontalCss:
         )
         active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
         assert active is not None
-        assert "border-bottom:" not in active.group("body")
+        assert "background: rgba(255, 255, 255, 0.10)" in active.group("body")
+        assert "border-bottom: 3px solid #3584e4" in css
+        assert "rgba(53, 132, 228, 0.26)" not in active.group("body")
 
     def test_horizontal_window_padding_horizontal_only(self):
         tokens = _make_tokens(edge="bottom")
@@ -591,15 +603,44 @@ class TestHorizontalCss:
 # ---------------------------------------------------------------------------
 
 class TestWaybarModuleCompatibility:
-    def test_config_does_not_use_group_module(self, tmp_path):
+    def test_config_groups_contiguous_status_modules(self, tmp_path):
         tokens = _make_tokens()
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
-        assert "group/status" not in config
+        assert "group/status-0" in config
+        assert config["group/status-0"]["orientation"] == "inherit"
+        assert config["group/status-0"]["modules"] == [
+            "pulseaudio",
+            "backlight",
+            "battery",
+            "clock",
+        ]
 
-    def test_status_modules_remain_direct_modules(self, tmp_path):
+    def test_status_group_preserves_user_order_and_excludes_tray(self, tmp_path):
+        tokens = _make_tokens(
+            layout={
+                "start": ["custom/launcher"],
+                "center": ["wlr/taskbar"],
+                "end": ["clock", "battery", "tray", "pulseaudio", "backlight"],
+            }
+        )
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert config["modules-right"] == ["group/status-0", "tray", "group/status-1"]
+        assert config["group/status-0"]["modules"] == ["clock", "battery"]
+        assert config["group/status-1"]["modules"] == ["pulseaudio", "backlight"]
+        assert "tray" not in config["group/status-0"]["modules"]
+        assert "tray" not in config["group/status-1"]["modules"]
+
+    def test_single_status_module_remains_direct_module(self, tmp_path):
         tokens = _make_tokens()
+        tokens["layout"] = {
+            "start": ["custom/launcher"],
+            "center": ["wlr/taskbar"],
+            "end": ["clock", "tray"],
+        }
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
@@ -608,8 +649,8 @@ class TestWaybarModuleCompatibility:
             + config["modules-center"]
             + config["modules-right"]
         )
-        for m in ["pulseaudio", "backlight", "battery", "clock"]:
-            assert m in modules
+        assert "clock" in modules
+        assert not any(m.startswith("group/status") for m in modules)
 
     def test_tray_remains_direct_module(self, tmp_path):
         tokens = _make_tokens()
@@ -658,3 +699,102 @@ class TestStatusPillCss:
         assert "#tray" in css
         assert not re.search(r"border-radius:\s+[^;\n]+\s+[^;\n]+;", css)
         assert "margin-top: -10px" in css
+
+    def test_status_css_follows_layout_order_and_excludes_tray(self):
+        tokens = _make_tokens(
+            layout={
+                "start": ["custom/launcher"],
+                "center": ["wlr/taskbar"],
+                "end": ["clock", "battery", "tray", "pulseaudio", "backlight"],
+            }
+        )
+        css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#clock, #battery, #pulseaudio, #backlight" in css
+        assert "#clock, #battery, #tray" not in css
+        assert "#clock {\n    border-top-left-radius: 999px;" in css
+        assert "#battery {\n    border-top-right-radius: 999px;" in css
+        assert "#pulseaudio {\n    border-top-left-radius: 999px;" in css
+        assert "#backlight {\n    border-top-right-radius: 999px;" in css
+
+
+class TestAccentForegroundContrast:
+    def test_yellow_accent_uses_dark_foreground(self):
+        tokens = apply_settings._build_tokens(_make_settings(accent="yellow"))
+        assert tokens["accent_hex"] == "#c88800"
+        assert tokens["accent_fg_hex"] == "#1e1e1e"
+
+    def test_foot_selection_foreground_follows_accent_contrast(self, tmp_path):
+        tokens = apply_settings._build_tokens(_make_settings(accent="yellow"))
+        with patch.object(apply_settings, "FOOT_DIR", tmp_path):
+            apply_settings.write_foot_config(tokens)
+        ini = (tmp_path / "foot.ini").read_text()
+        assert "selection-background=c88800" in ini
+        assert "selection-foreground=1e1e1e" in ini
+
+    def test_labwc_menu_active_text_follows_accent_contrast(self, tmp_path):
+        tokens = apply_settings._build_tokens(_make_settings(accent="yellow"))
+        with patch.object(apply_settings, "LABWC_DIR", tmp_path):
+            apply_settings.write_labwc_themerc(tokens)
+        themerc = (tmp_path / "themerc-override").read_text()
+        assert "menu.items.active.bg.color: #c88800" in themerc
+        assert "menu.items.active.text.color: #1e1e1e" in themerc
+
+
+class TestHighContrastShellConfigs:
+    def test_high_contrast_tokens_strengthen_waybar_surfaces(self):
+        tokens = apply_settings._build_tokens(
+            _make_settings(theme="dark", high_contrast=True)
+        )
+        assert tokens["surface_base"] == "#000000"
+        assert tokens["border_default"] == "#ffffff"
+        assert tokens["panel_surface"] == "#000000"
+        assert tokens["panel_alpha"] == "0.98"
+        assert tokens["panel_border"] == "rgba(255, 255, 255, 0.55)"
+        assert tokens["panel_status_border"] == "rgba(255, 255, 255, 0.55)"
+
+    def test_high_contrast_mako_uses_stronger_border_and_surface(self, tmp_path):
+        tokens = apply_settings._build_tokens(
+            _make_settings(theme="dark", high_contrast=True)
+        )
+        with patch.object(apply_settings, "MAKO_DIR", tmp_path):
+            apply_settings.write_mako_config(tokens)
+        config = (tmp_path / "config").read_text()
+        assert "background-color=#1d1d20FF" in config
+        assert "border-color=#ffffffFF" in config
+        assert "border-size=3" in config
+
+    def test_high_contrast_foot_uses_opaque_black_surface(self, tmp_path):
+        tokens = apply_settings._build_tokens(
+            _make_settings(theme="dark", high_contrast=True)
+        )
+        with patch.object(apply_settings, "FOOT_DIR", tmp_path):
+            apply_settings.write_foot_config(tokens)
+        ini = (tmp_path / "foot.ini").read_text()
+        assert "alpha=1.00" in ini
+        assert "foreground=ffffff" in ini
+        assert "background=000000" in ini
+
+    def test_high_contrast_labwc_uses_stronger_borders(self, tmp_path):
+        tokens = apply_settings._build_tokens(
+            _make_settings(theme="dark", high_contrast=True)
+        )
+        with patch.object(apply_settings, "LABWC_DIR", tmp_path):
+            apply_settings.write_labwc_themerc(tokens)
+        themerc = (tmp_path / "themerc-override").read_text()
+        assert "border.width: 2" in themerc
+        assert "menu.border.width: 2" in themerc
+        assert "menu.border.color: #ffffff" in themerc
+        assert "osd.border.width: 2" in themerc
+        assert "window.active.button.hover.bg.color: #434349" in themerc
+
+    def test_high_contrast_swaylock_uses_stronger_indicator(self, tmp_path):
+        tokens = apply_settings._build_tokens(
+            _make_settings(theme="dark", high_contrast=True)
+        )
+        with patch.object(apply_settings, "SWAYLOCK_DIR", tmp_path):
+            apply_settings.write_swaylock_config(tokens)
+        config = (tmp_path / "config").read_text()
+        assert "color=000000" in config
+        assert "indicator-thickness=14" in config
+        assert "inside-color=1d1d20cc" in config
+        assert "ring-color=ffffff" in config
