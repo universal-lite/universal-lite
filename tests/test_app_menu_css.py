@@ -25,6 +25,8 @@ def test_start_menu_uses_waybar_aligned_theme_tokens():
     assert "background-color: alpha(@window_bg_color, 0.90)" in css
     assert "background-color: transparent" in css
     assert "border-radius: 24px" in css
+    assert ".app-menu-surface-compact {" in css
+    assert "border-radius: 18px" in css
     assert "background: alpha(@window_fg_color, 0.08)" in css
     assert "background: alpha(@accent_color, 0.14)" in css
 
@@ -120,6 +122,8 @@ def test_start_menu_metrics_fit_1024x600_bottom_panel():
     assert metrics["width"] == app_menu.MENU_WIDTH_IDEAL
     assert metrics["height"] == 496
     assert metrics["columns"] == app_menu.GRID_COLUMNS_MAX
+    assert metrics["mode"] == "popover"
+    assert metrics["show_frequent"] is True
 
 
 def test_start_menu_metrics_scale_tiles_and_reduce_columns_for_large_text():
@@ -133,6 +137,7 @@ def test_start_menu_metrics_scale_tiles_and_reduce_columns_for_large_text():
     assert metrics["tile_width"] > app_menu.TILE_WIDTH_BASE
     assert metrics["tile_height"] > app_menu.TILE_HEIGHT_BASE
     assert metrics["columns"] < app_menu.GRID_COLUMNS_MAX
+    assert metrics["mode"] == "popover"
 
 
 def test_start_menu_metrics_fit_1360x768_at_200_percent_scale():
@@ -145,11 +150,14 @@ def test_start_menu_metrics_fit_1360x768_at_200_percent_scale():
         (680, 384),
     )
 
-    assert metrics["width"] <= 680 - (2 * (app_menu.SHADOW_PAD + app_menu.PANEL_GAP))
+    assert metrics["mode"] == "compact"
+    assert metrics["show_frequent"] is False
+    assert metrics["surface_margin"] == app_menu.COMPACT_INSET
+    assert metrics["width"] == 680 - (2 * app_menu.COMPACT_INSET)
     assert metrics["height"] <= 384 - (
-        2 * (app_menu.SHADOW_PAD + app_menu.PANEL_GAP)
+        2 * app_menu.COMPACT_INSET
     ) - app_menu._panel_extent({"density": "comfortable", "font_size": 11}, "bottom")
-    assert metrics["columns"] < app_menu.GRID_COLUMNS_MAX
+    assert metrics["columns"] == app_menu.GRID_COLUMNS_MAX
 
 
 def test_display_size_normalization_uses_configured_output_scale_once():
