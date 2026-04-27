@@ -415,6 +415,126 @@ class TestSettingsRecovery:
         assert result["night_light_start"] == "20:00"
         assert result["night_light_end"] == "06:00"
 
+    def test_invalid_wallpaper_falls_back_to_bundled_background(self, tmp_path):
+        bundled = tmp_path / "backgrounds/universal-lite"
+        bundled.mkdir(parents=True)
+        light = bundled / "chrome-dawn.svg"
+        dark = bundled / "chrome-sky.svg"
+        light.write_text("<svg/>")
+        dark.write_text("<svg/>")
+
+        with patch.object(apply_settings, "_resolve_wallpaper", return_value=None), \
+             patch.object(apply_settings, "FALLBACK_WALLPAPER_PATHS", {
+                 "light": (light,),
+                 "dark": (dark, light),
+             }):
+            result = _run_ensure_settings(
+                _make_settings(theme="dark", wallpaper="missing-wallpaper"),
+                tmp_path,
+            )
+
+        assert result["wallpaper"] == str(dark)
+        written = json.loads((tmp_path / "settings.json").read_text())
+        assert written["wallpaper"] == "universal-lite"
+
+
+class TestWallpaperSwap:
+    class _Proc:
+        def __init__(self, pid: int, alive: bool):
+            self.pid = pid
+            self._alive = alive
+
+        def poll(self):
+            return None if self._alive else 1
+
+    def test_failed_replacement_keeps_existing_swaybg(self, tmp_path):
+        requested = tmp_path / "bad.svg"
+        requested.write_text("<svg/>")
+
+        with patch.object(apply_settings.shutil, "which", return_value="/usr/bin/swaybg"), \
+             patch.object(apply_settings, "_pids_for_program", return_value=[101]), \
+             patch.object(apply_settings, "_wallpaper_fallback_candidates", return_value=[]), \
+             patch.object(apply_settings, "_start_swaybg", return_value=self._Proc(202, False)), \
+             patch.object(apply_settings.time, "sleep"), \
+             patch.object(apply_settings.os, "kill") as kill:
+            apply_settings._swap_swaybg_wallpaper(str(requested), "dark")
+
+        kill.assert_not_called()
+
+    def test_fallback_must_survive_before_old_swaybg_is_retired(self, tmp_path):
+        requested = tmp_path / "bad.svg"
+        fallback = tmp_path / "fallback.svg"
+        requested.write_text("<svg/>")
+        fallback.write_text("<svg/>")
+
+        with patch.object(apply_settings.shutil, "which", return_value="/usr/bin/swaybg"), \
+             patch.object(apply_settings, "_pids_for_program", return_value=[101]), \
+             patch.object(
+                 apply_settings,
+                 "_wallpaper_fallback_candidates",
+                 return_value=[("fallback", str(fallback))],
+             ), \
+             patch.object(
+                 apply_settings,
+                 "_start_swaybg",
+                 side_effect=[self._Proc(202, False), self._Proc(303, True)],
+             ), \
+             patch.object(apply_settings.time, "sleep"), \
+             patch.object(apply_settings.os, "kill") as kill:
+            apply_settings._swap_swaybg_wallpaper(str(requested), "dark")
+
+        kill.assert_called_once_with(101, apply_settings.signal.SIGTERM)
+
+
+class TestApplyLock:
+    def test_apply_lock_uses_user_runtime_dir(self, tmp_path):
+        with patch.dict(apply_settings.os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
+            handle = apply_settings._open_apply_lock()
+            try:
+                assert handle is not None
+                assert (tmp_path / "universal-lite-apply-settings.lock").exists()
+            finally:
+                apply_settings._close_apply_lock(handle)
+
+
+class TestKeybindingMerge:
+    def test_rebinding_default_key_removes_old_default_binding(self, tmp_path):
+        settings_dir = tmp_path / "settings"
+        settings_dir.mkdir()
+        (settings_dir / "keybindings.json").write_text(json.dumps([
+            {
+                "key": "C-A-Y",
+                "action": "Execute",
+                "command": "foot",
+            }
+        ]))
+
+        defaults = {
+            "C-A-T": '<action name="Execute" command="foot"/>',
+            "W-l": '<action name="Execute" command="swaylock -f"/>',
+        }
+
+        with patch.object(apply_settings, "SETTINGS_DIR", settings_dir):
+            xml = apply_settings._build_merged_keybinds_xml(defaults)
+
+        assert 'key="C-A-Y"' in xml
+        assert 'key="C-A-T"' not in xml
+        assert 'key="W-l"' in xml
+
+    def test_empty_keybinding_action_removes_default(self, tmp_path):
+        settings_dir = tmp_path / "settings"
+        settings_dir.mkdir()
+        (settings_dir / "keybindings.json").write_text(json.dumps([
+            {"key": "C-A-T", "action": ""}
+        ]))
+
+        defaults = {"C-A-T": '<action name="Execute" command="foot"/>'}
+
+        with patch.object(apply_settings, "SETTINGS_DIR", settings_dir):
+            xml = apply_settings._build_merged_keybinds_xml(defaults)
+
+        assert 'key="C-A-T"' not in xml
+
 
 # ---------------------------------------------------------------------------
 # M3: Pinned name fallback

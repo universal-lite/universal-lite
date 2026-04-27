@@ -1,10 +1,13 @@
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "files/usr/lib/universal-lite"))
 
 from settings.pages import about, default_apps, keyboard, panel  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_keyboard_binding_clone_does_not_mutate_default_baseline():
@@ -14,6 +17,50 @@ def test_keyboard_binding_clone_does_not_mutate_default_baseline():
     cloned[0]["key"] = "C-A-Y"
 
     assert defaults[0]["key"] == "C-A-T"
+
+
+def test_keyboard_user_keybindings_coerce_malformed_optional_fields(
+    monkeypatch, tmp_path
+):
+    path = tmp_path / "keybindings.json"
+    path.write_text(
+        """
+        [
+          {
+            "key": "C-A-Y",
+            "action": "Execute",
+            "command": [],
+            "direction": {},
+            "menu": 12,
+            "display_name": []
+          }
+        ]
+        """,
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(keyboard, "USER_KEYBINDINGS", path)
+
+    loaded = keyboard._load_user_keybindings()
+
+    assert loaded == [{
+        "key": "C-A-Y",
+        "action": "Execute",
+        "command": "",
+        "direction": "",
+        "menu": "",
+        "display_name": "Execute",
+    }]
+
+
+def test_keyboard_layouts_fall_back_when_localectl_returns_empty(monkeypatch):
+    monkeypatch.setattr(keyboard, "_layouts_cache", None)
+    monkeypatch.setattr(
+        keyboard.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=0, stdout=""),
+    )
+
+    assert keyboard.KeyboardPage._get_layouts() == ["us"]
 
 
 def test_panel_sanitize_pinned_skips_invalid_entries():
@@ -111,6 +158,56 @@ def test_terminal_desktop_write_reports_invalid_command(monkeypatch, tmp_path):
     assert default_apps.DefaultAppsPage._set_terminal(FakeAppInfo()) is False
 
 
+def test_default_apps_browser_row_covers_related_mime_types():
+    groups = dict(default_apps.APP_MIME_TYPES)
+
+    assert groups["Web Browser"] == (
+        "x-scheme-handler/http",
+        "x-scheme-handler/https",
+        "text/html",
+    )
+
+
 def test_restore_defaults_category_titles_escape_markup_ampersands():
     assert about._row_title_text("Mouse & Touchpad") == "Mouse &amp; Touchpad"
     assert about._row_title_text("Date & Time") == "Date &amp; Time"
+
+
+def test_power_lock_helper_survives_transient_unmap():
+    source = (
+        ROOT / "files/usr/lib/universal-lite/settings/pages/power_lock.py"
+    ).read_text(encoding="utf-8")
+
+    assert 'connect("unrealize", lambda _w: self._teardown_helpers())' in source
+    assert 'connect("unmap", lambda _w: self._teardown_helpers())' not in source
+
+
+def test_power_profile_set_uses_async_dbus_call():
+    source = (
+        ROOT / "files/usr/lib/universal-lite/settings/dbus_helpers.py"
+    ).read_text(encoding="utf-8")
+    body = source.split("def set_active_profile", 1)[1].split(
+        "def _on_props_changed", 1
+    )[0]
+
+    assert "self._bus.call(" in body
+    assert "call_sync(" not in body
+    assert "def _on_set_active_profile_done" in body
+
+
+def test_window_close_holds_application_until_apply_work_drains():
+    source = (
+        ROOT / "files/usr/lib/universal-lite/settings/window.py"
+    ).read_text(encoding="utf-8")
+
+    assert "if self._store.has_apply_work():" in source
+    assert "app.hold()" in source
+    assert "self._store.wait_for_apply(_release_app)" in source
+
+
+def test_failed_page_build_unsubscribes_partial_subscriptions():
+    source = (
+        ROOT / "files/usr/lib/universal-lite/settings/window.py"
+    ).read_text(encoding="utf-8")
+
+    assert "page.unsubscribe_all()" in source

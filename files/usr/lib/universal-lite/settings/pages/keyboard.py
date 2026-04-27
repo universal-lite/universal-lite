@@ -221,14 +221,26 @@ def _load_user_keybindings() -> list[dict] | None:
                 continue
             if not isinstance(action, str) or not action:
                 continue
-            # command / direction are action-dependent; accept missing
-            # and let _get_action_name deal with empty strings.
-            entry.setdefault("command", "")
-            entry.setdefault("direction", "")
-            entry["display_name"] = entry.get("display_name") or _get_action_name(
-                entry["action"], entry["command"], entry["direction"],
-            )
-            cleaned.append(entry)
+            command = entry.get("command", "")
+            direction = entry.get("direction", "")
+            menu = entry.get("menu", "")
+            display_name = entry.get("display_name", "")
+            if not isinstance(command, str):
+                command = ""
+            if not isinstance(direction, str):
+                direction = ""
+            if not isinstance(menu, str):
+                menu = ""
+            if not isinstance(display_name, str) or not display_name:
+                display_name = _get_action_name(action, command, direction)
+            cleaned.append({
+                "key": key,
+                "action": action,
+                "command": command,
+                "direction": direction,
+                "menu": menu,
+                "display_name": display_name,
+            })
         return cleaned if cleaned else None
     except (json.JSONDecodeError, OSError):
         return None
@@ -446,7 +458,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         )
         group.add(delay_row)
 
-        rate_row = Adw.SpinRow.new_with_range(10.0, 80.0, 5.0)
+        rate_row = Adw.SpinRow.new_with_range(10.0, 100.0, 5.0)
         rate_row.set_title(_("Repeat rate"))
         rate_row.set_subtitle(_("Keys per second when held"))
         rate_row.set_value(float(self.store.get("keyboard_repeat_rate", 40)))
@@ -953,6 +965,8 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
                 capture_output=True, text=True, timeout=10,
             )
             result = [l.strip() for l in r.stdout.splitlines() if l.strip()]
+            if r.returncode != 0 or not result:
+                result = ["us"]
         except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
             result = ["us"]
         _layouts_cache = result

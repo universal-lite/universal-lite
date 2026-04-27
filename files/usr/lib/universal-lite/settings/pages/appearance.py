@@ -7,13 +7,13 @@ import gi
 
 gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Adw, Gdk, GdkPixbuf, Gio, Gtk
+from gi.repository import Adw, Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from ..base import BasePage
 from ..wallpapers import (
     ADD_CUSTOM_IO_ERROR, ADD_CUSTOM_MISSING, ADD_CUSTOM_OK,
     ADD_CUSTOM_TOO_LARGE, ADD_CUSTOM_UNSUPPORTED,
-    Wallpaper, add_custom_detailed, get_wallpaper, list_wallpapers, remove_custom,
+    Wallpaper, add_custom_detailed, list_wallpapers, remove_custom,
 )
 
 # Accent order displayed in the picker. Names must match palette.json
@@ -107,6 +107,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         # force-reactivates it -> that handler deactivates the newly-
         # clicked tile -> its handler force-reactivates, etc.
         self._group_updating: bool = False
+        self._wallpaper_refresh_source: int | None = None
 
     @property
     def search_keywords(self):
@@ -132,14 +133,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
 
         def _on_dark_mode(row, _pspec):
             self.store.save_and_apply("theme", "dark" if row.get_active() else "light")
-            # Wallpaper tiles render light_path in light mode and
-            # dark_path in dark mode; without a refresh, the grid keeps
-            # showing stale thumbnails until the page is destroyed and
-            # rebuilt (typically only on app restart, since pages are
-            # cached). Repopulate so the thumbnails track the theme
-            # the user just picked.
-            if self._wallpaper_flow is not None:
-                self._populate_wallpapers(self)
+            self._queue_wallpaper_refresh()
 
         if hc_active:
             # High Contrast forces dark — disable the switch and surface
@@ -280,7 +274,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             flow.set_row_spacing(12)
             flow.add_css_class("wallpaper-grid")
             self._wallpaper_flow = flow
-            self._populate_wallpapers(wallpaper_group)
+            self._safe_populate_wallpapers(wallpaper_group)
 
             # Bare PreferencesRow (not ActionRow) keeps the group's
             # boxed-list card styling while letting the grid fill the
@@ -298,11 +292,39 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
 
         self.add(wallpaper_group)
 
-        # Tear down event-bus subscriptions on unmap.
+        # Tear down event-bus subscriptions and pending idle refreshes
+        # when the page is destroyed.
         self.setup_cleanup(self)
+        self.connect("unrealize", lambda _widget: self._cancel_wallpaper_refresh())
         return self
 
     # ── Wallpaper grid ────────────────────────────────────────────────────
+
+    def _cancel_wallpaper_refresh(self) -> None:
+        if self._wallpaper_refresh_source is not None:
+            GLib.source_remove(self._wallpaper_refresh_source)
+            self._wallpaper_refresh_source = None
+
+    def _queue_wallpaper_refresh(self) -> None:
+        """Refresh theme-dependent wallpaper thumbnails outside signal delivery."""
+        if (
+            self._wallpaper_flow is None
+            or self._wallpaper_refresh_source is not None
+        ):
+            return
+
+        def _refresh() -> int:
+            self._wallpaper_refresh_source = None
+            self._safe_populate_wallpapers(self)
+            return GLib.SOURCE_REMOVE
+
+        self._wallpaper_refresh_source = GLib.idle_add(_refresh)
+
+    def _safe_populate_wallpapers(self, page: Gtk.Widget) -> None:
+        try:
+            self._populate_wallpapers(page)
+        except Exception as exc:
+            print(f"appearance: wallpaper refresh failed: {exc!r}", file=sys.stderr)
 
     def _populate_wallpapers(self, page: Gtk.Widget) -> None:
         flow = self._wallpaper_flow
@@ -313,13 +335,31 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             flow.remove(child)
         self._wallpaper_buttons = []
 
-        theme = self.store.get("theme", "light")
+        theme = "dark" if self.store.get("theme", "light") == "dark" else "light"
         current_raw = self.store.get("wallpaper", "")
         current = current_raw if isinstance(current_raw, str) else ""
 
-        wallpapers = list_wallpapers()
+        try:
+            wallpapers = list_wallpapers()
+        except Exception as exc:
+            print(f"appearance: wallpaper list failed: {exc!r}", file=sys.stderr)
+            wallpapers = []
         if not current.startswith("/"):
-            wp = get_wallpaper(current)
+            wp = next((candidate for candidate in wallpapers
+                       if candidate.id == current), None)
+            if wp is None and current == "fedora-default":
+                fedora_defaults = [
+                    candidate for candidate in wallpapers
+                    if candidate.id.startswith("f")
+                    and candidate.name.lower().startswith("fedora ")
+                    and "default" in candidate.name.lower()
+                ]
+                if fedora_defaults:
+                    wp = sorted(
+                        fedora_defaults,
+                        key=lambda candidate: candidate.id,
+                        reverse=True,
+                    )[0]
             if wp is not None:
                 current = wp.id
         # Map a stored absolute path (legacy settings) onto the matching manifest ID
@@ -387,6 +427,13 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         remove.set_margin_top(6)
         remove.set_margin_end(6)
         remove.set_tooltip_text(_("Remove"))
+        try:
+            remove.update_property(
+                [Gtk.AccessibleProperty.LABEL],
+                [_("Remove {name}").format(name=wp.name)],
+            )
+        except Exception:
+            pass
         remove.connect("clicked", self._on_remove_custom, wp.id, page)
         overlay.add_overlay(remove)
         return overlay
@@ -496,7 +543,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
                 )
                 return
             self.store.save_and_apply("wallpaper", wp.id)
-            self._populate_wallpapers(page)
+            self._safe_populate_wallpapers(page)
 
         dialog.open(self._get_window(page), None, _on_open_finish)
 
@@ -506,7 +553,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         if self.store.get("wallpaper", "") == wp_id:
             defaults = self.store.get_defaults()
             self.store.save_and_apply("wallpaper", defaults.get("wallpaper", ""))
-        self._populate_wallpapers(page)
+        self._safe_populate_wallpapers(page)
 
     @staticmethod
     def _get_window(widget):

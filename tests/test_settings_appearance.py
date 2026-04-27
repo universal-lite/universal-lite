@@ -53,3 +53,11 @@ def test_wallpaper_tiles_use_non_interactive_selection_badge():
     assert 'check.add_css_class("wallpaper-check")' in source
     assert "check.set_can_target(False)" in source
     assert "self._sync_wallpaper_selection()" in source
+
+
+def test_theme_toggle_defers_wallpaper_refresh_out_of_signal_handler():
+    source = APPEARANCE_PATH.read_text(encoding="utf-8")
+
+    assert "self._queue_wallpaper_refresh()" in source
+    assert "GLib.idle_add(_refresh)" in source
+    assert "def _safe_populate_wallpapers" in source

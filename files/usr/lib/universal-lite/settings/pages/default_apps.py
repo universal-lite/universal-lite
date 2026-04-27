@@ -15,14 +15,28 @@ from gi.repository import Adw, Gio, GLib, Gtk
 from ..base import BasePage
 
 APP_MIME_TYPES = [
-    (_("Web Browser"), "x-scheme-handler/http"),
-    (_("File Manager"), "inode/directory"),
+    (_("Web Browser"), (
+        "x-scheme-handler/http",
+        "x-scheme-handler/https",
+        "text/html",
+    )),
+    (_("File Manager"), ("inode/directory",)),
     (_("Terminal"), None),
-    (_("Text Editor"), "text/plain"),
-    (_("Image Viewer"), "image/png"),
-    (_("PDF Viewer"), "application/pdf"),
-    (_("Media Player"), "video/x-matroska"),
-    (_("Email Client"), "x-scheme-handler/mailto"),
+    (_("Text Editor"), ("text/plain",)),
+    (_("Image Viewer"), (
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/svg+xml",
+    )),
+    (_("PDF Viewer"), ("application/pdf",)),
+    (_("Media Player"), (
+        "video/x-matroska",
+        "video/mp4",
+        "audio/mpeg",
+        "audio/ogg",
+    )),
+    (_("Email Client"), ("x-scheme-handler/mailto",)),
 ]
 
 
@@ -70,7 +84,7 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
 
                 row.connect("notify::selected", _set_terminal_default)
             else:
-                def _set_default(r, _, mt=mime_type, ids=desktop_ids,
+                def _set_default(r, _, mts=mime_type, ids=desktop_ids,
                                  _l=_loading, _store=self.store):
                     if _l[0]:
                         return
@@ -83,7 +97,7 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
                     def _worker():
                         try:
                             result = subprocess.run(
-                                ["xdg-mime", "default", selected_id, mt],
+                                ["xdg-mime", "default", selected_id, *mts],
                                 check=False, timeout=5,
                                 capture_output=True, text=True,
                             )
@@ -182,8 +196,9 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
                     seen.add(did)
                     apps.append((did, app.get_display_name()))
             return apps
+        primary_mime = mime_type[0]
         seen, apps = set(), []
-        for app in Gio.AppInfo.get_all_for_type(mime_type):
+        for app in Gio.AppInfo.get_all_for_type(primary_mime):
             did = app.get_id()
             if not did or did in seen:
                 continue
@@ -195,6 +210,7 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
     def _get_default_app(mime_type):
         if mime_type is None:
             return ""
+        primary_mime = mime_type[0]
         try:
             # xdg-mime is a shell script that calls into gio /
             # update-desktop-database / dbus, all of which can hang if
@@ -203,7 +219,7 @@ class DefaultAppsPage(BasePage, Adw.PreferencesPage):
             # the first cold build — this function is called once per
             # APP_MIME_TYPES entry on the main thread during build().
             return subprocess.run(
-                ["xdg-mime", "query", "default", mime_type],
+                ["xdg-mime", "query", "default", primary_mime],
                 capture_output=True, text=True, timeout=5,
             ).stdout.strip()
         except (FileNotFoundError, subprocess.TimeoutExpired, OSError):

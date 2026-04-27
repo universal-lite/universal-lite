@@ -122,6 +122,7 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
                 continue
 
             expander = Adw.ExpanderRow()
+            expander.set_use_markup(False)
             expander.set_title(name)
             expander.set_subtitle(_("Resolution and refresh rate"))
             expander.set_expanded(single_display)
@@ -171,6 +172,12 @@ class DisplayPage(BasePage, Adw.PreferencesPage):
         temp_scale.set_draw_value(True)
         temp_scale.set_valign(Gtk.Align.CENTER)
         temp_scale.set_format_value_func(lambda _s, v: f"{v:.0f}K")
+        try:
+            temp_scale.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Night Light temperature")]
+            )
+        except Exception:
+            pass
         temp_scale.connect(
             "value-changed",
             lambda s: self.store.save_debounced(

@@ -332,6 +332,7 @@ class NetworkPage(BasePage, Adw.PreferencesPage):
 
     def _build_network_row(self, ap) -> Adw.ActionRow:
         row = Adw.ActionRow()
+        row.set_use_markup(False)
         # Stamp the SSID so _refresh_networks can diff rather than
         # rebuild on every network-changed event.
         row._ssid = ap.ssid

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 export UNIVERSAL_LITE=1
-export XDG_CURRENT_DESKTOP="labwc"
-export XDG_SESSION_DESKTOP="labwc"
+export XDG_CURRENT_DESKTOP="Universal-Lite:labwc"
+export XDG_SESSION_DESKTOP="universal-lite"
 export XDG_SESSION_TYPE="wayland"
 export GTK_USE_PORTAL=1
 
@@ -12,16 +12,13 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK 4.16+ defaults to the Vulkan renderer.  VMs and older Intel GPUs
-# (Bay Trail, Haswell) lack Vulkan support — force GL to avoid blank/crash.
-if command -v vulkaninfo >/dev/null 2>&1 && vulkaninfo --summary >/dev/null 2>&1; then
-    : # Vulkan works, let GTK choose
-else
-    export GSK_RENDERER=gl
-fi
+# GTK's Vulkan renderer is still fragile on the low-end/VM hardware this
+# image targets. Match the greeter and force GL before any GTK app starts.
+export GSK_RENDERER=gl
 
 # Write theme configs before the compositor starts (no Wayland socket needed).
-/usr/libexec/universal-lite-apply-settings
+/usr/libexec/universal-lite-apply-settings || \
+    echo "universal-lite-session: apply-settings failed; continuing to labwc" >&2
 
 # Capture labwc stderr so crash details survive the session exit.
 exec labwc 2>/tmp/labwc-crash.log

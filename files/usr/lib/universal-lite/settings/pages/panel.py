@@ -436,6 +436,12 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         add_btn = Gtk.Button.new_from_icon_name("list-add-symbolic")
         add_btn.add_css_class("flat")
         add_btn.set_tooltip_text(_("Add pinned app"))
+        try:
+            add_btn.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Add pinned app")]
+            )
+        except Exception:
+            pass
         add_btn.connect("clicked", lambda _b: self._push_add_pinned_page())
         group.set_header_suffix(add_btn)
 
@@ -466,6 +472,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
 
     def _build_pinned_row(self, app, idx):
         row = Adw.ActionRow()
+        row.set_use_markup(False)
         row.set_title(app.get("name", app.get("command", _("Unknown"))))
 
         icon = Gtk.Image.new_from_icon_name(
@@ -525,6 +532,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
 
         for app in apps:
             row = Adw.ActionRow()
+            row.set_use_markup(False)
             row.set_title(app.get_display_name())
 
             icon_info = app.get_icon()

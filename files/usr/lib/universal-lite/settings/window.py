@@ -166,6 +166,15 @@ class SettingsWindow(Adw.ApplicationWindow):
 
     def _on_close_request(self, _window) -> bool:
         self._store.flush_and_detach()
+        if self._store.has_apply_work():
+            app = self.get_application()
+            if app is not None:
+                app.hold()
+
+                def _release_app() -> None:
+                    app.release()
+
+                self._store.wait_for_apply(_release_app)
         return False
 
     # -- Toast -------------------------------------------------------
@@ -224,6 +233,14 @@ class SettingsWindow(Adw.ApplicationWindow):
         except Exception as exc:
             print(f"Settings: failed to build {label!r}: {exc!r}",
                   file=sys.stderr)
+            if page is not None:
+                try:
+                    page.unsubscribe_all()
+                except Exception as cleanup_exc:
+                    print(
+                        f"Settings: failed to clean up {label!r}: {cleanup_exc!r}",
+                        file=sys.stderr,
+                    )
             widget = None
         if widget is None:
             widget = Gtk.Label(
