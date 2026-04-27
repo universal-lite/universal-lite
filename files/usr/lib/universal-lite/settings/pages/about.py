@@ -16,8 +16,10 @@ from ..base import BasePage
 
 CATEGORY_KEYS = {
     "Appearance": [
-        "theme", "accent", "wallpaper", "font_size",
-        "cursor_size", "high_contrast", "reduce_motion",
+        "theme", "accent", "wallpaper",
+    ],
+    "Accessibility": [
+        "font_size", "cursor_size", "high_contrast", "reduce_motion",
     ],
     "Display": [
         "scale", "night_light_enabled", "night_light_temp",
@@ -422,16 +424,10 @@ class AboutPage(BasePage, Adw.PreferencesPage):
     ) -> None:
         """Apply the selected category resets and restart the app.
 
-        Preserved verbatim from the pre-migration reset flow:
-          - ``get_defaults`` -> toast + early-out if missing.
-          - Keyboard selection -> unlink keybindings.json.
-          - Display selection -> drop ``resolution_*`` keys.
-          - ``restore_keys`` writes merged settings and triggers apply.
-          - ``wait_for_apply`` + 10s fallback then ``os.execv`` restart
-            with the ``restarted[0]`` guard to avoid double-exec.
-
-        The only behaviour change is the dismiss: instead of closing a
-        Gtk.Window we pop the AdwNavigationPage.
+        JSON state is written first. Out-of-band files such as custom
+        wallpaper manifests and keybinding overrides are deleted only
+        after that write succeeds, then a single apply/restart refreshes
+        pages from disk and OS state.
         """
         selected = [cat for cat, check in checks if check.get_active()]
         if not selected:
@@ -445,39 +441,35 @@ class AboutPage(BasePage, Adw.PreferencesPage):
                 self._nav.pop()
             return
 
-        # Collect all keys from selected categories
+        # Collect all keys from selected categories.
         keys = []
         for category in selected:
             keys.extend(CATEGORY_KEYS.get(category, []))
 
-        # Out-of-band state that lives outside settings.json must be
-        # cleared explicitly — restore_keys only merges JSON keys.
+        remove_predicate = (
+            (lambda k: k.startswith("resolution_"))
+            if "Display" in selected else None
+        )
+        if not self.store.restore_keys(
+            keys, defaults, remove_predicate=remove_predicate, apply_now=False,
+        ):
+            return
+
+        # Out-of-band state that lives outside settings.json is cleared
+        # only after the JSON reset has safely reached disk. That avoids
+        # deleting user files while settings.json still points at them if
+        # the atomic write fails.
         config_dir = Path.home() / ".config/universal-lite"
         if "Keyboard" in selected:
-            # User keybinding overrides live in keybindings.json. Without
-            # this, a Keyboard-category reset leaves custom shortcuts in
-            # place and only the repeat/layout/capslock keys inside
-            # settings.json revert.
             try:
                 (config_dir / "keybindings.json").unlink(missing_ok=True)
             except OSError:
                 self.store.show_toast(_("Could not reset keyboard shortcuts"), True)
-        if "Display" in selected:
-            # Per-output resolution picks are stored as ``resolution_<name>``
-            # keys in settings.json but are never listed in CATEGORY_KEYS
-            # (outputs are discovered at runtime). Drop them so the display
-            # reverts to the compositor's preferred mode on restart.
-            self.store.remove_keys_matching(lambda k: k.startswith("resolution_"))
         if "Appearance" in selected:
-            # Custom wallpapers live in ~/.local/share/universal-lite/
-            # custom-wallpapers/ with manifests in ~/.local/share/
-            # gnome-background-properties/. A user resetting Appearance
-            # expects "back to factory"; leaving their custom tiles in
-            # the picker contradicts that mental model.
             from ..wallpapers import list_wallpapers, remove_custom
             for wp in list_wallpapers():
-                if wp.is_custom:
-                    remove_custom(wp.id)
+                if wp.is_custom and not remove_custom(wp.id):
+                    self.store.show_toast(_("Could not remove a custom wallpaper"), True)
         if "Date & Time" in selected:
             # Reset clock to 24-hour default (handled via restore_keys)
             # and attempt to re-enable NTP + reset timezone.
@@ -485,8 +477,9 @@ class AboutPage(BasePage, Adw.PreferencesPage):
         if "Language & Region" in selected:
             self._restore_language_defaults()
 
-        # Write merged settings and apply
-        self.store.restore_keys(keys, defaults)
+        # Apply after out-of-band cleanup so labwc reads the reset
+        # keybindings/wallpaper state on the first reconciliation pass.
+        self.store.apply()
 
         # Pop the sub-page before restarting so GTK finishes unmapping
         # it cleanly.

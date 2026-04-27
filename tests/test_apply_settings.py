@@ -54,6 +54,8 @@ def _make_tokens(**overrides):
         "font_mono": "Roboto Mono",
         "font_size_ui": 13,
         "font_size_mono": 11,
+        "cursor_size": 24,
+        "reduce_motion": False,
         "text_primary": "#1e1e1e",
         "text_secondary": "#5e5c64",
         "surface_base": "#fafafa",
@@ -137,6 +139,91 @@ def _run_ensure_settings_raw(raw_text, tmp_path):
          patch.object(apply_settings, "SETTINGS_PATH", settings_file), \
          patch.object(apply_settings, "DEFAULTS_PATH", defaults_file):
         return apply_settings.ensure_settings()
+
+
+def test_invalid_settings_json_is_preserved_before_defaults_are_written(tmp_path):
+    result = _run_ensure_settings_raw("{invalid json", tmp_path)
+
+    assert result["theme"] == "light"
+    assert (tmp_path / "settings.json.invalid").read_text(encoding="utf-8") == "{invalid json"
+    assert json.loads((tmp_path / "settings.json").read_text(encoding="utf-8"))["theme"] == "light"
+
+
+def test_config_mode_writes_files_without_live_sync(monkeypatch):
+    calls = []
+    settings = _make_settings()
+    tokens = _make_tokens()
+
+    monkeypatch.setattr(apply_settings, "ensure_settings", lambda: settings)
+    monkeypatch.setattr(apply_settings, "_build_tokens", lambda s: tokens)
+    monkeypatch.setattr(
+        apply_settings,
+        "_write_config_files",
+        lambda s, t: calls.append(("config", s, t)) or {"waybar_changed": False},
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_sync_live_session",
+        lambda s, t, c: calls.append(("live", s, t, c)),
+    )
+
+    assert apply_settings._main_locked("config") == 0
+    assert calls == [("config", settings, tokens)]
+
+
+def test_live_mode_writes_config_then_syncs_live(monkeypatch):
+    calls = []
+    settings = _make_settings()
+    tokens = _make_tokens()
+    changes = {"waybar_changed": True}
+
+    monkeypatch.setattr(apply_settings, "ensure_settings", lambda: settings)
+    monkeypatch.setattr(apply_settings, "_build_tokens", lambda s: tokens)
+    monkeypatch.setattr(
+        apply_settings,
+        "_write_config_files",
+        lambda s, t: calls.append(("config", s, t)) or changes,
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_sync_live_session",
+        lambda s, t, c: calls.append(("live", s, t, c)),
+    )
+
+    assert apply_settings._main_locked("live") == 0
+    assert calls == [("config", settings, tokens), ("live", settings, tokens, changes)]
+
+
+def test_write_gtk_settings_can_skip_gsettings_for_pre_compositor_mode(
+    monkeypatch, tmp_path
+):
+    calls = []
+    monkeypatch.setattr(apply_settings, "GTK3_DIR", tmp_path / "gtk3")
+    monkeypatch.setattr(apply_settings, "GTK4_DIR", tmp_path / "gtk4")
+    monkeypatch.setattr(
+        apply_settings,
+        "_run_best_effort",
+        lambda cmd, **kwargs: calls.append(cmd) or True,
+    )
+
+    apply_settings.write_gtk_settings(_make_tokens(), sync_live=False)
+
+    assert (tmp_path / "gtk3/settings.ini").exists()
+    assert (tmp_path / "gtk4/settings.ini").exists()
+    assert calls == []
+
+
+def test_session_startup_uses_config_then_autostart_uses_live_mode():
+    root = Path(__file__).resolve().parents[1]
+    session = (root / "files/usr/libexec/universal-lite-session").read_text(
+        encoding="utf-8"
+    )
+    autostart = (root / "files/etc/xdg/labwc/autostart").read_text(
+        encoding="utf-8"
+    )
+
+    assert "universal-lite-apply-settings --mode=config" in session
+    assert "universal-lite-apply-settings --mode=live" in autostart
 
 
 # ---------------------------------------------------------------------------

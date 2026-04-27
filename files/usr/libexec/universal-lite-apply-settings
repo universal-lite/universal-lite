@@ -515,18 +515,57 @@ def _load_default_settings() -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _invalid_settings_backup_path() -> Path:
+    base = SETTINGS_PATH.with_name(SETTINGS_PATH.name + ".invalid")
+    if not base.exists():
+        return base
+    for idx in range(1, 100):
+        candidate = SETTINGS_PATH.with_name(f"{SETTINGS_PATH.name}.invalid.{idx}")
+        if not candidate.exists():
+            return candidate
+    stamp = int(time.time())
+    idx = 0
+    while True:
+        suffix = f"{stamp}" if idx == 0 else f"{stamp}.{idx}"
+        candidate = SETTINGS_PATH.with_name(f"{SETTINGS_PATH.name}.invalid.{suffix}")
+        if not candidate.exists():
+            return candidate
+        idx += 1
+
+
+def _preserve_invalid_settings_file(reason: str) -> bool:
+    try:
+        backup = _invalid_settings_backup_path()
+        SETTINGS_PATH.replace(backup)
+    except OSError as exc:
+        print(
+            f"apply-settings: settings.json invalid ({reason}); "
+            f"could not preserve original: {exc}",
+            file=sys.stderr,
+        )
+        return False
+    print(
+        f"apply-settings: settings.json invalid ({reason}); "
+        f"preserved original at {backup}",
+        file=sys.stderr,
+    )
+    return True
+
+
 def _read_settings_object() -> dict:
     if not SETTINGS_PATH.exists():
         return _load_default_settings()
     try:
         data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+    except json.JSONDecodeError as exc:
+        _preserve_invalid_settings_file(str(exc))
+        return _load_default_settings()
+    except OSError as exc:
         print(f"apply-settings: settings.json unreadable, using defaults: {exc}",
               file=sys.stderr)
         return _load_default_settings()
     if not isinstance(data, dict):
-        print("apply-settings: settings.json is not an object, using defaults",
-              file=sys.stderr)
+        _preserve_invalid_settings_file("top-level value is not an object")
         return _load_default_settings()
     return data
 
@@ -1384,7 +1423,7 @@ def write_waybar_config(tokens: dict) -> bool:
     return new_config != old_config or css != old_css
 
 
-def write_gtk_settings(tokens: dict) -> None:
+def write_gtk_settings(tokens: dict, sync_live: bool = True) -> None:
     # gnome-themes-extra ships /usr/share/themes/HighContrast (GTK3 +
     # icon set). GTK4/libadwaita read the high-contrast preference via
     # gsettings color-scheme=prefer-high-contrast, applied below.
@@ -1422,6 +1461,9 @@ def write_gtk_settings(tokens: dict) -> None:
             print(f"apply-settings: failed to write {target}: {exc}",
                   file=sys.stderr)
             sys.exit(1)
+
+    if not sync_live:
+        return
 
     gsettings_commands = [
         ["gsettings", "set", "org.gnome.desktop.interface", "gtk-theme", theme_name],
@@ -2262,11 +2304,9 @@ def _sync_lid_action(settings: dict) -> None:
     )
 
 
-def _main_locked() -> int:
-    settings = ensure_settings()
-    tokens = _build_tokens(settings)
+def _write_config_files(settings: dict, tokens: dict) -> dict[str, bool]:
     waybar_changed = write_waybar_config(tokens)
-    write_gtk_settings(tokens)
+    write_gtk_settings(tokens, sync_live=False)
 
     # Snapshot pre-write content of consumer configs that get reloaded
     # via external CLI. Skipping the reload when nothing changed saves
@@ -2281,14 +2321,24 @@ def _main_locked() -> int:
     write_labwc_themerc(tokens)
     write_swaylock_config(tokens)
     write_labwc_rc_overrides(settings)
-    _sync_power_profile(settings)
-    _sync_lid_action(settings)
 
     mako_changed = _read_if_exists(MAKO_DIR / "config") != mako_before
     labwc_changed = (
         _read_if_exists(LABWC_DIR / "themerc-override") != labwc_themerc_before
         or _read_if_exists(LABWC_DIR / "rc.xml") != labwc_rc_before
     )
+
+    return {
+        "waybar_changed": waybar_changed,
+        "mako_changed": mako_changed,
+        "labwc_changed": labwc_changed,
+    }
+
+
+def _sync_live_session(settings: dict, tokens: dict, changes: dict[str, bool]) -> None:
+    write_gtk_settings(tokens, sync_live=True)
+    _sync_power_profile(settings)
+    _sync_lid_action(settings)
 
     if os.environ.get("WAYLAND_DISPLAY"):
         # Only swap swaybg when the effective wallpaper path changed.
@@ -2297,11 +2347,11 @@ def _main_locked() -> int:
         # leave the compositor with a blank wallpaper.
         if _current_swaybg_wallpaper() != tokens["wallpaper"]:
             _swap_swaybg_wallpaper(tokens["wallpaper"], tokens["theme"])
-        if waybar_changed:
+        if changes.get("waybar_changed"):
             reload_waybar()
-        if mako_changed:
+        if changes.get("mako_changed"):
             _run_best_effort(["makoctl", "reload"], timeout=5)
-        if labwc_changed:
+        if changes.get("labwc_changed"):
             _run_best_effort(["labwc", "--reconfigure"], timeout=5)
         # Night-light reconciliation lives in its own helper so the
         # labwc autostart can invoke the same logic at session login
@@ -2325,13 +2375,53 @@ def _main_locked() -> int:
         idle_cmd += ["before-sleep", "swaylock -f"]
         restart_program("swayidle", idle_cmd)
 
+
+def _main_locked(mode: str = "full") -> int:
+    if mode not in {"config", "live", "full"}:
+        print(f"apply-settings: unknown mode {mode!r}", file=sys.stderr)
+        return 2
+
+    settings = ensure_settings()
+    tokens = _build_tokens(settings)
+    changes = _write_config_files(settings, tokens)
+
+    if mode in {"live", "full"}:
+        _sync_live_session(settings, tokens, changes)
+
     return 0
 
 
-def main() -> int:
+def _parse_mode(argv: list[str]) -> str:
+    mode = "full"
+    idx = 0
+    while idx < len(argv):
+        arg = argv[idx]
+        if arg == "--mode":
+            idx += 1
+            if idx >= len(argv):
+                raise ValueError("--mode requires config, live, or full")
+            mode = argv[idx]
+        elif arg.startswith("--mode="):
+            mode = arg.split("=", 1)[1]
+        elif arg == "--config-only":
+            mode = "config"
+        else:
+            raise ValueError(f"unknown argument: {arg}")
+        idx += 1
+    if mode not in {"config", "live", "full"}:
+        raise ValueError("--mode must be config, live, or full")
+    return mode
+
+
+def main(argv: list[str] | None = None) -> int:
+    try:
+        mode = _parse_mode(sys.argv[1:] if argv is None else argv)
+    except ValueError as exc:
+        print(f"apply-settings: {exc}", file=sys.stderr)
+        return 2
     lock_handle = _open_apply_lock()
     try:
-        return _main_locked()
+        return _main_locked(mode)
     finally:
         _close_apply_lock(lock_handle)
 

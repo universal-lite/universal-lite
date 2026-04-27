@@ -133,6 +133,8 @@ def test_corrupted_file_resets_to_defaults(tmp_path):
         apply_script="/bin/true",
     )
     assert store.get("theme") == "light"
+    assert (tmp_path / "settings.json.invalid").read_text() == "{invalid json"
+    assert json.loads(settings_file.read_text()) == defaults
 
 
 def test_non_object_file_resets_to_defaults(tmp_path):
@@ -147,6 +149,40 @@ def test_non_object_file_resets_to_defaults(tmp_path):
         apply_script="/bin/true",
     )
     assert store.get("theme") == "light"
+    assert json.loads((tmp_path / "settings.json.invalid").read_text()) == []
+    assert json.loads(settings_file.read_text()) == defaults
+
+
+def test_restore_keys_can_defer_apply_and_remove_dynamic_keys(tmp_path):
+    store = _make_store(
+        tmp_path,
+        defaults={"theme": "light"},
+        existing={"theme": "dark", "resolution_eDP-1": "1024x768@60Hz"},
+    )
+
+    with patch.object(store, "_run_apply") as run_apply:
+        ok = store.restore_keys(
+            ["theme"],
+            {"theme": "light"},
+            remove_predicate=lambda key: key.startswith("resolution_"),
+            apply_now=False,
+        )
+
+    assert ok is True
+    assert store.get("theme") == "light"
+    assert store.get("resolution_eDP-1") is None
+    assert json.loads((tmp_path / "settings.json").read_text()) == {"theme": "light"}
+    run_apply.assert_not_called()
+
+
+def test_restore_keys_write_failure_does_not_mutate_memory(tmp_path):
+    store = _make_store(tmp_path, existing={"theme": "dark"})
+
+    with patch.object(store, "_write_data", return_value=False):
+        ok = store.restore_keys(["theme"], {"theme": "light"})
+
+    assert ok is False
+    assert store.get("theme") == "dark"
 
 
 def test_invalid_known_value_type_falls_back_but_unknown_keys_survive(tmp_path):

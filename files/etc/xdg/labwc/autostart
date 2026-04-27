@@ -124,12 +124,6 @@ _logdir="${XDG_RUNTIME_DIR:-/tmp}"
 waybar >/dev/null 2>"$_logdir/waybar.log" &
 mako >/dev/null 2>"$_logdir/mako.log" &
 
-# Reconcile night light so the setting persists across logouts. Helper
-# reads settings.json and starts gammastep if enabled and in-schedule,
-# kills it otherwise. Same code path as apply-settings so one fix
-# covers both triggers.
-/usr/libexec/universal-lite-nightlight >/dev/null 2>&1 &
-
 # nm-applet is no longer autostarted — waybar's network module covers
 # status and the Settings → Network page covers wifi selection. The
 # package stays installed so `nm-connection-editor` is still available
@@ -159,3 +153,10 @@ set -- swayidle -w
 set -- "$@" before-sleep 'swaylock -f'
 "$@" >/dev/null 2>&1 &
 # Thunar launches on demand via Super+E — no need to pre-spawn the daemon
+
+# Reconcile live session state after the compositor, D-Bus activation
+# environment, and polkit are available. The session wrapper only writes
+# static config files before labwc starts so first login cannot stall on
+# gsettings, powerprofilesctl, pkexec, Wayland reloads, or wallpaper swaps.
+/usr/libexec/universal-lite-apply-settings --mode=live \
+  >/dev/null 2>"$_logdir/apply-settings.log" &
