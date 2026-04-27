@@ -245,7 +245,7 @@ changes take effect on the next reboot.
 | File type | Opens with |
 |-----------|------------|
 | PDFs | Evince |
-| Text files | Mousepad |
+| Text files | GNOME Text Editor |
 | Images (JPEG/PNG/GIF/SVG/WebP/BMP/TIFF/JXL/ICO/…) | Ristretto |
 | Videos | mpv |
 | Audio | mpv |

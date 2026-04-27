@@ -11,8 +11,8 @@ Layout: Adwaita-themed, ChromeOS-style app launcher. A large search
 entry plus a category dropdown at the top. A "Frequent" row of the
 user's most-launched apps (hidden while searching or filtering). A
 scrollable grid of every visible application, each tile = 48 px icon
-+ display name + generic name (so "Mousepad" is labelled with its
-secondary "Text Editor"). Power actions live along the bottom edge.
++ display name + generic name (so "Google Chrome" can surface
+"Web Browser"). Power actions live along the bottom edge.
 """
 from __future__ import annotations
 
@@ -165,7 +165,6 @@ def _twilight_palette_tokens(palette: dict) -> dict[str, str]:
     border_alpha = 0.10 if is_light else 0.14
     control_hover_alpha = 0.15 if is_light else 0.16
     control_border_alpha = 0.08 if is_light else 0.12
-    tile_border_alpha = 0.05 if is_light else 0.08
 
     return {
         "surface": _rgba_css(palette["window_bg"], 0.90),
@@ -175,10 +174,6 @@ def _twilight_palette_tokens(palette: dict) -> dict[str, str]:
         "control_hover": _rgba_css(fg, control_hover_alpha),
         "control_border": _rgba_css(fg, control_border_alpha),
         "section_fg": _rgba_css(fg, 0.70),
-        "tile_bg": _rgba_css(fg, 0.04),
-        "tile_border": _rgba_css(fg, tile_border_alpha),
-        "tile_hover": _rgba_css(fg, 0.10),
-        "tile_hover_border": _rgba_css(fg, border_alpha),
         "tile_secondary": _rgba_css(fg, 0.72),
     }
 
@@ -226,16 +221,27 @@ window.app-menu.app-menu-shell-{name} .app-menu-section-label {{
     color: {tok["section_fg"]};
 }}
 window.app-menu.app-menu-shell-{name} .app-menu-tile {{
-    background: {tok["tile_bg"]};
-    border: 1px solid {tok["tile_border"]};
+    background: transparent;
+    border: 1px solid transparent;
 }}
-window.app-menu.app-menu-shell-{name} .app-menu-tile:hover {{
-    background: {tok["tile_hover"]};
-    border: 1px solid {tok["tile_hover_border"]};
-}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile:hover,
 window.app-menu.app-menu-shell-{name} .app-menu-tile:focus {{
-    background: alpha(@accent_color, 0.18);
-    border: 1px solid alpha(@accent_color, 0.38);
+    background: alpha(@accent_color, 0.10);
+    border: 1px solid alpha(@accent_color, 0.35);
+    box-shadow:
+        0 0 0 2px alpha(@accent_color, 0.20),
+        0 6px 16px 0 alpha(@accent_color, 0.18);
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile:active {{
+    background: @accent_color;
+    color: @accent_fg_color;
+    border: 1px solid @accent_color;
+    box-shadow:
+        0 0 0 2px alpha(@accent_color, 0.24),
+        0 4px 10px 0 alpha(@accent_color, 0.22);
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile:active .app-menu-tile-generic {{
+    color: alpha(@accent_fg_color, 0.82);
 }}
 window.app-menu.app-menu-shell-{name} .app-menu-tile-generic {{
     color: {tok["tile_secondary"]};
@@ -348,24 +354,35 @@ window.app-menu {
     outline: none;
 }
 /* Tiles sit inside the translucent surface as quiet ChromeOS-style
-   launch targets. Resting tiles are almost flat; hover uses a neutral
-   shelf tint, while keyboard focus uses the configured accent. */
+   launch targets. Resting tiles are flat; hover/focus uses an accent
+   glow, and press fills the target with the configured accent. */
 .app-menu-tile {
-    background: alpha(@window_fg_color, 0.04);
-    border: 1px solid alpha(@borders, 0.5);
+    background: transparent;
+    border: 1px solid transparent;
     box-shadow: none;
     padding: 6px 4px;
     border-radius: 16px;
     min-width: 88px;
 }
-.app-menu-tile:hover {
-    background: alpha(@window_fg_color, 0.10);
-    border: 1px solid @borders;
-}
+.app-menu-tile:hover,
 .app-menu-tile:focus {
-    background: alpha(@accent_color, 0.18);
-    border: 1px solid alpha(@accent_color, 0.38);
+    background: alpha(@accent_color, 0.10);
+    border: 1px solid alpha(@accent_color, 0.35);
+    box-shadow:
+        0 0 0 2px alpha(@accent_color, 0.20),
+        0 6px 16px 0 alpha(@accent_color, 0.18);
     outline: none;
+}
+.app-menu-tile:active {
+    background: @accent_color;
+    color: @accent_fg_color;
+    border: 1px solid @accent_color;
+    box-shadow:
+        0 0 0 2px alpha(@accent_color, 0.24),
+        0 4px 10px 0 alpha(@accent_color, 0.22);
+}
+.app-menu-tile:active .app-menu-tile-generic {
+    color: alpha(@accent_fg_color, 0.82);
 }
 .app-menu-tile-name {
     font-size: 12px;
@@ -574,7 +591,7 @@ def _generic_name_for(app: Gio.AppInfo) -> str:
 
     Promoted to the PRIMARY tile label so non-technical users with
     reduced vision see WHAT the app does ("Web Browser", "Text Editor")
-    before the product name ("Google Chrome", "Mousepad"). Returns ""
+    before the product name ("Google Chrome", "Text Editor"). Returns ""
     when the desktop file has no GenericName or it duplicates the
     display name; the tile then falls back to showing just the
     display name.
@@ -1050,7 +1067,7 @@ class AppMenu(Gtk.Window):
         through the grid, Enter activates). Search match tokens are
         precomputed into `_search_text` and include display name,
         generic name, and executable basename so both user-visible
-        labels and CLI-style hints like "mousepad" match.
+        labels and CLI-style hints like "gnome-text-editor" match.
         """
         btn = Gtk.Button()
         btn.add_css_class("app-menu-tile")

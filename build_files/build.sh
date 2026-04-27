@@ -81,6 +81,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-zh \
     gnome-backgrounds \
     gnome-themes-extra \
+    gnome-text-editor \
     fedora-workstation-backgrounds \
     libjxl \
     webp-pixbuf-loader \
@@ -101,7 +102,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     labwc \
     libnotify \
     mako \
-    mousepad \
     mpv \
     network-manager-applet \
     nftables \
@@ -461,8 +461,13 @@ systemctl --global disable flatpak-user-update.timer
 # never surfaces; the ~5 MB of binaries stay on disk but never run
 # under labwc + waybar.
 #
+# Mousepad used to be the default text editor; remove it defensively in case
+# it is present in the base image. Its dependency stack is shared by Evince
+# and Thunar, so dropping the package and our legacy desktop alias is the
+# safe removal boundary.
+#
 # nvtop is a real leaf (no reverse deps), so we uninstall it outright.
-dnf5 remove -y nvtop || true
+dnf5 remove -y mousepad nvtop || true
 rm -f /usr/share/applications/xfce4-panel.desktop \
       /usr/share/applications/nvtop.desktop
 

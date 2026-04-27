@@ -13,9 +13,9 @@ application/vnd.flatpak.ref=io.github.kolunmi.Bazaar.desktop
 # to chmod +x and execute directly.
 application/vnd.appimage=noop.desktop
 
-# Text and source code open in Mousepad.
-text/plain=org.xfce.mousepad.desktop
-text/x-python=org.xfce.mousepad.desktop
+# Text and source code open in GNOME Text Editor.
+text/plain=org.gnome.TextEditor.desktop
+text/x-python=org.gnome.TextEditor.desktop
 
 # HTML and http/https schemes open in Chrome.
 text/html=com.google.Chrome.desktop

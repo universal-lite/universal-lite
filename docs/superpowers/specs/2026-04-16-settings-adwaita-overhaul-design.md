@@ -130,7 +130,7 @@ In `write_gtk_settings()`, add a line to both GTK 3 and GTK 4 `settings.ini`:
 gtk-decoration-layout=menu:minimize,maximize,close
 ```
 
-This gives all CSD-using GTK apps (Thunar, Mousepad, Evince, etc.)
+This gives all CSD-using GTK apps (Thunar, GNOME Text Editor, Evince, etc.)
 minimize/maximize/close buttons on the right side (Windows layout).
 
 The settings app's own headerbar will inherit this automatically.
@@ -226,6 +226,6 @@ Complete `style.css` rewrite. Final classes:
 - Check that the sidebar, group cards, and content area have visually
   distinct backgrounds forming a 3-tier hierarchy
 - Check that minimize/maximize/close buttons appear on the settings app
-  AND on Thunar/Mousepad (GTK CSD apps)
+  AND on Thunar/GNOME Text Editor (GTK CSD apps)
 - Check that the headerbar title and search toggle work
 - Check that content is clamped at ~640px in a maximized window

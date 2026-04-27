@@ -22,16 +22,12 @@ def _defaults() -> dict[str, str]:
     return defaults
 
 
-def test_text_defaults_use_current_mousepad_desktop_id():
+def test_text_defaults_use_gnome_text_editor_desktop_id():
     defaults = _defaults()
 
-    assert defaults["text/plain"] == "org.xfce.mousepad.desktop"
-    assert defaults["text/x-python"] == "org.xfce.mousepad.desktop"
+    assert defaults["text/plain"] == "org.gnome.TextEditor.desktop"
+    assert defaults["text/x-python"] == "org.gnome.TextEditor.desktop"
 
 
-def test_legacy_mousepad_desktop_id_stays_launchable_but_hidden():
-    alias = (APPLICATIONS / "mousepad.desktop").read_text(encoding="utf-8")
-
-    assert "Exec=mousepad %U" in alias
-    assert "NoDisplay=true" in alias
-    assert "MimeType=text/plain;application/x-zerosize;text/x-python;" in alias
+def test_legacy_mousepad_alias_is_not_shipped():
+    assert not (APPLICATIONS / "mousepad.desktop").exists()

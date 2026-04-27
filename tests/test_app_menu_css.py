@@ -43,6 +43,17 @@ def test_secondary_text_keeps_light_theme_contrast_headroom():
     assert "color: alpha(@window_fg_color, 0.72)" in css
 
 
+def test_app_tiles_are_flat_until_interaction():
+    css = _css()
+    assert ".app-menu-tile {\n    background: transparent;" in css
+    assert "border: 1px solid transparent;" in css
+    assert ".app-menu-tile:hover,\n.app-menu-tile:focus {" in css
+    assert "background: alpha(@accent_color, 0.10)" in css
+    assert "0 0 0 2px alpha(@accent_color, 0.20)" in css
+    assert ".app-menu-tile:active {\n    background: @accent_color;" in css
+    assert "color: @accent_fg_color;" in css
+
+
 def test_twilight_mode_chooses_opposite_menu_palette():
     assert app_menu._shell_theme_class({"theme": "light"}) is None
     assert app_menu._shell_theme_class(
