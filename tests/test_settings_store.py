@@ -94,6 +94,33 @@ def test_flush_and_detach_keeps_apply_queued_for_flushed_debounce(tmp_path):
     assert store._apply_pending is True
 
 
+def test_flush_and_detach_preserves_existing_queued_apply(tmp_path):
+    store = _make_store(tmp_path)
+    store._apply_running = True
+    store._apply_pending = True
+
+    store.flush_and_detach()
+
+    assert store._apply_pending is True
+    assert store.has_apply_work() is True
+
+
+def test_load_with_unusable_config_parent_falls_back_to_defaults(tmp_path):
+    defaults = {"theme": "light"}
+    defaults_file = tmp_path / "defaults.json"
+    defaults_file.write_text(json.dumps(defaults))
+    bad_parent = tmp_path / "not-a-directory"
+    bad_parent.write_text("blocking directory creation")
+
+    store = SettingsStore(
+        settings_path=bad_parent / "settings.json",
+        defaults_path=defaults_file,
+        apply_script="/bin/true",
+    )
+
+    assert store.get("theme") == "light"
+
+
 def test_corrupted_file_resets_to_defaults(tmp_path):
     defaults = {"theme": "light"}
     defaults_file = tmp_path / "defaults.json"

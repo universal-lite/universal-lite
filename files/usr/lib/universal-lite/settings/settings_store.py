@@ -35,7 +35,13 @@ class SettingsStore:
         self._last_apply_spawn_failed: bool = False
 
     def _load(self) -> dict:
-        self._path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            # Keep the app alive even if ~/.config/universal-lite is a
+            # file, read-only, or temporarily mis-owned. Later writes
+            # will surface an error toast once the window exists.
+            return self._load_defaults(write_to_user=False)
         if not self._path.exists():
             return self._load_defaults(write_to_user=True)
         try:
@@ -204,13 +210,11 @@ class SettingsStore:
         if self._apply_wait_source is not None:
             GLib.source_remove(self._apply_wait_source)
             self._apply_wait_source = None
-        # Clear stale queued applies unless this close just flushed
-        # debounced values while apply-settings was already running.
-        # In that case the next apply is needed to reconcile the latest
-        # settings.json, but it still runs without a toast sink.
-        if not flushed_debounces:
-            self._apply_pending = False
         self._toast_callback = None
+
+    def has_apply_work(self) -> bool:
+        """Return True while an apply is running or queued."""
+        return self._apply_running or self._apply_pending
 
     def _write(self) -> bool:
         """Persist self._data atomically. Returns True on success.

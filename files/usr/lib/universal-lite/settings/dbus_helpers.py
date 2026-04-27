@@ -646,16 +646,24 @@ class PowerProfilesHelper:
             print(f"dbus_helpers: PowerProfiles: get ActiveProfile failed: {exc.message}", file=sys.stderr)
             return "balanced"
 
-    def set_active_profile(self, profile: str) -> None:
+    def set_active_profile(self, profile: str) -> bool:
         if self._bus is None:
-            return
+            self._event_bus.publish("power-profile-changed", self.get_active_profile())
+            return False
+        self._bus.call(
+            self.BUS_NAME, self.OBJECT_PATH,
+            "org.freedesktop.DBus.Properties", "Set",
+            GLib.Variant("(ssv)", (self.IFACE, "ActiveProfile", GLib.Variant("s", profile))),
+            None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
+            lambda bus, result: self._on_set_active_profile_done(bus, result, profile),
+        )
+        return True
+
+    def _on_set_active_profile_done(
+        self, bus: Gio.DBusConnection, result: Gio.AsyncResult, profile: str
+    ) -> None:
         try:
-            self._bus.call_sync(
-                self.BUS_NAME, self.OBJECT_PATH,
-                "org.freedesktop.DBus.Properties", "Set",
-                GLib.Variant("(ssv)", (self.IFACE, "ActiveProfile", GLib.Variant("s", profile))),
-                None, Gio.DBusCallFlags.NONE, _DBUS_CALL_TIMEOUT_MS, None,
-            )
+            bus.call_finish(result)
         except GLib.Error as exc:
             print(f"dbus_helpers: PowerProfiles: set ActiveProfile failed: {exc.message}", file=sys.stderr)
             # On success, power-profiles-daemon emits PropertiesChanged
@@ -667,6 +675,8 @@ class PowerProfilesHelper:
             # its ComboRow values list — publishing without a payload
             # landed a None that the handler silently ignored.
             self._event_bus.publish("power-profile-changed", self.get_active_profile())
+            return
+        self._event_bus.publish("power-profile-changed", profile)
 
     def _on_props_changed(self, _conn, _sender, _path, _iface, _signal, params, _data) -> None:
         changed = params.unpack()[1]

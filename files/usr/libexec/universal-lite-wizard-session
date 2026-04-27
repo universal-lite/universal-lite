@@ -6,8 +6,8 @@
 set -euo pipefail
 
 export UNIVERSAL_LITE_WIZARD=1
-export XDG_CURRENT_DESKTOP="labwc"
-export XDG_SESSION_DESKTOP="labwc"
+export XDG_CURRENT_DESKTOP="Universal-Lite:labwc"
+export XDG_SESSION_DESKTOP="universal-lite"
 export XDG_SESSION_TYPE="wayland"
 
 # Fix wlroots hardware cursor rendering upside-down / misplaced in VMs.
@@ -15,11 +15,8 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK 4.16+ defaults to the Vulkan renderer on Wayland.  On weak GPUs
-# (VMs, Chromebooks, ARM boards) Vulkan can silently produce blank
-# windows in cage.  Force NGL (OpenGL 3.3+/GLES 3.0+) which is the
-# proven fix (see ReGreet issue #95, cage issue #323).
-export GSK_RENDERER=ngl
+# Match the regular session and greeter. GTK 4.18+ renamed ngl to gl.
+export GSK_RENDERER=gl
 
 # Provide a debug terminal shortcut (Ctrl+Alt+T) in wizard mode
 mkdir -p /root/.config/labwc

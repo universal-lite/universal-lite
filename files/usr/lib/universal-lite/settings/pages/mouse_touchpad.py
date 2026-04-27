@@ -89,6 +89,12 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         tp_speed_scale.set_value_pos(Gtk.PositionType.RIGHT)
         tp_speed_scale.set_format_value_func(_pointer_speed_label)
         tp_speed_scale.set_valign(Gtk.Align.CENTER)
+        try:
+            tp_speed_scale.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Touchpad pointer speed")]
+            )
+        except Exception:
+            pass
         tp_speed_scale.connect("value-changed", self._on_touchpad_pointer_speed)
 
         tp_speed_row = Adw.ActionRow()
@@ -134,6 +140,12 @@ class MouseTouchpadPage(BasePage, Adw.PreferencesPage):
         mouse_speed_scale.set_value_pos(Gtk.PositionType.RIGHT)
         mouse_speed_scale.set_format_value_func(_pointer_speed_label)
         mouse_speed_scale.set_valign(Gtk.Align.CENTER)
+        try:
+            mouse_speed_scale.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Mouse pointer speed")]
+            )
+        except Exception:
+            pass
         mouse_speed_scale.connect("value-changed", self._on_mouse_pointer_speed)
 
         mouse_speed_row = Adw.ActionRow()

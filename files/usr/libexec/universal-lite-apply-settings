@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import fcntl
 import json
 import os
 import re
@@ -37,10 +38,21 @@ FOOT_DIR = CONFIG_HOME / "foot"
 LABWC_DIR = CONFIG_HOME / "labwc"
 SWAYLOCK_DIR = CONFIG_HOME / "swaylock"
 
+FALLBACK_WALLPAPER_PATHS: dict[str, tuple[Path, ...]] = {
+    "light": (
+        SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg",
+        Path(DEFAULT_WALLPAPER_FALLBACK),
+    ),
+    "dark": (
+        SHARE_ROOT / "backgrounds/universal-lite/chrome-sky.svg",
+        SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg",
+        Path(DEFAULT_WALLPAPER_FALLBACK),
+    ),
+}
+
 VALID_EDGES = {"top", "bottom", "left", "right"}
 VALID_DENSITY = {"compact", "normal"}
 VALID_THEME = {"light", "dark"}
-VALID_ACCENT = {"blue", "teal", "green", "yellow", "orange", "red", "pink", "purple", "slate"}
 VALID_SCALE = {0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5}
 
 # Validation fallback — canonical source is defaults/settings.json
@@ -58,6 +70,7 @@ _PALETTE_PATH = SHARE_ROOT / "universal-lite/palette.json"
 _palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
 
 ACCENTS = _palette["accents"]
+VALID_ACCENT = set(ACCENTS)
 ADWAITA = {"light": _palette["light"], "dark": _palette["dark"]}
 
 # Debounce waybar respawns. Two rapid applies (e.g. Appearance page
@@ -170,6 +183,91 @@ def _run_best_effort(cmd: list[str], **kwargs) -> bool:
     except OSError as exc:
         print(f"apply-settings: {cmd[0]} os error: {exc}", file=sys.stderr)
         return False
+
+
+def _normalized_theme(theme: object) -> str:
+    return "dark" if theme == "dark" else "light"
+
+
+def _wallpaper_fallback_candidates(theme: object) -> list[tuple[str, str]]:
+    """Return stored-value/path pairs that are safe wallpaper fallbacks."""
+    normalized = _normalized_theme(theme)
+    candidates: list[tuple[str, str]] = []
+
+    for stored_value in (DEFAULT_WALLPAPER_ID, "universal-lite"):
+        try:
+            resolved = _resolve_wallpaper(stored_value, normalized)
+        except Exception as exc:
+            print(
+                f"apply-settings: wallpaper manifest lookup failed for "
+                f"{stored_value}: {exc}",
+                file=sys.stderr,
+            )
+            resolved = None
+        if resolved and Path(resolved).is_file():
+            candidates.append((stored_value, resolved))
+
+    for path in FALLBACK_WALLPAPER_PATHS[normalized]:
+        if path.is_file():
+            if path == Path(DEFAULT_WALLPAPER_FALLBACK):
+                stored_value = DEFAULT_WALLPAPER_ID
+            elif "backgrounds/universal-lite/" in str(path):
+                stored_value = "universal-lite"
+            else:
+                stored_value = str(path)
+            candidates.append((stored_value, str(path)))
+
+    seen: set[str] = set()
+    unique: list[tuple[str, str]] = []
+    for stored_value, path in candidates:
+        if path in seen:
+            continue
+        seen.add(path)
+        unique.append((stored_value, path))
+    return unique
+
+
+def _choose_wallpaper_fallback(theme: object) -> tuple[str, str]:
+    """Pick a real fallback wallpaper for *theme*, preferring manifest IDs."""
+    candidates = _wallpaper_fallback_candidates(theme)
+    if candidates:
+        return candidates[0]
+    print("apply-settings: no usable wallpaper fallback found", file=sys.stderr)
+    return DEFAULT_WALLPAPER_ID, ""
+
+
+def _open_apply_lock():
+    """Serialize concurrent apply-settings invocations for this user."""
+    root = Path(os.environ.get("XDG_RUNTIME_DIR") or SETTINGS_DIR)
+    lock_handle = None
+    try:
+        root.mkdir(parents=True, exist_ok=True)
+        lock_handle = (root / "universal-lite-apply-settings.lock").open(
+            "w", encoding="utf-8"
+        )
+        fcntl.flock(lock_handle, fcntl.LOCK_EX)
+        return lock_handle
+    except OSError as exc:
+        if lock_handle is not None:
+            try:
+                lock_handle.close()
+            except OSError:
+                pass
+        print(f"apply-settings: lock unavailable: {exc}", file=sys.stderr)
+        return None
+
+
+def _close_apply_lock(lock_handle) -> None:
+    if lock_handle is None:
+        return
+    try:
+        fcntl.flock(lock_handle, fcntl.LOCK_UN)
+    except OSError:
+        pass
+    try:
+        lock_handle.close()
+    except OSError:
+        pass
 
 
 def _atomic_write_text(path: Path, content: str) -> None:
@@ -489,21 +587,24 @@ def ensure_settings() -> dict:
     if accent not in VALID_ACCENT:
         accent = "blue"
 
-    # High Contrast forces the effective theme to dark. Do this before
-    # resolving theme-paired wallpapers so the background matches the
-    # theme that actually gets applied.
+    # High Contrast forces the effective theme to dark, but should not
+    # overwrite the stored light/dark preference. Disabling High Contrast
+    # must restore the user's previous theme choice.
     high_contrast = _coerce_bool(data.get("high_contrast", False), False)
-    if high_contrast:
-        theme = "dark"
+    effective_theme = "dark" if high_contrast else theme
 
     # Resolve wallpaper ID (or absolute path) to a concrete file for this theme.
-    wallpaper = _resolve_wallpaper(wallpaper_stored, theme)
-    if wallpaper is None:
-        wallpaper_stored = DEFAULT_WALLPAPER_ID
-        wallpaper = (
-            _resolve_wallpaper(DEFAULT_WALLPAPER_ID, theme)
-            or DEFAULT_WALLPAPER_FALLBACK
+    try:
+        wallpaper = _resolve_wallpaper(wallpaper_stored, effective_theme)
+    except Exception as exc:
+        print(
+            f"apply-settings: wallpaper lookup failed for "
+            f"{wallpaper_stored}: {exc}",
+            file=sys.stderr,
         )
+        wallpaper = None
+    if wallpaper is None:
+        wallpaper_stored, wallpaper = _choose_wallpaper_fallback(effective_theme)
     elif wallpaper_stored.startswith("/"):
         # Migrate legacy absolute-path wallpaper entries to the
         # matching manifest ID so the appearance picker can mark the
@@ -531,27 +632,14 @@ def ensure_settings() -> dict:
     except OSError:
         pass
 
-    # high_contrast forces dark — needs to land before we write the
-    # greeter-theme file, otherwise the lock screen / login screen can
-    # paint light on a system that's otherwise in high-contrast dark
-    # until the user triggers any other apply. We pre-read the flag
-    # here; the final validation + writeback happens further down.
-    if high_contrast:
-        theme = "dark"
-
     greeter_theme_path = greeter_state_dir / "greeter-theme"
     try:
-        # On bootc/ostree, files in shared state dirs can be hardlinked
-        # into the read-only object store. unlink() first so write_text
-        # isn't defeated by EACCES on a hardlinked inode.
-        greeter_theme_path.unlink(missing_ok=True)
-        greeter_theme_path.write_text(theme + "\n", encoding="utf-8")
+        greeter_theme_path.write_text(effective_theme + "\n", encoding="utf-8")
     except OSError as exc:
         print(f"apply-settings: greeter-theme: {exc}", file=sys.stderr)
 
     greeter_accent_path = greeter_state_dir / "greeter-accent"
     try:
-        greeter_accent_path.unlink(missing_ok=True)
         greeter_accent_path.write_text(accent + "\n", encoding="utf-8")
     except OSError as exc:
         print(f"apply-settings: greeter-accent: {exc}", file=sys.stderr)
@@ -606,8 +694,6 @@ def ensure_settings() -> dict:
     if cursor_size not in (24, 32, 48):
         cursor_size = 24
     reduce_motion = _coerce_bool(data.get("reduce_motion", False), False)
-    if high_contrast:
-        theme = "dark"
 
     def _coerce_float(key: str, default: float, lo: float, hi: float) -> float:
         try:
@@ -740,7 +826,9 @@ def ensure_settings() -> dict:
         print(f"apply-settings: settings.json writeback failed: {exc}",
               file=sys.stderr)
 
-    # Runtime consumers (swaybg, token builder) need the resolved path, not the ID.
+    # Runtime consumers need the effective theme and resolved wallpaper path,
+    # not the stored theme preference or wallpaper ID.
+    data["theme"] = effective_theme
     data["wallpaper"] = wallpaper
     return data
 
@@ -1627,6 +1715,9 @@ def _build_merged_keybinds_xml(defaults: dict[str, str]) -> str:
         if not frag:
             merged.pop(key, None)
         else:
+            for default_key, default_frag in list(merged.items()):
+                if default_key != key and default_frag == frag:
+                    merged.pop(default_key, None)
             merged[key] = frag
     lines = []
     for key in merged:
@@ -1939,13 +2030,16 @@ def restart_program(name: str, command: list[str]) -> None:
     # new process inherits our group and dies when apply-settings (or
     # its parent, the settings app) exits — which reliably kills the
     # freshly-respawned waybar on every settings change.
-    subprocess.Popen(
-        command,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True,
-    )
+    try:
+        subprocess.Popen(
+            command,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except OSError as exc:
+        print(f"apply-settings: failed to start {command[0]}: {exc}", file=sys.stderr)
 
 
 def _pids_for_program(name: str) -> list[int]:
@@ -1967,41 +2061,74 @@ def _pids_for_program(name: str) -> list[int]:
     return pids
 
 
-def _swap_swaybg_wallpaper(path: str) -> None:
+def _start_swaybg(path: str) -> subprocess.Popen:
+    return subprocess.Popen(
+        ["swaybg", "-i", path, "-m", "fill"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+
+
+def _swap_swaybg_wallpaper(path: str, theme: str = "light") -> None:
     """Switch wallpaper without clearing the old background first.
 
     The generic restart helper kills the old process before spawning the
     replacement. That is acceptable for daemons like swayidle, but bad for
     wallpaper: if the replacement swaybg fails to decode a theme variant or
     exits during the Wayland handshake, the compositor is left with a blank
-    background. Start the replacement first, verify it survives briefly, then
-    retire only the old pids.
+    background. Start the replacement first, verify it survives briefly, and
+    only then retire the old pids. If the requested wallpaper fails, retry a
+    bundled fallback before touching the existing background.
     """
-    if shutil.which("swaybg") is None or not Path(path).is_file():
+    if shutil.which("swaybg") is None:
         return
     old_pids = set(_pids_for_program("swaybg"))
-    try:
-        proc = subprocess.Popen(
-            ["swaybg", "-i", path, "-m", "fill"],
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
-    except OSError:
-        return
-    time.sleep(0.15)
-    if proc.poll() is not None:
-        return
-    for pid in old_pids:
-        if pid == proc.pid:
+    candidates: list[str] = []
+    if path:
+        candidates.append(path)
+    candidates.extend(
+        candidate for _stored, candidate in _wallpaper_fallback_candidates(theme)
+    )
+
+    seen: set[str] = set()
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        if not Path(candidate).is_file():
             continue
         try:
-            os.kill(pid, signal.SIGTERM)
-        except ProcessLookupError:
+            proc = _start_swaybg(candidate)
+        except OSError as exc:
+            print(f"apply-settings: swaybg failed to start: {exc}", file=sys.stderr)
             continue
-        except OSError:
+        time.sleep(0.5)
+        if proc.poll() is not None:
+            print(
+                f"apply-settings: swaybg exited while loading {candidate}",
+                file=sys.stderr,
+            )
             continue
+        for pid in old_pids:
+            if pid == proc.pid:
+                continue
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                continue
+            except OSError:
+                continue
+        return
+
+    if old_pids:
+        print(
+            "apply-settings: keeping existing wallpaper; replacement failed",
+            file=sys.stderr,
+        )
+    else:
+        print("apply-settings: no wallpaper renderer is running", file=sys.stderr)
 
 
 def reload_waybar() -> None:
@@ -2135,7 +2262,7 @@ def _sync_lid_action(settings: dict) -> None:
     )
 
 
-def main() -> int:
+def _main_locked() -> int:
     settings = ensure_settings()
     tokens = _build_tokens(settings)
     waybar_changed = write_waybar_config(tokens)
@@ -2169,7 +2296,7 @@ def main() -> int:
         # failed decode/handshake during light/dark theme changes cannot
         # leave the compositor with a blank wallpaper.
         if _current_swaybg_wallpaper() != tokens["wallpaper"]:
-            _swap_swaybg_wallpaper(tokens["wallpaper"])
+            _swap_swaybg_wallpaper(tokens["wallpaper"], tokens["theme"])
         if waybar_changed:
             reload_waybar()
         if mako_changed:
@@ -2199,6 +2326,14 @@ def main() -> int:
         restart_program("swayidle", idle_cmd)
 
     return 0
+
+
+def main() -> int:
+    lock_handle = _open_apply_lock()
+    try:
+        return _main_locked()
+    finally:
+        _close_apply_lock(lock_handle)
 
 
 if __name__ == "__main__":

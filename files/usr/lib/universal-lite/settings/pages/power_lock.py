@@ -50,8 +50,8 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         label are separate: keep a parallel `values` list, map
         get_selected() -> values[idx] on change, values.index(current)
         -> set_selected() on load / external update.
-      - Event-bus subscriptions set up in build() and torn down via
-        setup_cleanup(self) on unmap.
+      - Event-bus subscriptions set up in build() and torn down when
+        the page is destroyed.
     """
 
     def __init__(self, store, event_bus):
@@ -88,9 +88,12 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         # Fire when power-profiles-daemon reports an external change.
         self.subscribe("power-profile-changed", self._on_profile_changed)
 
-        # Tear down event-bus subscriptions on unmap.
+        # Tear down event-bus subscriptions and D-Bus signal watches
+        # when the page is destroyed. Pages are cached across transient
+        # unmaps, so helper teardown on unmap would silence external
+        # power-profile updates until Settings is restarted.
         self.setup_cleanup(self)
-        self.connect("unmap", lambda _w: self._teardown_helpers())
+        self.connect("unrealize", lambda _w: self._teardown_helpers())
         return self
 
     def _teardown_helpers(self) -> None:
@@ -141,6 +144,9 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         row.set_selected(
             values.index(current) if current in values else 0
         )
+        if not self._power_helper.available:
+            row.set_sensitive(False)
+            row.set_subtitle(_("Power profiles are unavailable on this system"))
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
             if self._updating_profile:
@@ -148,15 +154,15 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
             idx = r.get_selected()
             if 0 <= idx < len(values):
                 value = values[idx]
-                # Write through settings.json as well as D-Bus. Without
-                # this, apply-settings' _sync_power_profile reads the
-                # stored (old) value on the next unrelated apply and
-                # forces the daemon back, silently reverting the user's
-                # pick. The D-Bus set still happens first so the profile
-                # takes effect immediately; save_and_apply persists for
-                # the reconciler and triggers a full apply run.
-                self._power_helper.set_active_profile(value)
-                self.store.save_and_apply("power_profile", value)
+                # Persist only after the daemon confirms the change via
+                # power-profile-changed. Saving optimistically here made
+                # settings.json claim "performance" even when
+                # power-profiles-daemon was unavailable or rejected the
+                # request.
+                if not self._power_helper.set_active_profile(value):
+                    self._on_profile_changed(
+                        self.store.get("power_profile", "balanced")
+                    )
 
         row.connect("notify::selected", _on_selected)
         self._profile_row = row

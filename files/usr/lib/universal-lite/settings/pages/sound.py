@@ -77,6 +77,12 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         self._out_vol.set_draw_value(True)
         self._out_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
         self._out_vol.set_valign(Gtk.Align.CENTER)
+        try:
+            self._out_vol.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Output volume")]
+            )
+        except Exception:
+            pass
         self._out_vol.connect("value-changed", self._on_out_vol_changed)
         out_vol_row.add_suffix(self._out_vol)
         output_group.add(out_vol_row)
@@ -120,6 +126,12 @@ class SoundPage(BasePage, Adw.PreferencesPage):
         self._in_vol.set_draw_value(True)
         self._in_vol.set_format_value_func(lambda _s, v: f"{v:.0f}%")
         self._in_vol.set_valign(Gtk.Align.CENTER)
+        try:
+            self._in_vol.update_property(
+                [Gtk.AccessibleProperty.LABEL], [_("Input volume")]
+            )
+        except Exception:
+            pass
         self._in_vol.connect("value-changed", self._on_in_vol_changed)
         in_vol_row.add_suffix(self._in_vol)
         input_group.add(in_vol_row)

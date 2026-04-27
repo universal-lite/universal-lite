@@ -11,15 +11,19 @@ fi
 # These must run after labwc creates the Wayland socket.
 dbus-update-activation-environment --systemd \
   WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP \
-  XDG_SESSION_TYPE GTK_USE_PORTAL || true
+  XDG_SESSION_TYPE GTK_USE_PORTAL GSK_RENDERER UNIVERSAL_LITE || true
 systemctl --user import-environment \
   WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP \
-  XDG_SESSION_TYPE GTK_USE_PORTAL || true
+  XDG_SESSION_TYPE GTK_USE_PORTAL GSK_RENDERER UNIVERSAL_LITE || true
 xdg-user-dirs-update >/dev/null 2>&1 || true
 
 # Start gnome-keyring-daemon for secret storage (Chrome passwords, WiFi keys, etc.)
 eval "$(gnome-keyring-daemon --start --components=pkcs11,secrets,ssh 2>/dev/null)" || true
 export SSH_AUTH_SOCK GNOME_KEYRING_CONTROL
+dbus-update-activation-environment --systemd \
+  SSH_AUTH_SOCK GNOME_KEYRING_CONTROL || true
+systemctl --user import-environment \
+  SSH_AUTH_SOCK GNOME_KEYRING_CONTROL || true
 
 # Only start Universal-Lite daemons in a Universal-Lite session.
 [ "${UNIVERSAL_LITE:-}" = "1" ] || exit 0
@@ -40,14 +44,49 @@ fi
 # etc.) or an absolute path for ad-hoc selections — swaybg only takes
 # paths, so we always have to resolve here.
 _settings="$_settings_dir/settings.json"
-_wallpaper=$(python3 -c "
-import json, sys
+python3 -c "
+import json, os, subprocess, sys, time
 sys.path.insert(0, '/usr/lib/universal-lite')
 from settings.wallpapers import resolve_for_theme
-d = json.load(open(sys.argv[1]))
-print(resolve_for_theme(d.get('wallpaper', ''), d.get('theme', 'light')) or '')
-" "$_settings" 2>/dev/null || true)
-[ -n "$_wallpaper" ] && swaybg -i "$_wallpaper" -m fill >/dev/null 2>&1 &
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    d = {}
+theme = 'dark' if d.get('theme') == 'dark' or d.get('high_contrast') is True else 'light'
+seen = set()
+candidates = []
+for value in (d.get('wallpaper', ''), 'fedora-default', 'universal-lite'):
+    try:
+        wallpaper = resolve_for_theme(value, theme)
+    except Exception:
+        wallpaper = None
+    if wallpaper and os.path.isfile(wallpaper) and wallpaper not in seen:
+        candidates.append(wallpaper)
+        seen.add(wallpaper)
+for wallpaper in (
+    '/usr/share/backgrounds/universal-lite/chrome-sky.svg' if theme == 'dark'
+    else '/usr/share/backgrounds/universal-lite/chrome-dawn.svg',
+    '/usr/share/backgrounds/universal-lite/chrome-dawn.svg',
+    '/usr/share/backgrounds/f43/default/f43-01-day.jxl',
+):
+    if os.path.isfile(wallpaper) and wallpaper not in seen:
+        candidates.append(wallpaper)
+        seen.add(wallpaper)
+for wallpaper in candidates:
+    try:
+        proc = subprocess.Popen(
+            ['swaybg', '-i', wallpaper, '-m', 'fill'],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+    except OSError:
+        continue
+    time.sleep(0.5)
+    if proc.poll() is None:
+        raise SystemExit(0)
+" "$_settings" 2>/dev/null || true
 
 # Apply display scale and saved resolutions to all active outputs.
 python3 -c "
@@ -57,18 +96,24 @@ try:
 except Exception:
     sys.exit(0)
 scale = d.get('scale', 1.0)
-r = subprocess.run(['wlr-randr'], capture_output=True, text=True)
+try:
+    r = subprocess.run(['wlr-randr'], capture_output=True, text=True, timeout=5)
+except (OSError, subprocess.TimeoutExpired):
+    sys.exit(0)
+def apply_wlr_randr(args):
+    try:
+        subprocess.run(args, capture_output=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
 for line in r.stdout.splitlines():
     if line and not line[0].isspace():
         output = line.split()[0]
         res_key = f'resolution_{output}'
         if res_key in d:
             mode = d[res_key].replace('Hz', '').strip()
-            subprocess.run(['wlr-randr', '--output', output, '--mode', mode],
-                           capture_output=True)
+            apply_wlr_randr(['wlr-randr', '--output', output, '--mode', mode])
         if scale != 1.0:
-            subprocess.run(['wlr-randr', '--output', output, '--scale', str(scale)],
-                           capture_output=True)
+            apply_wlr_randr(['wlr-randr', '--output', output, '--scale', str(scale)])
 " "$_settings" 2>/dev/null || true
 
 # Route waybar/mako stderr into XDG_RUNTIME_DIR so panel module errors

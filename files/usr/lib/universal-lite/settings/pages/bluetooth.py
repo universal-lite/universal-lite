@@ -194,6 +194,7 @@ class BluetoothPage(BasePage, Adw.PreferencesPage):
 
     def _build_device_row(self, dev):
         row = Adw.ActionRow()
+        row.set_use_markup(False)
         row.set_title(dev.name or _("Unknown device"))
 
         icon = Gtk.Image.new_from_icon_name(dev.icon or "bluetooth-symbolic")
