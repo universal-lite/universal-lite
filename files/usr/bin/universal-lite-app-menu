@@ -380,9 +380,17 @@ window.app-menu {
     border: 1px solid @borders;
     box-shadow: none;
 }
+.app-menu-search:focus,
+.app-menu-search:focus-visible,
 .app-menu-search:focus-within {
     background: alpha(@accent_color, 0.14);
     border: 1px solid alpha(@accent_color, 0.35);
+    box-shadow: 0 0 0 2px alpha(@accent_color, 0.20);
+    outline: none;
+}
+.app-menu-search text selection {
+    background: @accent_color;
+    color: @accent_fg_color;
 }
 /* Gtk.DropDown renders as a button - style the inner button to
    match the pill shape of the search entry so the two read as a

@@ -71,6 +71,19 @@
     background-color: @error_color;
 }
 
+/* === Search === */
+.settings-search-entry:focus,
+.settings-search-entry:focus-visible,
+.settings-search-entry:focus-within {
+    border-color: @accent_color;
+    box-shadow: 0 0 0 2px alpha(@accent_color, 0.22);
+    outline: none;
+}
+.settings-search-entry text selection {
+    background: @accent_color;
+    color: @accent_fg_color;
+}
+
 /* === Accent color swatches === */
 /* Per-accent .accent-<name> background rules are generated at app
    startup from palette.json - see app.py _build_accent_css. */

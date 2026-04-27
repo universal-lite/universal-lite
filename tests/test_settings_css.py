@@ -51,3 +51,18 @@ def test_sidebar_does_not_override_navigation_sidebar_children():
     assert 'add_css_class("category-label")' not in source
     assert "self._sidebar.set_margin_top" not in source
     assert "self._sidebar.set_margin_bottom" not in source
+
+
+def test_search_entry_focus_and_selection_follow_configured_accent():
+    css = _css()
+    source = _window_source()
+
+    assert 'add_css_class("settings-search-entry")' in source
+    assert ".settings-search-entry:focus," in css
+    assert ".settings-search-entry:focus-visible," in css
+    assert ".settings-search-entry:focus-within" in css
+    assert "border-color: @accent_color;" in css
+    assert "box-shadow: 0 0 0 2px alpha(@accent_color, 0.22);" in css
+    assert ".settings-search-entry text selection" in css
+    assert "background: @accent_color;" in css
+    assert "color: @accent_fg_color;" in css

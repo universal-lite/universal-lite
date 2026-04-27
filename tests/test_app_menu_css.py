@@ -110,6 +110,11 @@ def test_start_menu_uses_waybar_aligned_theme_tokens():
     assert "window.app-menu.app-menu-ultra .app-menu-tile" in css
     assert "background: alpha(@window_fg_color, 0.08)" in css
     assert "background: alpha(@accent_color, 0.14)" in css
+    assert ".app-menu-search:focus,\n.app-menu-search:focus-visible," in css
+    assert "box-shadow: 0 0 0 2px alpha(@accent_color, 0.20);" in css
+    assert ".app-menu-search text selection" in css
+    assert "background: @accent_color;" in css
+    assert "color: @accent_fg_color;" in css
 
 
 def test_start_menu_borders_use_adwaita_border_token():

@@ -94,6 +94,7 @@ class SettingsWindow(Adw.ApplicationWindow):
 
         self._search_entry = Gtk.SearchEntry()
         self._search_entry.set_placeholder_text(_("Search settings\u2026"))
+        self._search_entry.add_css_class("settings-search-entry")
         self._search_bar = Gtk.SearchBar()
         self._search_bar.set_child(self._search_entry)
         self._search_bar.connect_entry(self._search_entry)
