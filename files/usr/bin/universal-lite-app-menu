@@ -69,6 +69,14 @@ _SCRIPT_PATH = Path(
 _REPO_PALETTE_PATH = (
     _SCRIPT_PATH.parents[1] / "share/universal-lite/palette.json"
 )
+_REPO_LIB_ROOT = _SCRIPT_PATH.parents[1] / "lib"
+_LIB_ROOT = (
+    _REPO_LIB_ROOT
+    if _REPO_LIB_ROOT.joinpath("universal-lite/theme.py").exists()
+    else Path("/usr/lib")
+)
+sys.path.insert(0, str(_LIB_ROOT / "universal-lite"))
+from theme import gtk_color_defines  # noqa: E402
 
 # PID lock: second invocation (e.g. launcher click while the menu is
 # open) signals the live instance to close and itself exits without
@@ -276,12 +284,21 @@ window.app-menu.app-menu-shell-{name} .app-menu-confirm-btn.ok:hover {{
 """)
     return "\n".join(chunks)
 
-# CSS - no libadwaita. Uses Adwaita colour vars so the menu tracks
-# whichever accent / theme apply-settings has set. Twilight classes
-# intentionally override those vars so the menu matches the opposite-
-# palette Waybar shelf. The visual model mirrors the shelf: a
-# translucent Adwaita surface, neutral control pods, accent focus, and
-# ChromeOS-style rounded hit targets.
+
+def _load_settings() -> dict:
+    try:
+        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+# CSS - no libadwaita. The menu owns its shell tokens directly from
+# settings.json + palette.json; GTK/GNOME accent settings are only a
+# compatibility path for external apps. Twilight classes intentionally
+# override surface tokens so the menu matches the opposite-palette
+# Waybar shelf. The visual model mirrors the shelf: a translucent
+# Adwaita surface, neutral control pods, accent focus, and ChromeOS-
+# style rounded hit targets.
 BASE_CSS = b"""
 * {
     font-family: "Roboto", "Adwaita Sans", sans-serif;
@@ -474,14 +491,25 @@ window.app-menu.app-menu-ultra .app-menu-tile {
 }
 """
 
-CSS = BASE_CSS + _build_twilight_css().encode("utf-8")
+
+def _build_css(
+    settings: dict | None = None,
+    palettes: dict | None = None,
+    palette_paths: tuple[Path, ...] | None = None,
+) -> bytes:
+    settings = settings if settings is not None else _load_settings()
+    css_tokens = gtk_color_defines(
+        settings,
+        palette_paths or (PALETTE_PATH, _REPO_PALETTE_PATH),
+    )
+    return (
+        css_tokens.encode("utf-8")
+        + BASE_CSS
+        + _build_twilight_css(palettes).encode("utf-8")
+    )
 
 
-def _load_settings() -> dict:
-    try:
-        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+CSS = _build_css()
 
 
 def _panel_geometry(settings: dict) -> dict:

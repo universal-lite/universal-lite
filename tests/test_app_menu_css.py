@@ -9,14 +9,41 @@ from pathlib import Path
 
 
 _SCRIPT = Path(__file__).resolve().parents[1] / "files/usr/bin/universal-lite-app-menu"
+_PALETTE = (
+    Path(__file__).resolve().parents[1]
+    / "files/usr/share/universal-lite/palette.json"
+)
 _loader = importlib.machinery.SourceFileLoader("app_menu", str(_SCRIPT))
 _spec = importlib.util.spec_from_loader("app_menu", _loader, origin=str(_SCRIPT))
 app_menu = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(app_menu)
 
 
-def _css() -> str:
-    return app_menu.CSS.decode("utf-8")
+def _css(settings=None) -> str:
+    settings = settings or {"theme": "light", "accent": "blue"}
+    palette = json.loads(_PALETTE.read_text(encoding="utf-8"))
+    return app_menu._build_css(
+        settings,
+        palettes=palette,
+        palette_paths=(_PALETTE,),
+    ).decode("utf-8")
+
+
+def test_start_menu_defines_user_accent_tokens_from_settings():
+    css = _css({"theme": "light", "accent": "yellow"})
+
+    assert "@define-color accent_color #c88800;" in css
+    assert "@define-color accent_fg_color #1e1e1e;" in css
+    assert "@define-color accent_color #3584e4;" not in css
+
+
+def test_start_menu_high_contrast_defines_strong_surface_tokens():
+    css = _css({"theme": "light", "accent": "purple", "high_contrast": True})
+
+    assert "@define-color window_bg_color #000000;" in css
+    assert "@define-color window_fg_color #ffffff;" in css
+    assert "@define-color borders #ffffff;" in css
+    assert "@define-color accent_color #9141ac;" in css
 
 
 def test_start_menu_uses_waybar_aligned_theme_tokens():
@@ -71,12 +98,7 @@ def test_twilight_mode_chooses_opposite_menu_palette():
 
 def test_twilight_menu_palette_matches_waybar_surface_tokens():
     css = _css()
-    palette = json.loads(
-        (Path(__file__).resolve().parents[1]
-         / "files/usr/share/universal-lite/palette.json").read_text(
-             encoding="utf-8"
-         )
-    )
+    palette = json.loads(_PALETTE.read_text(encoding="utf-8"))
     dark = app_menu._twilight_palette_tokens(palette["dark"])
     light = app_menu._twilight_palette_tokens(palette["light"])
 
