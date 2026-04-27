@@ -40,6 +40,9 @@ def _load_default_layout():
     }
 
 DEFAULT_LAYOUT = _load_default_layout()
+VALID_MODULES = set(MODULE_NAMES) | {
+    module for modules in DEFAULT_LAYOUT.values() for module in modules
+}
 HORIZONTAL_LABELS = {"start": _("Left"), "center": _("Center"), "end": _("Right")}
 VERTICAL_LABELS = {"start": _("Top"), "center": _("Center"), "end": _("Bottom")}
 SECTION_ORDER = ["start", "center", "end"]
@@ -251,12 +254,34 @@ class PanelPage(BasePage, Adw.PreferencesPage):
 
     def _load_layout(self):
         saved = self.store.get("layout")
-        if (
-            isinstance(saved, dict)
-            and all(k in saved and isinstance(saved[k], list) for k in SECTION_ORDER)
+        return self._sanitize_layout(saved)
+
+    @staticmethod
+    def _sanitize_layout(raw) -> dict[str, list[str]]:
+        if not (
+            isinstance(raw, dict)
+            and all(k in raw and isinstance(raw[k], list) for k in SECTION_ORDER)
         ):
-            return {k: list(saved[k]) for k in SECTION_ORDER}
-        return copy.deepcopy(DEFAULT_LAYOUT)
+            return copy.deepcopy(DEFAULT_LAYOUT)
+
+        layout = {section: [] for section in SECTION_ORDER}
+        seen: set[str] = set()
+        for section in SECTION_ORDER:
+            for module in raw[section]:
+                if (
+                    isinstance(module, str)
+                    and module in VALID_MODULES
+                    and module not in seen
+                ):
+                    layout[section].append(module)
+                    seen.add(module)
+
+        for section in SECTION_ORDER:
+            for module in DEFAULT_LAYOUT.get(section, []):
+                if module in VALID_MODULES and module not in seen:
+                    layout[section].append(module)
+                    seen.add(module)
+        return layout
 
     @staticmethod
     def _sanitize_pinned(raw) -> list[dict]:

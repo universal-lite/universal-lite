@@ -16,8 +16,10 @@ fi
 # image targets. Match the greeter and force GL before any GTK app starts.
 export GSK_RENDERER=gl
 
-# Write theme configs before the compositor starts (no Wayland socket needed).
-/usr/libexec/universal-lite-apply-settings || \
+# Write dependency-light config files before the compositor starts. Live
+# session sync runs from labwc autostart after Wayland, D-Bus env import,
+# and polkit are available.
+/usr/libexec/universal-lite-apply-settings --mode=config || \
     echo "universal-lite-session: apply-settings failed; continuing to labwc" >&2
 
 # Capture labwc stderr so crash details survive the session exit.

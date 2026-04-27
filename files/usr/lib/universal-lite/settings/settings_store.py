@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import threading
+import time
 from gettext import gettext as _
 from pathlib import Path
 
@@ -46,11 +47,44 @@ class SettingsStore:
             return self._load_defaults(write_to_user=True)
         try:
             data = json.loads(self._path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return self._load_defaults(write_to_user=True)
+        except json.JSONDecodeError:
+            return self._load_invalid_defaults()
+        except OSError:
+            return self._load_defaults(write_to_user=False)
         if not isinstance(data, dict):
-            return self._load_defaults(write_to_user=True)
+            return self._load_invalid_defaults()
         return self._sanitize_loaded_data(data)
+
+    def _invalid_backup_path(self) -> Path:
+        base = self._path.with_name(self._path.name + ".invalid")
+        if not base.exists():
+            return base
+        for idx in range(1, 100):
+            candidate = self._path.with_name(f"{self._path.name}.invalid.{idx}")
+            if not candidate.exists():
+                return candidate
+        stamp = int(time.time())
+        idx = 0
+        while True:
+            suffix = f"{stamp}" if idx == 0 else f"{stamp}.{idx}"
+            candidate = self._path.with_name(f"{self._path.name}.invalid.{suffix}")
+            if not candidate.exists():
+                return candidate
+            idx += 1
+
+    def _load_invalid_defaults(self) -> dict:
+        """Preserve an invalid settings file before recreating defaults.
+
+        Invalid JSON or a non-object top-level value used to be replaced
+        in-place by factory defaults, which made a truncated or hand-edited
+        file unrecoverable. Move it aside first; if that fails, use defaults
+        only in memory rather than overwriting the original.
+        """
+        try:
+            self._path.replace(self._invalid_backup_path())
+        except OSError:
+            return self._load_defaults(write_to_user=False)
+        return self._load_defaults(write_to_user=True)
 
     def _load_defaults(self, write_to_user: bool = False) -> dict:
         try:
@@ -114,16 +148,30 @@ class SettingsStore:
         """Load and return the factory defaults from the image."""
         return self._load_defaults()
 
-    def restore_keys(self, keys: list[str], defaults: dict) -> None:
-        """Overwrite specified keys with values from defaults, then apply."""
+    def restore_keys(
+        self,
+        keys: list[str],
+        defaults: dict,
+        *,
+        remove_predicate=None,
+        apply_now: bool = True,
+    ) -> bool:
+        """Overwrite specified keys with defaults, then optionally apply."""
+        next_data = dict(self._data)
+        if remove_predicate is not None:
+            for key in [k for k in next_data if remove_predicate(k)]:
+                next_data.pop(key, None)
         for key in keys:
             if key in defaults:
-                self._data[key] = defaults[key]
+                next_data[key] = defaults[key]
             else:
-                self._data.pop(key, None)
-        if not self._write():
-            return  # disk error; _write toasted the reason
-        self._run_apply()
+                next_data.pop(key, None)
+        if not self._write_data(next_data):
+            return False  # disk error; _write_data toasted the reason
+        self._data = next_data
+        if apply_now:
+            self._run_apply()
+        return True
 
     def remove_keys_matching(self, predicate) -> None:
         """Drop every key for which *predicate* returns True. No apply side-effect.
@@ -216,8 +264,8 @@ class SettingsStore:
         """Return True while an apply is running or queued."""
         return self._apply_running or self._apply_pending
 
-    def _write(self) -> bool:
-        """Persist self._data atomically. Returns True on success.
+    def _write_data(self, data: dict) -> bool:
+        """Persist *data* atomically. Returns True on success.
 
         Failures (ENOSPC on a 2 GB Chromebook, read-only bind mount on
         ~/.config, wrong ownership after a chown) previously propagated
@@ -233,7 +281,7 @@ class SettingsStore:
         tmp = self._path.with_suffix(".tmp")
         try:
             with tmp.open("w", encoding="utf-8") as handle:
-                handle.write(json.dumps(self._data, indent=2) + "\n")
+                handle.write(json.dumps(data, indent=2) + "\n")
                 handle.flush()
                 os.fsync(handle.fileno())
             os.chmod(tmp, 0o600)
@@ -251,6 +299,10 @@ class SettingsStore:
             except OSError:
                 pass
             return False
+
+    def _write(self) -> bool:
+        """Persist self._data atomically. Returns True on success."""
+        return self._write_data(self._data)
 
     def _run_apply(self) -> None:
         if self._apply_running:

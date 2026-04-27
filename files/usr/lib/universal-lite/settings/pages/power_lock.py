@@ -22,6 +22,7 @@ TIMEOUT_OPTIONS: list[tuple[str, int]] = [
     (_("30 minutes"), 1800),
     (_("Never"), 0),
 ]
+TIMEOUT_VALUES = [secs for _label, secs in TIMEOUT_OPTIONS]
 
 PROFILE_OPTIONS: list[tuple[str, str]] = [
     ("balanced", _("Balanced")),
@@ -34,6 +35,14 @@ LID_OPTIONS: list[tuple[str, str]] = [
     ("lock", _("Lock")),
     ("nothing", _("Do Nothing")),
 ]
+
+
+def _sanitize_timeout(value, default: int) -> int:
+    try:
+        seconds = int(value)
+    except (TypeError, ValueError):
+        return default
+    return seconds if seconds in TIMEOUT_VALUES else default
 
 
 class PowerLockPage(BasePage, Adw.PreferencesPage):
@@ -194,8 +203,8 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         values = [secs for _label, secs in TIMEOUT_OPTIONS]
         row.set_model(Gtk.StringList.new(labels))
 
-        current = self.store.get("suspend_timeout", 0)
-        row.set_selected(values.index(current) if current in values else 0)
+        current = _sanitize_timeout(self.store.get("suspend_timeout", 0), 0)
+        row.set_selected(values.index(current))
 
         def _on_suspend_selected(r: Adw.ComboRow, _pspec) -> None:
             if self._updating_suspend:
@@ -204,7 +213,7 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
             if not (0 <= idx < len(values)):
                 return
             new_val = values[idx]
-            lock_val = self.store.get("lock_timeout", 0)
+            lock_val = _sanitize_timeout(self.store.get("lock_timeout", 300), 300)
             # new_val > 0 and lock_val > 0 filters out "Never" on either
             # side — no clamp makes sense when the comparison is against
             # an infinite delay.
@@ -213,14 +222,14 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
                     _("Suspend delay must be at least as long as the lock delay."),
                     True,
                 )
-                stored = self.store.get("suspend_timeout", 0)
-                if stored in values:
-                    stored_idx = values.index(stored)
-                    self._updating_suspend = True
-                    try:
-                        r.set_selected(stored_idx)
-                    finally:
-                        self._updating_suspend = False
+                stored = _sanitize_timeout(
+                    self.store.get("suspend_timeout", 0), 0)
+                stored_idx = values.index(stored)
+                self._updating_suspend = True
+                try:
+                    r.set_selected(stored_idx)
+                finally:
+                    self._updating_suspend = False
                 return
             self.store.save_and_apply("suspend_timeout", new_val)
 
@@ -272,8 +281,8 @@ class PowerLockPage(BasePage, Adw.PreferencesPage):
         values = [secs for _label, secs in TIMEOUT_OPTIONS]
         row.set_model(Gtk.StringList.new(labels))
 
-        current = self.store.get(key, default)
-        row.set_selected(values.index(current) if current in values else 0)
+        current = _sanitize_timeout(self.store.get(key, default), default)
+        row.set_selected(values.index(current))
 
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
             idx = r.get_selected()

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "files/usr/lib/universal-lite"))
 
-from settings.pages import about, default_apps, keyboard, panel  # noqa: E402
+from settings.pages import about, default_apps, keyboard, panel, power_lock  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -83,6 +83,22 @@ def test_panel_sanitize_pinned_skips_invalid_entries():
             "icon": "application-x-executable-symbolic",
         },
     ]
+
+
+def test_panel_sanitize_layout_filters_unknowns_and_duplicates():
+    raw = {
+        "start": ["custom/launcher", "clock", "clock", "unknown"],
+        "center": ["wlr/taskbar"],
+        "end": ["battery"],
+    }
+
+    layout = panel.PanelPage._sanitize_layout(raw)
+
+    assert layout == {
+        "start": ["custom/launcher", "clock"],
+        "center": ["wlr/taskbar"],
+        "end": ["battery", "pulseaudio", "backlight", "tray"],
+    }
 
 
 def test_panel_edge_change_saves_and_relabels_sections():
@@ -171,6 +187,19 @@ def test_default_apps_browser_row_covers_related_mime_types():
 def test_restore_defaults_category_titles_escape_markup_ampersands():
     assert about._row_title_text("Mouse & Touchpad") == "Mouse &amp; Touchpad"
     assert about._row_title_text("Date & Time") == "Date &amp; Time"
+
+
+def test_restore_defaults_has_accessibility_category_separate_from_appearance():
+    assert about.CATEGORY_KEYS["Appearance"] == ["theme", "accent", "wallpaper"]
+    assert about.CATEGORY_KEYS["Accessibility"] == [
+        "font_size", "cursor_size", "high_contrast", "reduce_motion",
+    ]
+
+
+def test_power_timeout_sanitizer_matches_apply_defaults():
+    assert power_lock._sanitize_timeout(999, 300) == 300
+    assert power_lock._sanitize_timeout("600", 300) == 600
+    assert power_lock._sanitize_timeout("bad", 0) == 0
 
 
 def test_power_lock_helper_survives_transient_unmap():
