@@ -65,7 +65,7 @@ def _load_accent_names() -> list[str]:
               f"using fallback accent list", file=sys.stderr)
         return _ACCENT_FALLBACK
 
-# Tile geometry — a compact, ChromeOS-ish grid.
+# Wallpaper thumbnail geometry.
 TILE_W = 160
 TILE_H = 100
 # Cap decoded pixel size so 4K WebP thumbnails don't stall the UI thread
@@ -98,7 +98,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         BasePage.__init__(self, store, event_bus)
         Adw.PreferencesPage.__init__(self)
         self._wallpaper_flow: Gtk.FlowBox | None = None
-        self._wallpaper_buttons: list[tuple[Gtk.ToggleButton, str]] = []
+        self._wallpaper_buttons: list[tuple[Gtk.ToggleButton, str, Gtk.Widget]] = []
         # Re-entry guard for accent & wallpaper pickers. Both handlers
         # emulate radio-button semantics by calling set_active(False)
         # on sibling buttons, but set_active re-fires `toggled`, which
@@ -170,10 +170,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         accent_flow.set_row_spacing(8)
         accent_flow.set_valign(Gtk.Align.CENTER)
         accent_flow.set_halign(Gtk.Align.CENTER)
-        accent_flow.set_margin_top(12)
-        accent_flow.set_margin_bottom(12)
-        accent_flow.set_margin_start(12)
-        accent_flow.set_margin_end(12)
+        accent_flow.add_css_class("accent-swatch-grid")
         accent_buttons: list[Gtk.ToggleButton] = []
         current_accent = self.store.get("accent", "blue")
 
@@ -203,9 +200,11 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         for name in _load_accent_names():
             display_name = _accent_display_name(name)
             btn = Gtk.ToggleButton()
-            btn.add_css_class("accent-circle")
+            btn.add_css_class("accent-swatch")
             btn.add_css_class(f"accent-{name}")
+            btn.set_size_request(44, 44)
             check_icon = Gtk.Image.new_from_icon_name("object-select-symbolic")
+            check_icon.set_pixel_size(16)
             btn.set_child(check_icon)
             # Tooltip doubles as the accessible name for GTK4 widgets
             # that don't otherwise carry a label. Without it Orca reads
@@ -360,14 +359,27 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             # provides the accessible name on older GTK builds.
             pass
         btn.connect("toggled", self._on_wallpaper_toggled, wp.id)
-        self._wallpaper_buttons.append((btn, wp.id))
 
-        if not wp.is_custom:
-            return btn
-
-        # Custom tiles show an always-visible × badge in the top-right corner.
         overlay = Gtk.Overlay()
         overlay.set_child(btn)
+
+        check = Gtk.Image.new_from_icon_name("object-select-symbolic")
+        check.add_css_class("wallpaper-check")
+        check.set_pixel_size(16)
+        check.set_halign(Gtk.Align.END)
+        check.set_valign(Gtk.Align.END)
+        check.set_margin_end(8)
+        check.set_margin_bottom(8)
+        check.set_can_target(False)
+        check.set_visible(btn.get_active())
+        overlay.add_overlay(check)
+
+        self._wallpaper_buttons.append((btn, wp.id, check))
+
+        if not wp.is_custom:
+            return overlay
+
+        # Custom tiles show an always-visible × badge in the top-right corner.
         remove = Gtk.Button.new_from_icon_name("window-close-symbolic")
         remove.add_css_class("wallpaper-remove")
         remove.set_halign(Gtk.Align.END)
@@ -411,12 +423,17 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
                 # back on.
                 btn.set_active(True)
                 return
-            for other_btn, _id in self._wallpaper_buttons:
+            for other_btn, _id, _check in self._wallpaper_buttons:
                 if other_btn is not btn and other_btn.get_active():
                     other_btn.set_active(False)
             self.store.save_and_apply("wallpaper", wp_id)
         finally:
             self._group_updating = False
+            self._sync_wallpaper_selection()
+
+    def _sync_wallpaper_selection(self) -> None:
+        for btn, _id, check in self._wallpaper_buttons:
+            check.set_visible(btn.get_active())
 
     def _on_custom_clicked(self, _btn: Gtk.Button, page: Gtk.Widget) -> None:
         dialog = Gtk.FileDialog()

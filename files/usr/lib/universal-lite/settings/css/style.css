@@ -1,73 +1,49 @@
-/* === Sidebar === */
-.settings-split-view > .sidebar-pane {
-    background-color: @headerbar_bg_color;
-    box-shadow: inset -1px 0 @borders;
-}
-.settings-split-view > .content-pane {
-    box-shadow: none;
-}
-.settings-sidebar-pane {
-    background-color: transparent;
-}
-.settings-sidebar-pane headerbar,
-.settings-sidebar-pane scrolledwindow,
-.settings-sidebar-pane list,
-.settings-sidebar-pane row {
-    background: transparent;
-}
-.sidebar row {
-    padding: 0.75em 1em;
-    margin: 2px 8px;
-    border-radius: 8px;
-}
-.sidebar row:selected {
-    background-color: alpha(@accent_color, 0.18);
-}
-.sidebar .category-icon {
-    opacity: 0.8;
-}
-.sidebar row:selected .category-icon {
-    opacity: 1;
-}
-.sidebar .category-label {
-    font-size: 0.95em;
-}
-
-/* === Content area === */
-.content-area {
-    background-color: @window_bg_color;
-}
-
 /* === Wallpaper picker === */
 .wallpaper-grid {
-    padding: 0;
+    padding: 8px;
 }
 .wallpaper-tile {
-    padding: 0;
+    padding: 3px;
     min-width: 160px;
     min-height: 100px;
-    border-radius: 12px;
-    border: 2px solid transparent;
-    background: none;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    background: transparent;
     outline: none;
 }
 .wallpaper-tile picture {
     border-radius: 10px;
 }
 .wallpaper-tile:hover {
-    border-color: alpha(@accent_color, 0.4);
+    border-color: alpha(@window_fg_color, 0.14);
+    background: alpha(@window_fg_color, 0.05);
 }
 .wallpaper-tile:checked {
     border-color: @accent_color;
-    box-shadow: 0 0 0 1px @accent_color;
+    background: alpha(@accent_color, 0.08);
+    box-shadow: 0 0 0 2px alpha(@accent_color, 0.22);
+}
+.wallpaper-tile:focus-visible {
+    box-shadow: 0 0 0 3px alpha(@accent_color, 0.32);
+}
+.wallpaper-check {
+    min-width: 16px;
+    min-height: 16px;
+    padding: 4px;
+    border-radius: 999px;
+    background: @accent_color;
+    color: @accent_fg_color;
+    box-shadow:
+        0 1px 2px alpha(black, 0.22),
+        0 0 0 1px alpha(white, 0.35);
 }
 .wallpaper-add {
     padding: 0;
     min-width: 160px;
     min-height: 100px;
-    border-radius: 12px;
-    border: 2px dashed alpha(@borders, 0.6);
-    background: alpha(@window_bg_color, 0.5);
+    border-radius: 14px;
+    border: 1px dashed alpha(@window_fg_color, 0.24);
+    background: alpha(@window_fg_color, 0.03);
     color: alpha(@window_fg_color, 0.6);
 }
 .wallpaper-add:hover {
@@ -88,67 +64,49 @@
     background-color: @error_color;
 }
 
-/* === Accent color circles === */
+/* === Accent color swatches === */
 /* Per-accent .accent-<name> background rules are generated at app
    startup from palette.json - see app.py _build_accent_css. */
-.accent-circle {
-    min-width: 32px;
-    min-height: 32px;
-    border-radius: 16px;
-    padding: 0;
-    border: 1px solid alpha(@window_fg_color, 0.18);
-    box-shadow: inset 0 0 0 1px alpha(white, 0.18);
+.accent-swatch-grid {
+    padding: 10px 12px;
 }
-.accent-circle:hover {
+.accent-swatch {
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 999px;
+    padding: 5px;
+    border: 1px solid alpha(@window_fg_color, 0.16);
+    background-clip: content-box;
     box-shadow:
-        inset 0 0 0 1px alpha(white, 0.22),
+        inset 0 0 0 1px alpha(white, 0.20),
+        0 1px 2px alpha(black, 0.08);
+}
+.accent-swatch:hover {
+    box-shadow:
+        inset 0 0 0 1px alpha(white, 0.24),
+        0 1px 2px alpha(black, 0.10),
         0 0 0 2px alpha(@window_fg_color, 0.10);
 }
-.accent-circle image {
+.accent-swatch:focus-visible {
+    box-shadow:
+        inset 0 0 0 1px alpha(white, 0.24),
+        0 0 0 3px alpha(@accent_color, 0.32);
+}
+.accent-swatch image {
     opacity: 0;
     -gtk-icon-size: 16px;
     -gtk-icon-shadow: 0 1px 2px alpha(black, 0.45);
 }
-.accent-circle:checked {
-    border-color: alpha(@window_fg_color, 0.45);
+.accent-swatch:checked {
+    border-color: alpha(@window_fg_color, 0.38);
     box-shadow:
-        inset 0 0 0 1px alpha(white, 0.24),
+        inset 0 0 0 1px alpha(white, 0.28),
         0 0 0 2px @window_bg_color,
-        0 0 0 4px alpha(@window_fg_color, 0.55);
+        0 0 0 4px alpha(@accent_color, 0.52);
 }
-.accent-circle:checked image {
+.accent-swatch:checked image {
     opacity: 1;
 }
 
-/* Toast notifications are now provided by AdwToastOverlay (see
-   window.py) - Adwaita ships the styling, so no custom rules here. */
-
-/* === Dialogs === */
-.dialog-overlay {
-    background-color: alpha(black, 0.5);
-}
-.dialog-card {
-    background-color: @card_bg_color;
-    border-radius: 12px;
-    border: 1px solid alpha(@borders, 0.3);
-    box-shadow: 0 4px 16px alpha(black, 0.2);
-    padding: 24px;
-    min-width: 360px;
-}
-.dialog-title {
-    font-size: 18px;
-    font-weight: bold;
-}
-.dialog-subtitle {
-    font-size: 13px;
-    opacity: 0.7;
-    margin-bottom: 8px;
-}
-
-/* === Destructive actions === */
-.destructive-button {
-    color: @error_color;
-}
-.destructive-button:hover {
-    background-color: alpha(@error_color, 0.1);
-}
+/* Toasts and dialogs use AdwToastOverlay and AdwAlertDialog; Adwaita
+   ships their styling, so no custom rules are needed here. */

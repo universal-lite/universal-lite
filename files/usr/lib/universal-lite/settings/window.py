@@ -66,21 +66,13 @@ class SettingsWindow(Adw.ApplicationWindow):
         sidebar_scroll.set_vexpand(True)
         self._sidebar = Gtk.ListBox()
         self._sidebar.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        self._sidebar.set_margin_top(8)
-        self._sidebar.set_margin_bottom(8)
         # Adwaita's standard class for a sidebar-style ListBox - gives
         # rows the right navigation look, hover, and selected colours.
-        # The full pane styling lives on sidebar_toolbar below. Keeping
-        # the ListBox transparent avoids a half-height separator between
-        # the sidebar header and the row list.
         self._sidebar.add_css_class("navigation-sidebar")
-        self._sidebar.add_css_class("sidebar")
         sidebar_scroll.set_child(self._sidebar)
 
         sidebar_toolbar = Adw.ToolbarView()
-        sidebar_toolbar.add_css_class("settings-sidebar-pane")
         sidebar_header = Adw.HeaderBar()
-        sidebar_header.add_css_class("settings-sidebar-header")
         sidebar_header.set_decoration_layout(":minimize,maximize,close")
         sidebar_toolbar.add_top_bar(sidebar_header)
         sidebar_toolbar.set_content(sidebar_scroll)
@@ -91,7 +83,6 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(150)
-        self._stack.add_css_class("content-area")
 
         content_header = Adw.HeaderBar()
         content_header.set_decoration_layout(":minimize,maximize,close")
@@ -125,7 +116,6 @@ class SettingsWindow(Adw.ApplicationWindow):
 
         # -- NavigationSplitView -------------------------------------
         split = Adw.NavigationSplitView()
-        split.add_css_class("settings-split-view")
         split.set_sidebar(sidebar_page)
         split.set_content(self._content_page)
         split.set_sidebar_width_fraction(0.25)
@@ -248,10 +238,8 @@ class SettingsWindow(Adw.ApplicationWindow):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         icon = Gtk.Image.new_from_icon_name(icon_name)
         icon.set_pixel_size(16)
-        icon.add_css_class("category-icon")
         box.append(icon)
         lbl = Gtk.Label(label=label, xalign=0)
-        lbl.add_css_class("category-label")
         lbl.set_hexpand(True)
         box.append(lbl)
         row.set_child(box)
