@@ -143,6 +143,18 @@ def test_app_tiles_are_flat_until_interaction():
     assert "color: @accent_fg_color;" in css
 
 
+def test_start_menu_has_vm_renderer_guard_before_gtk_import_without_style_fork():
+    source = _SCRIPT.read_text(encoding="utf-8")
+
+    guard_idx = source.index("if _detect_virtualized_session():")
+    gtk_idx = source.index('gi.require_version("Gtk", "4.0")')
+    reexec_idx = source.index("os.execv(sys.executable")
+    assert guard_idx < reexec_idx < gtk_idx
+    assert 'os.environ.setdefault("GSK_RENDERER", "gl")' in source
+    assert "UL_APP_MENU_STABLE_RENDERING" not in source
+    assert "app-menu-stable-rendering" not in source
+
+
 def test_twilight_mode_chooses_opposite_menu_palette():
     assert app_menu._shell_theme_class({"theme": "light"}) is None
     assert app_menu._shell_theme_class(
