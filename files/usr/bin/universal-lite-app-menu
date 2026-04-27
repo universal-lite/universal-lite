@@ -114,6 +114,8 @@ TILE_WIDTH_BASE = 92
 TILE_HEIGHT_BASE = 82
 SHADOW_PAD = 20
 PANEL_GAP = 8
+DISPLAY_WIDTH_USABLE_MIN = 320
+DISPLAY_HEIGHT_USABLE_MIN = 240
 
 POWER_ACTIONS = [
     ("Lock",      "system-lock-screen", ["swaylock", "-f"]),
@@ -495,7 +497,32 @@ def _panel_extent(settings: dict, edge: str) -> int:
     return round((40 if compact else 48) * scale)
 
 
-def _display_size() -> tuple[int, int] | None:
+def _settings_display_scale(settings: dict) -> float:
+    try:
+        scale = float(settings.get("scale", 1.0))
+    except (TypeError, ValueError):
+        return 1.0
+    if scale <= 1.0:
+        return 1.0
+    return scale
+
+
+def _logical_display_size(width: int, height: int, scale: float) -> tuple[int, int]:
+    width = max(1, int(width))
+    height = max(1, int(height))
+    scale = max(1.0, float(scale))
+    if scale <= 1.0:
+        return (width, height)
+
+    scaled_width = max(1, int(width / scale))
+    scaled_height = max(1, int(height / scale))
+    if (scaled_width >= DISPLAY_WIDTH_USABLE_MIN
+            and scaled_height >= DISPLAY_HEIGHT_USABLE_MIN):
+        return (scaled_width, scaled_height)
+    return (width, height)
+
+
+def _display_size(settings: dict) -> tuple[int, int] | None:
     display = Gdk.Display.get_default()
     if display is None:
         return None
@@ -504,7 +531,16 @@ def _display_size() -> tuple[int, int] | None:
     if monitor is None:
         return None
     geometry = monitor.get_geometry()
-    return (geometry.width, geometry.height)
+    # GDK documents monitor geometry as application pixels, but labwc +
+    # wlr-randr display scaling can still report a mode-sized rectangle
+    # here. Normalize against our stored output scale only when doing so
+    # leaves a plausible usable viewport; otherwise assume GDK already
+    # returned logical coordinates.
+    return _logical_display_size(
+        geometry.width,
+        geometry.height,
+        _settings_display_scale(settings),
+    )
 
 
 def _fit_dimension(ideal: int, minimum: int, available: int | None) -> int:
@@ -762,7 +798,7 @@ class AppMenu(Gtk.Window):
 
         self._geom = _panel_geometry(settings)
         self._edge = self._geom["edge"]
-        self._metrics = _menu_metrics(settings, self._geom, _display_size())
+        self._metrics = _menu_metrics(settings, self._geom, _display_size(settings))
         self._columns = self._metrics["columns"]
         self._tile_width = self._metrics["tile_width"]
         self._tile_height = self._metrics["tile_height"]

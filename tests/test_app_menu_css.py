@@ -135,6 +135,28 @@ def test_start_menu_metrics_scale_tiles_and_reduce_columns_for_large_text():
     assert metrics["columns"] < app_menu.GRID_COLUMNS_MAX
 
 
+def test_start_menu_metrics_fit_1360x768_at_200_percent_scale():
+    # GDK widget sizes are in logical/application pixels. A 1360x768
+    # output at 200% scale leaves a 680x384 logical viewport; the menu
+    # must fit that viewport, not the raw physical mode.
+    metrics = app_menu._menu_metrics(
+        {"density": "comfortable", "font_size": 11},
+        {"edge": "bottom", "section": "start"},
+        (680, 384),
+    )
+
+    assert metrics["width"] <= 680 - (2 * (app_menu.SHADOW_PAD + app_menu.PANEL_GAP))
+    assert metrics["height"] <= 384 - (
+        2 * (app_menu.SHADOW_PAD + app_menu.PANEL_GAP)
+    ) - app_menu._panel_extent({"density": "comfortable", "font_size": 11}, "bottom")
+    assert metrics["columns"] < app_menu.GRID_COLUMNS_MAX
+
+
+def test_display_size_normalization_uses_configured_output_scale_once():
+    assert app_menu._logical_display_size(1360, 768, 2.0) == (680, 384)
+    assert app_menu._logical_display_size(680, 384, 2.0) == (680, 384)
+
+
 def test_toggle_or_lock_replaces_foreign_live_pid_without_signalling(monkeypatch, tmp_path):
     lock = tmp_path / "universal-lite-app-menu.pid"
     lock.write_text("12345", encoding="utf-8")
