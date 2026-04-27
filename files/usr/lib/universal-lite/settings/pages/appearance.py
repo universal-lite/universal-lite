@@ -71,15 +71,36 @@ TILE_H = 100
 # Cap decoded pixel size so 4K WebP thumbnails don't stall the UI thread
 # on low-RAM hardware. Still 2× the display size for sharp rendering.
 THUMB_MAX = max(TILE_W, TILE_H) * 2
+# GdkPixbuf loaders for newer container formats are native code and have
+# been crashy on the VM images used for testing. Never synchronously decode
+# these in the Settings process; render a stable placeholder instead.
+RISKY_THUMBNAIL_EXTS = {".jxl", ".avif", ".heif"}
 
 
-def _load_thumbnail(path: str) -> Gtk.Picture | None:
+def _thumbnail_placeholder() -> Gtk.Widget:
+    box = Gtk.Box()
+    box.add_css_class("wallpaper-placeholder")
+    box.set_size_request(TILE_W, TILE_H)
+    box.set_halign(Gtk.Align.FILL)
+    box.set_valign(Gtk.Align.FILL)
+
+    icon = Gtk.Image.new_from_icon_name("image-x-generic-symbolic")
+    icon.set_pixel_size(32)
+    icon.set_halign(Gtk.Align.CENTER)
+    icon.set_valign(Gtk.Align.CENTER)
+    box.append(icon)
+    return box
+
+
+def _load_thumbnail(path: str) -> Gtk.Widget | None:
     """Load an image as a scaled thumbnail.
 
     Uses GdkPixbuf's scale-during-decode so large wallpapers don't blow
     through memory. Returns ``None`` if the file can't be loaded so the
     caller can skip this tile instead of crashing the whole page.
     """
+    if Path(path).suffix.lower() in RISKY_THUMBNAIL_EXTS:
+        return _thumbnail_placeholder()
     try:
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, THUMB_MAX, THUMB_MAX)
     except Exception as exc:  # GLib.Error, etc.

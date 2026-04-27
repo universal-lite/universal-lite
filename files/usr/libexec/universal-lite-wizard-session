@@ -15,8 +15,19 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# Match the regular session and greeter. GTK 4.18+ renamed ngl to gl.
-export GSK_RENDERER=gl
+# Match the regular session policy: keep Vulkan available on capable real
+# hardware, but force GL in VMs and when Vulkan probing fails quickly.
+if [ -z "${GSK_RENDERER:-}" ]; then
+    if systemd-detect-virt -q; then
+        export GSK_RENDERER=gl
+    elif command -v vulkaninfo >/dev/null 2>&1 && \
+         command -v timeout >/dev/null 2>&1 && \
+         timeout 3s vulkaninfo --summary >/dev/null 2>&1; then
+        :
+    else
+        export GSK_RENDERER=gl
+    fi
+fi
 
 # Provide a debug terminal shortcut (Ctrl+Alt+T) in wizard mode
 mkdir -p /root/.config/labwc

@@ -226,6 +226,25 @@ def test_session_startup_uses_config_then_autostart_uses_live_mode():
     assert "universal-lite-apply-settings --mode=live" in autostart
 
 
+def test_session_renderer_policy_is_conditional_not_global_gl():
+    root = Path(__file__).resolve().parents[1]
+    session = (root / "files/usr/libexec/universal-lite-session").read_text(
+        encoding="utf-8"
+    )
+
+    assert "systemd-detect-virt -q" in session
+    assert "timeout 3s vulkaninfo --summary" in session
+    assert "export GSK_RENDERER=gl" in session
+    assert "Keep Vulkan available on real hardware" in session
+
+
+def test_image_installs_vulkaninfo_for_conditional_renderer_probe():
+    root = Path(__file__).resolve().parents[1]
+    build = (root / "build_files/build.sh").read_text(encoding="utf-8")
+
+    assert "vulkan-tools" in build
+
+
 # ---------------------------------------------------------------------------
 # Theme-derived panel colors
 # ---------------------------------------------------------------------------
@@ -571,6 +590,16 @@ class TestWallpaperSwap:
             apply_settings._swap_swaybg_wallpaper(str(requested), "dark")
 
         kill.assert_called_once_with(101, apply_settings.signal.SIGTERM)
+
+    def test_risky_wallpaper_formats_get_longer_swaybg_settle_time(self):
+        assert (
+            apply_settings._swaybg_settle_seconds("/tmp/background.jxl")
+            == apply_settings.SWAYBG_SETTLE_RISKY
+        )
+        assert (
+            apply_settings._swaybg_settle_seconds("/tmp/background.svg")
+            == apply_settings.SWAYBG_SETTLE_DEFAULT
+        )
 
 
 class TestApplyLock:

@@ -12,9 +12,20 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# GTK's Vulkan renderer is still fragile on the low-end/VM hardware this
-# image targets. Match the greeter and force GL before any GTK app starts.
-export GSK_RENDERER=gl
+# GTK's Vulkan renderer is still fragile in VMs, which is also where most
+# Universal-Lite testing happens. Keep Vulkan available on real hardware
+# when vulkaninfo succeeds, but force GL for virtualized or no-Vulkan paths.
+if [ -z "${GSK_RENDERER:-}" ]; then
+    if systemd-detect-virt -q; then
+        export GSK_RENDERER=gl
+    elif command -v vulkaninfo >/dev/null 2>&1 && \
+         command -v timeout >/dev/null 2>&1 && \
+         timeout 3s vulkaninfo --summary >/dev/null 2>&1; then
+        :
+    else
+        export GSK_RENDERER=gl
+    fi
+fi
 
 # Write dependency-light config files before the compositor starts. Live
 # session sync runs from labwc autostart after Wayland, D-Bus env import,

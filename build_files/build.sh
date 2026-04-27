@@ -129,6 +129,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     tumbler \
     udisks2 \
     unzip \
+    vulkan-tools \
     waybar \
     wdisplays \
     wlr-randr \

@@ -45,6 +45,7 @@ def test_picker_css_uses_adwaita_style_selection_states():
     assert ".wallpaper-check" in css
     assert ".wallpaper-tile:focus-visible" in css
     assert "background: alpha(@window_fg_color, 0.05);" in css
+    assert ".wallpaper-placeholder" in css
 
 
 def test_wallpaper_tiles_use_non_interactive_selection_badge():
@@ -61,3 +62,11 @@ def test_theme_toggle_defers_wallpaper_refresh_out_of_signal_handler():
     assert "self._queue_wallpaper_refresh()" in source
     assert "GLib.idle_add(_refresh)" in source
     assert "def _safe_populate_wallpapers" in source
+
+
+def test_risky_wallpaper_thumbnails_use_placeholder_instead_of_pixbuf_decode():
+    source = APPEARANCE_PATH.read_text(encoding="utf-8")
+
+    assert 'RISKY_THUMBNAIL_EXTS = {".jxl", ".avif", ".heif"}' in source
+    risky_branch = source.split("def _load_thumbnail", 1)[1].split("try:", 1)[0]
+    assert "return _thumbnail_placeholder()" in risky_branch

@@ -202,6 +202,18 @@ def test_power_timeout_sanitizer_matches_apply_defaults():
     assert power_lock._sanitize_timeout("bad", 0) == 0
 
 
+def test_settings_launcher_guards_vm_renderer_before_importing_gtk_app():
+    source = (ROOT / "files/usr/bin/universal-lite-settings").read_text(
+        encoding="utf-8"
+    )
+
+    guard_idx = source.index("_guard_gtk_renderer_for_virtualized_sessions()")
+    import_idx = source.index("from settings.app import main")
+    assert guard_idx < import_idx
+    assert "systemd-detect-virt" in source
+    assert 'os.environ["GSK_RENDERER"] = "gl"' in source
+
+
 def test_power_lock_helper_survives_transient_unmap():
     source = (
         ROOT / "files/usr/lib/universal-lite/settings/pages/power_lock.py"

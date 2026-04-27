@@ -78,6 +78,9 @@ ADWAITA = {"light": _palette["light"], "dark": _palette["dark"]}
 # from pkill and both spawn, producing a duplicate panel. Using a
 # monotonic guard suppresses the second spawn within a 2s window.
 _waybar_spawn_ts = 0.0
+RISKY_WALLPAPER_EXTS = {".jxl", ".avif", ".heif"}
+SWAYBG_SETTLE_DEFAULT = 0.75
+SWAYBG_SETTLE_RISKY = 2.0
 
 # Standard Adwaita / GNOME Terminal ANSI palette
 ADWAITA_TERMINAL = {
@@ -2113,6 +2116,12 @@ def _start_swaybg(path: str) -> subprocess.Popen:
     )
 
 
+def _swaybg_settle_seconds(path: str) -> float:
+    if Path(path).suffix.lower() in RISKY_WALLPAPER_EXTS:
+        return SWAYBG_SETTLE_RISKY
+    return SWAYBG_SETTLE_DEFAULT
+
+
 def _swap_swaybg_wallpaper(path: str, theme: str = "light") -> None:
     """Switch wallpaper without clearing the old background first.
 
@@ -2146,7 +2155,7 @@ def _swap_swaybg_wallpaper(path: str, theme: str = "light") -> None:
         except OSError as exc:
             print(f"apply-settings: swaybg failed to start: {exc}", file=sys.stderr)
             continue
-        time.sleep(0.5)
+        time.sleep(_swaybg_settle_seconds(candidate))
         if proc.poll() is not None:
             print(
                 f"apply-settings: swaybg exited while loading {candidate}",

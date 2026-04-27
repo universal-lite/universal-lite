@@ -83,7 +83,11 @@ for wallpaper in candidates:
         )
     except OSError:
         continue
-    time.sleep(0.5)
+    settle = (
+        2.0 if os.path.splitext(wallpaper)[1].lower() in {'.jxl', '.avif', '.heif'}
+        else 0.75
+    )
+    time.sleep(settle)
     if proc.poll() is None:
         raise SystemExit(0)
 " "$_settings" 2>/dev/null || true

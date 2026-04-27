@@ -51,6 +51,13 @@
     color: @accent_color;
     background: alpha(@accent_color, 0.06);
 }
+.wallpaper-placeholder {
+    min-width: 160px;
+    min-height: 100px;
+    border-radius: 14px;
+    background: alpha(@window_fg_color, 0.08);
+    color: alpha(@window_fg_color, 0.55);
+}
 .wallpaper-remove {
     min-width: 28px;
     min-height: 28px;
