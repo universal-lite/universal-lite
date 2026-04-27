@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "files/usr/lib/universal-lite"))
 
-from settings.pages import default_apps, keyboard, panel  # noqa: E402
+from settings.pages import about, default_apps, keyboard, panel  # noqa: E402
 
 
 def test_keyboard_binding_clone_does_not_mutate_default_baseline():
@@ -109,3 +109,8 @@ def test_terminal_desktop_write_reports_invalid_command(monkeypatch, tmp_path):
     monkeypatch.setenv("HOME", str(tmp_path))
 
     assert default_apps.DefaultAppsPage._set_terminal(FakeAppInfo()) is False
+
+
+def test_restore_defaults_category_titles_escape_markup_ampersands():
+    assert about._row_title_text("Mouse & Touchpad") == "Mouse &amp; Touchpad"
+    assert about._row_title_text("Date & Time") == "Date &amp; Time"

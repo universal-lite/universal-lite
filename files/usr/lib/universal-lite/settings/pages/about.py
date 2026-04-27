@@ -52,6 +52,11 @@ CATEGORY_KEYS = {
 }
 
 
+def _row_title_text(text: str) -> str:
+    """Escape row titles that libadwaita renders as Pango markup."""
+    return GLib.markup_escape_text(text)
+
+
 class AboutPage(BasePage, Adw.PreferencesPage):
     """About / Updates / Troubleshooting.
 
@@ -385,7 +390,7 @@ class AboutPage(BasePage, Adw.PreferencesPage):
 
         for category in CATEGORY_KEYS:
             check = Adw.SwitchRow()
-            check.set_title(_(category))
+            check.set_title(_row_title_text(_(category)))
             check.set_active(False)
             check.connect("notify::active", _on_category_toggled)
             cat_group.add(check)
