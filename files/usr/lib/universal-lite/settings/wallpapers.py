@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,6 +25,7 @@ SYSTEM_MANIFEST_DIRS = (
 )
 USER_MANIFEST_DIR = Path.home() / ".local/share/gnome-background-properties"
 CUSTOM_WALLPAPER_DIR = Path.home() / ".local/share/universal-lite/custom-wallpapers"
+FEDORA_DEFAULT_ID = "fedora-default"
 
 # Declared as wallpapers upstream but not real desktop backgrounds
 # (tiny logo-on-solid-color placeholders used by gdm / VNC fallback).
@@ -174,7 +176,17 @@ def list_wallpapers() -> list[Wallpaper]:
 def get_wallpaper(wp_id: str) -> Wallpaper | None:
     if not wp_id or wp_id.startswith("/"):
         return None
-    for wp in list_wallpapers():
+    wallpapers = list_wallpapers()
+    if wp_id == FEDORA_DEFAULT_ID:
+        fedora_defaults = [
+            wp for wp in wallpapers
+            if re.fullmatch(r"f\d+", wp.id)
+            and wp.name.lower().startswith("fedora ")
+            and "default" in wp.name.lower()
+        ]
+        if fedora_defaults:
+            return sorted(fedora_defaults, key=lambda wp: wp.id, reverse=True)[0]
+    for wp in wallpapers:
         if wp.id == wp_id:
             return wp
     return None

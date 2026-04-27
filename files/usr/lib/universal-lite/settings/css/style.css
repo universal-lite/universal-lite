@@ -1,11 +1,12 @@
 /* === Sidebar === */
-.sidebar {
+.settings-sidebar-pane {
     background-color: @headerbar_bg_color;
-    border-right: 1px solid alpha(@borders, 0.3);
+    border-right: 1px solid @borders;
 }
-.sidebar scrolledwindow,
-.sidebar list,
-.sidebar row {
+.settings-sidebar-pane headerbar,
+.settings-sidebar-pane scrolledwindow,
+.settings-sidebar-pane list,
+.settings-sidebar-pane row {
     background: transparent;
 }
 .sidebar row {
@@ -14,10 +15,13 @@
     border-radius: 8px;
 }
 .sidebar row:selected {
-    background-color: alpha(@accent_color, 0.15);
+    background-color: alpha(@accent_color, 0.18);
 }
 .sidebar .category-icon {
     opacity: 0.8;
+}
+.sidebar row:selected .category-icon {
+    opacity: 1;
 }
 .sidebar .category-label {
     font-size: 0.95em;

@@ -70,15 +70,17 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._sidebar.set_margin_bottom(8)
         # Adwaita's standard class for a sidebar-style ListBox - gives
         # rows the right navigation look, hover, and selected colours.
-        # Also add our own "sidebar" class so the custom CSS in
-        # css/style.css (.sidebar .category-icon, .category-label)
-        # actually applies — without it those rules were dead code.
+        # The full pane styling lives on sidebar_toolbar below. Keeping
+        # the ListBox transparent avoids a half-height separator between
+        # the sidebar header and the row list.
         self._sidebar.add_css_class("navigation-sidebar")
         self._sidebar.add_css_class("sidebar")
         sidebar_scroll.set_child(self._sidebar)
 
         sidebar_toolbar = Adw.ToolbarView()
+        sidebar_toolbar.add_css_class("settings-sidebar-pane")
         sidebar_header = Adw.HeaderBar()
+        sidebar_header.add_css_class("settings-sidebar-header")
         sidebar_header.set_decoration_layout(":minimize,maximize,close")
         sidebar_toolbar.add_top_bar(sidebar_header)
         sidebar_toolbar.set_content(sidebar_scroll)

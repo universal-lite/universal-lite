@@ -69,3 +69,34 @@ def test_cache_survives_missing_user_dir(monkeypatch, tmp_path):
     first = wallpapers.list_wallpapers()
     second = wallpapers.list_wallpapers()
     assert first is second
+
+
+def test_fedora_default_alias_tracks_newest_release_manifest(monkeypatch, tmp_path):
+    d = tmp_path / "gbp"
+    d.mkdir()
+    for release in (42, 43):
+        light = tmp_path / f"f{release}-day.svg"
+        dark = tmp_path / f"f{release}-night.svg"
+        light.write_text("<svg/>")
+        dark.write_text("<svg/>")
+        (d / f"f{release}.xml").write_text(
+            f"""<?xml version="1.0"?>
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Fedora {release} Default</name>
+    <filename>{light}</filename>
+    <filename-dark>{dark}</filename-dark>
+  </wallpaper>
+</wallpapers>
+""",
+            encoding="utf-8",
+        )
+    monkeypatch.setattr(wallpapers, "SYSTEM_MANIFEST_DIRS", (d,))
+    monkeypatch.setattr(wallpapers, "USER_MANIFEST_DIR", tmp_path / "user")
+    _reset_cache()
+
+    wp = wallpapers.get_wallpaper("fedora-default")
+
+    assert wp is not None
+    assert wp.id == "f43"
+    assert wallpapers.resolve_for_theme("fedora-default", "dark").endswith("f43-night.svg")

@@ -13,7 +13,7 @@ from ..base import BasePage
 from ..wallpapers import (
     ADD_CUSTOM_IO_ERROR, ADD_CUSTOM_MISSING, ADD_CUSTOM_OK,
     ADD_CUSTOM_TOO_LARGE, ADD_CUSTOM_UNSUPPORTED,
-    Wallpaper, add_custom_detailed, list_wallpapers, remove_custom,
+    Wallpaper, add_custom_detailed, get_wallpaper, list_wallpapers, remove_custom,
 )
 
 # Accent order displayed in the picker. Names must match palette.json
@@ -319,6 +319,10 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         current = current_raw if isinstance(current_raw, str) else ""
 
         wallpapers = list_wallpapers()
+        if not current.startswith("/"):
+            wp = get_wallpaper(current)
+            if wp is not None:
+                current = wp.id
         # Map a stored absolute path (legacy settings) onto the matching manifest ID
         # so its tile shows as selected after migration.
         if current.startswith("/"):

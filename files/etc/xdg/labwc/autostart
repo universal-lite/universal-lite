@@ -36,7 +36,7 @@ if [ ! -f "$_settings_dir/settings.json" ] && [ -f "$_defaults" ]; then
 fi
 
 # Resolve the wallpaper through the same manifest lookup apply-settings
-# uses. settings.json stores a manifest ID ("universal-lite", "flight",
+# uses. settings.json stores a manifest ID ("fedora-default", "flight",
 # etc.) or an absolute path for ad-hoc selections — swaybg only takes
 # paths, so we always have to resolve here.
 _settings="$_settings_dir/settings.json"

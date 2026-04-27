@@ -761,6 +761,29 @@ class TestAccentForegroundContrast:
 
 
 class TestHighContrastShellConfigs:
+    def test_high_contrast_resolves_dark_wallpaper_variant(self, monkeypatch, tmp_path):
+        settings_file = tmp_path / "settings.json"
+        settings_file.write_text(json.dumps(_make_settings(
+            high_contrast=True,
+            wallpaper="universal-lite",
+        )))
+        light = tmp_path / "light.svg"
+        dark = tmp_path / "dark.svg"
+        light.write_text("<svg/>")
+        dark.write_text("<svg/>")
+
+        def fake_resolve(value, theme):
+            assert value == "universal-lite"
+            return str(dark if theme == "dark" else light)
+
+        monkeypatch.setattr(apply_settings, "_resolve_wallpaper", fake_resolve)
+        with patch.object(apply_settings, "SETTINGS_DIR", tmp_path), \
+             patch.object(apply_settings, "SETTINGS_PATH", settings_file):
+            result = apply_settings.ensure_settings()
+
+        assert result["theme"] == "dark"
+        assert result["wallpaper"] == str(dark)
+
     def test_high_contrast_tokens_strengthen_waybar_surfaces(self):
         tokens = apply_settings._build_tokens(
             _make_settings(theme="dark", high_contrast=True)
@@ -818,3 +841,63 @@ class TestHighContrastShellConfigs:
         assert "indicator-thickness=14" in config
         assert "inside-color=1d1d20cc" in config
         assert "ring-color=ffffff" in config
+
+
+class TestSwaybgWallpaperSwap:
+    def test_current_swaybg_wallpaper_parses_exact_quoted_command(self, monkeypatch):
+        monkeypatch.setattr(apply_settings.os, "getuid", lambda: 1000)
+
+        def fake_check_output(cmd, **_kwargs):
+            assert cmd == ["pgrep", "-U", "1000", "-a", "-x", "swaybg"]
+            return '123 swaybg -i "/home/user/My Wallpaper.svg" -m fill\n'
+
+        monkeypatch.setattr(apply_settings.subprocess, "check_output", fake_check_output)
+
+        assert apply_settings._current_swaybg_wallpaper() == "/home/user/My Wallpaper.svg"
+
+    def test_swap_swaybg_starts_new_before_stopping_old(self, monkeypatch, tmp_path):
+        wallpaper = tmp_path / "wall.svg"
+        wallpaper.write_text("<svg/>")
+        calls = []
+
+        class Proc:
+            pid = 222
+
+            def poll(self):
+                return None
+
+        def fake_popen(cmd, **_kwargs):
+            calls.append(("popen", cmd))
+            return Proc()
+
+        monkeypatch.setattr(apply_settings.shutil, "which", lambda name: f"/usr/bin/{name}")
+        monkeypatch.setattr(apply_settings, "_pids_for_program", lambda name: [111])
+        monkeypatch.setattr(apply_settings.subprocess, "Popen", fake_popen)
+        monkeypatch.setattr(apply_settings.time, "sleep", lambda _seconds: None)
+        monkeypatch.setattr(apply_settings.os, "kill", lambda pid, sig: calls.append(("kill", pid, sig)))
+
+        apply_settings._swap_swaybg_wallpaper(str(wallpaper))
+
+        assert calls[0] == ("popen", ["swaybg", "-i", str(wallpaper), "-m", "fill"])
+        assert calls[1] == ("kill", 111, apply_settings.signal.SIGTERM)
+
+    def test_swap_swaybg_keeps_old_wallpaper_if_new_exits(self, monkeypatch, tmp_path):
+        wallpaper = tmp_path / "wall.svg"
+        wallpaper.write_text("<svg/>")
+        killed = []
+
+        class Proc:
+            pid = 222
+
+            def poll(self):
+                return 1
+
+        monkeypatch.setattr(apply_settings.shutil, "which", lambda name: f"/usr/bin/{name}")
+        monkeypatch.setattr(apply_settings, "_pids_for_program", lambda name: [111])
+        monkeypatch.setattr(apply_settings.subprocess, "Popen", lambda *_args, **_kwargs: Proc())
+        monkeypatch.setattr(apply_settings.time, "sleep", lambda _seconds: None)
+        monkeypatch.setattr(apply_settings.os, "kill", lambda pid, sig: killed.append((pid, sig)))
+
+        apply_settings._swap_swaybg_wallpaper(str(wallpaper))
+
+        assert killed == []
