@@ -1172,7 +1172,7 @@ def write_waybar_config(tokens: dict) -> bool:
         "format": "{icon}",
         "icon-size": icon_size,
         "all-outputs": False,
-        "on-click": "activate",
+        "on-click": "minimize-raise",
         "on-click-middle": "close",
         "tooltip-format": "{title}",
     }

@@ -603,6 +603,14 @@ class TestHorizontalCss:
 # ---------------------------------------------------------------------------
 
 class TestWaybarModuleCompatibility:
+    def test_taskbar_click_toggles_active_window_minimized(self, tmp_path):
+        tokens = _make_tokens()
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        assert config["wlr/taskbar"]["on-click"] == "minimize-raise"
+        assert config["wlr/taskbar"]["on-click-middle"] == "close"
+
     def test_config_groups_contiguous_status_modules(self, tmp_path):
         tokens = _make_tokens()
         with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
