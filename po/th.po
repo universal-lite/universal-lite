@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-setup-wizard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-09 13:38-0400\n"
+"POT-Creation-Date: 2026-04-27 06:12-0400\n"
 "PO-Revision-Date: 2026-04-03 13:32-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -16,393 +16,476 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:434
+#: ../files/usr/bin/universal-lite-setup-wizard:481
 msgid "Compressed RAM only (zram) — fast, but apps may close if memory fills"
 msgstr "หน่วยความจำบีบอัดเท่านั้น (zram) — เร็ว แต่แอปอาจถูกปิดหากหน่วยความจำเต็ม"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:435
+#: ../files/usr/bin/universal-lite-setup-wizard:482
 msgid ""
 "Compressed RAM + disk backup (zswap) — slower overflow to disk, apps stay "
 "open"
 msgstr ""
 "หน่วยความจำบีบอัด + สำรองบนดิสก์ (zswap) — การล้นไปยังดิสก์จะช้ากว่า แต่แอปจะยังคงเปิดอยู่"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:438
+#: ../files/usr/bin/universal-lite-setup-wizard:485
 msgid "Custom"
 msgstr "กำหนดเอง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:483
+#: ../files/usr/bin/universal-lite-setup-wizard:530
 msgid "Web browser"
 msgstr "เว็บเบราว์เซอร์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:484
+#: ../files/usr/bin/universal-lite-setup-wizard:531
 msgid "Browse and install apps"
 msgstr "เรียกดูและติดตั้งแอป"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:485
+#: ../files/usr/bin/universal-lite-setup-wizard:532
 msgid "Modern styling for classic apps"
 msgstr "รูปแบบทันสมัยสำหรับแอปคลาสสิก"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:486
+#: ../files/usr/bin/universal-lite-setup-wizard:533
 msgid "Dark variant for classic apps"
 msgstr "รูปแบบมืดสำหรับแอปคลาสสิก"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:670
-#: ../files/usr/bin/universal-lite-setup-wizard:1549
+#: ../files/usr/bin/universal-lite-setup-wizard:902
+#: ../files/usr/bin/universal-lite-setup-wizard:1946
 msgid "Back"
 msgstr "ย้อนกลับ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:677
-#: ../files/usr/bin/universal-lite-setup-wizard:2023
+#: ../files/usr/bin/universal-lite-setup-wizard:909
+#: ../files/usr/bin/universal-lite-setup-wizard:2567
 msgid "Next"
 msgstr "ถัดไป"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:768
-#: ../files/usr/bin/universal-lite-setup-wizard:1464
+#: ../files/usr/bin/universal-lite-setup-wizard:970
+msgid "Install in progress"
+msgstr "กำลังติดตั้ง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:972
+msgid ""
+"An install is running. Wait for it to finish before closing this window."
+msgstr "กำลังติดตั้งอยู่ โปรดรอให้เสร็จก่อนปิดหน้าต่างนี้"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1057
+#: ../files/usr/bin/universal-lite-setup-wizard:1840
 msgid "Language"
 msgstr "ภาษา"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:774
+#: ../files/usr/bin/universal-lite-setup-wizard:1063
 msgid "Select your language."
 msgstr "เลือกภาษาของคุณ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:878
-#: ../files/usr/bin/universal-lite-setup-wizard:960
-#: ../files/usr/bin/universal-lite-setup-wizard:973
+#: ../files/usr/bin/universal-lite-setup-wizard:1167
+#: ../files/usr/bin/universal-lite-setup-wizard:1261
+#: ../files/usr/bin/universal-lite-setup-wizard:1276
 #, python-brace-format
 msgid "Keyboard layout: {layout}"
-msgstr ""
+msgstr "ผังแป้นพิมพ์: {layout}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:891
+#: ../files/usr/bin/universal-lite-setup-wizard:1189
 msgid ""
 "Auto-selected from your language. Override if your physical keyboard differs."
-msgstr ""
+msgstr "เลือกอัตโนมัติจากภาษาของคุณ เปลี่ยนได้หากแป้นพิมพ์จริงของคุณแตกต่างกัน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1031
+#: ../files/usr/bin/universal-lite-setup-wizard:1334
 msgid "Welcome to Universal-Lite"
 msgstr "ยินดีต้อนรับสู่ Universal-Lite"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1037
+#: ../files/usr/bin/universal-lite-setup-wizard:1340
 msgid "Create your account to get started."
 msgstr "สร้างบัญชีของคุณเพื่อเริ่มต้นใช้งาน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1043
+#: ../files/usr/bin/universal-lite-setup-wizard:1346
 msgid "Full Name"
 msgstr "ชื่อ-นามสกุล"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1045
+#: ../files/usr/bin/universal-lite-setup-wizard:1349
 msgid "Jane Doe"
 msgstr "สมชาย ใจดี"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1053
-#: ../files/usr/bin/universal-lite-setup-wizard:1470
+#: ../files/usr/bin/universal-lite-setup-wizard:1359
+#: ../files/usr/bin/universal-lite-setup-wizard:1846
 msgid "Username"
 msgstr "ชื่อผู้ใช้"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1061
-#: ../files/usr/bin/universal-lite-setup-wizard:1157
-#: ../files/usr/bin/universal-lite-setup-wizard:1751
+#: ../files/usr/bin/universal-lite-setup-wizard:1370
+#: ../files/usr/bin/universal-lite-setup-wizard:1520
+#: ../files/usr/bin/universal-lite-setup-wizard:2258
 msgid "Password"
 msgstr "รหัสผ่าน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1068
+#: ../files/usr/bin/universal-lite-setup-wizard:1381
 msgid "Confirm Password"
 msgstr "ยืนยันรหัสผ่าน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1077
+#: ../files/usr/bin/universal-lite-setup-wizard:1394
 msgid "Administrator account (sudo)"
 msgstr "บัญชีผู้ดูแลระบบ (sudo)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1085
+#: ../files/usr/bin/universal-lite-setup-wizard:1402
 msgid "Root Password (optional)"
 msgstr "รหัสผ่าน root (ไม่บังคับ)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1110
-msgid "Connect to Wi-Fi"
-msgstr "เชื่อมต่อ Wi-Fi"
+#: ../files/usr/bin/universal-lite-setup-wizard:1433
+#: ../files/usr/bin/universal-lite-setup-wizard:1841
+msgid "Network"
+msgstr "เครือข่าย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1116
-msgid "Select a network to get online."
-msgstr "เลือกเครือข่ายเพื่อเชื่อมต่ออินเทอร์เน็ต"
+#: ../files/usr/bin/universal-lite-setup-wizard:1439
+msgid "Connect to the internet to continue."
+msgstr "เชื่อมต่ออินเทอร์เน็ตเพื่อดำเนินการต่อ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1130
-#: ../files/usr/bin/universal-lite-setup-wizard:1650
-msgid "Scanning for networks..."
-msgstr "กำลังค้นหาเครือข่าย..."
+#: ../files/usr/bin/universal-lite-setup-wizard:1449
+msgid "Wired"
+msgstr "แบบมีสาย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1138
-msgid "Rescan"
-msgstr "ค้นหาใหม่"
+#: ../files/usr/bin/universal-lite-setup-wizard:1458
+msgid "Checking..."
+msgstr "กำลังตรวจสอบ..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1151
-msgid "Network Name (SSID)"
-msgstr "ชื่อเครือข่าย (SSID)"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1164
-#: ../files/usr/bin/universal-lite-setup-wizard:1754
-#: ../files/usr/bin/universal-lite-setup-wizard:1760
+#: ../files/usr/bin/universal-lite-setup-wizard:1462
+#: ../files/usr/bin/universal-lite-setup-wizard:1530
+#: ../files/usr/bin/universal-lite-setup-wizard:2102
+#: ../files/usr/bin/universal-lite-setup-wizard:2109
+#: ../files/usr/bin/universal-lite-setup-wizard:2261
+#: ../files/usr/bin/universal-lite-setup-wizard:2267
 msgid "Connect"
 msgstr "เชื่อมต่อ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1175
+#: ../files/usr/bin/universal-lite-setup-wizard:1474
+msgid "Wi-Fi"
+msgstr "Wi-Fi"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1490
+#: ../files/usr/bin/universal-lite-setup-wizard:2154
+msgid "Scanning for networks..."
+msgstr "กำลังค้นหาเครือข่าย..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1498
+msgid "Rescan"
+msgstr "ค้นหาใหม่"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1511
+msgid "Network Name (SSID)"
+msgstr "ชื่อเครือข่าย (SSID)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1541
 msgid "Join hidden network..."
 msgstr "เชื่อมต่อเครือข่ายที่ซ่อนอยู่..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1211
+#: ../files/usr/bin/universal-lite-setup-wizard:1578
 msgid "Choose Installation Disk"
 msgstr "เลือกดิสก์สำหรับติดตั้ง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1217
+#: ../files/usr/bin/universal-lite-setup-wizard:1584
 msgid "Select the target drive and installation options."
 msgstr "เลือกไดรฟ์เป้าหมายและตัวเลือกการติดตั้ง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1224
-#: ../files/usr/bin/universal-lite-setup-wizard:1466
+#: ../files/usr/bin/universal-lite-setup-wizard:1591
+#: ../files/usr/bin/universal-lite-setup-wizard:1842
 msgid "Target drive"
 msgstr "ไดรฟ์เป้าหมาย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1228
-#: ../files/usr/bin/universal-lite-setup-wizard:2277
+#: ../files/usr/bin/universal-lite-setup-wizard:1595
+#: ../files/usr/bin/universal-lite-setup-wizard:2890
 msgid "Unknown"
 msgstr "ไม่ทราบ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1236
-#: ../files/usr/bin/universal-lite-setup-wizard:1949
+#: ../files/usr/bin/universal-lite-setup-wizard:1603
+#: ../files/usr/bin/universal-lite-setup-wizard:2484
 msgid "No eligible drives found"
 msgstr "ไม่พบไดรฟ์ที่ใช้ได้"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1243
-#: ../files/usr/bin/universal-lite-setup-wizard:1467
+#: ../files/usr/bin/universal-lite-setup-wizard:1610
+#: ../files/usr/bin/universal-lite-setup-wizard:1843
 msgid "Filesystem"
 msgstr "ระบบไฟล์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1251
+#: ../files/usr/bin/universal-lite-setup-wizard:1618
 msgid "Memory management"
 msgstr "การจัดการหน่วยความจำ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1261
+#: ../files/usr/bin/universal-lite-setup-wizard:1628
 msgid "Disk swap size"
 msgstr "ขนาดสวอปบนดิสก์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1269
+#: ../files/usr/bin/universal-lite-setup-wizard:1636
 msgid "Custom size (GB)"
 msgstr "ขนาดที่กำหนดเอง (GB)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1279
+#: ../files/usr/bin/universal-lite-setup-wizard:1652
 msgid ""
 "zswap uses compressed RAM as a cache and spills to a disk swap file when "
 "full."
 msgstr "zswap ใช้หน่วยความจำบีบอัดเป็นแคช และเมื่อเต็มจะถ่ายข้อมูลไปยังไฟล์สวอปบนดิสก์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1296
+#: ../files/usr/bin/universal-lite-setup-wizard:1669
 msgid "All data on the selected drive will be erased."
 msgstr "ข้อมูลทั้งหมดในไดรฟ์ที่เลือกจะถูกลบ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1319
+#: ../files/usr/bin/universal-lite-setup-wizard:1692
 msgid "System Setup"
 msgstr "ตั้งค่าระบบ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1326
-#: ../files/usr/bin/universal-lite-setup-wizard:1473
+#: ../files/usr/bin/universal-lite-setup-wizard:1699
+#: ../files/usr/bin/universal-lite-setup-wizard:1849
 msgid "Timezone"
 msgstr "เขตเวลา"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1355
-#: ../files/usr/bin/universal-lite-setup-wizard:1474
+#: ../files/usr/bin/universal-lite-setup-wizard:1728
+#: ../files/usr/bin/universal-lite-setup-wizard:1850
 msgid "Hostname"
-msgstr ""
+msgstr "ชื่อโฮสต์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1362
+#: ../files/usr/bin/universal-lite-setup-wizard:1738
 msgid "Your computer's name on the network. Leave blank to auto-generate."
-msgstr ""
+msgstr "ชื่อคอมพิวเตอร์ของคุณบนเครือข่าย เว้นว่างไว้เพื่อสร้างอัตโนมัติ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1388
+#: ../files/usr/bin/universal-lite-setup-wizard:1764
 msgid "Install Apps"
 msgstr "ติดตั้งแอป"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1395
+#: ../files/usr/bin/universal-lite-setup-wizard:1771
 msgid "These apps will be installed on first boot. Uncheck any you don't want."
-msgstr ""
-"แอปเหล่านี้จะถูกติดตั้งเมื่อเปิดเครื่องครั้งแรก "
-"ยกเลิกการเลือกแอปที่คุณไม่ต้องการ"
+msgstr "แอปเหล่านี้จะถูกติดตั้งเมื่อเปิดเครื่องครั้งแรก ยกเลิกการเลือกแอปที่คุณไม่ต้องการ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1452
+#: ../files/usr/bin/universal-lite-setup-wizard:1828
 msgid "Ready to Install"
 msgstr "พร้อมติดตั้ง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1458
+#: ../files/usr/bin/universal-lite-setup-wizard:1834
 msgid "Review your settings and click Install to begin."
 msgstr "ตรวจสอบการตั้งค่าของคุณและคลิก 'ติดตั้ง' เพื่อเริ่มต้น"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1465
-msgid "Network"
-msgstr "เครือข่าย"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1468
+#: ../files/usr/bin/universal-lite-setup-wizard:1844
 msgid "Memory"
 msgstr "หน่วยความจำ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1469
+#: ../files/usr/bin/universal-lite-setup-wizard:1845
 msgid "Name"
 msgstr "ชื่อ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1471
+#: ../files/usr/bin/universal-lite-setup-wizard:1847
 msgid "Administrator"
 msgstr "ผู้ดูแลระบบ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1472
+#: ../files/usr/bin/universal-lite-setup-wizard:1848
 msgid "Root password"
 msgstr "รหัสผ่าน root"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1475
+#: ../files/usr/bin/universal-lite-setup-wizard:1851
 msgid "Keyboard layout"
-msgstr ""
+msgstr "ผังแป้นพิมพ์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1476
+#: ../files/usr/bin/universal-lite-setup-wizard:1852
 msgid "Apps"
 msgstr "แอป"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1495
+#: ../files/usr/bin/universal-lite-setup-wizard:1857
+msgid "I understand this will erase the selected drive."
+msgstr "ฉันเข้าใจว่าการดำเนินการนี้จะลบข้อมูลในไดรฟ์ที่เลือก"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:1892
 msgid "Installing..."
 msgstr "กำลังติดตั้ง..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1507
-#: ../files/usr/bin/universal-lite-setup-wizard:1537
+#: ../files/usr/bin/universal-lite-setup-wizard:1904
+#: ../files/usr/bin/universal-lite-setup-wizard:1934
 msgid "Show details ▼"
 msgstr "แสดงรายละเอียด ▼"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1537
+#: ../files/usr/bin/universal-lite-setup-wizard:1934
 msgid "Hide details ▲"
 msgstr "ซ่อนรายละเอียด ▲"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1556
+#: ../files/usr/bin/universal-lite-setup-wizard:1953
 msgid "Skip"
 msgstr "ข้าม"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1563
+#: ../files/usr/bin/universal-lite-setup-wizard:1960
 msgid "Retry"
 msgstr "ลองใหม่"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1577
+#: ../files/usr/bin/universal-lite-setup-wizard:1967
 msgid "Reboot"
 msgstr "รีบูต"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1690
+#: ../files/usr/bin/universal-lite-setup-wizard:1994
+msgid "NetworkManager unavailable — install requires internet."
+msgstr "NetworkManager ไม่พร้อมใช้งาน — การติดตั้งต้องใช้อินเทอร์เน็ต"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2085
+msgid "No wired adapter detected"
+msgstr "ไม่พบอะแดปเตอร์แบบมีสาย"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2092
+msgid "Connected"
+msgstr "เชื่อมต่อแล้ว"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2093
+msgid "Disconnect"
+msgstr "ยกเลิกการเชื่อมต่อ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2098
+msgid "Connecting..."
+msgstr "กำลังเชื่อมต่อ..."
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2101
+msgid "Disconnected"
+msgstr "ยกเลิกการเชื่อมต่อแล้ว"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2105
+msgid "Cable unplugged"
+msgstr "ไม่ได้เสียบสายเคเบิล"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2108
+msgid "Not connected"
+msgstr "ไม่ได้เชื่อมต่อ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2195
 msgid "No networks found."
 msgstr "ไม่พบเครือข่าย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1717
+#: ../files/usr/bin/universal-lite-setup-wizard:2223
 msgid "Strong"
 msgstr "แรง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1719
+#: ../files/usr/bin/universal-lite-setup-wizard:2225
 msgid "Medium"
 msgstr "ปานกลาง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1721
+#: ../files/usr/bin/universal-lite-setup-wizard:2227
 msgid "Weak"
 msgstr "อ่อน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1727
+#: ../files/usr/bin/universal-lite-setup-wizard:2233
 msgid "WPA3"
-msgstr ""
+msgstr "WPA3"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1729
+#: ../files/usr/bin/universal-lite-setup-wizard:2235
 msgid "Secured"
 msgstr "มีรหัส"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1731
+#: ../files/usr/bin/universal-lite-setup-wizard:2237
 msgid "Open"
 msgstr "เปิด"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1785
+#: ../files/usr/bin/universal-lite-setup-wizard:2303
 #, python-brace-format
 msgid "Connecting to {ssid}..."
 msgstr "กำลังเชื่อมต่อกับ {ssid}..."
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1850
-#: ../files/usr/bin/universal-lite-setup-wizard:1873
-msgid "Wrong password."
-msgstr "รหัสผ่านไม่ถูกต้อง"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1852
-#: ../files/usr/bin/universal-lite-setup-wizard:1875
-#, python-brace-format
-msgid "Connection failed: {err}"
-msgstr "เชื่อมต่อไม่สำเร็จ: {err}"
-
-#: ../files/usr/bin/universal-lite-setup-wizard:1860
+#: ../files/usr/bin/universal-lite-setup-wizard:2373
 msgid "Enter a network name."
 msgstr "กรุณาป้อนชื่อเครือข่าย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1888
+#: ../files/usr/bin/universal-lite-setup-wizard:2391
+msgid "Wrong password"
+msgstr "รหัสผ่านไม่ถูกต้อง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2393
+msgid "Connection timed out"
+msgstr "การเชื่อมต่อหมดเวลา"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2395
+msgid "Network not found"
+msgstr "ไม่พบเครือข่าย"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2396
+msgid "Could not connect to the network"
+msgstr "ไม่สามารถเชื่อมต่อกับเครือข่ายได้"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2407
 #, python-brace-format
 msgid "Connected to {ssid}!"
 msgstr "เชื่อมต่อกับ {ssid} แล้ว!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:1893
+#: ../files/usr/bin/universal-lite-setup-wizard:2412
 msgid "Connected, but no internet access detected."
 msgstr "เชื่อมต่อแล้ว แต่ตรวจไม่พบการเข้าถึงอินเทอร์เน็ต"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2014
+#: ../files/usr/bin/universal-lite-setup-wizard:2512
+#, python-brace-format
+msgid "Install failed: {err}"
+msgstr "การติดตั้งล้มเหลว: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2558
 #, python-brace-format
 msgid "Step {n} of {total}"
 msgstr "ขั้นตอนที่ {n} จาก {total}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2023
+#: ../files/usr/bin/universal-lite-setup-wizard:2567
 msgid "Install"
 msgstr "ติดตั้ง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2049
+#: ../files/usr/bin/universal-lite-setup-wizard:2604
+msgid "Please confirm you understand the drive will be erased."
+msgstr "โปรดยืนยันว่าคุณเข้าใจว่าไดรฟ์จะถูกลบข้อมูล"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2612
 msgid "No target drives found. Connect a drive and restart the installer."
 msgstr "ไม่พบไดรฟ์เป้าหมาย กรุณาเชื่อมต่อไดรฟ์และเริ่มตัวติดตั้งใหม่"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2054
-msgid "Custom swap size must be a positive whole number (in GB)."
-msgstr "ขนาดสวอปที่กำหนดเองต้องเป็นจำนวนเต็มบวก (หน่วยเป็น GB)"
+#: ../files/usr/bin/universal-lite-setup-wizard:2627
+#, python-brace-format
+msgid "Selected drive is too small ({size} GB). Minimum required: 16 GB."
+msgstr "ไดรฟ์ที่เลือกมีขนาดเล็กเกินไป ({size} GB) ขนาดขั้นต่ำที่ต้องใช้: 16 GB"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2077
+#: ../files/usr/bin/universal-lite-setup-wizard:2634
+msgid "Custom swap size must be a positive whole number (in GB, up to 256)."
+msgstr "ขนาดสว็อปที่กำหนดเองต้องเป็นจำนวนเต็มบวก (หน่วย GB สูงสุด 256)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2642
 #, python-brace-format
 msgid ""
 "Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
 "{max} GB."
-msgstr ""
+msgstr "ขนาดสว็อป ({swap} GB) ใหญ่เกินไปสำหรับไดรฟ์นี้ ขนาดสูงสุดที่แนะนำ: {max} GB"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2106
+#: ../files/usr/bin/universal-lite-setup-wizard:2672
 msgid "Full name is required."
 msgstr "ต้องระบุชื่อ-นามสกุล"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2109
+#: ../files/usr/bin/universal-lite-setup-wizard:2679
+msgid "Full name contains invalid characters."
+msgstr "ชื่อเต็มมีอักขระที่ไม่ถูกต้อง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2683
 msgid "Username is required."
 msgstr "ต้องระบุชื่อผู้ใช้"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2112
+#: ../files/usr/bin/universal-lite-setup-wizard:2687
 msgid "Username must be 32 characters or fewer."
 msgstr "ชื่อผู้ใช้ต้องไม่เกิน 32 ตัวอักษร"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2116
-#, fuzzy
+#: ../files/usr/bin/universal-lite-setup-wizard:2692
 msgid ""
 "Username must start with a lowercase letter or underscore, contain only "
 "lowercase letters, numbers, underscores, and hyphens, and cannot end with a "
 "hyphen."
-msgstr ""
-"ชื่อผู้ใช้ต้องขึ้นต้นด้วยตัวอักษรพิมพ์เล็ก และประกอบด้วยตัวอักษรพิมพ์เล็ก ตัวเลข "
-"และเครื่องหมายยัติภังค์เท่านั้น"
+msgstr "ชื่อผู้ใช้ต้องขึ้นต้นด้วยตัวอักษรพิมพ์เล็กหรือขีดล่าง ใช้ได้เฉพาะตัวอักษรพิมพ์เล็ก ตัวเลข ขีดล่าง และยัติภังค์ และต้องไม่ลงท้ายด้วยยัติภังค์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2122
+#: ../files/usr/bin/universal-lite-setup-wizard:2699
+msgid "This username is reserved for the system."
+msgstr "ชื่อผู้ใช้นี้ถูกสงวนไว้สำหรับระบบ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2703
 msgid "Password is required."
 msgstr "ต้องระบุรหัสผ่าน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2125
+#: ../files/usr/bin/universal-lite-setup-wizard:2707
 msgid "Password must be at least 6 characters."
-msgstr ""
+msgstr "รหัสผ่านต้องมีอย่างน้อย 6 อักขระ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2128
+#: ../files/usr/bin/universal-lite-setup-wizard:2713
+msgid "Password must be 256 characters or fewer."
+msgstr "รหัสผ่านต้องไม่เกิน 256 อักขระ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2717
 msgid "Passwords do not match."
 msgstr "รหัสผ่านไม่ตรงกัน"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2134
+#: ../files/usr/bin/universal-lite-setup-wizard:2724
 msgid ""
 "Either enable administrator access or set a root password. Without one of "
 "these you will be locked out of system management."
@@ -410,152 +493,342 @@ msgstr ""
 "กรุณาเปิดใช้งานสิทธิ์ผู้ดูแลระบบหรือตั้งรหัสผ่าน root หากไม่ตั้งค่าอย่างใดอย่างหนึ่ง "
 "คุณจะไม่สามารถจัดการระบบได้"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2144
-#, fuzzy
-msgid "Hostname must be 63 characters or fewer."
-msgstr "ชื่อผู้ใช้ต้องไม่เกิน 32 ตัวอักษร"
+#: ../files/usr/bin/universal-lite-setup-wizard:2731
+msgid "Root password must be at least 6 characters."
+msgstr "รหัสผ่าน root ต้องมีอย่างน้อย 6 อักขระ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2148
+#: ../files/usr/bin/universal-lite-setup-wizard:2735
+msgid "Root password must be 256 characters or fewer."
+msgstr "รหัสผ่าน root ต้องไม่เกิน 256 อักขระ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2744
+msgid "Hostname must be 63 characters or fewer."
+msgstr "ชื่อโฮสต์ต้องไม่เกิน 63 อักขระ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2749
 msgid ""
 "Hostname must contain only letters, numbers, and hyphens, and cannot start "
 "or end with a hyphen."
-msgstr ""
+msgstr "ชื่อโฮสต์ต้องมีเฉพาะตัวอักษร ตัวเลข และยัติภังค์ และต้องไม่ขึ้นต้นหรือลงท้ายด้วยยัติภังค์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2166
+#: ../files/usr/bin/universal-lite-setup-wizard:2759
+msgid ""
+"Network is not available. An internet connection is required to install."
+msgstr "เครือข่ายไม่พร้อมใช้งาน ต้องใช้อินเทอร์เน็ตในการติดตั้ง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2763
+msgid "No internet connection. Connect to a network and try again."
+msgstr "ไม่มีการเชื่อมต่ออินเทอร์เน็ต เชื่อมต่อเครือข่ายแล้วลองอีกครั้ง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2779
 msgid "Wired connection"
 msgstr "การเชื่อมต่อแบบสาย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2169
+#: ../files/usr/bin/universal-lite-setup-wizard:2782
 #, python-brace-format
 msgid "Connected to {ssid}"
 msgstr "เชื่อมต่อกับ {ssid} แล้ว"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2172
+#: ../files/usr/bin/universal-lite-setup-wizard:2785
 msgid "No network (offline install)"
 msgstr "ไม่มีเครือข่าย (ติดตั้งแบบออฟไลน์)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2182
+#: ../files/usr/bin/universal-lite-setup-wizard:2795
 #, python-brace-format
 msgid "zswap with {swap_gb} GB disk swap"
 msgstr "zswap พร้อมสวอปบนดิสก์ {swap_gb} GB"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2185
+#: ../files/usr/bin/universal-lite-setup-wizard:2798
 msgid "zram only (compressed RAM)"
 msgstr "zram เท่านั้น (หน่วยความจำบีบอัด)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2190
+#: ../files/usr/bin/universal-lite-setup-wizard:2803
 msgid "Yes"
 msgstr "ใช่"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2190
+#: ../files/usr/bin/universal-lite-setup-wizard:2803
 msgid "No"
 msgstr "ไม่ใช่"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2192
+#: ../files/usr/bin/universal-lite-setup-wizard:2805
 msgid "Set"
 msgstr "ตั้งค่าแล้ว"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2192
+#: ../files/usr/bin/universal-lite-setup-wizard:2805
 msgid "Not set"
 msgstr "ยังไม่ตั้งค่า"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2213
+#: ../files/usr/bin/universal-lite-setup-wizard:2826
 msgid "No apps selected"
 msgstr "ไม่ได้เลือกแอป"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2272
-#: ../files/usr/bin/universal-lite-setup-wizard:2275
+#: ../files/usr/bin/universal-lite-setup-wizard:2885
+#: ../files/usr/bin/universal-lite-setup-wizard:2888
 msgid "None"
 msgstr "ไม่มี"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:2515
-msgid "Continue"
-msgstr "ดำเนินการต่อ"
+#: ../files/usr/bin/universal-lite-setup-wizard:2942
+#, python-brace-format
+msgid "Cannot unmount {mnt}: {err}"
+msgstr "ไม่สามารถยกเลิกเมานต์ {mnt}: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3144
+#: ../files/usr/bin/universal-lite-setup-wizard:2945
+#: ../files/usr/bin/universal-lite-setup-wizard:2959
+#, python-brace-format
+msgid "Could not list target partitions: {err}"
+msgstr "ไม่สามารถแสดงรายการพาร์ติชันเป้าหมาย: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2947
+msgid "Could not unmount target partitions (command timed out)"
+msgstr "ไม่สามารถยกเลิกเมานต์พาร์ติชันเป้าหมายได้ (คำสั่งหมดเวลา)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2949
+#, python-brace-format
+msgid "Could not unmount target partitions: {err}"
+msgstr "ไม่สามารถยกเลิกเมานต์พาร์ติชันเป้าหมาย: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2956
+#, python-brace-format
+msgid "Cannot proceed: partitions still mounted: {mounts}"
+msgstr "ดำเนินการต่อไม่ได้: พาร์ติชันยังถูกเมานต์อยู่: {mounts}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2963
+msgid "Could not verify partitions are unmounted (findmnt timeout)"
+msgstr "ไม่สามารถตรวจสอบว่าพาร์ติชันถูกยกเลิกเมานต์แล้ว (findmnt หมดเวลา)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:2965
+#, python-brace-format
+msgid "Could not verify partitions are unmounted: {err}"
+msgstr "ไม่สามารถตรวจสอบว่าพาร์ติชันถูกยกเลิกเมานต์แล้ว: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3000
+#, python-brace-format
+msgid "Partitioning failed: {tail}"
+msgstr "การแบ่งพาร์ติชันล้มเหลว: {tail}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3002
+msgid "Partitioning timed out"
+msgstr "การแบ่งพาร์ติชันหมดเวลา"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3020
+#, python-brace-format
+msgid "Expected {expected} partitions, found {found}: {parts}"
+msgstr "คาดว่าจะมี {expected} พาร์ติชัน แต่พบ {found}: {parts}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3023
+#, python-brace-format
+msgid "Failed to list partitions: {err}"
+msgstr "แสดงรายการพาร์ติชันไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3053
+#, python-brace-format
+msgid "Failed to format {label} partition: {err}"
+msgstr "ฟอร์แมตพาร์ติชัน {label} ไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3056
+#, python-brace-format
+msgid "Formatting {label} partition timed out"
+msgstr "การฟอร์แมตพาร์ติชัน {label} หมดเวลา"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3079
+#, python-brace-format
+msgid "Failed to mount {mnt}: {err}"
+msgstr "เมานต์ {mnt} ไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3115
+#, python-brace-format
+msgid "Failed to remount {mnt}: {err}"
+msgstr "เมานต์ {mnt} ใหม่ไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3120
+#, python-brace-format
+msgid "Remounting {mnt} timed out"
+msgstr "การเมานต์ {mnt} ใหม่หมดเวลา"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3127
+msgid ""
+"Cannot resolve ghcr.io — check your network connection. The container "
+"registry must be reachable to install."
+msgstr "แปลงชื่อ ghcr.io ไม่ได้ — ตรวจสอบการเชื่อมต่อเครือข่ายของคุณ ต้องเข้าถึงรีจิสทรีคอนเทนเนอร์ได้จึงจะติดตั้งได้"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3135
+msgid "Target disk too small (need 6 GB free after partitioning)"
+msgstr "ดิสก์เป้าหมายมีขนาดเล็กเกินไป (ต้องมีพื้นที่ว่าง 6 GB หลังแบ่งพาร์ติชัน)"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3137
+#, python-brace-format
+msgid "Could not check target disk free space: {err}"
+msgstr "ไม่สามารถตรวจสอบพื้นที่ว่างของดิสก์เป้าหมาย: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3148
+#, python-brace-format
+msgid "bootc status failed: {err}"
+msgstr "bootc status ล้มเหลว: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3151
+msgid "bootc status timed out after 30 seconds"
+msgstr "bootc status หมดเวลาหลัง 30 วินาที"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3153
+#, python-brace-format
+msgid "Could not parse bootc status output: {err}"
+msgstr "ไม่สามารถแยกวิเคราะห์ผลลัพธ์ของ bootc status: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3155
+msgid ""
+"Could not determine the booted image reference. Is this system booted from a "
+"bootc image?"
+msgstr "ไม่สามารถระบุอ้างอิงอิมเมจที่บูตอยู่ได้ ระบบนี้บูตจากอิมเมจ bootc หรือไม่"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3178
+#, python-brace-format
+msgid "Failed to prepare install environment: {err}"
+msgstr "เตรียมสภาพแวดล้อมการติดตั้งไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3271
+msgid "bootc install failed to start"
+msgstr "เริ่ม bootc install ไม่สำเร็จ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3275
+#, python-brace-format
+msgid "bootc install failed (exit {code}); full log at {path}"
+msgstr "bootc install ล้มเหลว (ออกด้วยรหัส {code}); บันทึกทั้งหมดอยู่ที่ {path}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3292
+#, python-brace-format
+msgid "Failed to remount target read-write: {err}"
+msgstr "เมานต์เป้าหมายใหม่แบบอ่าน-เขียนไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3419
+#, python-brace-format
+msgid "User {user} found in passwd but entry is missing"
+msgstr "พบผู้ใช้ {user} ใน passwd แต่ไม่มีรายการ"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3423
+#, python-brace-format
+msgid "Malformed passwd entry for {user}"
+msgstr "รายการ passwd ของ {user} มีรูปแบบไม่ถูกต้อง"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3560
+#, python-brace-format
+msgid "Failed to set home directory ownership: {err}"
+msgstr "ตั้งค่าความเป็นเจ้าของไดเรกทอรีบ้านไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3577
+#, python-brace-format
+msgid "Failed to set root password: {err}"
+msgstr "ตั้งรหัสผ่าน root ไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3595
+#, python-brace-format
+msgid "Failed to configure timezone/locale: {err}"
+msgstr "กำหนดค่าเขตเวลา/โลแคลไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3607
+#, python-brace-format
+msgid "Failed to set hostname: {err}"
+msgstr "ตั้งชื่อโฮสต์ไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3629
+#, python-brace-format
+msgid "Failed to configure keyboard layout: {err}"
+msgstr "กำหนดค่าผังแป้นพิมพ์ไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3663
+#, python-brace-format
+msgid "Failed to copy network configuration: {err}"
+msgstr "คัดลอกการกำหนดค่าเครือข่ายไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3875
+#, python-brace-format
+msgid "SELinux relabeling /etc failed: {err}"
+msgstr "การ relabel SELinux สำหรับ /etc ล้มเหลว: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3899
+#, python-brace-format
+msgid "SELinux relabeling /var failed: {err}"
+msgstr "การ relabel SELinux สำหรับ /var ล้มเหลว: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:3931
+#, python-brace-format
+msgid "Failed to unmount target: {err}"
+msgstr "ยกเลิกเมานต์เป้าหมายไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:4115
+#, python-brace-format
+msgid "Failed to hash password: {err}"
+msgstr "แฮชรหัสผ่านไม่สำเร็จ: {err}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:4151
 msgid "Partitioning disk"
 msgstr "กำลังแบ่งพาร์ติชันดิสก์"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3145
+#: ../files/usr/bin/universal-lite-setup-wizard:4152
 msgid "Installing system"
 msgstr "กำลังติดตั้งระบบ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3146
+#: ../files/usr/bin/universal-lite-setup-wizard:4153
 msgid "Configuring user account"
 msgstr "กำลังตั้งค่าบัญชีผู้ใช้"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3147
+#: ../files/usr/bin/universal-lite-setup-wizard:4154
 msgid "Copying network configuration"
 msgstr "กำลังคัดลอกการตั้งค่าเครือข่าย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3151
+#: ../files/usr/bin/universal-lite-setup-wizard:4157
 msgid "Saving app selection"
 msgstr "กำลังบันทึกรายการแอปที่เลือก"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3155
+#: ../files/usr/bin/universal-lite-setup-wizard:4161
 msgid "Configuring memory management"
 msgstr "กำลังตั้งค่าการจัดการหน่วยความจำ"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3156
+#: ../files/usr/bin/universal-lite-setup-wizard:4162
 msgid "Finalizing"
 msgstr "กำลังดำเนินการขั้นสุดท้าย"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3224
+#: ../files/usr/bin/universal-lite-setup-wizard:4235
+#, python-brace-format
+msgid "Unexpected error: {type}: {msg}"
+msgstr "ข้อผิดพลาดที่ไม่คาดคิด: {type}: {msg}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:4282
 msgid "(skipped)"
 msgstr "(ข้ามแล้ว)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3255
+#: ../files/usr/bin/universal-lite-setup-wizard:4305
+#, python-brace-format
+msgid "Full log: {path}"
+msgstr "บันทึกทั้งหมด: {path}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:4308
+#, python-brace-format
+msgid "Install step failed. See details; full log at {path}"
+msgstr "ขั้นตอนการติดตั้งล้มเหลว ดูรายละเอียด บันทึกทั้งหมดอยู่ที่ {path}"
+
+#: ../files/usr/bin/universal-lite-setup-wizard:4325
 msgid "Installation Complete!"
 msgstr "ติดตั้งเสร็จสมบูรณ์!"
 
-#: ../files/usr/bin/universal-lite-setup-wizard:3290
+#: ../files/usr/bin/universal-lite-setup-wizard:4356
 msgid "Reboot failed — please restart manually."
 msgstr "รีบูตไม่สำเร็จ — กรุณารีสตาร์ทด้วยตนเอง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "This username is reserved for the system."
-msgstr "ชื่อผู้ใช้นี้ถูกสงวนไว้สำหรับระบบ"
+#~ msgid "Connect to Wi-Fi"
+#~ msgstr "เชื่อมต่อ Wi-Fi"
 
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Connect to the internet to continue."
-msgstr "เชื่อมต่ออินเทอร์เน็ตเพื่อดำเนินการต่อ"
+#~ msgid "Select a network to get online."
+#~ msgstr "เลือกเครือข่ายเพื่อเชื่อมต่ออินเทอร์เน็ต"
 
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Wired"
-msgstr "แบบมีสาย"
+#~ msgid "Wrong password."
+#~ msgstr "รหัสผ่านไม่ถูกต้อง"
 
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Wi-Fi"
-msgstr "Wi-Fi"
+#, python-brace-format
+#~ msgid "Connection failed: {err}"
+#~ msgstr "เชื่อมต่อไม่สำเร็จ: {err}"
 
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Checking..."
-msgstr "กำลังตรวจสอบ..."
+#~ msgid "Custom swap size must be a positive whole number (in GB)."
+#~ msgstr "ขนาดสวอปที่กำหนดเองต้องเป็นจำนวนเต็มบวก (หน่วยเป็น GB)"
 
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Connected"
-msgstr "เชื่อมต่อแล้ว"
-
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Connecting..."
-msgstr "กำลังเชื่อมต่อ..."
-
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Disconnected"
-msgstr "ยกเลิกการเชื่อมต่อแล้ว"
-
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Cable unplugged"
-msgstr "ไม่ได้เสียบสายเคเบิล"
-
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Not connected"
-msgstr "ไม่ได้เชื่อมต่อ"
-
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "Disconnect"
-msgstr "ยกเลิกการเชื่อมต่อ"
-
-#: ../files/usr/bin/universal-lite-setup-wizard
-msgid "No wired adapter detected"
-msgstr "ไม่พบอะแดปเตอร์แบบมีสาย"
+#~ msgid "Continue"
+#~ msgstr "ดำเนินการต่อ"
