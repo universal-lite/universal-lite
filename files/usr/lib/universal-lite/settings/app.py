@@ -15,6 +15,50 @@ from .window import SettingsWindow
 APP_ID = "org.universallite.Settings"
 CSS_PATH = Path(__file__).parent / "css" / "style.css"
 PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
+_CHECK_FG_LIGHT = "#ffffff"
+_CHECK_FG_DARK = "#2e3436"
+_MIN_ICON_CONTRAST = 3.5
+
+
+def _srgb_to_linear(channel: int) -> float:
+    value = channel / 255
+    if value <= 0.04045:
+        return value / 12.92
+    return ((value + 0.055) / 1.055) ** 2.4
+
+
+def _relative_luminance(hex_color: str) -> float:
+    value = hex_color.removeprefix("#")
+    if len(value) != 6:
+        raise ValueError(hex_color)
+    red, green, blue = (
+        int(value[index:index + 2], 16)
+        for index in (0, 2, 4)
+    )
+    return (
+        0.2126 * _srgb_to_linear(red)
+        + 0.7152 * _srgb_to_linear(green)
+        + 0.0722 * _srgb_to_linear(blue)
+    )
+
+
+def _contrast_ratio(hex_a: str, hex_b: str) -> float:
+    lum_a = _relative_luminance(hex_a)
+    lum_b = _relative_luminance(hex_b)
+    lighter = max(lum_a, lum_b)
+    darker = min(lum_a, lum_b)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _accent_check_fg(hex_value: str) -> str:
+    """Return a readable symbolic check color for an accent swatch."""
+    try:
+        light_contrast = _contrast_ratio(hex_value, _CHECK_FG_LIGHT)
+    except ValueError:
+        return _CHECK_FG_LIGHT
+    if light_contrast >= _MIN_ICON_CONTRAST:
+        return _CHECK_FG_LIGHT
+    return _CHECK_FG_DARK
 
 
 def _build_accent_css() -> str:
@@ -31,10 +75,12 @@ def _build_accent_css() -> str:
     except (OSError, json.JSONDecodeError):
         return ""
     accents = palette.get("accents", {})
-    return "\n".join(
-        f".accent-{name} {{ background-color: {hex_value}; }}"
-        for name, hex_value in accents.items()
-    )
+    rules = []
+    for name, hex_value in accents.items():
+        check_fg = _accent_check_fg(hex_value)
+        rules.append(f".accent-{name} {{ background-color: {hex_value}; }}")
+        rules.append(f".accent-{name}:checked image {{ color: {check_fg}; }}")
+    return "\n".join(rules)
 
 
 class SettingsApp(Adw.Application):

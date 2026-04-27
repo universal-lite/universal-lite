@@ -50,6 +50,7 @@ DEFAULT_LAYOUT = {
 
 ALL_MODULES_ORDER = ["custom/launcher", "wlr/taskbar", "pulseaudio", "backlight", "battery", "clock", "tray"]
 ALL_MODULES = set(ALL_MODULES_ORDER)
+STATUS_MODULES = {"pulseaudio", "backlight", "battery", "clock"}
 
 _PALETTE_PATH = SHARE_ROOT / "universal-lite/palette.json"
 _palette = json.loads(_PALETTE_PATH.read_text(encoding="utf-8"))
@@ -215,6 +216,33 @@ def _hex_to_rgb_tuple(color: str) -> tuple[int, int, int]:
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
 
 
+def _relative_luminance(color: str) -> float:
+    """Return WCAG relative luminance for a hex color."""
+    r, g, b = _hex_to_rgb_tuple(color)
+
+    def channel(c: int) -> float:
+        v = c / 255
+        return v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
+
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+
+
+def _contrast_ratio(fg: str, bg: str) -> float:
+    """Return WCAG contrast ratio for two hex colors."""
+    l1 = _relative_luminance(fg)
+    l2 = _relative_luminance(bg)
+    lighter = max(l1, l2)
+    darker = min(l1, l2)
+    return (lighter + 0.05) / (darker + 0.05)
+
+
+def _best_accent_foreground(accent: str) -> str:
+    """Choose a light or dark foreground with best contrast on accent."""
+    dark = "#1e1e1e"
+    light = "#ffffff"
+    return dark if _contrast_ratio(dark, accent) >= _contrast_ratio(light, accent) else light
+
+
 def _rgba_css(color: str, opacity: float) -> str:
     """Convert '#RRGGBB' + opacity float to 'rgba(r, g, b, opacity)' CSS string."""
     r, g, b = _hex_to_rgb_tuple(color)
@@ -223,14 +251,7 @@ def _rgba_css(color: str, opacity: float) -> str:
 
 def _is_light_color(color: str) -> bool:
     """Return True when color is visually closer to a light surface."""
-    r, g, b = _hex_to_rgb_tuple(color)
-
-    def channel(c: int) -> float:
-        v = c / 255
-        return v / 12.92 if v <= 0.04045 else ((v + 0.055) / 1.055) ** 2.4
-
-    luminance = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
-    return luminance > 0.5
+    return _relative_luminance(color) > 0.5
 
 
 def _build_tokens(settings: dict) -> dict:
@@ -287,22 +308,57 @@ def _build_tokens(settings: dict) -> dict:
     panel_status_border = _rgba_css(_panel_pal["fg"], 0.14 if panel_is_light else 0.18)
     panel_accent_bg = f"rgba({r}, {g}, {b}, {0.20 if panel_is_light else 0.26})"
     panel_accent_border = f"rgba({r}, {g}, {b}, {0.34 if panel_is_light else 0.42})"
+    surface_base = palette["window_bg"]
+    surface_card = palette["card_bg"]
+    surface_headerbar = palette["headerbar_bg"]
+    surface_overlay = palette["view_bg"]
+    text_primary = palette["fg"]
+    text_secondary = palette["secondary_fg"]
+    text_disabled = palette["inactive_fg"]
+    border_default = palette["border"]
+    panel_transition = (
+        "none" if settings.get("reduce_motion", False)
+        else "background-color 120ms ease, border-color 120ms ease, color 120ms ease"
+    )
+
+    if settings.get("high_contrast", False):
+        surface_base = "#000000"
+        surface_card = "#1d1d20"
+        surface_headerbar = "#222226"
+        surface_overlay = "#000000"
+        text_primary = "#ffffff"
+        text_secondary = "#ffffff"
+        text_disabled = "#c0bfbc"
+        border_default = "#ffffff"
+        panel_surface = "#000000"
+        panel_fg = "#ffffff"
+        panel_secondary_fg = "#ffffff"
+        panel_alpha = "0.98"
+        panel_border = "rgba(255, 255, 255, 0.55)"
+        panel_control_bg = "rgba(255, 255, 255, 0.16)"
+        panel_control_hover = "rgba(255, 255, 255, 0.26)"
+        panel_control_border = "rgba(255, 255, 255, 0.45)"
+        panel_status_bg = "rgba(255, 255, 255, 0.18)"
+        panel_status_border = "rgba(255, 255, 255, 0.55)"
+        panel_accent_bg = f"rgba({r}, {g}, {b}, 0.32)"
+        panel_accent_border = f"rgba({r}, {g}, {b}, 0.78)"
 
     return {
         **settings,
         # Surfaces
-        "surface_base": palette["window_bg"],
-        "surface_card": palette["card_bg"],
-        "surface_headerbar": palette["headerbar_bg"],
-        "surface_overlay": palette["view_bg"],
+        "surface_base": surface_base,
+        "surface_card": surface_card,
+        "surface_headerbar": surface_headerbar,
+        "surface_overlay": surface_overlay,
         # Text
-        "text_primary": palette["fg"],
-        "text_secondary": palette["secondary_fg"],
-        "text_disabled": palette["inactive_fg"],
+        "text_primary": text_primary,
+        "text_secondary": text_secondary,
+        "text_disabled": text_disabled,
         # Borders
-        "border_default": palette["border"],
+        "border_default": border_default,
         # Accent — pre-derived in all formats needed downstream
         "accent_hex": accent_hex,
+        "accent_fg_hex": _best_accent_foreground(accent_hex),
         "accent_rgba_30": f"rgba({r}, {g}, {b}, 0.3)",
         "accent_rgba_15": f"rgba({r}, {g}, {b}, 0.15)",
         "accent_mako": accent_hex + "FF",
@@ -342,6 +398,7 @@ def _build_tokens(settings: dict) -> dict:
         "panel_status_border": panel_status_border,
         "panel_accent_bg": panel_accent_bg,
         "panel_accent_border": panel_accent_border,
+        "panel_transition": panel_transition,
         "is_vertical": is_vertical,
         # Notification anchor (opposite corner from panel)
         "mako_anchor": mako_anchor,
@@ -680,6 +737,155 @@ def ensure_settings() -> dict:
     return data
 
 
+def _status_runs_for_modules(modules: list[str]) -> list[list[str]]:
+    """Return contiguous status-module runs, preserving user order."""
+    runs: list[list[str]] = []
+    current: list[str] = []
+    for module in modules:
+        if module in STATUS_MODULES:
+            current.append(module)
+        elif current:
+            runs.append(current)
+            current = []
+    if current:
+        runs.append(current)
+    return runs
+
+
+def _status_runs_for_layout(layout: dict) -> list[list[str]]:
+    runs: list[list[str]] = []
+    for section in ("start", "center", "end"):
+        runs.extend(_status_runs_for_modules(list(layout.get(section, []))))
+    return runs
+
+
+def _group_status_runs(modules: list[str], start_index: int) -> tuple[list[str], dict[str, dict], int]:
+    """Replace contiguous status runs with Waybar group modules."""
+    grouped: list[str] = []
+    group_configs: dict[str, dict] = {}
+    index = start_index
+    i = 0
+    while i < len(modules):
+        module = modules[i]
+        if module not in STATUS_MODULES:
+            grouped.append(module)
+            i += 1
+            continue
+
+        run = [module]
+        i += 1
+        while i < len(modules) and modules[i] in STATUS_MODULES:
+            run.append(modules[i])
+            i += 1
+
+        if len(run) == 1:
+            grouped.append(run[0])
+            continue
+
+        group_id = f"group/status-{index}"
+        grouped.append(group_id)
+        group_configs[group_id] = {
+            "orientation": "inherit",
+            "modules": run,
+        }
+        index += 1
+
+    return grouped, group_configs, index
+
+
+def _status_module_selector(module: str) -> str:
+    return f"#{module.replace('/', '-')}"
+
+
+def _waybar_status_css(tokens: dict, *, vertical: bool) -> str:
+    """Style status runs without assuming a fixed module order."""
+    runs = _status_runs_for_layout(tokens["layout"])
+    modules = [module for run in runs for module in run]
+    if not modules:
+        return ""
+
+    base_selectors = ", ".join(_status_module_selector(module) for module in modules)
+    spacing = tokens["panel_spacing"]
+    border = tokens["panel_status_border"]
+    lines = [
+        f"{base_selectors} {{",
+        f"    background: {tokens['panel_status_bg']};",
+    ]
+    if vertical:
+        lines.extend([
+            f"    border-left: 1px solid {border};",
+            f"    border-right: 1px solid {border};",
+            "    border-radius: 0;",
+        ])
+    else:
+        lines.extend([
+            f"    border-top: 1px solid {border};",
+            f"    border-bottom: 1px solid {border};",
+            "    border-radius: 0;",
+        ])
+    lines.append("}")
+
+    for run in runs:
+        if not run:
+            continue
+        first = run[0]
+        last = run[-1]
+        if vertical:
+            lines.extend([
+                f"{_status_module_selector(first)} {{",
+                "    border-top-left-radius: 999px;",
+                "    border-top-right-radius: 999px;",
+                f"    border-top: 1px solid {border};",
+                "}",
+                f"{_status_module_selector(last)} {{",
+                "    border-bottom-left-radius: 999px;",
+                "    border-bottom-right-radius: 999px;",
+                f"    border-bottom: 1px solid {border};",
+                "}",
+            ])
+            if len(run) == 1:
+                lines.extend([
+                    f"{_status_module_selector(first)} {{",
+                    "    border-radius: 999px;",
+                    "}",
+                ])
+            else:
+                inner_selectors = ", ".join(_status_module_selector(module) for module in run[1:])
+                lines.extend([
+                    f"{inner_selectors} {{",
+                    f"    margin-top: -{spacing}px;",
+                    "}",
+                ])
+        else:
+            lines.extend([
+                f"{_status_module_selector(first)} {{",
+                "    border-top-left-radius: 999px;",
+                "    border-bottom-left-radius: 999px;",
+                f"    border-left: 1px solid {border};",
+                "}",
+                f"{_status_module_selector(last)} {{",
+                "    border-top-right-radius: 999px;",
+                "    border-bottom-right-radius: 999px;",
+                f"    border-right: 1px solid {border};",
+                "}",
+            ])
+            if len(run) == 1:
+                lines.extend([
+                    f"{_status_module_selector(first)} {{",
+                    "    border-radius: 999px;",
+                    "}",
+                ])
+            else:
+                inner_selectors = ", ".join(_status_module_selector(module) for module in run[1:])
+                lines.extend([
+                    f"{inner_selectors} {{",
+                    f"    margin-left: -{spacing}px;",
+                    "}",
+                ])
+
+    return "\n".join(lines) + "\n"
+
+
 def _waybar_css_common(tokens: dict) -> str:
     pr, pg, pb = _hex_to_rgb_tuple(tokens["panel_surface"])
     m = tokens["panel_margin"]
@@ -710,14 +916,15 @@ window#waybar {{
     border-radius: 999px;
     background: {tokens["panel_control_bg"]};
     border: 1px solid {tokens["panel_control_border"]};
+    transition: {tokens["panel_transition"]};
 }}
 #custom-launcher:hover {{
     background: {tokens["panel_control_hover"]};
 }}
 
 #taskbar button.active {{
-    background: {tokens["panel_accent_bg"]};
-    border: 1px solid {tokens["panel_accent_border"]};
+    background: {tokens["panel_control_bg"]};
+    border: 1px solid {tokens["panel_control_border"]};
 }}
 
 #taskbar button:hover {{
@@ -760,6 +967,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     inset = tokens["panel_bar_inset"]
     spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
+    indicator_border = "border-top" if tokens["edge"] == "top" else "border-bottom"
 
     pin_css = ""
     if pinned:
@@ -771,6 +979,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     min-height: {h}px;
     border-radius: 999px;
     border: 1px solid transparent;
+    transition: {tokens["panel_transition"]};
 }}
 {hover_selectors} {{
     background: {tokens["panel_control_hover"]};
@@ -789,39 +998,28 @@ window#waybar {{ padding: 0 {inset}px; }}
     border-radius: 999px;
     border: 1px solid transparent;
     min-height: {h}px;
+    transition: {tokens["panel_transition"]};
+}}
+#taskbar button.active {{
+    {indicator_border}: 3px solid {tokens["accent_hex"]};
 }}
 #taskbar button:hover {{
     background: {tokens["panel_control_hover"]};
     border: 1px solid {tokens["panel_control_border"]};
 }}
+#taskbar button.active:hover {{
+    {indicator_border}: 3px solid {tokens["accent_hex"]};
+}}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: 0 {pm}px;
     min-height: {h}px;
+    transition: {tokens["panel_transition"]};
 }}
 
 #clock {{ font-weight: bold; }}
 
-#pulseaudio, #backlight, #battery, #clock {{
-    background: {tokens["panel_status_bg"]};
-    border-top: 1px solid {tokens["panel_status_border"]};
-    border-bottom: 1px solid {tokens["panel_status_border"]};
-}}
-#pulseaudio {{
-    border-top-left-radius: 999px;
-    border-bottom-left-radius: 999px;
-    border-left: 1px solid {tokens["panel_status_border"]};
-}}
-#backlight, #battery {{
-    border-radius: 0;
-    margin-left: -{spacing}px;
-}}
-#clock {{
-    border-top-right-radius: 999px;
-    border-bottom-right-radius: 999px;
-    border-right: 1px solid {tokens["panel_status_border"]};
-    margin-left: -{spacing}px;
-}}
+{_waybar_status_css(tokens, vertical=False)}
 
 #tray {{
     background: {tokens["panel_control_bg"]};
@@ -838,6 +1036,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
     btn_w = max(w - 2 * inset, 16)
+    indicator_border = "border-right" if tokens["edge"] == "right" else "border-left"
 
     pin_css = ""
     if pinned:
@@ -850,6 +1049,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     min-height: {btn_w}px;
     border-radius: 999px;
     border: 1px solid transparent;
+    transition: {tokens["panel_transition"]};
 }}
 {hover_selectors} {{
     background: {tokens["panel_control_hover"]};
@@ -873,40 +1073,29 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
     border: 1px solid transparent;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
+    transition: {tokens["panel_transition"]};
+}}
+#taskbar button.active {{
+    {indicator_border}: 3px solid {tokens["accent_hex"]};
 }}
 #taskbar button:hover {{
     background: {tokens["panel_control_hover"]};
     border: 1px solid {tokens["panel_control_border"]};
+}}
+#taskbar button.active:hover {{
+    {indicator_border}: 3px solid {tokens["accent_hex"]};
 }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
     padding: {pm}px {inset}px;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
+    transition: {tokens["panel_transition"]};
 }}
 
 #clock {{ font-weight: bold; }}
 
-#pulseaudio, #backlight, #battery, #clock {{
-    background: {tokens["panel_status_bg"]};
-    border-left: 1px solid {tokens["panel_status_border"]};
-    border-right: 1px solid {tokens["panel_status_border"]};
-}}
-#pulseaudio {{
-    border-top-left-radius: 999px;
-    border-top-right-radius: 999px;
-    border-top: 1px solid {tokens["panel_status_border"]};
-}}
-#backlight, #battery {{
-    border-radius: 0;
-    margin-top: -{spacing}px;
-}}
-#clock {{
-    border-bottom-left-radius: 999px;
-    border-bottom-right-radius: 999px;
-    border-bottom: 1px solid {tokens["panel_status_border"]};
-    margin-top: -{spacing}px;
-}}
+{_waybar_status_css(tokens, vertical=True)}
 
 #tray {{
     background: {tokens["panel_control_bg"]};
@@ -952,6 +1141,15 @@ def write_waybar_config(tokens: dict) -> bool:
         if not injected:
             modules_left[:0] = pin_ids
 
+    group_configs: dict[str, dict] = {}
+    group_index = 0
+    modules_left, section_groups, group_index = _group_status_runs(modules_left, group_index)
+    group_configs.update(section_groups)
+    modules_center, section_groups, group_index = _group_status_runs(modules_center, group_index)
+    group_configs.update(section_groups)
+    modules_right, section_groups, group_index = _group_status_runs(modules_right, group_index)
+    group_configs.update(section_groups)
+
     config: dict = {
         "layer": "top",
         "position": tokens["edge"],
@@ -960,6 +1158,7 @@ def write_waybar_config(tokens: dict) -> bool:
         "modules-center": modules_center,
         "modules-right": modules_right,
     }
+    config.update(group_configs)
 
     if is_vertical:
         config["width"] = tokens["panel_width"]
@@ -1169,13 +1368,19 @@ def write_gtk_settings(tokens: dict) -> None:
 
 def write_mako_config(tokens: dict) -> None:
     MAKO_DIR.mkdir(parents=True, exist_ok=True)
+    border_color = (
+        _hex_to_mako(tokens["border_default"])
+        if tokens["high_contrast"] else tokens["accent_mako"]
+    )
+    border_size = 3 if tokens["high_contrast"] else 2
+    background = tokens["surface_card"] if tokens["high_contrast"] else tokens["surface_base"]
 
     config = f"""\
 font={tokens["font_ui"]} {tokens["font_size_ui"]}
-background-color={_hex_to_mako(tokens["surface_base"])}
+background-color={_hex_to_mako(background)}
 text-color={_hex_to_mako(tokens["text_primary"])}
-border-color={tokens["accent_mako"]}
-border-size=2
+border-color={border_color}
+border-size={border_size}
 border-radius=12
 padding=12
 width=360
@@ -1203,9 +1408,13 @@ def write_foot_config(tokens: dict) -> None:
 
     theme = tokens["theme"]
     accent = tokens["accent_hex"]
-    term = ADWAITA_TERMINAL[theme]
-    alpha = "0.97" if theme == "light" else "0.95"
+    term = dict(ADWAITA_TERMINAL[theme])
+    if tokens["high_contrast"]:
+        term["foreground"] = "ffffff"
+        term["background"] = "000000"
+    alpha = "1.00" if tokens["high_contrast"] else ("0.97" if theme == "light" else "0.95")
     selection_bg = _strip_hash(accent)
+    selection_fg = _strip_hash(tokens["accent_fg_hex"])
 
     ini = f"""\
 [main]
@@ -1219,7 +1428,7 @@ lines=10000
 alpha={alpha}
 foreground={term["foreground"]}
 background={term["background"]}
-selection-foreground=ffffff
+selection-foreground={selection_fg}
 selection-background={selection_bg}
 
 regular0={term["regular0"]}
@@ -1255,12 +1464,20 @@ def write_labwc_themerc(tokens: dict) -> None:
 
     palette = ADWAITA[tokens["theme"]]
     accent = ACCENTS[tokens["accent"]]
+    high_contrast = tokens["high_contrast"]
+    border_width = 2 if high_contrast else 1
+    window_border = tokens["border_default"] if high_contrast else palette["border"]
+    menu_active_fg = tokens["accent_fg_hex"]
+    active_title_bg = tokens["surface_headerbar"] if high_contrast else palette["headerbar_bg"]
+    inactive_title_bg = tokens["surface_base"] if high_contrast else palette["window_bg"]
+    raised_surface = tokens["surface_card"] if high_contrast else palette["card_bg"]
+    button_hover_bg = "#434349" if high_contrast else palette["border"]
 
     themerc = f"""\
 # Window borders
-window.active.border.color: {palette["border"]}
-window.inactive.border.color: {palette["border"]}
-border.width: 1
+window.active.border.color: {window_border}
+window.inactive.border.color: {window_border}
+border.width: {border_width}
 
 # Title bar padding
 window.titlebar.padding.height: 4
@@ -1274,14 +1491,14 @@ window.inactive.shadow.color: #00000033
 
 # Active title bar
 window.active.title.bg: flat solid
-window.active.title.bg.color: {palette["headerbar_bg"]}
-window.active.label.text.color: {palette["fg"]}
+window.active.title.bg.color: {active_title_bg}
+window.active.label.text.color: {tokens["text_primary"]}
 window.active.label.text.justify: center
 
 # Inactive title bar
 window.inactive.title.bg: flat solid
-window.inactive.title.bg.color: {palette["window_bg"]}
-window.inactive.label.text.color: {palette["secondary_fg"]}
+window.inactive.title.bg.color: {inactive_title_bg}
+window.inactive.label.text.color: {tokens["text_secondary"]}
 window.inactive.label.text.justify: center
 
 # Buttons
@@ -1291,39 +1508,39 @@ window.button.spacing: 4
 window.button.hover.bg.corner-radius: 13
 
 # Active buttons
-window.active.button.unpressed.image.color: {palette["fg"]}
+window.active.button.unpressed.image.color: {tokens["text_primary"]}
 window.active.button.hover.bg: flat solid
-window.active.button.hover.bg.color: {palette["border"]}
-window.active.button.hover.image.color: {palette["fg"]}
+window.active.button.hover.bg.color: {button_hover_bg}
+window.active.button.hover.image.color: {tokens["text_primary"]}
 
 # Inactive buttons
-window.inactive.button.unpressed.image.color: {palette["inactive_fg"]}
+window.inactive.button.unpressed.image.color: {tokens["text_disabled"]}
 window.inactive.button.hover.bg: flat solid
-window.inactive.button.hover.bg.color: {palette["border"]}
-window.inactive.button.hover.image.color: {palette["secondary_fg"]}
+window.inactive.button.hover.bg.color: {button_hover_bg}
+window.inactive.button.hover.image.color: {tokens["text_secondary"]}
 
 # Menu — sits above the window surface, so uses the elevated
 # card_bg (matches libadwaita's @popover_bg_color: #ffffff light /
 # #36363a dark). Painting at window_bg would make right-click menus
 # blend into the desktop in dark mode.
 menu.items.bg: flat solid
-menu.items.bg.color: {palette["card_bg"]}
-menu.items.text.color: {palette["fg"]}
+menu.items.bg.color: {raised_surface}
+menu.items.text.color: {tokens["text_primary"]}
 menu.items.active.bg: flat solid
 menu.items.active.bg.color: {accent}
-menu.items.active.text.color: #ffffff
-menu.separator.color: {palette["border"]}
-menu.border.width: 1
-menu.border.color: {palette["border"]}
+menu.items.active.text.color: {menu_active_fg}
+menu.separator.color: {window_border}
+menu.border.width: {border_width}
+menu.border.color: {window_border}
 menu.border.radius: 8
 
 # OSD — same elevation rule as the menu. Volume/brightness overlays
 # should sit visually above the wallpaper, not match it.
 osd.bg: flat solid
-osd.bg.color: {palette["card_bg"]}
-osd.border.width: 1
-osd.border.color: {palette["border"]}
-osd.label.text.color: {palette["fg"]}
+osd.bg.color: {raised_surface}
+osd.border.width: {border_width}
+osd.border.color: {window_border}
+osd.label.text.color: {tokens["text_primary"]}
 
 # Window switcher (thumbnail mode — ChromeOS / GNOME style)
 window.switcher.width: 80%
@@ -1665,14 +1882,16 @@ def write_swaylock_config(tokens: dict) -> None:
     transparent = "00000000"
 
     # Idle: semi-transparent inside so the indicator is visible against bg
-    idle_inside = _strip_hash(tokens["surface_card"]) + "80"
+    idle_inside_alpha = "cc" if tokens["high_contrast"] else "80"
+    idle_inside = _strip_hash(tokens["surface_card"]) + idle_inside_alpha
     # Typing: accent fill so every keypress visibly changes the indicator
-    typing_inside = _strip_hash(tokens["accent_hex"]) + "40"
+    typing_inside = _strip_hash(tokens["accent_hex"]) + ("66" if tokens["high_contrast"] else "40")
+    indicator_thickness = 14 if tokens["high_contrast"] else 12
 
     config = f"""\
 color={bg}
 indicator-radius=80
-indicator-thickness=12
+indicator-thickness={indicator_thickness}
 indicator-idle-visible
 show-failed-attempts
 inside-color={idle_inside}

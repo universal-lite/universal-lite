@@ -205,6 +205,8 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
             btn = Gtk.ToggleButton()
             btn.add_css_class("accent-circle")
             btn.add_css_class(f"accent-{name}")
+            check_icon = Gtk.Image.new_from_icon_name("object-select-symbolic")
+            btn.set_child(check_icon)
             # Tooltip doubles as the accessible name for GTK4 widgets
             # that don't otherwise carry a label. Without it Orca reads
             # each circle as "toggle button" with no way for a vision-

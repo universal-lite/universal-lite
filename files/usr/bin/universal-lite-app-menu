@@ -61,6 +61,14 @@ except (ValueError, ImportError) as _e:
 
 SETTINGS_PATH = Path.home() / ".config/universal-lite/settings.json"
 LAUNCHES_PATH = Path.home() / ".config/universal-lite/app-launches.json"
+PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
+_SCRIPT_PATH = Path(
+    globals().get("__file__")
+    or getattr(globals().get("__spec__"), "origin", "/usr/bin/universal-lite-app-menu")
+).resolve()
+_REPO_PALETTE_PATH = (
+    _SCRIPT_PATH.parents[1] / "share/universal-lite/palette.json"
+)
 
 # PID lock: second invocation (e.g. launcher click while the menu is
 # open) signals the live instance to close and itself exits without
@@ -92,10 +100,20 @@ CATEGORY_FILTER_LABELS: list[str] = (
     ["All Apps"] + [c[0] for c in CATEGORIES] + ["Other"]
 )
 
-# Max tiles shown in the "Frequent" row. Also doubles as the column
-# count on the main grid so both rows align visually.
-GRID_COLUMNS = 6
-FREQUENT_MAX = GRID_COLUMNS
+# App grid sizing. The launcher keeps the ChromeOS-like six-column
+# shape on ordinary screens, but can shed columns and reduce height
+# when a small display or larger text would otherwise clip the shell
+# surface.
+GRID_COLUMNS_MAX = 6
+GRID_COLUMNS_MIN = 3
+MENU_WIDTH_IDEAL = 640
+MENU_HEIGHT_IDEAL = 540
+MENU_WIDTH_MIN = 460
+MENU_HEIGHT_MIN = 360
+TILE_WIDTH_BASE = 92
+TILE_HEIGHT_BASE = 82
+SHADOW_PAD = 20
+PANEL_GAP = 8
 
 POWER_ACTIONS = [
     ("Lock",      "system-lock-screen", ["swaylock", "-f"]),
@@ -111,13 +129,144 @@ def _shell_theme_class(settings: dict) -> str | None:
         return None
     return "app-menu-shell-dark" if settings.get("theme") == "light" else "app-menu-shell-light"
 
+
+def _hex_to_rgb_tuple(hex_color: str) -> tuple[int, int, int]:
+    c = hex_color.lstrip("#")
+    return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
+
+
+def _rgba_css(hex_color: str, alpha: float) -> str:
+    r, g, b = _hex_to_rgb_tuple(hex_color)
+    return f"rgba({r}, {g}, {b}, {alpha:.2f})"
+
+
+def _is_light_color(hex_color: str) -> bool:
+    r, g, b = _hex_to_rgb_tuple(hex_color)
+    # Relative luminance approximation used only to choose shell tint
+    # opacity, matching apply-settings' light/dark panel split.
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 186
+
+
+def _load_palettes() -> dict:
+    """Load shared Adwaita palette data used by Waybar and twilight CSS."""
+    for path in (PALETTE_PATH, _REPO_PALETTE_PATH):
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+    print("universal-lite-app-menu: palette.json unreadable; "
+          "twilight palette CSS disabled", file=sys.stderr)
+    return {}
+
+
+def _twilight_palette_tokens(palette: dict) -> dict[str, str]:
+    fg = palette["fg"]
+    is_light = _is_light_color(palette["window_bg"])
+    border_alpha = 0.10 if is_light else 0.14
+    control_hover_alpha = 0.15 if is_light else 0.16
+    control_border_alpha = 0.08 if is_light else 0.12
+    tile_border_alpha = 0.05 if is_light else 0.08
+
+    return {
+        "surface": _rgba_css(palette["window_bg"], 0.90),
+        "fg": fg,
+        "border": _rgba_css(fg, border_alpha),
+        "control_bg": _rgba_css(fg, 0.10),
+        "control_hover": _rgba_css(fg, control_hover_alpha),
+        "control_border": _rgba_css(fg, control_border_alpha),
+        "section_fg": _rgba_css(fg, 0.70),
+        "tile_bg": _rgba_css(fg, 0.04),
+        "tile_border": _rgba_css(fg, tile_border_alpha),
+        "tile_hover": _rgba_css(fg, 0.10),
+        "tile_hover_border": _rgba_css(fg, border_alpha),
+        "tile_secondary": _rgba_css(fg, 0.72),
+    }
+
+
+def _build_twilight_css(palettes: dict | None = None) -> str:
+    """Generate shell override CSS from shared palette.json values."""
+    palettes = palettes or _load_palettes()
+    try:
+        shell_palettes = {
+            "dark": _twilight_palette_tokens(palettes["dark"]),
+            "light": _twilight_palette_tokens(palettes["light"]),
+        }
+    except KeyError as exc:
+        print(f"universal-lite-app-menu: palette missing key {exc}; "
+              "twilight palette CSS disabled", file=sys.stderr)
+        return ""
+
+    chunks: list[str] = []
+    for name, tok in shell_palettes.items():
+        chunks.append(f"""
+window.app-menu.app-menu-shell-{name} .app-menu-surface {{
+    background-color: {tok["surface"]};
+    color: {tok["fg"]};
+    border: 1px solid {tok["border"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-search,
+window.app-menu.app-menu-shell-{name} .app-menu-filter > button,
+window.app-menu.app-menu-shell-{name} .app-menu-confirm-btn {{
+    background: {tok["control_bg"]};
+    color: {tok["fg"]};
+    border: 1px solid {tok["control_border"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-filter > button:hover,
+window.app-menu.app-menu-shell-{name} .app-menu-power-btn:hover,
+window.app-menu.app-menu-shell-{name} .app-menu-confirm-btn:hover {{
+    background: {tok["control_hover"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-search:focus-within,
+window.app-menu.app-menu-shell-{name} .app-menu-filter > button:checked,
+window.app-menu.app-menu-shell-{name} .app-menu-filter > button:focus {{
+    background: alpha(@accent_color, 0.14);
+    border: 1px solid alpha(@accent_color, 0.35);
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-section-label {{
+    color: {tok["section_fg"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile {{
+    background: {tok["tile_bg"]};
+    border: 1px solid {tok["tile_border"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile:hover {{
+    background: {tok["tile_hover"]};
+    border: 1px solid {tok["tile_hover_border"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile:focus {{
+    background: alpha(@accent_color, 0.18);
+    border: 1px solid alpha(@accent_color, 0.38);
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile-generic {{
+    color: {tok["tile_secondary"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-power-bar {{
+    border-top: 1px solid {tok["border"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-power-btn {{
+    background: {tok["control_bg"]};
+    color: {tok["fg"]};
+    border: 1px solid {tok["control_border"]};
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-power-btn.destructive:hover {{
+    background: alpha(@error_color, 0.18);
+    border: 1px solid alpha(@error_color, 0.35);
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-confirm-btn.ok,
+window.app-menu.app-menu-shell-{name} .app-menu-confirm-btn.ok:hover {{
+    background: @error_color;
+    color: white;
+}}
+""")
+    return "\n".join(chunks)
+
 # CSS - no libadwaita. Uses Adwaita colour vars so the menu tracks
 # whichever accent / theme apply-settings has set. Twilight classes
 # intentionally override those vars so the menu matches the opposite-
 # palette Waybar shelf. The visual model mirrors the shelf: a
 # translucent Adwaita surface, neutral control pods, accent focus, and
 # ChromeOS-style rounded hit targets.
-CSS = b"""
+BASE_CSS = b"""
 * {
     font-family: "Roboto", "Adwaita Sans", sans-serif;
 }
@@ -268,125 +417,9 @@ window.app-menu {
 .app-menu-confirm-btn.ok:hover {
     background: shade(@error_color, 1.08);
 }
-
-window.app-menu.app-menu-shell-dark .app-menu-surface {
-    background-color: rgba(34, 34, 38, 0.90);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-}
-window.app-menu.app-menu-shell-dark .app-menu-search,
-window.app-menu.app-menu-shell-dark .app-menu-filter > button,
-window.app-menu.app-menu-shell-dark .app-menu-confirm-btn {
-    background: rgba(255, 255, 255, 0.10);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-window.app-menu.app-menu-shell-dark .app-menu-filter > button:hover,
-window.app-menu.app-menu-shell-dark .app-menu-power-btn:hover,
-window.app-menu.app-menu-shell-dark .app-menu-confirm-btn:hover {
-    background: rgba(255, 255, 255, 0.16);
-}
-window.app-menu.app-menu-shell-dark .app-menu-search:focus-within,
-window.app-menu.app-menu-shell-dark .app-menu-filter > button:checked,
-window.app-menu.app-menu-shell-dark .app-menu-filter > button:focus {
-    background: alpha(@accent_color, 0.14);
-    border: 1px solid alpha(@accent_color, 0.35);
-}
-window.app-menu.app-menu-shell-dark .app-menu-section-label {
-    color: rgba(255, 255, 255, 0.70);
-}
-window.app-menu.app-menu-shell-dark .app-menu-tile {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-window.app-menu.app-menu-shell-dark .app-menu-tile:hover {
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-}
-window.app-menu.app-menu-shell-dark .app-menu-tile:focus {
-    background: alpha(@accent_color, 0.18);
-    border: 1px solid alpha(@accent_color, 0.38);
-}
-window.app-menu.app-menu-shell-dark .app-menu-tile-generic {
-    color: rgba(255, 255, 255, 0.72);
-}
-window.app-menu.app-menu-shell-dark .app-menu-power-bar {
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-}
-window.app-menu.app-menu-shell-dark .app-menu-power-btn {
-    background: rgba(255, 255, 255, 0.10);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-window.app-menu.app-menu-shell-dark .app-menu-power-btn.destructive:hover {
-    background: alpha(@error_color, 0.18);
-    border: 1px solid alpha(@error_color, 0.35);
-}
-window.app-menu.app-menu-shell-dark .app-menu-confirm-btn.ok,
-window.app-menu.app-menu-shell-dark .app-menu-confirm-btn.ok:hover {
-    background: @error_color;
-    color: white;
-}
-
-window.app-menu.app-menu-shell-light .app-menu-surface {
-    background-color: rgba(250, 250, 250, 0.90);
-    color: #1e1e1e;
-    border: 1px solid rgba(30, 30, 30, 0.10);
-}
-window.app-menu.app-menu-shell-light .app-menu-search,
-window.app-menu.app-menu-shell-light .app-menu-filter > button,
-window.app-menu.app-menu-shell-light .app-menu-confirm-btn {
-    background: rgba(30, 30, 30, 0.10);
-    color: #1e1e1e;
-    border: 1px solid rgba(30, 30, 30, 0.08);
-}
-window.app-menu.app-menu-shell-light .app-menu-filter > button:hover,
-window.app-menu.app-menu-shell-light .app-menu-power-btn:hover,
-window.app-menu.app-menu-shell-light .app-menu-confirm-btn:hover {
-    background: rgba(30, 30, 30, 0.15);
-}
-window.app-menu.app-menu-shell-light .app-menu-search:focus-within,
-window.app-menu.app-menu-shell-light .app-menu-filter > button:checked,
-window.app-menu.app-menu-shell-light .app-menu-filter > button:focus {
-    background: alpha(@accent_color, 0.14);
-    border: 1px solid alpha(@accent_color, 0.35);
-}
-window.app-menu.app-menu-shell-light .app-menu-section-label {
-    color: rgba(30, 30, 30, 0.70);
-}
-window.app-menu.app-menu-shell-light .app-menu-tile {
-    background: rgba(30, 30, 30, 0.04);
-    border: 1px solid rgba(30, 30, 30, 0.05);
-}
-window.app-menu.app-menu-shell-light .app-menu-tile:hover {
-    background: rgba(30, 30, 30, 0.10);
-    border: 1px solid rgba(30, 30, 30, 0.10);
-}
-window.app-menu.app-menu-shell-light .app-menu-tile:focus {
-    background: alpha(@accent_color, 0.18);
-    border: 1px solid alpha(@accent_color, 0.38);
-}
-window.app-menu.app-menu-shell-light .app-menu-tile-generic {
-    color: rgba(30, 30, 30, 0.72);
-}
-window.app-menu.app-menu-shell-light .app-menu-power-bar {
-    border-top: 1px solid rgba(30, 30, 30, 0.10);
-}
-window.app-menu.app-menu-shell-light .app-menu-power-btn {
-    background: rgba(30, 30, 30, 0.10);
-    color: #1e1e1e;
-    border: 1px solid rgba(30, 30, 30, 0.08);
-}
-window.app-menu.app-menu-shell-light .app-menu-power-btn.destructive:hover {
-    background: alpha(@error_color, 0.18);
-    border: 1px solid alpha(@error_color, 0.35);
-}
-window.app-menu.app-menu-shell-light .app-menu-confirm-btn.ok,
-window.app-menu.app-menu-shell-light .app-menu-confirm-btn.ok:hover {
-    background: @error_color;
-    color: white;
-}
 """
+
+CSS = BASE_CSS + _build_twilight_css().encode("utf-8")
 
 
 def _load_settings() -> dict:
@@ -422,6 +455,91 @@ def _panel_geometry(settings: dict) -> dict:
             break
 
     return {"edge": edge, "section": section}
+
+
+def _settings_text_scale(settings: dict) -> float:
+    try:
+        font_size = int(settings.get("font_size", 11))
+    except (TypeError, ValueError):
+        font_size = 11
+    # apply-settings treats UI font size as user value + 2, with 13px
+    # as the normal baseline. Cap the launcher growth so large text
+    # improves fit without turning the menu into a fullscreen grid.
+    return max(1.0, min((font_size + 2) / 13, 1.35))
+
+
+def _panel_extent(settings: dict, edge: str) -> int:
+    density = settings.get("density", "comfortable")
+    compact = density == "compact"
+    scale = _settings_text_scale(settings)
+    if edge in ("left", "right"):
+        return round((48 if compact else 64) * scale)
+    return round((40 if compact else 48) * scale)
+
+
+def _display_size() -> tuple[int, int] | None:
+    display = Gdk.Display.get_default()
+    if display is None:
+        return None
+    monitors = display.get_monitors()
+    monitor = monitors.get_item(0) if monitors.get_n_items() else None
+    if monitor is None:
+        return None
+    geometry = monitor.get_geometry()
+    return (geometry.width, geometry.height)
+
+
+def _fit_dimension(ideal: int, minimum: int, available: int | None) -> int:
+    if available is None:
+        return ideal
+    available = max(1, available)
+    if available < minimum:
+        return available
+    return max(minimum, min(ideal, available))
+
+
+def _menu_metrics(
+    settings: dict,
+    geom: dict,
+    display_size: tuple[int, int] | None = None,
+) -> dict[str, int]:
+    """Return responsive surface and grid metrics for the app launcher."""
+    edge = geom.get("edge", "bottom")
+    outer_pad = SHADOW_PAD + PANEL_GAP
+    scale = _settings_text_scale(settings)
+    tile_width = round(TILE_WIDTH_BASE * scale)
+    tile_height = round(TILE_HEIGHT_BASE * scale)
+
+    ideal_width = round(MENU_WIDTH_IDEAL * min(scale, 1.12))
+    ideal_height = round(MENU_HEIGHT_IDEAL * min(scale, 1.18))
+
+    max_width: int | None = None
+    max_height: int | None = None
+    if display_size is not None:
+        screen_width, screen_height = display_size
+        panel_extent = _panel_extent(settings, edge)
+        max_width = screen_width - (2 * outer_pad)
+        max_height = screen_height - (2 * outer_pad)
+        if edge in ("left", "right"):
+            max_width -= panel_extent
+        else:
+            max_height -= panel_extent
+
+    width = _fit_dimension(ideal_width, MENU_WIDTH_MIN, max_width)
+    height = _fit_dimension(ideal_height, MENU_HEIGHT_MIN, max_height)
+
+    content_width = max(1, width - 24)
+    per_column = max(1, tile_width + 10)
+    columns = content_width // per_column
+    columns = max(GRID_COLUMNS_MIN, min(GRID_COLUMNS_MAX, columns))
+
+    return {
+        "width": width,
+        "height": height,
+        "columns": columns,
+        "tile_width": tile_width,
+        "tile_height": tile_height,
+    }
 
 
 def _is_visible(app: Gio.AppInfo) -> bool:
@@ -626,6 +744,10 @@ class AppMenu(Gtk.Window):
 
         self._geom = _panel_geometry(settings)
         self._edge = self._geom["edge"]
+        self._metrics = _menu_metrics(settings, self._geom, _display_size())
+        self._columns = self._metrics["columns"]
+        self._tile_width = self._metrics["tile_width"]
+        self._tile_height = self._metrics["tile_height"]
         self._setup_surface(self._edge)
 
         self._launches = _load_launches()
@@ -647,7 +769,7 @@ class AppMenu(Gtk.Window):
         surface.add_css_class("app-menu-surface")
         surface.set_hexpand(False)
         surface.set_vexpand(False)
-        surface.set_size_request(640, 540)
+        surface.set_size_request(self._metrics["width"], self._metrics["height"])
         outer_pad = self._SHADOW_PAD + self._PANEL_GAP
         surface.set_margin_top(outer_pad)
         surface.set_margin_bottom(outer_pad)
@@ -750,12 +872,12 @@ class AppMenu(Gtk.Window):
     # Matches the extent of the layered Adwaita-style popover shadow
     # (y-offset + blur + spread on the larger shadow is 2 + 8 + 2 =
     # 12 px) with room to spare.
-    _SHADOW_PAD = 20
+    _SHADOW_PAD = SHADOW_PAD
 
     # Visible gap between the menu and the panel it anchors to -
     # ChromeOS-style breathing room. Combined with _SHADOW_PAD as
     # the surface's outer margin inside a fullscreen overlay window.
-    _PANEL_GAP = 8
+    _PANEL_GAP = PANEL_GAP
 
     def _resolve_halign(self) -> Gtk.Align:
         edge, section = self._edge, self._geom["section"]
@@ -801,7 +923,10 @@ class AppMenu(Gtk.Window):
         """
         if not _HAVE_LAYER_SHELL:
             pad = self._SHADOW_PAD + self._PANEL_GAP
-            self.set_default_size(640 + 2 * pad, 540 + 2 * pad)
+            self.set_default_size(
+                self._metrics["width"] + 2 * pad,
+                self._metrics["height"] + 2 * pad,
+            )
             print("universal-lite-app-menu: layer-shell unavailable, "
                   "using fallback toplevel", file=sys.stderr)
             return
@@ -843,7 +968,7 @@ class AppMenu(Gtk.Window):
     # -- content --
 
     def _make_flowbox(self, *, apply_filter: bool) -> Gtk.FlowBox:
-        """Build a FlowBox that lays tiles out in a fixed-column grid.
+        """Build a FlowBox that lays tiles out in a stable column grid.
 
         Clamping min == max children per line keeps the column count
         stable even when the visible-child count changes (otherwise
@@ -853,8 +978,8 @@ class AppMenu(Gtk.Window):
         flow.add_css_class("app-menu-grid")
         flow.set_selection_mode(Gtk.SelectionMode.NONE)
         flow.set_homogeneous(True)
-        flow.set_min_children_per_line(GRID_COLUMNS)
-        flow.set_max_children_per_line(GRID_COLUMNS)
+        flow.set_min_children_per_line(self._columns)
+        flow.set_max_children_per_line(self._columns)
         flow.set_row_spacing(2)
         flow.set_column_spacing(2)
         if apply_filter:
@@ -906,7 +1031,7 @@ class AppMenu(Gtk.Window):
             (kv for kv in self._launches.items() if kv[0] in by_id),
             key=lambda kv: (-int(kv[1].get("count", 0)),
                             -int(kv[1].get("last", 0))),
-        )[:FREQUENT_MAX]
+        )[:self._columns]
 
         if not ranked:
             self._has_frequent = False
@@ -933,12 +1058,12 @@ class AppMenu(Gtk.Window):
         # Pin the tile's natural size so longer-named apps
         # (e.g. "Google Chrome" with generic "Web Browser") don't
         # stretch the homogeneous FlowBox's column width and thereby
-        # the whole surface. Width = 640 surface - 24 root margins -
-        # flowbox column spacings, divided by GRID_COLUMNS; height
-        # = 48 icon + two ellipsised label lines + a little padding.
+        # the whole surface. The request is scaled from menu metrics
+        # so larger configured text gets enough tile height while
+        # narrow/small displays can reduce the column count.
         btn.set_hexpand(False)
         btn.set_vexpand(False)
-        btn.set_size_request(92, 82)
+        btn.set_size_request(self._tile_width, self._tile_height)
         # valign=START keeps the hover/focus background from painting
         # the full FlowBoxChild cell height. With a single search hit
         # the flowbox row expands to fill the scrolled-window viewport;
@@ -983,7 +1108,8 @@ class AppMenu(Gtk.Window):
         name = Gtk.Label(label=primary)
         name.add_css_class("app-menu-tile-name")
         name.set_ellipsize(Pango.EllipsizeMode.END)
-        name.set_max_width_chars(13)
+        label_chars = max(10, min(18, round(self._tile_width / 7)))
+        name.set_max_width_chars(label_chars)
         name.set_xalign(0.5)
         box.append(name)
 
@@ -991,7 +1117,7 @@ class AppMenu(Gtk.Window):
             gen = Gtk.Label(label=secondary)
             gen.add_css_class("app-menu-tile-generic")
             gen.set_ellipsize(Pango.EllipsizeMode.END)
-            gen.set_max_width_chars(13)
+            gen.set_max_width_chars(label_chars)
             gen.set_xalign(0.5)
             box.append(gen)
 
