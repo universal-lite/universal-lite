@@ -239,19 +239,37 @@ window.app-menu.app-menu-shell-{name} .app-menu-filter > button:focus {{
 window.app-menu.app-menu-shell-{name} .app-menu-section-label {{
     color: {tok["section_fg"]};
 }}
+window.app-menu.app-menu-shell-{name} .app-menu-grid,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child:hover,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child:focus,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child:focus-within,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child:selected,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child:active {{
+    color: {tok["fg"]};
+}}
 window.app-menu.app-menu-shell-{name} .app-menu-tile {{
     background: transparent;
+    color: {tok["fg"]};
     border: 1px solid transparent;
 }}
+window.app-menu.app-menu-shell-{name} .app-menu-tile-name {{
+    color: {tok["fg"]};
+}}
 window.app-menu.app-menu-shell-{name} .app-menu-tile:hover,
-window.app-menu.app-menu-shell-{name} .app-menu-tile:focus {{
+window.app-menu.app-menu-shell-{name} .app-menu-tile:focus,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child.activatable:hover .app-menu-tile,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child.activatable:focus .app-menu-tile,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child.activatable:focus-within .app-menu-tile {{
     background: alpha(@accent_color, 0.10);
+    color: {tok["fg"]};
     border: 1px solid alpha(@accent_color, 0.35);
     box-shadow:
         0 0 0 2px alpha(@accent_color, 0.20),
         0 6px 16px 0 alpha(@accent_color, 0.18);
 }}
-window.app-menu.app-menu-shell-{name} .app-menu-tile:active {{
+window.app-menu.app-menu-shell-{name} .app-menu-tile:active,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child.activatable:active .app-menu-tile {{
     background: @accent_color;
     color: @accent_fg_color;
     border: 1px solid @accent_color;
@@ -259,7 +277,12 @@ window.app-menu.app-menu-shell-{name} .app-menu-tile:active {{
         0 0 0 2px alpha(@accent_color, 0.24),
         0 4px 10px 0 alpha(@accent_color, 0.22);
 }}
-window.app-menu.app-menu-shell-{name} .app-menu-tile:active .app-menu-tile-generic {{
+window.app-menu.app-menu-shell-{name} .app-menu-tile:active .app-menu-tile-name,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child.activatable:active .app-menu-tile-name {{
+    color: @accent_fg_color;
+}}
+window.app-menu.app-menu-shell-{name} .app-menu-tile:active .app-menu-tile-generic,
+window.app-menu.app-menu-shell-{name} .app-menu-grid > child.activatable:active .app-menu-tile-generic {{
     color: alpha(@accent_fg_color, 0.82);
 }}
 window.app-menu.app-menu-shell-{name} .app-menu-tile-generic {{
@@ -371,6 +394,7 @@ window.app-menu {
 }
 .app-menu-grid {
     background: transparent;
+    color: @window_fg_color;
 }
 /* FlowBoxChild and GridView child nodes inherit Adwaita's default
    :focus-within / :hover / :selected tints. The tile itself owns the
@@ -392,6 +416,7 @@ window.app-menu {
 .app-menu-grid > child:active {
     padding: 4px 2px 6px 2px;
     background: transparent;
+    color: @window_fg_color;
     box-shadow: none;
     outline: none;
 }
@@ -416,6 +441,7 @@ window.app-menu.app-menu-ultra .app-menu-grid > child:active {
    glow, and press fills the target with the configured accent. */
 .app-menu-tile {
     background: transparent;
+    color: @window_fg_color;
     border: 1px solid transparent;
     box-shadow: none;
     padding: 6px 4px;
@@ -455,6 +481,7 @@ window.app-menu.app-menu-ultra .app-menu-tile {
 .app-menu-tile-name {
     font-size: 12px;
     font-weight: 500;
+    color: inherit;
 }
 .app-menu-tile-generic {
     font-size: 9px;

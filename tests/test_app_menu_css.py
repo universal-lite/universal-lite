@@ -129,8 +129,11 @@ def test_secondary_text_keeps_light_theme_contrast_headroom():
 def test_app_tiles_are_flat_until_interaction():
     css = _css()
     assert "padding: 4px 2px 6px 2px;" in css
+    assert ".app-menu-grid {\n    background: transparent;\n    color: @window_fg_color;" in css
     assert ".app-menu-grid > child," in css
     assert ".app-menu-tile {\n    background: transparent;" in css
+    assert "color: @window_fg_color;" in css
+    assert ".app-menu-tile-name {\n    font-size: 12px;\n    font-weight: 500;\n    color: inherit;" in css
     assert "border: 1px solid transparent;" in css
     assert ".app-menu-tile:hover,\n.app-menu-tile:focus," in css
     assert ".app-menu-grid > child.activatable:hover .app-menu-tile" in css
@@ -160,6 +163,10 @@ def test_twilight_menu_palette_matches_waybar_surface_tokens():
     assert f"background-color: {dark['surface']}" in css
     assert f"color: {dark['fg']}" in css
     assert f"border: 1px solid {dark['border']}" in css
+    assert f"window.app-menu.app-menu-shell-dark .app-menu-tile {{\n    background: transparent;\n    color: {dark['fg']};" in css
+    assert f"window.app-menu.app-menu-shell-dark .app-menu-tile-name {{\n    color: {dark['fg']};" in css
+    assert f"window.app-menu.app-menu-shell-dark .app-menu-grid,\nwindow.app-menu.app-menu-shell-dark .app-menu-grid > child" in css
+    assert f"color: {dark['fg']};" in css
     assert "window.app-menu.app-menu-shell-light .app-menu-surface" in css
     assert f"background-color: {light['surface']}" in css
     assert f"color: {light['fg']}" in css
