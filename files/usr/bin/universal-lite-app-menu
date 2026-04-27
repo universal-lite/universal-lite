@@ -115,8 +115,15 @@ TILE_HEIGHT_BASE = 82
 SHADOW_PAD = 20
 PANEL_GAP = 8
 COMPACT_INSET = 6
+ULTRA_INSET = 2
+ULTRA_WIDTH_TRIGGER = 360
+ULTRA_HEIGHT_TRIGGER = 260
+ULTRA_GRID_HEIGHT_MIN = 96
 DISPLAY_WIDTH_USABLE_MIN = 320
 DISPLAY_HEIGHT_USABLE_MIN = 240
+SEARCH_ROW_HEIGHT = 42
+SECTION_LABEL_HEIGHT = 24
+POWER_BAR_HEIGHT = 56
 
 POWER_ACTIONS = [
     ("Lock",      "system-lock-screen", ["swaylock", "-f"]),
@@ -298,6 +305,13 @@ window.app-menu {
         0 1px 2px 0 alpha(black, 0.16),
         0 4px 14px 0 alpha(black, 0.18);
 }
+.app-menu-surface-ultra {
+    border-radius: 14px;
+    background-color: alpha(@window_bg_color, 0.92);
+    box-shadow:
+        0 1px 2px 0 alpha(black, 0.12),
+        0 2px 8px 0 alpha(black, 0.14);
+}
 .app-menu-search {
     min-height: 36px;
     padding: 2px 12px;
@@ -363,6 +377,15 @@ window.app-menu {
     box-shadow: none;
     outline: none;
 }
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild,
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:hover,
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:focus,
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:focus-within,
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:focus-visible,
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:selected,
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:active {
+    padding: 3px 1px 5px 1px;
+}
 /* Tiles sit inside the translucent surface as quiet ChromeOS-style
    launch targets. Resting tiles are flat; hover/focus uses an accent
    glow, and press fills the target with the configured accent. */
@@ -373,6 +396,11 @@ window.app-menu {
     padding: 6px 4px;
     border-radius: 16px;
     min-width: 88px;
+}
+window.app-menu.app-menu-ultra .app-menu-tile {
+    min-width: 0;
+    border-radius: 14px;
+    padding: 5px 3px;
 }
 .app-menu-tile:hover,
 .app-menu-tile:focus {
@@ -526,6 +554,8 @@ def _logical_display_size(width: int, height: int, scale: float) -> tuple[int, i
     if (scaled_width >= DISPLAY_WIDTH_USABLE_MIN
             and scaled_height >= DISPLAY_HEIGHT_USABLE_MIN):
         return (scaled_width, scaled_height)
+    if width >= 640 and height >= 480:
+        return (scaled_width, scaled_height)
     return (width, height)
 
 
@@ -559,6 +589,67 @@ def _fit_dimension(ideal: int, minimum: int, available: int | None) -> int:
     return max(minimum, min(ideal, available))
 
 
+def _root_margins_for_mode(mode: str) -> tuple[int, int, int]:
+    """Return top, bottom, and horizontal margins for the menu content."""
+    if mode == "ultra":
+        return (4, 4, 4)
+    if mode == "compact":
+        return (8, 6, 8)
+    return (12, 8, 12)
+
+
+def _reserved_chrome_height(
+    mode: str,
+    tile_height: int,
+    *,
+    show_frequent: bool,
+    show_section_labels: bool,
+    show_power: bool,
+) -> int:
+    """Estimate fixed vertical chrome so the grid can be explicitly bounded."""
+    margin_top, margin_bottom, _margin_h = _root_margins_for_mode(mode)
+    fixed_blocks = 1  # Search row.
+    fixed_height = margin_top + margin_bottom + SEARCH_ROW_HEIGHT
+
+    if show_frequent:
+        fixed_blocks += 1
+        fixed_height += tile_height
+        if show_section_labels:
+            fixed_height += SECTION_LABEL_HEIGHT
+
+    if show_section_labels:
+        fixed_blocks += 1
+        fixed_height += SECTION_LABEL_HEIGHT
+
+    if show_power:
+        fixed_blocks += 1
+        fixed_height += POWER_BAR_HEIGHT
+
+    # Gtk.Box spacing applies between visible children, including the
+    # scrolled app grid.
+    visible_children = fixed_blocks + 1
+    return fixed_height + max(0, visible_children - 1) * 4
+
+
+def _grid_height_for_metrics(
+    mode: str,
+    height: int,
+    tile_height: int,
+    *,
+    show_frequent: bool,
+    show_section_labels: bool,
+    show_power: bool,
+) -> int:
+    reserved = _reserved_chrome_height(
+        mode,
+        tile_height,
+        show_frequent=show_frequent,
+        show_section_labels=show_section_labels,
+        show_power=show_power,
+    )
+    return max(1, height - reserved)
+
+
 def _menu_metrics(
     settings: dict,
     geom: dict,
@@ -579,6 +670,9 @@ def _menu_metrics(
     mode = "popover"
     surface_margin = outer_pad
     show_frequent = True
+    show_filter = True
+    show_section_labels = True
+    show_power = True
 
     if display_size is not None:
         screen_width, screen_height = display_size
@@ -602,11 +696,45 @@ def _menu_metrics(
             show_frequent = False
             max_width = work_width - (2 * COMPACT_INSET)
             max_height = work_height - (2 * COMPACT_INSET)
+
+            compact_width = max(1, max_width)
+            compact_height = max(1, max_height)
+            compact_grid_height = _grid_height_for_metrics(
+                mode,
+                compact_height,
+                tile_height,
+                show_frequent=show_frequent,
+                show_section_labels=show_section_labels,
+                show_power=show_power,
+            )
+            compact_content_width = max(1, compact_width - 24)
+            compact_columns_fit = compact_content_width // max(1, tile_width + 10)
+            needs_ultra = (
+                compact_width < ULTRA_WIDTH_TRIGGER
+                or compact_height < ULTRA_HEIGHT_TRIGGER
+                or compact_columns_fit < 2
+                or compact_grid_height < max(
+                    ULTRA_GRID_HEIGHT_MIN,
+                    round(tile_height * 0.85),
+                )
+            )
+            if needs_ultra:
+                mode = "ultra"
+                surface_margin = ULTRA_INSET
+                show_filter = False
+                show_section_labels = False
+                show_power = False
+                max_width = work_width - (2 * ULTRA_INSET)
+                max_height = work_height - (2 * ULTRA_INSET)
         else:
             max_width = popover_max_width
             max_height = popover_max_height
 
-    if mode == "compact" and max_width is not None and max_height is not None:
+    if (
+        mode in ("compact", "ultra")
+        and max_width is not None
+        and max_height is not None
+    ):
         width = max(1, max_width)
         height = max(1, max_height)
     else:
@@ -615,9 +743,30 @@ def _menu_metrics(
 
     content_width = max(1, width - 24)
     per_column = max(1, tile_width + 10)
-    columns = content_width // per_column
-    min_columns = 2 if mode == "compact" else GRID_COLUMNS_MIN
-    columns = max(min_columns, min(GRID_COLUMNS_MAX, columns))
+    fit_columns = max(1, content_width // per_column)
+    if mode == "popover":
+        min_columns = GRID_COLUMNS_MIN
+    elif mode == "compact" and content_width >= per_column * 2:
+        min_columns = 2
+    else:
+        min_columns = 1
+    columns = max(min_columns, min(GRID_COLUMNS_MAX, fit_columns))
+
+    if mode == "ultra" and columns == 1:
+        tile_width = min(tile_width, max(1, content_width - 8))
+
+    icon_size = 48
+    if mode == "ultra":
+        icon_size = min(48, max(32, tile_width - 16))
+
+    grid_height = _grid_height_for_metrics(
+        mode,
+        height,
+        tile_height,
+        show_frequent=show_frequent,
+        show_section_labels=show_section_labels,
+        show_power=show_power,
+    )
 
     return {
         "mode": mode,
@@ -626,8 +775,14 @@ def _menu_metrics(
         "columns": columns,
         "tile_width": tile_width,
         "tile_height": tile_height,
+        "icon_size": icon_size,
+        "grid_height": grid_height,
+        "content_width": content_width,
         "surface_margin": surface_margin,
         "show_frequent": show_frequent,
+        "show_filter": show_filter,
+        "show_section_labels": show_section_labels,
+        "show_power": show_power,
     }
 
 
@@ -835,12 +990,18 @@ class AppMenu(Gtk.Window):
         self._edge = self._geom["edge"]
         self._metrics = _menu_metrics(settings, self._geom, _display_size(settings))
         self._mode = self._metrics["mode"]
-        if self._mode == "compact":
-            self.add_css_class("app-menu-compact")
+        if self._mode in ("compact", "ultra"):
+            self.add_css_class(f"app-menu-{self._mode}")
         self._columns = self._metrics["columns"]
         self._tile_width = self._metrics["tile_width"]
         self._tile_height = self._metrics["tile_height"]
+        self._icon_size = self._metrics["icon_size"]
+        self._grid_height = self._metrics["grid_height"]
+        self._content_width = self._metrics["content_width"]
         self._show_frequent = bool(self._metrics["show_frequent"])
+        self._show_filter = bool(self._metrics["show_filter"])
+        self._show_section_labels = bool(self._metrics["show_section_labels"])
+        self._show_power = bool(self._metrics["show_power"])
         self._setup_surface(self._edge)
 
         self._launches = _load_launches()
@@ -862,6 +1023,8 @@ class AppMenu(Gtk.Window):
         surface.add_css_class("app-menu-surface")
         if self._mode == "compact":
             surface.add_css_class("app-menu-surface-compact")
+        elif self._mode == "ultra":
+            surface.add_css_class("app-menu-surface-ultra")
         surface.set_hexpand(False)
         surface.set_vexpand(False)
         surface.set_size_request(self._metrics["width"], self._metrics["height"])
@@ -890,17 +1053,20 @@ class AppMenu(Gtk.Window):
         self._surface = surface
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        root_margin_v = 8 if self._mode == "compact" else 12
-        root_margin_bottom = 6 if self._mode == "compact" else 8
-        root_margin_h = 8 if self._mode == "compact" else 12
-        root.set_margin_top(root_margin_v)
+        root_margin_top, root_margin_bottom, root_margin_h = (
+            _root_margins_for_mode(self._mode)
+        )
+        root.set_margin_top(root_margin_top)
         root.set_margin_bottom(root_margin_bottom)
         root.set_margin_start(root_margin_h)
         root.set_margin_end(root_margin_h)
         surface.append(root)
 
         # -- Search + filter row --
-        top_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        top_row = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=8 if self._show_filter else 0,
+        )
         self._search = Gtk.SearchEntry()
         self._search.set_placeholder_text("Search apps\u2026")
         self._search.add_css_class("app-menu-search")
@@ -909,30 +1075,38 @@ class AppMenu(Gtk.Window):
         self._search.connect("activate", self._on_search_activate)
         top_row.append(self._search)
 
-        self._filter = Gtk.DropDown.new_from_strings(CATEGORY_FILTER_LABELS)
-        self._filter.add_css_class("app-menu-filter")
-        self._filter.set_tooltip_text("Filter by category")
-        self._filter.connect("notify::selected", self._on_filter_changed)
-        top_row.append(self._filter)
+        self._filter = None
+        if self._show_filter:
+            self._filter = Gtk.DropDown.new_from_strings(CATEGORY_FILTER_LABELS)
+            self._filter.add_css_class("app-menu-filter")
+            self._filter.set_tooltip_text("Filter by category")
+            self._filter.connect("notify::selected", self._on_filter_changed)
+            top_row.append(self._filter)
         root.append(top_row)
 
         # -- Frequent row (hidden until we have launch history) --
         self._frequent_section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                                          spacing=0)
-        freq_label = Gtk.Label(label="Frequent", xalign=0)
-        freq_label.add_css_class("app-menu-section-label")
-        self._frequent_section.append(freq_label)
+        if self._show_section_labels:
+            freq_label = Gtk.Label(label="Frequent", xalign=0)
+            freq_label.add_css_class("app-menu-section-label")
+            self._frequent_section.append(freq_label)
         self._frequent_flow = self._make_flowbox(apply_filter=False)
         self._frequent_section.append(self._frequent_flow)
         root.append(self._frequent_section)
 
         # -- All apps grid --
-        all_label = Gtk.Label(label="All Apps", xalign=0)
-        all_label.add_css_class("app-menu-section-label")
-        root.append(all_label)
+        if self._show_section_labels:
+            all_label = Gtk.Label(label="All Apps", xalign=0)
+            all_label.add_css_class("app-menu-section-label")
+            root.append(all_label)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_vexpand(True)
+        scrolled.set_min_content_width(1)
+        scrolled.set_max_content_width(max(1, int(self._content_width)))
+        scrolled.set_min_content_height(1)
+        scrolled.set_max_content_height(max(1, int(self._grid_height)))
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         root.append(scrolled)
 
@@ -942,7 +1116,8 @@ class AppMenu(Gtk.Window):
         self._populate()
 
         # -- Power bar --
-        root.append(self._build_power_bar())
+        if self._show_power:
+            root.append(self._build_power_bar())
 
         # -- Event controllers --
         key = Gtk.EventControllerKey()
@@ -1204,7 +1379,7 @@ class AppMenu(Gtk.Window):
         gicon = app.get_icon()
         img = (Gtk.Image.new_from_gicon(gicon) if gicon is not None
                else Gtk.Image.new_from_icon_name("application-x-executable-symbolic"))
-        img.set_pixel_size(48)
+        img.set_pixel_size(self._icon_size)
         img.set_halign(Gtk.Align.CENTER)
         box.append(img)
 
@@ -1364,7 +1539,9 @@ class AppMenu(Gtk.Window):
         """
         is_default = (self._category_filter == "All Apps"
                       and not self._search.get_text().strip())
-        self._frequent_section.set_visible(self._has_frequent and is_default)
+        self._frequent_section.set_visible(
+            self._show_frequent and self._has_frequent and is_default
+        )
 
     def _on_search_changed(self, _entry: Gtk.SearchEntry) -> None:
         self._update_frequent_visibility()

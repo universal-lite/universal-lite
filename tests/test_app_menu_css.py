@@ -27,6 +27,8 @@ def test_start_menu_uses_waybar_aligned_theme_tokens():
     assert "border-radius: 24px" in css
     assert ".app-menu-surface-compact {" in css
     assert "border-radius: 18px" in css
+    assert ".app-menu-surface-ultra {" in css
+    assert "window.app-menu.app-menu-ultra .app-menu-tile" in css
     assert "background: alpha(@window_fg_color, 0.08)" in css
     assert "background: alpha(@accent_color, 0.14)" in css
 
@@ -160,8 +162,43 @@ def test_start_menu_metrics_fit_1360x768_at_200_percent_scale():
     assert metrics["columns"] == app_menu.GRID_COLUMNS_MAX
 
 
+def test_start_menu_metrics_use_ultra_mode_when_scaled_viewport_is_short():
+    metrics = app_menu._menu_metrics(
+        {"density": "comfortable", "font_size": 11},
+        {"edge": "bottom", "section": "start"},
+        (512, 300),
+    )
+
+    assert metrics["mode"] == "ultra"
+    assert metrics["surface_margin"] == app_menu.ULTRA_INSET
+    assert metrics["show_frequent"] is False
+    assert metrics["show_filter"] is False
+    assert metrics["show_section_labels"] is False
+    assert metrics["show_power"] is False
+    assert metrics["height"] == 300 - app_menu._panel_extent(
+        {"density": "comfortable", "font_size": 11}, "bottom"
+    ) - (2 * app_menu.ULTRA_INSET)
+    assert metrics["grid_height"] >= app_menu.ULTRA_GRID_HEIGHT_MIN
+
+
+def test_start_menu_metrics_allow_single_column_when_panel_makes_view_narrow():
+    metrics = app_menu._menu_metrics(
+        {"density": "comfortable", "font_size": 16},
+        {"edge": "left", "section": "start"},
+        (320, 240),
+    )
+
+    assert metrics["mode"] == "ultra"
+    assert metrics["columns"] == 1
+    assert metrics["width"] == 320 - app_menu._panel_extent(
+        {"density": "comfortable", "font_size": 16}, "left"
+    ) - (2 * app_menu.ULTRA_INSET)
+    assert metrics["tile_width"] <= metrics["content_width"]
+
+
 def test_display_size_normalization_uses_configured_output_scale_once():
     assert app_menu._logical_display_size(1360, 768, 2.0) == (680, 384)
+    assert app_menu._logical_display_size(640, 480, 2.0) == (320, 240)
     assert app_menu._logical_display_size(680, 384, 2.0) == (680, 384)
 
 
