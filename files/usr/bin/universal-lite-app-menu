@@ -339,8 +339,9 @@ window.app-menu {
    "task") showed the tile button's hover highlight on top plus a
    fainter column-long rectangle underneath it from the flowboxchild's
    own state background. The tile button already carries every hover/
-   focus affordance we want; there's nothing for the flowboxchild
-   layer to add. */
+   focus affordance we want; the flowboxchild only reserves transparent
+   paint space so the first row's accent glow is not clipped by the
+   scrolled viewport. */
 .app-menu-grid > flowboxchild,
 .app-menu-grid > flowboxchild:hover,
 .app-menu-grid > flowboxchild:focus,
@@ -348,7 +349,7 @@ window.app-menu {
 .app-menu-grid > flowboxchild:focus-visible,
 .app-menu-grid > flowboxchild:selected,
 .app-menu-grid > flowboxchild:active {
-    padding: 0;
+    padding: 4px 2px 6px 2px;
     background: transparent;
     box-shadow: none;
     outline: none;

@@ -45,6 +45,7 @@ def test_secondary_text_keeps_light_theme_contrast_headroom():
 
 def test_app_tiles_are_flat_until_interaction():
     css = _css()
+    assert "padding: 4px 2px 6px 2px;" in css
     assert ".app-menu-tile {\n    background: transparent;" in css
     assert "border: 1px solid transparent;" in css
     assert ".app-menu-tile:hover,\n.app-menu-tile:focus {" in css
