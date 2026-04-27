@@ -19,6 +19,14 @@ app_menu = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(app_menu)
 
 
+class _FakeApp:
+    def __init__(self, display_name: str):
+        self._display_name = display_name
+
+    def get_display_name(self) -> str:
+        return self._display_name
+
+
 def _css(settings=None) -> str:
     settings = settings or {"theme": "light", "accent": "blue"}
     palette = json.loads(_PALETTE.read_text(encoding="utf-8"))
@@ -27,6 +35,21 @@ def _css(settings=None) -> str:
         palettes=palette,
         palette_paths=(_PALETTE,),
     ).decode("utf-8")
+
+
+def test_app_item_carries_filterable_metadata_outside_widgets():
+    item = app_menu.AppItem(_FakeApp("System Monitor"))
+
+    assert item.primary == "System Monitor"
+    assert item.secondary == ""
+    assert item.accessible_name == "System Monitor"
+    assert item.category == "Other"
+    assert item.search_text == "system monitor"
+    assert app_menu._app_item_matches(item, "All Apps", "sys mon")
+    assert not app_menu._app_item_matches(item, "Internet", "")
+
+    item.category = "System"
+    assert app_menu._app_item_matches(item, "System", "monitor")
 
 
 def test_start_menu_defines_user_accent_tokens_from_settings():

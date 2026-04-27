@@ -46,7 +46,8 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gdk", "4.0")
-from gi.repository import Gdk, Gio, GLib, Gtk, Pango
+gi.require_version("GioUnix", "2.0")
+from gi.repository import Gdk, Gio, GioUnix, GLib, Gtk, Pango
 
 try:
     gi.require_version("Gtk4LayerShell", "1.0")
@@ -823,7 +824,7 @@ def _is_visible(app: Gio.AppInfo) -> bool:
     (Nautilus, gnome-disks, several Flatpak apps, etc.). Users expect
     a start menu to show installed apps regardless of the desktop tag.
     """
-    if isinstance(app, Gio.DesktopAppInfo):
+    if isinstance(app, GioUnix.DesktopAppInfo):
         if app.get_nodisplay() or app.get_is_hidden():
             return False
         return True
@@ -832,7 +833,7 @@ def _is_visible(app: Gio.AppInfo) -> bool:
 
 def _category_for(app: Gio.AppInfo) -> str:
     cats: set[str] = set()
-    if isinstance(app, Gio.DesktopAppInfo):
+    if isinstance(app, GioUnix.DesktopAppInfo):
         raw = app.get_categories() or ""
         cats = {c for c in raw.rstrip(";").split(";") if c}
     for label, keys in CATEGORIES:
@@ -851,7 +852,7 @@ def _generic_name_for(app: Gio.AppInfo) -> str:
     display name; the tile then falls back to showing just the
     display name.
     """
-    if not isinstance(app, Gio.DesktopAppInfo):
+    if not isinstance(app, GioUnix.DesktopAppInfo):
         return ""
     generic = (app.get_generic_name() or "").strip()
     display = (app.get_display_name() or "").strip()
@@ -860,6 +861,80 @@ def _generic_name_for(app: Gio.AppInfo) -> str:
     if generic.lower() == display.lower():
         return ""
     return generic
+
+
+class AppItem:
+    """Stable app metadata used by tiles, filtering, and launch history."""
+
+    __slots__ = (
+        "app",
+        "display",
+        "generic",
+        "exec_base",
+        "primary",
+        "secondary",
+        "tooltip",
+        "category",
+        "search_text",
+        "desktop_id",
+    )
+
+    def __init__(self, app: Gio.AppInfo):
+        self.app = app
+        self.display = (app.get_display_name() or "").strip()
+        self.generic = _generic_name_for(app)
+        self.exec_base = ""
+        self.desktop_id = None
+
+        if isinstance(app, GioUnix.DesktopAppInfo):
+            exe = app.get_executable() or ""
+            self.exec_base = os.path.basename(exe)
+            self.desktop_id = app.get_id() or None
+
+        # Primary line: what the app DOES. Secondary line: the product
+        # name. When the desktop file provides no GenericName, fall back
+        # to showing just the display name as primary with no secondary.
+        self.primary = self.generic or self.display
+        self.secondary = self.display if self.generic else ""
+        self.tooltip = (
+            f"{self.primary}\n{self.secondary}"
+            if self.secondary else self.primary
+        )
+        self.category = _category_for(app)
+        self.search_text = " ".join(
+            s.lower() for s in (self.display, self.generic, self.exec_base) if s
+        )
+
+    @property
+    def sort_key(self) -> str:
+        return self.primary.lower()
+
+    @property
+    def accessible_name(self) -> str:
+        if self.secondary:
+            return f"{self.primary}, {self.secondary}"
+        return self.primary
+
+
+def _app_item_matches(item: AppItem, category_filter: str, query: str) -> bool:
+    if (
+        category_filter
+        and category_filter != "All Apps"
+        and item.category != category_filter
+    ):
+        return False
+    tokens = query.lower().strip().split()
+    return all(tok in item.search_text for tok in tokens)
+
+
+def _set_accessible_label(widget: Gtk.Widget, label: str) -> None:
+    """Set an accessible label when GTK is new enough to support it."""
+    try:
+        widget.update_property([Gtk.AccessibleProperty.LABEL], [label])
+    except Exception:
+        # update_property is GTK 4.10+; tooltips/visible labels remain
+        # the fallback on older runtimes.
+        pass
 
 
 def _load_launches() -> dict:
@@ -1035,7 +1110,7 @@ class AppMenu(Gtk.Window):
         self._launches = _load_launches()
         self._category_filter = "All Apps"
         self._has_frequent = False
-        self._apps: list[Gio.AppInfo] = []
+        self._apps: list[AppItem] = []
 
         # Rounded surface floated inside a fullscreen OVERLAY window
         # via Gtk.Overlay - a container explicitly designed for this
@@ -1099,6 +1174,7 @@ class AppMenu(Gtk.Window):
         self._search.set_placeholder_text("Search apps\u2026")
         self._search.add_css_class("app-menu-search")
         self._search.set_hexpand(True)
+        _set_accessible_label(self._search, "Search apps")
         self._search.connect("search-changed", self._on_search_changed)
         self._search.connect("activate", self._on_search_activate)
         top_row.append(self._search)
@@ -1108,6 +1184,7 @@ class AppMenu(Gtk.Window):
             self._filter = Gtk.DropDown.new_from_strings(CATEGORY_FILTER_LABELS)
             self._filter.add_css_class("app-menu-filter")
             self._filter.set_tooltip_text("Filter by category")
+            _set_accessible_label(self._filter, "Filter by category")
             self._filter.connect("notify::selected", self._on_filter_changed)
             top_row.append(self._filter)
         root.append(top_row)
@@ -1288,17 +1365,14 @@ class AppMenu(Gtk.Window):
         return flow
 
     def _populate(self) -> None:
-        apps = [a for a in Gio.AppInfo.get_all() if _is_visible(a)]
+        apps = [AppItem(a) for a in Gio.AppInfo.get_all() if _is_visible(a)]
         # Sort by the primary tile label (GenericName when available,
         # display name otherwise) so the alphabetical order the user
         # sees on-screen matches the order we laid them out in.
-        def _sort_key(a):
-            primary = _generic_name_for(a) or (a.get_display_name() or "")
-            return primary.lower()
-        apps.sort(key=_sort_key)
+        apps.sort(key=lambda item: item.sort_key)
         self._apps = apps
-        for a in apps:
-            self._grid.append(self._make_tile(a))
+        for item in apps:
+            self._grid.append(self._make_tile(item))
         self._populate_frequent()
 
     def _populate_frequent(self) -> None:
@@ -1326,12 +1400,10 @@ class AppMenu(Gtk.Window):
             self._frequent_section.set_visible(False)
             return
 
-        by_id: dict[str, Gio.DesktopAppInfo] = {}
-        for a in self._apps:
-            if isinstance(a, Gio.DesktopAppInfo):
-                dsk = a.get_id()
-                if dsk:
-                    by_id[dsk] = a
+        by_id: dict[str, AppItem] = {}
+        for item in self._apps:
+            if item.desktop_id:
+                by_id[item.desktop_id] = item
 
         ranked = sorted(
             (kv for kv in self._launches.items() if kv[0] in by_id),
@@ -1349,14 +1421,12 @@ class AppMenu(Gtk.Window):
         self._has_frequent = True
         self._frequent_section.set_visible(True)
 
-    def _make_tile(self, app: Gio.AppInfo) -> Gtk.Button:
+    def _make_tile(self, item: AppItem) -> Gtk.Button:
         """Build one grid tile: 48 px icon + name + optional generic name.
 
         Each tile is a flat button so keyboard focus works (Tab moves
-        through the grid, Enter activates). Search match tokens are
-        precomputed into `_search_text` and include display name,
-        generic name, and executable basename so both user-visible
-        labels and CLI-style hints like "gnome-text-editor" match.
+        through the grid, Enter activates). Search/category metadata
+        lives in AppItem, keeping filtering separate from presentation.
         """
         btn = Gtk.Button()
         btn.add_css_class("app-menu-tile")
@@ -1378,40 +1448,22 @@ class AppMenu(Gtk.Window):
         btn.set_valign(Gtk.Align.START)
         btn.set_halign(Gtk.Align.CENTER)
 
-        display = app.get_display_name() or ""
-        generic = _generic_name_for(app)
-        exec_base = ""
-        if isinstance(app, Gio.DesktopAppInfo):
-            exe = app.get_executable() or ""
-            exec_base = os.path.basename(exe)
+        btn.set_tooltip_text(item.tooltip)
+        _set_accessible_label(btn, f"Launch {item.accessible_name}")
 
-        # Primary line: what the app DOES. Secondary line: the product
-        # name. When the desktop file provides no GenericName, fall back
-        # to showing just the display name as primary with no secondary
-        # (so tiles never have an empty primary).
-        primary = generic or display
-        secondary = display if generic else ""
-
-        tooltip = f"{primary}\n{secondary}" if secondary else primary
-        btn.set_tooltip_text(tooltip)
-
-        btn._app = app
-        btn._category = _category_for(app)
-        btn._search_text = " ".join(
-            s.lower() for s in (display, generic, exec_base) if s
-        )
+        btn._app_item = item
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         box.set_halign(Gtk.Align.CENTER)
 
-        gicon = app.get_icon()
+        gicon = item.app.get_icon()
         img = (Gtk.Image.new_from_gicon(gicon) if gicon is not None
                else Gtk.Image.new_from_icon_name("application-x-executable-symbolic"))
         img.set_pixel_size(self._icon_size)
         img.set_halign(Gtk.Align.CENTER)
         box.append(img)
 
-        name = Gtk.Label(label=primary)
+        name = Gtk.Label(label=item.primary)
         name.add_css_class("app-menu-tile-name")
         name.set_ellipsize(Pango.EllipsizeMode.END)
         label_chars = max(10, min(18, round(self._tile_width / 7)))
@@ -1419,8 +1471,8 @@ class AppMenu(Gtk.Window):
         name.set_xalign(0.5)
         box.append(name)
 
-        if secondary:
-            gen = Gtk.Label(label=secondary)
+        if item.secondary:
+            gen = Gtk.Label(label=item.secondary)
             gen.add_css_class("app-menu-tile-generic")
             gen.set_ellipsize(Pango.EllipsizeMode.END)
             gen.set_max_width_chars(label_chars)
@@ -1428,7 +1480,7 @@ class AppMenu(Gtk.Window):
             box.append(gen)
 
         btn.set_child(box)
-        btn.connect("clicked", lambda _b, a=app: self._launch_app(a))
+        btn.connect("clicked", lambda _b, item=item: self._launch_item(item))
         return btn
 
     def _build_power_bar(self) -> Gtk.Widget:
@@ -1452,6 +1504,7 @@ class AppMenu(Gtk.Window):
         for label, icon_name, cmd in POWER_ACTIONS:
             btn = Gtk.Button()
             btn.set_tooltip_text(label)
+            _set_accessible_label(btn, label)
             btn.add_css_class("app-menu-power-btn")
             if label in ("Restart", "Shut Down"):
                 btn.add_css_class("destructive")
@@ -1517,16 +1570,14 @@ class AppMenu(Gtk.Window):
 
     # -- actions --
 
-    def _launch_app(self, app: Gio.AppInfo) -> None:
+    def _launch_item(self, item: AppItem) -> None:
         try:
-            app.launch([], None)
+            item.app.launch([], None)
         except GLib.Error as exc:
             print(f"universal-lite-app-menu: launch failed: {exc.message}",
                   file=sys.stderr)
-        if isinstance(app, Gio.DesktopAppInfo):
-            dsk = app.get_id()
-            if dsk:
-                _record_launch(dsk)
+        if item.desktop_id:
+            _record_launch(item.desktop_id)
         self.close()
 
     def _run_command(self, cmd: list[str]) -> None:
@@ -1547,14 +1598,14 @@ class AppMenu(Gtk.Window):
         btn = child.get_child()
         if btn is None:
             return False
-        if (self._category_filter and self._category_filter != "All Apps"
-                and getattr(btn, "_category", None) != self._category_filter):
+        item = getattr(btn, "_app_item", None)
+        if item is None:
             return False
-        query = self._search.get_text().lower().strip()
-        if not query:
-            return True
-        text = getattr(btn, "_search_text", "")
-        return all(tok in text for tok in query.split())
+        return _app_item_matches(
+            item,
+            self._category_filter,
+            self._search.get_text(),
+        )
 
     def _update_frequent_visibility(self) -> None:
         """Hide frequent row while the user is searching or filtering.
@@ -1589,9 +1640,9 @@ class AppMenu(Gtk.Window):
         while child is not None:
             if child.get_child_visible():
                 btn = child.get_child()
-                app = getattr(btn, "_app", None) if btn is not None else None
-                if app is not None:
-                    self._launch_app(app)
+                item = getattr(btn, "_app_item", None) if btn is not None else None
+                if item is not None:
+                    self._launch_item(item)
                     return
             child = child.get_next_sibling()
 
