@@ -1,7 +1,13 @@
 /* === Sidebar === */
-.settings-sidebar-pane {
+.settings-split-view > .sidebar-pane {
     background-color: @headerbar_bg_color;
-    border-right: 1px solid @borders;
+    box-shadow: inset -1px 0 @borders;
+}
+.settings-split-view > .content-pane {
+    box-shadow: none;
+}
+.settings-sidebar-pane {
+    background-color: transparent;
 }
 .settings-sidebar-pane headerbar,
 .settings-sidebar-pane scrolledwindow,

@@ -14,8 +14,10 @@ def _css() -> str:
 def test_sidebar_pane_owns_full_height_separator():
     css = _css()
 
-    assert ".settings-sidebar-pane {" in css
-    assert "border-right: 1px solid @borders;" in css
+    assert ".settings-split-view > .sidebar-pane {" in css
+    assert "box-shadow: inset -1px 0 @borders;" in css
+    assert ".settings-sidebar-pane {\n    background-color: transparent;" in css
+    assert "border-right: 1px solid @borders;" not in css
     assert ".sidebar {\n" not in css
 
 

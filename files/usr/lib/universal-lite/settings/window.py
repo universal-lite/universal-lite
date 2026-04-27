@@ -125,6 +125,7 @@ class SettingsWindow(Adw.ApplicationWindow):
 
         # -- NavigationSplitView -------------------------------------
         split = Adw.NavigationSplitView()
+        split.add_css_class("settings-split-view")
         split.set_sidebar(sidebar_page)
         split.set_content(self._content_page)
         split.set_sidebar_width_fraction(0.25)
