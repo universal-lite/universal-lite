@@ -47,7 +47,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 gi.require_version("Gdk", "4.0")
 gi.require_version("GioUnix", "2.0")
-from gi.repository import Gdk, Gio, GioUnix, GLib, Gtk, Pango
+from gi.repository import Gdk, Gio, GioUnix, GLib, GObject, Gtk, Pango
 
 try:
     gi.require_version("Gtk4LayerShell", "1.0")
@@ -372,24 +372,24 @@ window.app-menu {
 .app-menu-grid {
     background: transparent;
 }
-/* The FlowBoxChild that GTK wraps around each tile inherits Adwaita's
-   default :focus-within / :hover / :selected tints, which paint the
-   entire cell - and because the flowbox is homogeneous + vexpanded
-   inside a scrolled window, a cell stretches to the full column
-   height. Before this nullification, a single-result search (e.g.
-   "task") showed the tile button's hover highlight on top plus a
-   fainter column-long rectangle underneath it from the flowboxchild's
-   own state background. The tile button already carries every hover/
-   focus affordance we want; the flowboxchild only reserves transparent
-   paint space so the first row's accent glow is not clipped by the
-   scrolled viewport. */
+/* FlowBoxChild and GridView child nodes inherit Adwaita's default
+   :focus-within / :hover / :selected tints. The tile itself owns the
+   visible affordance, so wrapper nodes stay transparent and provide
+   only a little paint clearance for the accent glow. */
 .app-menu-grid > flowboxchild,
 .app-menu-grid > flowboxchild:hover,
 .app-menu-grid > flowboxchild:focus,
 .app-menu-grid > flowboxchild:focus-within,
 .app-menu-grid > flowboxchild:focus-visible,
 .app-menu-grid > flowboxchild:selected,
-.app-menu-grid > flowboxchild:active {
+.app-menu-grid > flowboxchild:active,
+.app-menu-grid > child,
+.app-menu-grid > child:hover,
+.app-menu-grid > child:focus,
+.app-menu-grid > child:focus-within,
+.app-menu-grid > child:focus-visible,
+.app-menu-grid > child:selected,
+.app-menu-grid > child:active {
     padding: 4px 2px 6px 2px;
     background: transparent;
     box-shadow: none;
@@ -401,7 +401,14 @@ window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:focus,
 window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:focus-within,
 window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:focus-visible,
 window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:selected,
-window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:active {
+window.app-menu.app-menu-ultra .app-menu-grid > flowboxchild:active,
+window.app-menu.app-menu-ultra .app-menu-grid > child,
+window.app-menu.app-menu-ultra .app-menu-grid > child:hover,
+window.app-menu.app-menu-ultra .app-menu-grid > child:focus,
+window.app-menu.app-menu-ultra .app-menu-grid > child:focus-within,
+window.app-menu.app-menu-ultra .app-menu-grid > child:focus-visible,
+window.app-menu.app-menu-ultra .app-menu-grid > child:selected,
+window.app-menu.app-menu-ultra .app-menu-grid > child:active {
     padding: 3px 1px 5px 1px;
 }
 /* Tiles sit inside the translucent surface as quiet ChromeOS-style
@@ -421,7 +428,10 @@ window.app-menu.app-menu-ultra .app-menu-tile {
     padding: 5px 3px;
 }
 .app-menu-tile:hover,
-.app-menu-tile:focus {
+.app-menu-tile:focus,
+.app-menu-grid > child.activatable:hover .app-menu-tile,
+.app-menu-grid > child.activatable:focus .app-menu-tile,
+.app-menu-grid > child.activatable:focus-within .app-menu-tile {
     background: alpha(@accent_color, 0.10);
     border: 1px solid alpha(@accent_color, 0.35);
     box-shadow:
@@ -429,7 +439,8 @@ window.app-menu.app-menu-ultra .app-menu-tile {
         0 6px 16px 0 alpha(@accent_color, 0.18);
     outline: none;
 }
-.app-menu-tile:active {
+.app-menu-tile:active,
+.app-menu-grid > child.activatable:active .app-menu-tile {
     background: @accent_color;
     color: @accent_fg_color;
     border: 1px solid @accent_color;
@@ -437,7 +448,8 @@ window.app-menu.app-menu-ultra .app-menu-tile {
         0 0 0 2px alpha(@accent_color, 0.24),
         0 4px 10px 0 alpha(@accent_color, 0.22);
 }
-.app-menu-tile:active .app-menu-tile-generic {
+.app-menu-tile:active .app-menu-tile-generic,
+.app-menu-grid > child.activatable:active .app-menu-tile-generic {
     color: alpha(@accent_fg_color, 0.82);
 }
 .app-menu-tile-name {
@@ -863,23 +875,11 @@ def _generic_name_for(app: Gio.AppInfo) -> str:
     return generic
 
 
-class AppItem:
+class AppItem(GObject.Object):
     """Stable app metadata used by tiles, filtering, and launch history."""
 
-    __slots__ = (
-        "app",
-        "display",
-        "generic",
-        "exec_base",
-        "primary",
-        "secondary",
-        "tooltip",
-        "category",
-        "search_text",
-        "desktop_id",
-    )
-
     def __init__(self, app: Gio.AppInfo):
+        super().__init__()
         self.app = app
         self.display = (app.get_display_name() or "").strip()
         self.generic = _generic_name_for(app)
@@ -1196,7 +1196,7 @@ class AppMenu(Gtk.Window):
             freq_label = Gtk.Label(label="Frequent", xalign=0)
             freq_label.add_css_class("app-menu-section-label")
             self._frequent_section.append(freq_label)
-        self._frequent_flow = self._make_flowbox(apply_filter=False)
+        self._frequent_flow = self._make_flowbox()
         self._frequent_section.append(self._frequent_flow)
         root.append(self._frequent_section)
 
@@ -1215,7 +1215,7 @@ class AppMenu(Gtk.Window):
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         root.append(scrolled)
 
-        self._grid = self._make_flowbox(apply_filter=True)
+        self._grid = self._make_gridview()
         scrolled.set_child(self._grid)
 
         self._populate()
@@ -1345,13 +1345,8 @@ class AppMenu(Gtk.Window):
 
     # -- content --
 
-    def _make_flowbox(self, *, apply_filter: bool) -> Gtk.FlowBox:
-        """Build a FlowBox that lays tiles out in a stable column grid.
-
-        Clamping min == max children per line keeps the column count
-        stable even when the visible-child count changes (otherwise
-        FlowBox rebalances and tile widths jitter during searches).
-        """
+    def _make_flowbox(self) -> Gtk.FlowBox:
+        """Build the small fixed-size frequent-app FlowBox."""
         flow = Gtk.FlowBox()
         flow.add_css_class("app-menu-grid")
         flow.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -1360,9 +1355,32 @@ class AppMenu(Gtk.Window):
         flow.set_max_children_per_line(self._columns)
         flow.set_row_spacing(2)
         flow.set_column_spacing(2)
-        if apply_filter:
-            flow.set_filter_func(self._filter_tile)
         return flow
+
+    def _make_gridview(self) -> Gtk.GridView:
+        """Build the model-backed all-apps grid."""
+        self._app_store = Gio.ListStore.new(AppItem)
+        self._grid_filter = Gtk.CustomFilter.new(self._grid_item_matches, None)
+        self._filtered_apps = Gtk.FilterListModel.new(
+            self._app_store,
+            self._grid_filter,
+        )
+        self._grid_selection = Gtk.NoSelection.new(self._filtered_apps)
+
+        factory = Gtk.SignalListItemFactory()
+        factory.connect("setup", self._on_grid_item_setup)
+        factory.connect("bind", self._on_grid_item_bind)
+
+        grid = Gtk.GridView.new(self._grid_selection, factory)
+        grid.add_css_class("app-menu-grid")
+        grid.set_min_columns(self._columns)
+        grid.set_max_columns(self._columns)
+        grid.set_single_click_activate(True)
+        grid.set_enable_rubberband(False)
+        if hasattr(grid, "set_tab_behavior") and hasattr(Gtk, "ListTabBehavior"):
+            grid.set_tab_behavior(Gtk.ListTabBehavior.ALL)
+        grid.connect("activate", self._on_grid_activate)
+        return grid
 
     def _populate(self) -> None:
         apps = [AppItem(a) for a in Gio.AppInfo.get_all() if _is_visible(a)]
@@ -1371,8 +1389,7 @@ class AppMenu(Gtk.Window):
         # sees on-screen matches the order we laid them out in.
         apps.sort(key=lambda item: item.sort_key)
         self._apps = apps
-        for item in apps:
-            self._grid.append(self._make_tile(item))
+        self._app_store.splice(0, self._app_store.get_n_items(), apps)
         self._populate_frequent()
 
     def _populate_frequent(self) -> None:
@@ -1421,49 +1438,28 @@ class AppMenu(Gtk.Window):
         self._has_frequent = True
         self._frequent_section.set_visible(True)
 
-    def _make_tile(self, item: AppItem) -> Gtk.Button:
-        """Build one grid tile: 48 px icon + name + optional generic name.
+    def _configure_tile_surface(self, widget: Gtk.Widget) -> None:
+        widget.add_css_class("app-menu-tile")
+        # Pin the tile's natural size so longer-named apps don't stretch
+        # the grid's column width. The request is scaled from menu metrics
+        # so larger configured text gets enough tile height while narrow
+        # displays can reduce the column count.
+        widget.set_hexpand(False)
+        widget.set_vexpand(False)
+        widget.set_size_request(self._tile_width, self._tile_height)
+        widget.set_valign(Gtk.Align.START)
+        widget.set_halign(Gtk.Align.CENTER)
 
-        Each tile is a flat button so keyboard focus works (Tab moves
-        through the grid, Enter activates). Search/category metadata
-        lives in AppItem, keeping filtering separate from presentation.
-        """
-        btn = Gtk.Button()
-        btn.add_css_class("app-menu-tile")
-        btn.set_has_frame(False)
-        # Pin the tile's natural size so longer-named apps
-        # (e.g. "Google Chrome" with generic "Web Browser") don't
-        # stretch the homogeneous FlowBox's column width and thereby
-        # the whole surface. The request is scaled from menu metrics
-        # so larger configured text gets enough tile height while
-        # narrow/small displays can reduce the column count.
-        btn.set_hexpand(False)
-        btn.set_vexpand(False)
-        btn.set_size_request(self._tile_width, self._tile_height)
-        # valign=START keeps the hover/focus background from painting
-        # the full FlowBoxChild cell height. With a single search hit
-        # the flowbox row expands to fill the scrolled-window viewport;
-        # a button with default valign=FILL stretches with it and its
-        # :hover tint bleeds down the whole column.
-        btn.set_valign(Gtk.Align.START)
-        btn.set_halign(Gtk.Align.CENTER)
-
-        btn.set_tooltip_text(item.tooltip)
-        _set_accessible_label(btn, f"Launch {item.accessible_name}")
-
-        btn._app_item = item
-
+    def _make_tile_content(self) -> Gtk.Box:
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         box.set_halign(Gtk.Align.CENTER)
 
-        gicon = item.app.get_icon()
-        img = (Gtk.Image.new_from_gicon(gicon) if gicon is not None
-               else Gtk.Image.new_from_icon_name("application-x-executable-symbolic"))
+        img = Gtk.Image.new_from_icon_name("application-x-executable-symbolic")
         img.set_pixel_size(self._icon_size)
         img.set_halign(Gtk.Align.CENTER)
         box.append(img)
 
-        name = Gtk.Label(label=item.primary)
+        name = Gtk.Label()
         name.add_css_class("app-menu-tile-name")
         name.set_ellipsize(Pango.EllipsizeMode.END)
         label_chars = max(10, min(18, round(self._tile_width / 7)))
@@ -1471,17 +1467,78 @@ class AppMenu(Gtk.Window):
         name.set_xalign(0.5)
         box.append(name)
 
-        if item.secondary:
-            gen = Gtk.Label(label=item.secondary)
-            gen.add_css_class("app-menu-tile-generic")
-            gen.set_ellipsize(Pango.EllipsizeMode.END)
-            gen.set_max_width_chars(label_chars)
-            gen.set_xalign(0.5)
-            box.append(gen)
+        gen = Gtk.Label()
+        gen.add_css_class("app-menu-tile-generic")
+        gen.set_ellipsize(Pango.EllipsizeMode.END)
+        gen.set_max_width_chars(label_chars)
+        gen.set_xalign(0.5)
+        box.append(gen)
 
-        btn.set_child(box)
+        box._icon = img
+        box._name = name
+        box._generic = gen
+        return box
+
+    def _bind_tile_content(self, content: Gtk.Widget, item: AppItem) -> None:
+        gicon = item.app.get_icon()
+        if gicon is not None:
+            content._icon.set_from_gicon(gicon)
+        else:
+            content._icon.set_from_icon_name("application-x-executable-symbolic")
+        content._name.set_label(item.primary)
+        content._generic.set_label(item.secondary)
+        content._generic.set_visible(bool(item.secondary))
+
+    def _make_grid_tile(self) -> Gtk.Box:
+        tile = self._make_tile_content()
+        self._configure_tile_surface(tile)
+        return tile
+
+    def _make_tile(self, item: AppItem) -> Gtk.Button:
+        """Build one frequent-app tile button."""
+        btn = Gtk.Button()
+        self._configure_tile_surface(btn)
+        btn.set_has_frame(False)
+        btn.set_tooltip_text(item.tooltip)
+        _set_accessible_label(btn, f"Launch {item.accessible_name}")
+
+        content = self._make_tile_content()
+        self._bind_tile_content(content, item)
+        btn.set_child(content)
         btn.connect("clicked", lambda _b, item=item: self._launch_item(item))
         return btn
+
+    def _on_grid_item_setup(
+        self,
+        _factory: Gtk.SignalListItemFactory,
+        list_item: Gtk.ListItem,
+    ) -> None:
+        list_item.set_activatable(True)
+        list_item.set_selectable(False)
+        list_item.set_focusable(True)
+        list_item.set_child(self._make_grid_tile())
+
+    def _on_grid_item_bind(
+        self,
+        _factory: Gtk.SignalListItemFactory,
+        list_item: Gtk.ListItem,
+    ) -> None:
+        item = list_item.get_item()
+        tile = list_item.get_child()
+        if not isinstance(item, AppItem) or tile is None:
+            return
+
+        self._bind_tile_content(tile, item)
+        tile.set_tooltip_text(item.tooltip)
+        _set_accessible_label(tile, f"Launch {item.accessible_name}")
+        if hasattr(list_item, "set_accessible_label"):
+            list_item.set_accessible_label(f"Launch {item.accessible_name}")
+
+    def _on_grid_activate(self, grid: Gtk.GridView, position: int) -> None:
+        model = grid.get_model()
+        item = model.get_item(position) if model is not None else None
+        if isinstance(item, AppItem):
+            self._launch_item(item)
 
     def _build_power_bar(self) -> Gtk.Widget:
         """Two-page stack: the four power buttons, or a confirmation row.
@@ -1594,18 +1651,18 @@ class AppMenu(Gtk.Window):
 
     # -- filtering / keys --
 
-    def _filter_tile(self, child: Gtk.FlowBoxChild) -> bool:
-        btn = child.get_child()
-        if btn is None:
-            return False
-        item = getattr(btn, "_app_item", None)
-        if item is None:
+    def _grid_item_matches(self, item, _data=None) -> bool:
+        if not isinstance(item, AppItem):
             return False
         return _app_item_matches(
             item,
             self._category_filter,
             self._search.get_text(),
         )
+
+    def _refilter_grid(self) -> None:
+        if hasattr(self, "_grid_filter"):
+            self._grid_filter.changed(Gtk.FilterChange.DIFFERENT)
 
     def _update_frequent_visibility(self) -> None:
         """Hide frequent row while the user is searching or filtering.
@@ -1624,7 +1681,7 @@ class AppMenu(Gtk.Window):
 
     def _on_search_changed(self, _entry: Gtk.SearchEntry) -> None:
         self._update_frequent_visibility()
-        self._grid.invalidate_filter()
+        self._refilter_grid()
 
     def _on_filter_changed(self, dropdown: Gtk.DropDown, _pspec) -> None:
         idx = dropdown.get_selected()
@@ -1633,18 +1690,14 @@ class AppMenu(Gtk.Window):
         else:
             self._category_filter = "All Apps"
         self._update_frequent_visibility()
-        self._grid.invalidate_filter()
+        self._refilter_grid()
 
     def _on_search_activate(self, _entry: Gtk.SearchEntry) -> None:
-        child = self._grid.get_first_child()
-        while child is not None:
-            if child.get_child_visible():
-                btn = child.get_child()
-                item = getattr(btn, "_app_item", None) if btn is not None else None
-                if item is not None:
-                    self._launch_item(item)
-                    return
-            child = child.get_next_sibling()
+        if self._filtered_apps.get_n_items() == 0:
+            return
+        item = self._filtered_apps.get_item(0)
+        if isinstance(item, AppItem):
+            self._launch_item(item)
 
     def _on_key(self, _ctrl, keyval: int, _code: int, _state) -> bool:
         if keyval == Gdk.KEY_Escape:

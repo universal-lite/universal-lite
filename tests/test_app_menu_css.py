@@ -40,6 +40,7 @@ def _css(settings=None) -> str:
 def test_app_item_carries_filterable_metadata_outside_widgets():
     item = app_menu.AppItem(_FakeApp("System Monitor"))
 
+    assert isinstance(item, app_menu.GObject.Object)
     assert item.primary == "System Monitor"
     assert item.secondary == ""
     assert item.accessible_name == "System Monitor"
@@ -50,6 +51,34 @@ def test_app_item_carries_filterable_metadata_outside_widgets():
 
     item.category = "System"
     assert app_menu._app_item_matches(item, "System", "monitor")
+
+
+def test_app_item_can_back_gtk_filter_models():
+    store = app_menu.Gio.ListStore.new(app_menu.AppItem)
+    terminal = app_menu.AppItem(_FakeApp("Terminal"))
+    browser = app_menu.AppItem(_FakeApp("Web Browser"))
+    browser.category = "Internet"
+    store.splice(0, 0, [terminal, browser])
+
+    state = {"category": "All Apps", "query": "web"}
+    filt = app_menu.Gtk.CustomFilter.new(
+        lambda item, _data=None: app_menu._app_item_matches(
+            item,
+            state["category"],
+            state["query"],
+        ),
+        None,
+    )
+    filtered = app_menu.Gtk.FilterListModel.new(store, filt)
+
+    assert filtered.get_n_items() == 1
+    assert filtered.get_item(0) is browser
+
+    state["category"] = "Internet"
+    state["query"] = ""
+    filt.changed(app_menu.Gtk.FilterChange.DIFFERENT)
+    assert filtered.get_n_items() == 1
+    assert filtered.get_item(0) is browser
 
 
 def test_start_menu_defines_user_accent_tokens_from_settings():
@@ -100,12 +129,14 @@ def test_secondary_text_keeps_light_theme_contrast_headroom():
 def test_app_tiles_are_flat_until_interaction():
     css = _css()
     assert "padding: 4px 2px 6px 2px;" in css
+    assert ".app-menu-grid > child," in css
     assert ".app-menu-tile {\n    background: transparent;" in css
     assert "border: 1px solid transparent;" in css
-    assert ".app-menu-tile:hover,\n.app-menu-tile:focus {" in css
+    assert ".app-menu-tile:hover,\n.app-menu-tile:focus," in css
+    assert ".app-menu-grid > child.activatable:hover .app-menu-tile" in css
     assert "background: alpha(@accent_color, 0.10)" in css
     assert "0 0 0 2px alpha(@accent_color, 0.20)" in css
-    assert ".app-menu-tile:active {\n    background: @accent_color;" in css
+    assert ".app-menu-tile:active,\n.app-menu-grid > child.activatable:active" in css
     assert "color: @accent_fg_color;" in css
 
 
