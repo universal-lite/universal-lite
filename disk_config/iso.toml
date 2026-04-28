@@ -12,7 +12,12 @@ contents = """
 # memory_strategy=zram tells first-boot to skip the zswap setup path.
 # zram itself is already active via zram-generator.conf baked into
 # the image (125% of RAM on 2 GB Chromebooks), so nothing else needs
-# doing on this front. swap_size_gb=0 is a harmless placeholder.
+# doing on this front. swap_size_gb=null means no disk swap size applies.
+#
+# The Flatpak app list is written explicitly to match the wizard's default
+# selection. universal-lite-flatpak-setup still has fallback defaults for
+# recovery and hand-rolled images, but the normal ISO path should not depend
+# on that fallback.
 #
 # username comes from anaconda's Users module, which always assigns
 # UID 1000 to the first interactively-created user.
@@ -21,9 +26,17 @@ username=$(getent passwd 1000 | cut -d: -f1)
 cat > /var/lib/universal-lite/install-config.json <<EOF
 {
   "memory_strategy": "zram",
-  "swap_size_gb": 0,
+  "swap_size_gb": null,
   "username": "${username}"
 }
+EOF
+chmod 0600 /var/lib/universal-lite/install-config.json
+
+cat > /var/lib/universal-lite/flatpak-apps <<'EOF'
+com.google.Chrome
+io.github.kolunmi.Bazaar
+org.gtk.Gtk3theme.adw-gtk3
+org.gtk.Gtk3theme.adw-gtk3-dark
 EOF
 
 bootc switch --mutate-in-place --transport registry quay.io/noitatsidem/universal-lite:latest
