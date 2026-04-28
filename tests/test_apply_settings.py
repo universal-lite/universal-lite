@@ -437,6 +437,19 @@ class TestVerticalCss:
         assert "#image.pin-0" in css
         assert "border-radius: 999px" in css
 
+    def test_vertical_controls_do_not_add_horizontal_padding(self):
+        tokens = _make_tokens(
+            edge="left",
+            is_vertical=True,
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_vertical(tokens)
+
+        for selector in ("#custom-launcher", "#taskbar button", "#image.pin-0"):
+            match = re.search(rf"{re.escape(selector)} \{{(?P<body>.*?)\n\}}", css, re.S)
+            assert match is not None
+            assert f"padding: {tokens['panel_pad_module']}px 0" in match.group("body")
+
 
 # ---------------------------------------------------------------------------
 # H4: Deterministic module recovery order
