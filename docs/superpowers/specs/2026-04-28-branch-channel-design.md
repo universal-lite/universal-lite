@@ -7,7 +7,7 @@ Universal-Lite needs four clearly separated update streams:
 - `main` for the stable consumer image used by normal installs.
 - `dx` for a stable developer-mode image that follows Universal Blue conventions.
 - `testing` for work-in-progress changes that should not reach stable or stable DX users yet.
-- `beta` for checking whether the currently shipped stable payload breaks on the next Fedora beta base.
+- `beta` for checking whether the currently shipped stable payload breaks on the next Fedora/rawhide base while using the upstream Universal Blue stream naming convention.
 
 The streams must still receive same-day base and security updates whenever automatic merges are clean. When a conflict prevents safe automation, GitHub should open a pull request so a human and agent can resolve it the same day instead of guessing.
 
@@ -29,7 +29,7 @@ The streams must still receive same-day base and security updates whenever autom
 - `quay.io/noitatsidem/universal-lite:testing`
 - `quay.io/noitatsidem/universal-lite:testing.YYYYMMDD`
 
-`beta` is created from `main`. It keeps the stable Universal-Lite payload but changes the base image to the Universal Blue/Fedora beta-equivalent base. It publishes:
+`beta` is created from `main`. It keeps the stable Universal-Lite payload but changes the base image to the Universal Blue beta stream, which tracks the next Fedora/rawhide-style base rather than promising Fedora Beta release quality. It publishes:
 
 - `quay.io/noitatsidem/universal-lite:beta`
 - `quay.io/noitatsidem/universal-lite:beta.YYYYMMDD`
@@ -40,7 +40,7 @@ The `dx` branch owns the stable developer-mode foundation. It should include Hom
 
 The `testing` branch includes everything in `dx` plus active WIP changes. Users tracking `testing` are assumed to be comfortable with a bleeding-edge stream, but not all DX users should be exposed to it.
 
-The `beta` branch should not include DX or testing changes by default. Its purpose is compatibility signal: if the beta image fails, the likely cause should be Fedora beta or base-image drift, not unrelated developer-mode or WIP changes.
+The `beta` branch should not include DX or testing changes by default. Its purpose is compatibility signal: if the beta image fails, the likely cause should be next-Fedora/rawhide or base-image drift, not unrelated developer-mode or WIP changes.
 
 ## Daily Update Flow
 
