@@ -4,11 +4,17 @@ on:
   pull_request:
     branches:
       - main
+      - dx
+      - testing
+      - beta
   schedule:
     - cron: '05 10 * * *'  # 10:05am UTC everyday
   push:
     branches:
       - main
+      - dx
+      - testing
+      - beta
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
@@ -42,6 +48,54 @@ jobs:
           echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
 
+      - name: Resolve stream configuration
+        id: stream
+        shell: bash
+        run: |
+          publish="false"
+          include_date_alias="false"
+          tag="pr"
+          base_image="ghcr.io/ublue-os/base-main:latest"
+          ref_name="${GITHUB_REF_NAME}"
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            ref_name="${GITHUB_BASE_REF}"
+          fi
+
+          case "${ref_name}" in
+            main)
+              publish="true"
+              include_date_alias="true"
+              tag="latest"
+              base_image="ghcr.io/ublue-os/base-main:latest"
+              ;;
+            dx)
+              publish="true"
+              tag="dx"
+              base_image="ghcr.io/ublue-os/base-main:latest"
+              ;;
+            testing)
+              publish="true"
+              tag="testing"
+              base_image="ghcr.io/ublue-os/base-main:latest"
+              ;;
+            beta)
+              publish="true"
+              tag="beta"
+              base_image="ghcr.io/ublue-os/base-main:beta"
+              ;;
+          esac
+
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            publish="false"
+            tag="pr"
+          fi
+
+          echo "publish=${publish}" >> "${GITHUB_OUTPUT}"
+          echo "include_date_alias=${include_date_alias}" >> "${GITHUB_OUTPUT}"
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
+          echo "base_image=${base_image}" >> "${GITHUB_OUTPUT}"
+
       # These stage versions are pinned by https://github.com/renovatebot/renovate
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -68,9 +122,9 @@ jobs:
           # This generates all the tags for your image, you can add custom tags here too!
           # Default tags are "$DEFAULT_TAG" and "$DEFAULT_TAG.$date".
           tags: |
-            type=raw,value=${{ env.DEFAULT_TAG }}
-            type=raw,value=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
-            type=raw,value={{date 'YYYYMMDD'}}
+            type=raw,value=${{ steps.stream.outputs.tag }},enable=${{ steps.stream.outputs.publish == 'true' }}
+            type=raw,value=${{ steps.stream.outputs.tag }}.{{date 'YYYYMMDD'}},enable=${{ steps.stream.outputs.publish == 'true' }}
+            type=raw,value={{date 'YYYYMMDD'}},enable=${{ steps.stream.outputs.include_date_alias == 'true' }}
             type=sha,enable=${{ github.event_name == 'pull_request' }}
             type=ref,event=pr
           labels: |
@@ -82,7 +136,7 @@ jobs:
             org.opencontainers.image.title=${{ env.IMAGE_NAME }}
             org.opencontainers.image.url=https://github.com/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}/tree/${{ github.sha }}
             org.opencontainers.image.vendor=${{ github.repository_owner }}
-            org.opencontainers.image.version=${{ env.DEFAULT_TAG }}.{{date 'YYYYMMDD'}}
+            org.opencontainers.image.version=${{ steps.stream.outputs.tag }}.{{date 'YYYYMMDD'}}
             io.artifacthub.package.deprecated=false
             io.artifacthub.package.keywords=${{ env.IMAGE_KEYWORDS }}
             io.artifacthub.package.license=Apache-2.0
@@ -104,6 +158,8 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
           oci: false
+          build-args: |
+            BASE_IMAGE=${{ steps.stream.outputs.base_image }}
 
       # Rechunk is a script that we use on Universal Blue to make sure there isnt a single huge layer when your image gets published.
       # This does not make your image faster to download, just provides better resumability and fixes a few errors.
@@ -133,7 +189,7 @@ jobs:
       # They also check if the runner is on the default branch so that things like the merge queue (if you enable it), are going to work
       - name: Login to Quay
         uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
-        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.stream.outputs.publish == 'true'
         with:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
@@ -141,7 +197,7 @@ jobs:
 
       - name: Push To Quay
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
-        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.stream.outputs.publish == 'true'
         id: push
         with:
           registry: ${{ env.IMAGE_REGISTRY }}
@@ -156,12 +212,12 @@ jobs:
       # to consume. For more details, review the image signing section of the README.
       - name: Install Cosign
         uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003 # v4.1.1
-        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.stream.outputs.publish == 'true'
         with:
           cosign-release: 'v2.6.1'
 
       - name: Sign container image
-        if: github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+        if: steps.stream.outputs.publish == 'true'
         run: |
           IMAGE_FULL="${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}"
           for tag in ${{ steps.metadata.outputs.tags }}; do

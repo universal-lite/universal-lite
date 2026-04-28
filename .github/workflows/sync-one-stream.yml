@@ -1,0 +1,70 @@
+---
+name: Sync one image stream
+
+on:
+  workflow_call:
+    inputs:
+      source:
+        required: true
+        type: string
+      target:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync ${{ inputs.source }} into ${{ inputs.target }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.target }}
+          fetch-depth: 0
+
+      - name: Merge source into target or open PR
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_BRANCH: ${{ inputs.source }}
+          TARGET_BRANCH: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "${SOURCE_BRANCH}" "${TARGET_BRANCH}"
+          git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
+
+          if git merge --no-edit "origin/${SOURCE_BRANCH}"; then
+            git push origin "HEAD:${TARGET_BRANCH}"
+            exit 0
+          fi
+
+          git merge --abort
+          PR_BRANCH="sync/${SOURCE_BRANCH}-to-${TARGET_BRANCH}"
+
+          existing_pr_url=$(gh pr list \
+            --base "${TARGET_BRANCH}" \
+            --head "${PR_BRANCH}" \
+            --state open \
+            --json url \
+            --jq '.[0].url // ""')
+
+          if [[ -n "${existing_pr_url}" ]]; then
+            echo "Sync PR already exists: ${existing_pr_url}"
+            exit 0
+          fi
+
+          git checkout -B "${PR_BRANCH}" "origin/${SOURCE_BRANCH}"
+          git push origin "HEAD:${PR_BRANCH}"
+
+          gh pr create \
+            --base "${TARGET_BRANCH}" \
+            --head "${PR_BRANCH}" \
+            --title "Sync ${SOURCE_BRANCH} into ${TARGET_BRANCH}" \
+            --body "Automated branch alignment could not merge ${SOURCE_BRANCH} into ${TARGET_BRANCH} cleanly. Resolve this PR to restore daily stream alignment."
