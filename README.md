@@ -123,6 +123,15 @@ The system manages itself. Daily image builds publish to
 Flatpak apps. If an update ever causes a problem, the previous image is
 always available in the boot menu — select it to roll back.
 
+Universal-Lite's published update image is hosted on Quay. Older test
+installs that still track GHCR can move to the current update stream with
+one manual rebase:
+
+```bash
+sudo rpm-ostree rebase ostree-unverified-registry:quay.io/noitatsidem/universal-lite:latest
+sudo systemctl reboot
+```
+
 ## Installer wizard
 
 The USB installer boots into a labwc session running the setup wizard
@@ -349,6 +358,8 @@ Pull requests, non-README pushes to `main`, and the daily schedule build
 the OCI image. Default-branch builds publish
 `quay.io/noitatsidem/universal-lite` and sign images with
 [cosign](https://github.com/sigstore/cosign).
+
+The Quay repository is the primary public update source for Universal-Lite.
 
 To set up signing on a fresh fork:
 
