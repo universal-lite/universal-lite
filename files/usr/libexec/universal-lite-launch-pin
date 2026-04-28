@@ -189,7 +189,6 @@ def _launch(argv: argparse.Namespace) -> int:
     # "old matching window still exists" needs a resident toplevel tracker,
     # which is intentionally outside the 2 GB RAM budget.
     monitor_app_ids = [] if _matching_window_exists(argv.app_id) else argv.app_id
-    _set_pending(argv.pin, argv.timeout, argv.fallback_seconds)
     try:
         subprocess.Popen(
             argv.command,
@@ -202,6 +201,7 @@ def _launch(argv: argparse.Namespace) -> int:
     except OSError:
         _clear_pending(argv.pin)
         return 1
+    _set_pending(argv.pin, argv.timeout, argv.fallback_seconds)
     _spawn_monitor(argv, monitor_app_ids)
     return 0
 

@@ -73,6 +73,30 @@ def test_existing_window_uses_short_fallback_monitor(monkeypatch):
     assert "--app-id" not in monitor[1][0]
 
 
+def test_launch_starts_app_before_refreshing_waybar(monkeypatch):
+    calls = []
+    args = SimpleNamespace(
+        pin=0,
+        app_id=["com.example.App"],
+        command="example-app",
+        timeout=15.0,
+        fallback_seconds=1.4,
+    )
+
+    monkeypatch.setattr(launch_pin, "_matching_window_exists", lambda ids: False)
+    monkeypatch.setattr(launch_pin, "_refresh_waybar", lambda: calls.append("refresh"))
+    monkeypatch.setattr(launch_pin, "_update_state", lambda *a: calls.append("state"))
+
+    def fake_popen(command, **_kwargs):
+        calls.append("app" if command == "example-app" else "monitor")
+
+    monkeypatch.setattr(launch_pin.subprocess, "Popen", fake_popen)
+
+    assert launch_pin._launch(args) == 0
+
+    assert calls == ["app", "state", "refresh", "monitor"]
+
+
 def test_matching_window_checks_app_ids_as_alternatives(monkeypatch):
     commands = []
 

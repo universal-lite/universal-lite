@@ -965,7 +965,7 @@ class TestHorizontalCss:
         assert "#image.pin-1" in css
         assert "border-radius: 999px" in css
 
-    def test_horizontal_launching_pin_gets_bounce_animation(self, tmp_path):
+    def test_horizontal_launching_pin_gets_non_layout_pulse(self, tmp_path):
         state_dir = tmp_path / "universal-lite"
         state_dir.mkdir()
         state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
@@ -980,8 +980,11 @@ class TestHorizontalCss:
         with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
             css = apply_settings._waybar_css_horizontal(tokens)
         assert "#image.pin-0" in css
-        assert "animation-name: universal-lite-pin-launch-bounce" in css
-        assert "margin-top: -6px; margin-bottom: 6px;" in css
+        assert "animation-name: universal-lite-pin-launch-pulse" in css
+        assert "margin-top:" not in css
+        assert "margin-bottom:" not in css
+        assert "margin-left:" not in css
+        assert "margin-right:" not in css
 
     def test_launching_pin_css_is_accepted_by_gtk(self, tmp_path):
         gi = pytest.importorskip("gi")
@@ -1019,7 +1022,7 @@ class TestHorizontalCss:
         )
         with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
             css = apply_settings._waybar_css_horizontal(tokens)
-        assert "universal-lite-pin-launch-bounce" not in css
+        assert "universal-lite-pin-launch-pulse" not in css
 
 
 # ---------------------------------------------------------------------------

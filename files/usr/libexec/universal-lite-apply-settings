@@ -1180,9 +1180,7 @@ def _waybar_pin_launch_css(tokens: dict, *, vertical: bool, pending: set[int]) -
     if not pending:
         return ""
     selectors = ", ".join(f"#image.pin-{idx}" for idx in sorted(pending))
-    bounce = 5 if tokens.get("density") == "compact" else 6
-    if tokens.get("reduce_motion", False):
-        return f"""
+    return f"""
 @keyframes universal-lite-pin-launch-pulse {{
     0% {{ opacity: 1.0; }}
     50% {{ opacity: 0.62; }}
@@ -1193,32 +1191,6 @@ def _waybar_pin_launch_css(tokens: dict, *, vertical: bool, pending: set[int]) -
     border: 1px solid {tokens["panel_accent_border"]};
     animation-name: universal-lite-pin-launch-pulse;
     animation-duration: 900ms;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-}}
-"""
-
-    if vertical:
-        if tokens["edge"] == "right":
-            halfway = f"margin-left: -{bounce}px; margin-right: {bounce}px;"
-        else:
-            halfway = f"margin-left: {bounce}px; margin-right: -{bounce}px;"
-    elif tokens["edge"] == "top":
-        halfway = f"margin-top: {bounce}px; margin-bottom: -{bounce}px;"
-    else:
-        halfway = f"margin-top: -{bounce}px; margin-bottom: {bounce}px;"
-
-    return f"""
-@keyframes universal-lite-pin-launch-bounce {{
-    0% {{ margin: 0; }}
-    50% {{ {halfway} }}
-    100% {{ margin: 0; }}
-}}
-{selectors} {{
-    background: {tokens["panel_control_hover"]};
-    border: 1px solid {tokens["panel_accent_border"]};
-    animation-name: universal-lite-pin-launch-bounce;
-    animation-duration: 700ms;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
 }}
