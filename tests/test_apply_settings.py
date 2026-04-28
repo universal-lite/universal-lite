@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -87,6 +88,32 @@ def _make_tokens(**overrides):
     }
     base.update(overrides)
     return base
+
+
+def _assert_css_accepted_by_gtk3(css: str) -> None:
+    script = """
+import sys
+
+try:
+    import gi
+    gi.require_version("Gtk", "3.0")
+    from gi.repository import Gtk
+except (ImportError, ValueError) as exc:
+    print(f"SKIP: {exc}", file=sys.stderr)
+    sys.exit(77)
+
+provider = Gtk.CssProvider()
+provider.load_from_data(sys.stdin.buffer.read())
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        input=css.encode("utf-8"),
+        capture_output=True,
+        timeout=10,
+    )
+    if result.returncode == 77:
+        pytest.skip(result.stderr.decode("utf-8", errors="replace").strip())
+    assert result.returncode == 0, result.stderr.decode("utf-8", errors="replace")
 
 
 def _make_settings(**overrides):
@@ -907,10 +934,10 @@ class TestHorizontalCss:
         assert "#image.pin-0" in css
         assert "universal-lite-pin-launch" not in css
 
-    def test_pinned_app_css_is_accepted_by_gtk(self):
+    def test_pinned_app_css_validation_survives_gtk4_loaded_first(self):
         gi = pytest.importorskip("gi")
-        gi.require_version("Gtk", "3.0")
-        from gi.repository import Gtk
+        gi.require_version("Gtk", "4.0")
+        from gi.repository import Gtk as _Gtk4  # noqa: F401
 
         tokens = _make_tokens(
             edge="bottom",
@@ -919,8 +946,17 @@ class TestHorizontalCss:
         css = apply_settings._waybar_css_common(tokens)
         css += apply_settings._waybar_css_horizontal(tokens)
 
-        provider = Gtk.CssProvider()
-        provider.load_from_data(css.encode("utf-8"))
+        _assert_css_accepted_by_gtk3(css)
+
+    def test_pinned_app_css_is_accepted_by_gtk(self):
+        tokens = _make_tokens(
+            edge="bottom",
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_common(tokens)
+        css += apply_settings._waybar_css_horizontal(tokens)
+
+        _assert_css_accepted_by_gtk3(css)
 
 # ---------------------------------------------------------------------------
 # Waybar module compatibility
