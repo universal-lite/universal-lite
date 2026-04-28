@@ -34,6 +34,8 @@ The streams must still receive same-day base and security updates whenever autom
 - `quay.io/noitatsidem/universal-lite:beta`
 - `quay.io/noitatsidem/universal-lite:beta.YYYYMMDD`
 
+The beta branch name and output tag are not enough by themselves. Beta builds must use the Universal Blue beta base image, currently verified as pullable at `ghcr.io/ublue-os/base-main:beta`. The existing stable build uses `ghcr.io/ublue-os/base-main:latest`.
+
 ## Developer Mode Scope
 
 The `dx` branch owns the stable developer-mode foundation. It should include Homebrew, Distrobox, and Universal Blue-style setup hooks or defaults. It should not introduce custom developer-mode behavior that diverges from Universal Blue unless that change is explicitly approved later.
@@ -89,6 +91,11 @@ The container image workflow should build on pushes to `main`, `dx`, `testing`, 
 
 Pull request builds should remain non-publishing validation builds.
 
+The build should select the base image by branch, preferably through a Containerfile build argument so the stable branches and beta branch can share the same Containerfile without branch-only drift:
+
+- `main`, `dx`, and `testing` use `ghcr.io/ublue-os/base-main:latest` unless intentionally changed later.
+- `beta` uses `ghcr.io/ublue-os/base-main:beta`.
+
 Tag generation should be branch-aware:
 
 - `main` uses the existing `latest` tag family.
@@ -104,6 +111,7 @@ Implementation should be validated by checking workflow syntax and branch condit
 - `dx` builds and publishes `dx` after a clean `main -> dx` sync.
 - `testing` builds and publishes `testing` after a clean `dx -> testing` sync.
 - `beta` builds and publishes `beta` after a clean `main -> beta` sync.
+- The beta build base resolves to `ghcr.io/ublue-os/base-main:beta`, not `latest`.
 - Manual disk builds can choose `latest`, `dx`, `testing`, or `beta`.
 - A forced conflict scenario, if practical, creates a PR rather than overwriting branch contents.
 
