@@ -1120,8 +1120,9 @@ def _waybar_pin_launch_css(tokens: dict, *, vertical: bool, pending: set[int]) -
     if tokens.get("reduce_motion", False):
         return f"""
 @keyframes universal-lite-pin-launch-pulse {{
-    0%, 100% {{ opacity: 1.0; }}
+    0% {{ opacity: 1.0; }}
     50% {{ opacity: 0.62; }}
+    100% {{ opacity: 1.0; }}
 }}
 {selectors} {{
     background: {tokens["panel_control_hover"]};
@@ -1145,8 +1146,9 @@ def _waybar_pin_launch_css(tokens: dict, *, vertical: bool, pending: set[int]) -
 
     return f"""
 @keyframes universal-lite-pin-launch-bounce {{
-    0%, 100% {{ margin: 0; }}
+    0% {{ margin: 0; }}
     50% {{ {halfway} }}
+    100% {{ margin: 0; }}
 }}
 {selectors} {{
     background: {tokens["panel_control_hover"]};

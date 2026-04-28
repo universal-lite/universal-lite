@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 # Import the apply-settings script as a module (no .py extension).
 _SCRIPT = Path(__file__).resolve().parents[1] / "files/usr/libexec/universal-lite-apply-settings"
 _loader = importlib.machinery.SourceFileLoader("apply_settings", str(_SCRIPT))
@@ -913,6 +915,29 @@ class TestHorizontalCss:
         assert "#image.pin-0" in css
         assert "animation-name: universal-lite-pin-launch-bounce" in css
         assert "margin-top: -6px; margin-bottom: 6px;" in css
+
+    def test_launching_pin_css_is_accepted_by_gtk(self, tmp_path):
+        gi = pytest.importorskip("gi")
+        gi.require_version("Gtk", "3.0")
+        from gi.repository import Gtk
+
+        state_dir = tmp_path / "universal-lite"
+        state_dir.mkdir()
+        state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
+        state_path.write_text(
+            json.dumps({"pins": {"0": {"expires_at": 9999999999}}}),
+            encoding="utf-8",
+        )
+        tokens = _make_tokens(
+            edge="bottom",
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
+            css = apply_settings._waybar_css_common(tokens)
+            css += apply_settings._waybar_css_horizontal(tokens)
+
+        provider = Gtk.CssProvider()
+        provider.load_from_data(css.encode("utf-8"))
 
     def test_expired_launching_pin_state_is_ignored(self, tmp_path):
         state_dir = tmp_path / "universal-lite"
