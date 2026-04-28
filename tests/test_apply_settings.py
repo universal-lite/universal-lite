@@ -748,6 +748,73 @@ class TestPinnedValidation:
         }
 
 
+class TestPinnedLaunchIdentity:
+    def test_native_command_basename_is_app_id_candidate(self):
+        app = {
+            "name": "Text Editor",
+            "command": "/usr/bin/gnome-text-editor --new-window",
+            "icon": "org.gnome.TextEditor",
+        }
+
+        assert "gnome-text-editor" in apply_settings._pin_match_app_ids(app)
+
+    def test_command_basename_uses_flatpak_app_not_flatpak_binary(self):
+        app = {
+            "name": "Chrome",
+            "command": "flatpak run com.google.Chrome",
+            "icon": "com.google.Chrome",
+        }
+
+        assert apply_settings._pin_match_app_ids(app) == [
+            "com.google.Chrome",
+            "com.google.chrome",
+        ]
+
+    def test_flatpak_id_requires_flatpak_command(self):
+        app = {
+            "name": "Build Tool",
+            "command": "npm run com.example.App",
+            "icon": "build-tool",
+        }
+
+        assert apply_settings._pin_match_app_ids(app) == []
+
+    def test_generic_interpreter_command_does_not_add_alias(self):
+        app = {
+            "name": "Python App",
+            "command": "python3 /opt/example/app.py",
+            "icon": "python-app",
+        }
+
+        assert apply_settings._pin_match_app_ids(app) == []
+
+    def test_env_wrapper_uses_wrapped_command_basename(self):
+        app = {
+            "name": "Foo",
+            "command": "env FOO=bar /opt/apps/foo --new-window",
+            "icon": "foo",
+        }
+
+        assert apply_settings._pin_match_app_ids(app) == ["foo"]
+
+    def test_lowercase_aliases_are_deduplicated(self):
+        app = {
+            "name": "Example",
+            "command": "/usr/bin/ExampleApp",
+            "icon": "example",
+            "app_id": "ExampleApp",
+            "desktop_id": "ExampleApp.desktop",
+            "startup_wm_class": "exampleapp",
+        }
+
+        assert apply_settings._pin_match_app_ids(app) == [
+            "ExampleApp",
+            "exampleapp",
+            "ExampleApp.desktop",
+            "exampleapp.desktop",
+        ]
+
+
 # ---------------------------------------------------------------------------
 # L3: Config-change detection
 # ---------------------------------------------------------------------------

@@ -71,3 +71,52 @@ def test_existing_window_uses_short_fallback_monitor(monkeypatch):
     assert monitor[0] == "popen"
     assert "--monitor" in monitor[1][0]
     assert "--app-id" not in monitor[1][0]
+
+
+def test_matching_window_checks_app_ids_as_alternatives(monkeypatch):
+    commands = []
+
+    monkeypatch.setattr(launch_pin.shutil, "which", lambda name: "/usr/bin/wlrctl")
+
+    def fake_run(command, **_kwargs):
+        commands.append(command)
+        return SimpleNamespace(returncode=0 if command[-1] == "app_id:com.google.Chrome" else 1)
+
+    monkeypatch.setattr(launch_pin.subprocess, "run", fake_run)
+
+    assert launch_pin._matching_window_exists([
+        "com.google.Chrome.desktop",
+        "com.google.Chrome",
+        "Google-chrome",
+    ]) is True
+
+    assert commands == [
+        ["wlrctl", "toplevel", "find", "app_id:com.google.Chrome.desktop"],
+        ["wlrctl", "toplevel", "find", "app_id:com.google.Chrome"],
+    ]
+
+
+def test_wait_for_window_checks_app_ids_as_alternatives(monkeypatch):
+    commands = []
+    sleeps = []
+
+    monkeypatch.setattr(launch_pin.shutil, "which", lambda name: "/usr/bin/wlrctl")
+    monkeypatch.setattr(launch_pin.time, "sleep", lambda seconds: sleeps.append(seconds))
+
+    def fake_run(command, **_kwargs):
+        commands.append(command)
+        return SimpleNamespace(returncode=0 if command[-1] == "app_id:com.google.Chrome" else 1)
+
+    monkeypatch.setattr(launch_pin.subprocess, "run", fake_run)
+
+    launch_pin._wait_for_window([
+        "com.google.Chrome.desktop",
+        "com.google.Chrome",
+        "Google-chrome",
+    ], timeout=15.0, fallback_seconds=1.4)
+
+    assert sleeps == []
+    assert commands == [
+        ["wlrctl", "toplevel", "find", "app_id:com.google.Chrome.desktop"],
+        ["wlrctl", "toplevel", "find", "app_id:com.google.Chrome"],
+    ]

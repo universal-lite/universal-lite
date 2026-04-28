@@ -1061,13 +1061,46 @@ def _strip_desktop_suffix(value: str) -> str:
     return value[:-8] if value.endswith(".desktop") else value
 
 
-def _flatpak_app_id_from_command(command: str) -> str:
+def _command_parts(command: str) -> list[str]:
     try:
-        parts = shlex.split(command)
+        return shlex.split(command)
     except ValueError:
+        return []
+
+
+def _command_executable_index(parts: list[str]) -> int | None:
+    assignment_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+    idx = 0
+    while idx < len(parts) and assignment_re.match(parts[idx]):
+        idx += 1
+    if idx >= len(parts):
+        return None
+
+    if os.path.basename(parts[idx]) != "env":
+        return idx
+
+    idx += 1
+    while idx < len(parts):
+        part = parts[idx]
+        if assignment_re.match(part) or part in {"-i", "--ignore-environment"}:
+            idx += 1
+            continue
+        if part in {"-u", "--unset"}:
+            idx += 2
+            continue
+        if part.startswith("-"):
+            return None
+        return idx
+    return None
+
+
+def _flatpak_app_id_from_command(command: str) -> str:
+    parts = _command_parts(command)
+    idx = _command_executable_index(parts)
+    if idx is None or os.path.basename(parts[idx]) != "flatpak":
         return ""
     try:
-        run_idx = parts.index("run")
+        run_idx = parts.index("run", idx + 1)
     except ValueError:
         return ""
     for part in parts[run_idx + 1:]:
@@ -1080,6 +1113,27 @@ def _flatpak_app_id_from_command(command: str) -> str:
     return ""
 
 
+def _command_app_id_alias(command: str) -> str:
+    """Return a conservative app_id alias from a launch command basename."""
+    parts = _command_parts(command)
+    if not parts or _flatpak_app_id_from_command(command):
+        return ""
+    idx = _command_executable_index(parts)
+    if idx is None:
+        return ""
+
+    command_name = os.path.basename(parts[idx])
+    generic_commands = {
+        "bash", "dbus-run-session", "electron", "fish", "flatpak", "gio",
+        "gtk-launch", "java", "node", "nohup", "npm", "npx", "pkexec",
+        "python", "python2", "python3", "setsid", "sh", "sudo",
+        "systemd-run", "uwsm", "xdg-open", "zsh",
+    }
+    if command_name in generic_commands:
+        return ""
+    return command_name
+
+
 def _pin_match_app_ids(app: dict) -> list[str]:
     """Return likely wlroots app_id values for a pinned launcher."""
     values: list[str] = []
@@ -1089,15 +1143,25 @@ def _pin_match_app_ids(app: dict) -> list[str]:
         if text and text not in values:
             values.append(text)
 
-    add(app.get("app_id"))
+    def add_with_lowercase(value: object) -> None:
+        text = str(value or "").strip()
+        if not text:
+            return
+        add(text)
+        lower = text.lower()
+        if lower != text:
+            add(lower)
+
+    add_with_lowercase(app.get("app_id"))
     desktop_id = str(app.get("desktop_id", "")).strip()
     if desktop_id:
-        add(_strip_desktop_suffix(os.path.basename(desktop_id)))
-        add(desktop_id)
-    add(app.get("startup_wm_class"))
+        add_with_lowercase(_strip_desktop_suffix(os.path.basename(desktop_id)))
+        add_with_lowercase(desktop_id)
+    add_with_lowercase(app.get("startup_wm_class"))
     flatpak_id = _flatpak_app_id_from_command(str(app.get("command", "")))
     if flatpak_id:
-        add(flatpak_id)
+        add_with_lowercase(flatpak_id)
+    add_with_lowercase(_command_app_id_alias(str(app.get("command", ""))))
     return values
 
 
