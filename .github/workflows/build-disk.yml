@@ -13,6 +13,16 @@ on:
         required: false
         default: false
         type: boolean
+      image-tag:
+        description: "Container image tag to build disk images from"
+        required: true
+        default: latest
+        type: choice
+        options:
+          - latest
+          - dx
+          - testing
+          - beta
   pull_request:
     branches:
       - main
@@ -54,9 +64,14 @@ jobs:
           USER_GID=$(id -g)
           # Concatenate the types with a hyphen
           DISK_TYPE=$(echo "${{ matrix.disk-type }}" | tr ' ' '-')
+          IMAGE_TAG="${DEFAULT_TAG}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            IMAGE_TAG="${{ inputs.image-tag }}"
+          fi
           # Lowercase the image uri
           echo "IMAGE_REGISTRY=${IMAGE_REGISTRY,,}" >> ${GITHUB_ENV}
           echo "IMAGE_NAME=${IMAGE_NAME,,}" >> ${GITHUB_ENV}
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> ${GITHUB_ENV}
           echo "DISK_TYPE=${DISK_TYPE}" >> ${GITHUB_ENV}
           echo "USER_UID=${USER_UID}" >> ${GITHUB_ENV}
           echo "USER_GID=${USER_GID}" >> ${GITHUB_ENV}
@@ -75,7 +90,7 @@ jobs:
         with:
           builder-image: ${{ env.BIB_IMAGE }}
           config-file: ${{ matrix.disk-type == 'anaconda-iso' && './disk_config/iso.toml' || './disk_config/disk.toml' }}
-          image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
+          image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
           types: ${{ matrix.disk-type }}
           additional-args: --use-librepo=True

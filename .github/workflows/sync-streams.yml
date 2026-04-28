@@ -1,0 +1,66 @@
+---
+name: Sync image streams
+
+on:
+  workflow_run:
+    workflows: ["Build container image"]
+    types: [completed]
+    branches: [main, dx]
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Source branch"
+        required: true
+        type: choice
+        options:
+          - main
+          - dx
+      target:
+        description: "Target branch"
+        required: true
+        type: choice
+        options:
+          - dx
+          - testing
+          - beta
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch || inputs.source }}-${{ inputs.target || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  sync-main-to-dx:
+    name: Sync main to dx
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'schedule' }}
+    uses: ./.github/workflows/sync-one-stream.yml
+    with:
+      source: "main"
+      target: "dx"
+
+  sync-main-to-beta:
+    name: Sync main to beta
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.event == 'schedule' }}
+    uses: ./.github/workflows/sync-one-stream.yml
+    with:
+      source: "main"
+      target: "beta"
+
+  sync-dx-to-testing:
+    name: Sync dx to testing
+    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dx' && github.event.workflow_run.event == 'push' }}
+    uses: ./.github/workflows/sync-one-stream.yml
+    with:
+      source: "dx"
+      target: "testing"
+
+  manual-sync:
+    name: Manual sync
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/sync-one-stream.yml
+    with:
+      source: ${{ inputs.source }}
+      target: ${{ inputs.target }}

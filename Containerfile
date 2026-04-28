@@ -4,7 +4,8 @@ COPY build_files /build_files
 COPY files /files
 
 # Base Image
-FROM ghcr.io/ublue-os/base-main:latest
+ARG BASE_IMAGE="ghcr.io/ublue-os/base-main:latest"
+FROM ${BASE_IMAGE}
 
 ## Other possible base images include:
 # FROM ghcr.io/ublue-os/bazzite:latest
