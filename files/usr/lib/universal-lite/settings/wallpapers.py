@@ -34,7 +34,10 @@ EXCLUDED_NAMES = frozenset({"Symbolics", "VNC"})
 # Formats GdkPixbuf can render on the Universal-Lite image.
 # JXL support is provided by the in-image libpixbufloader-jxl.so we build
 # from libjxl upstream (see build_files/build.sh).
-THUMBNAIL_EXTS = frozenset({".svg", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tiff", ".jxl"})
+THUMBNAIL_EXTS = frozenset({
+    ".svg", ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tiff",
+    ".jxl", ".avif", ".heif", ".heic",
+})
 
 
 @dataclass(frozen=True)
@@ -216,7 +219,7 @@ _CUSTOM_WALLPAPER_MAX_BYTES = 50 * 1024 * 1024
 _CUSTOM_WALLPAPER_ALLOWED_TYPES = {
     "image/jpeg", "image/png", "image/webp", "image/bmp",
     "image/tiff", "image/svg+xml", "image/x-portable-pixmap",
-    "image/jxl", "image/avif", "image/heif",
+    "image/jxl", "image/avif", "image/heif", "image/heic",
 }
 
 

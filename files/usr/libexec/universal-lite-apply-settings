@@ -78,7 +78,7 @@ ADWAITA = {"light": _palette["light"], "dark": _palette["dark"]}
 # from pkill and both spawn, producing a duplicate panel. Using a
 # monotonic guard suppresses the second spawn within a 2s window.
 _waybar_spawn_ts = 0.0
-RISKY_WALLPAPER_EXTS = {".jxl", ".avif", ".heif"}
+RISKY_WALLPAPER_EXTS = {".jxl", ".avif", ".heif", ".heic"}
 SWAYBG_SETTLE_DEFAULT = 0.75
 SWAYBG_SETTLE_RISKY = 2.0
 

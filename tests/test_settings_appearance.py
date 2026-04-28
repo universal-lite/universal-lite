@@ -9,6 +9,8 @@ from settings import app as settings_app  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 CSS_PATH = ROOT / "files/usr/lib/universal-lite/settings/css/style.css"
 APPEARANCE_PATH = ROOT / "files/usr/lib/universal-lite/settings/pages/appearance.py"
+BUILD_PATH = ROOT / "build_files/build.sh"
+THUMBNAILER_PATH = ROOT / "files/usr/libexec/universal-lite-wallpaper-thumbnailer"
 
 
 def test_accent_css_uses_contrast_aware_selected_check_color(
@@ -64,9 +66,23 @@ def test_theme_toggle_defers_wallpaper_refresh_out_of_signal_handler():
     assert "def _safe_populate_wallpapers" in source
 
 
-def test_risky_wallpaper_thumbnails_use_placeholder_instead_of_pixbuf_decode():
+def test_risky_wallpaper_thumbnails_use_isolated_helper_with_placeholder_fallback():
     source = APPEARANCE_PATH.read_text(encoding="utf-8")
+    helper = THUMBNAILER_PATH.read_text(encoding="utf-8")
+    build = BUILD_PATH.read_text(encoding="utf-8")
 
-    assert 'RISKY_THUMBNAIL_EXTS = {".jxl", ".avif", ".heif"}' in source
+    assert 'RISKY_THUMBNAIL_EXTS = {".jxl", ".avif", ".heif", ".heic"}' in source
+    assert "def _load_external_thumbnail" in source
+    assert "subprocess.run(" in source
+    assert "THUMBNAIL_TIMEOUT_SECONDS" in source
     risky_branch = source.split("def _load_thumbnail", 1)[1].split("try:", 1)[0]
-    assert "return _thumbnail_placeholder()" in risky_branch
+    assert "return _load_external_thumbnail(path) or _thumbnail_placeholder()" in risky_branch
+    assert "return _thumbnail_placeholder()" in source.split(
+        "except Exception as exc:  # GLib.Error, etc.", 1
+    )[1]
+    assert "GdkPixbuf.PixbufLoader.new()" in helper
+    assert "loader.write(chunk)" in helper
+    assert 'os.environ.setdefault("GIO_USE_VFS", "local")' in helper
+    assert 'pixbuf.savev(str(tmp), "png", [], [])' in helper
+    assert "os.replace(tmp, dest)" in helper
+    assert "/usr/libexec/universal-lite-wallpaper-thumbnailer" in build

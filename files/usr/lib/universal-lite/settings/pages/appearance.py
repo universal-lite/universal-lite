@@ -1,4 +1,7 @@
+import hashlib
 import json
+import os
+import subprocess
 import sys
 from gettext import gettext as _
 from pathlib import Path
@@ -73,8 +76,14 @@ TILE_H = 100
 THUMB_MAX = max(TILE_W, TILE_H) * 2
 # GdkPixbuf loaders for newer container formats are native code and have
 # been crashy on the VM images used for testing. Never synchronously decode
-# these in the Settings process; render a stable placeholder instead.
-RISKY_THUMBNAIL_EXTS = {".jxl", ".avif", ".heif"}
+# these in the Settings process; ask the thumbnail helper for a cached PNG
+# and render a stable placeholder if the helper cannot produce one.
+RISKY_THUMBNAIL_EXTS = {".jxl", ".avif", ".heif", ".heic"}
+THUMBNAIL_HELPER = (
+    Path(__file__).resolve().parents[4]
+    / "libexec/universal-lite-wallpaper-thumbnailer"
+)
+THUMBNAIL_TIMEOUT_SECONDS = 8
 
 
 def _thumbnail_placeholder() -> Gtk.Widget:
@@ -92,20 +101,98 @@ def _thumbnail_placeholder() -> Gtk.Widget:
     return box
 
 
+def _thumbnail_cache_dir() -> Path:
+    base = os.environ.get("XDG_CACHE_HOME")
+    return (Path(base) if base else Path.home() / ".cache") / (
+        "universal-lite/wallpaper-thumbnails"
+    )
+
+
+def _thumbnail_cache_path(path: str) -> Path | None:
+    source = Path(path)
+    try:
+        stat = source.stat()
+    except OSError:
+        return None
+    key = "\0".join((
+        str(source.resolve(strict=False)),
+        str(stat.st_mtime_ns),
+        str(stat.st_size),
+        str(THUMB_MAX),
+    ))
+    digest = hashlib.sha256(key.encode("utf-8", "surrogateescape")).hexdigest()
+    return _thumbnail_cache_dir() / f"{digest}.png"
+
+
+def _picture_from_texture_file(path: Path) -> Gtk.Widget | None:
+    try:
+        texture = Gdk.Texture.new_from_filename(str(path))
+    except Exception as exc:
+        print(f"appearance: cached thumbnail load failed for {path}: {exc}",
+              file=sys.stderr)
+        return None
+    pic = Gtk.Picture.new_for_paintable(texture)
+    pic.set_content_fit(Gtk.ContentFit.COVER)
+    pic.set_size_request(TILE_W, TILE_H)
+    pic.set_can_shrink(True)
+    return pic
+
+
+def _load_external_thumbnail(path: str) -> Gtk.Widget | None:
+    """Render risky formats in a helper so loader crashes stay isolated."""
+    cache_path = _thumbnail_cache_path(path)
+    if cache_path is None:
+        return None
+    if cache_path.is_file():
+        pic = _picture_from_texture_file(cache_path)
+        if pic is not None:
+            return pic
+        try:
+            cache_path.unlink()
+        except OSError:
+            return None
+    if not THUMBNAIL_HELPER.is_file():
+        print(f"appearance: thumbnail helper missing: {THUMBNAIL_HELPER}",
+              file=sys.stderr)
+        return None
+    try:
+        subprocess.run(
+            [str(THUMBNAIL_HELPER), path, str(cache_path), str(THUMB_MAX)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=THUMBNAIL_TIMEOUT_SECONDS,
+            check=True,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"appearance: thumbnail helper timed out for {path}",
+              file=sys.stderr)
+        return None
+    except (OSError, subprocess.CalledProcessError) as exc:
+        stderr = getattr(exc, "stderr", "") or ""
+        detail = f": {stderr.strip()}" if stderr.strip() else f": {exc}"
+        print(f"appearance: thumbnail helper failed for {path}{detail}",
+              file=sys.stderr)
+        return None
+    if not cache_path.is_file():
+        return None
+    return _picture_from_texture_file(cache_path)
+
+
 def _load_thumbnail(path: str) -> Gtk.Widget | None:
     """Load an image as a scaled thumbnail.
 
     Uses GdkPixbuf's scale-during-decode so large wallpapers don't blow
-    through memory. Returns ``None`` if the file can't be loaded so the
-    caller can skip this tile instead of crashing the whole page.
+    through memory. Risky formats are decoded in a helper process and
+    cached as PNG so native loader failures cannot crash Settings.
     """
     if Path(path).suffix.lower() in RISKY_THUMBNAIL_EXTS:
-        return _thumbnail_placeholder()
+        return _load_external_thumbnail(path) or _thumbnail_placeholder()
     try:
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, THUMB_MAX, THUMB_MAX)
     except Exception as exc:  # GLib.Error, etc.
         print(f"appearance: thumbnail load failed for {path}: {exc}", file=sys.stderr)
-        return None
+        return _thumbnail_placeholder()
     texture = Gdk.Texture.new_for_pixbuf(pixbuf)
     pic = Gtk.Picture.new_for_paintable(texture)
     pic.set_content_fit(Gtk.ContentFit.COVER)
@@ -525,7 +612,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         for mime in (
             "image/jpeg", "image/png", "image/webp", "image/svg+xml",
             "image/bmp", "image/tiff", "image/jxl",
-            "image/avif", "image/heif",
+            "image/avif", "image/heif", "image/heic",
         ):
             image_filter.add_mime_type(mime)
         filters = Gio.ListStore.new(Gtk.FileFilter)

@@ -260,6 +260,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-encrypted-swap \
     /usr/libexec/universal-lite-first-boot \
     /usr/libexec/universal-lite-flatpak-setup \
+    /usr/libexec/universal-lite-wallpaper-thumbnailer \
     /usr/libexec/universal-lite-nightlight \
     /usr/libexec/universal-lite-set-memory-strategy \
     /usr/libexec/universal-lite-swap-init \

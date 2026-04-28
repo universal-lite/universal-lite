@@ -100,3 +100,35 @@ def test_fedora_default_alias_tracks_newest_release_manifest(monkeypatch, tmp_pa
     assert wp is not None
     assert wp.id == "f43"
     assert wallpapers.resolve_for_theme("fedora-default", "dark").endswith("f43-night.svg")
+
+
+def test_wallpaper_manifest_keeps_modern_image_formats_for_external_previews(
+    monkeypatch, tmp_path
+):
+    d = tmp_path / "gbp"
+    d.mkdir()
+    light = tmp_path / "photo.avif"
+    dark = tmp_path / "photo-dark.heic"
+    light.write_bytes(b"")
+    dark.write_bytes(b"")
+    (d / "modern.xml").write_text(
+        f"""<?xml version="1.0"?>
+<wallpapers>
+  <wallpaper deleted="false">
+    <name>Modern Photo</name>
+    <filename>{light}</filename>
+    <filename-dark>{dark}</filename-dark>
+  </wallpaper>
+</wallpapers>
+""",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(wallpapers, "SYSTEM_MANIFEST_DIRS", (d,))
+    monkeypatch.setattr(wallpapers, "USER_MANIFEST_DIR", tmp_path / "user")
+    _reset_cache()
+
+    listed = wallpapers.list_wallpapers()
+
+    assert len(listed) == 1
+    assert listed[0].light_path == str(light)
+    assert listed[0].dark_path == str(dark)

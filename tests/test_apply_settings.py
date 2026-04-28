@@ -597,6 +597,10 @@ class TestWallpaperSwap:
             == apply_settings.SWAYBG_SETTLE_RISKY
         )
         assert (
+            apply_settings._swaybg_settle_seconds("/tmp/background.heic")
+            == apply_settings.SWAYBG_SETTLE_RISKY
+        )
+        assert (
             apply_settings._swaybg_settle_seconds("/tmp/background.svg")
             == apply_settings.SWAYBG_SETTLE_DEFAULT
         )

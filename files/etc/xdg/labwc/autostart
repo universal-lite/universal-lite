@@ -84,7 +84,7 @@ for wallpaper in candidates:
     except OSError:
         continue
     settle = (
-        2.0 if os.path.splitext(wallpaper)[1].lower() in {'.jxl', '.avif', '.heif'}
+        2.0 if os.path.splitext(wallpaper)[1].lower() in {'.jxl', '.avif', '.heif', '.heic'}
         else 0.75
     )
     time.sleep(settle)
