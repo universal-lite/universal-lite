@@ -2,6 +2,7 @@
 
 import importlib.machinery
 import importlib.util
+import os
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
@@ -17,6 +18,24 @@ _spec.loader.exec_module(setup_wizard)
 
 class _DummyWindow:
     pass
+
+
+_SWAP_UNITS = (
+    "universal-lite-swap-init.service",
+    "universal-lite-zswap.service",
+    "universal-lite-encrypted-swap.service",
+)
+
+
+def _memory_window(tmp_path, use_zswap=True, swap_gb=4):
+    window = setup_wizard.SetupWizardWindow.__new__(
+        setup_wizard.SetupWizardWindow
+    )
+    window._sysroot_deploy = str(tmp_path / "deploy")
+    window._sysroot_var = str(tmp_path / "var")
+    window._setup_use_zswap = use_zswap
+    window._setup_swap_gb = swap_gb
+    return window
 
 
 def test_device_tree_sources_include_child_partitions():
@@ -116,3 +135,58 @@ def test_retry_install_unmounts_boot_when_efi_remount_fails(tmp_path):
         capture_output=True,
         timeout=10,
     )
+
+
+def test_configure_memory_enables_zswap_units_in_sysroot(tmp_path):
+    window = _memory_window(tmp_path, use_zswap=True, swap_gb=8)
+
+    err = setup_wizard.SetupWizardWindow._step_configure_memory(window)
+
+    assert err is None
+    deploy = Path(window._sysroot_deploy)
+    var_dir = Path(window._sysroot_var)
+    assert (var_dir / "lib/universal-lite/swap-size").read_text() == "8"
+    assert (
+        deploy / "etc/sysctl.d/91-universal-lite-zswap.conf"
+    ).read_text() == "vm.swappiness = 100\n"
+    assert (
+        deploy / "etc/systemd/zram-generator.conf"
+    ).read_text() == "[zram0]\nzram-size = 0\n"
+
+    wants_dir = deploy / "etc/systemd/system/swap.target.wants"
+    for unit in _SWAP_UNITS:
+        link = wants_dir / unit
+        assert link.is_symlink()
+        assert os.readlink(link) == f"/usr/lib/systemd/system/{unit}"
+
+
+def test_configure_memory_zram_removes_zswap_units_from_sysroot(tmp_path):
+    window = _memory_window(tmp_path, use_zswap=False)
+    deploy = Path(window._sysroot_deploy)
+    var_dir = Path(window._sysroot_var)
+    wants_dir = deploy / "etc/systemd/system/swap.target.wants"
+    wants_dir.mkdir(parents=True)
+    for unit in _SWAP_UNITS:
+        (wants_dir / unit).symlink_to(f"/usr/lib/systemd/system/{unit}")
+    (var_dir / "lib/universal-lite").mkdir(parents=True)
+    (var_dir / "lib/universal-lite/swap-size").write_text("8")
+    (deploy / "etc/sysctl.d").mkdir(parents=True)
+    (deploy / "etc/sysctl.d/91-universal-lite-zswap.conf").write_text(
+        "vm.swappiness = 100\n"
+    )
+
+    err = setup_wizard.SetupWizardWindow._step_configure_memory(window)
+
+    assert err is None
+    assert not (var_dir / "lib/universal-lite/swap-size").exists()
+    assert not (deploy / "etc/sysctl.d/91-universal-lite-zswap.conf").exists()
+    assert (
+        deploy / "etc/systemd/zram-generator.conf"
+    ).read_text() == (
+        "[zram0]\n"
+        "zram-size = min(ram * 5 / 4, 16384)\n"
+        "compression-algorithm = zstd(level=3)\n"
+        "swap-priority = 100\n"
+    )
+    for unit in _SWAP_UNITS:
+        assert not (wants_dir / unit).exists()

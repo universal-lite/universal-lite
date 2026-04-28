@@ -194,6 +194,33 @@ def test_live_mode_writes_config_then_syncs_live(monkeypatch):
     assert calls == [("config", settings, tokens), ("live", settings, tokens, changes)]
 
 
+def test_waybar_mode_only_writes_and_reloads_waybar(monkeypatch):
+    settings = _make_settings()
+    tokens = _make_tokens()
+    calls = []
+
+    monkeypatch.setattr(apply_settings, "ensure_settings", lambda: settings)
+    monkeypatch.setattr(apply_settings, "_build_tokens", lambda s: tokens)
+    monkeypatch.setattr(
+        apply_settings,
+        "write_waybar_config",
+        lambda t: calls.append(("waybar", t)) or True,
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "reload_waybar",
+        lambda: calls.append(("reload", None)),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_write_config_files",
+        lambda s, t: calls.append(("config", s, t)) or {},
+    )
+
+    assert apply_settings._main_locked("waybar") == 0
+    assert calls == [("waybar", tokens), ("reload", None)]
+
+
 def test_write_gtk_settings_can_skip_gsettings_for_pre_compositor_mode(
     monkeypatch, tmp_path
 ):
@@ -686,6 +713,25 @@ class TestPinnedValidation:
         result = _run_ensure_settings(data, tmp_path)
         assert len(result["pinned"]) == 1
 
+    def test_identity_fields_are_preserved(self, tmp_path):
+        data = _make_settings(pinned=[{
+            "name": "Chrome",
+            "command": "flatpak run com.google.Chrome",
+            "icon": "com.google.Chrome",
+            "desktop_id": "com.google.Chrome.desktop",
+            "app_id": "com.google.Chrome",
+            "startup_wm_class": "google-chrome",
+        }])
+        result = _run_ensure_settings(data, tmp_path)
+        assert result["pinned"][0] == {
+            "name": "Chrome",
+            "command": "flatpak run com.google.Chrome",
+            "icon": "com.google.Chrome",
+            "desktop_id": "com.google.Chrome.desktop",
+            "app_id": "com.google.Chrome",
+            "startup_wm_class": "google-chrome",
+        }
+
 
 # ---------------------------------------------------------------------------
 # L3: Config-change detection
@@ -837,6 +883,39 @@ class TestHorizontalCss:
         assert "#image.pin-1" in css
         assert "border-radius: 999px" in css
 
+    def test_horizontal_launching_pin_gets_bounce_animation(self, tmp_path):
+        state_dir = tmp_path / "universal-lite"
+        state_dir.mkdir()
+        state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
+        state_path.write_text(
+            json.dumps({"pins": {"0": {"expires_at": 9999999999}}}),
+            encoding="utf-8",
+        )
+        tokens = _make_tokens(
+            edge="bottom",
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
+            css = apply_settings._waybar_css_horizontal(tokens)
+        assert "#image.pin-0" in css
+        assert "animation-name: universal-lite-pin-launch-bounce" in css
+        assert "margin-top: -6px; margin-bottom: 6px;" in css
+
+    def test_expired_launching_pin_state_is_ignored(self, tmp_path):
+        state_dir = tmp_path / "universal-lite"
+        state_dir.mkdir()
+        state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
+        state_path.write_text(
+            json.dumps({"pins": {"0": {"expires_at": 1}}}),
+            encoding="utf-8",
+        )
+        tokens = _make_tokens(
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
+            css = apply_settings._waybar_css_horizontal(tokens)
+        assert "universal-lite-pin-launch-bounce" not in css
+
 
 # ---------------------------------------------------------------------------
 # Waybar module compatibility
@@ -850,6 +929,26 @@ class TestWaybarModuleCompatibility:
         config = json.loads((tmp_path / "config.jsonc").read_text())
         assert config["wlr/taskbar"]["on-click"] == "minimize-raise"
         assert config["wlr/taskbar"]["on-click-middle"] == "close"
+
+    def test_pinned_click_uses_launch_helper_with_identity(self, tmp_path):
+        tokens = _make_tokens(
+            pinned=[{
+                "name": "Chrome",
+                "command": "flatpak run com.google.Chrome",
+                "icon": "com.google.Chrome",
+                "desktop_id": "com.google.Chrome.desktop",
+                "app_id": "com.google.Chrome",
+                "startup_wm_class": "google-chrome",
+            }]
+        )
+        with patch.object(apply_settings, "WAYBAR_DIR", tmp_path):
+            apply_settings.write_waybar_config(tokens)
+        config = json.loads((tmp_path / "config.jsonc").read_text())
+        on_click = config["image#pin-0"]["on-click"]
+        assert on_click.startswith("/usr/libexec/universal-lite-launch-pin --pin 0")
+        assert "--command 'flatpak run com.google.Chrome'" in on_click
+        assert "--app-id com.google.Chrome" in on_click
+        assert "--app-id google-chrome" in on_click
 
     def test_config_groups_contiguous_status_modules(self, tmp_path):
         tokens = _make_tokens()

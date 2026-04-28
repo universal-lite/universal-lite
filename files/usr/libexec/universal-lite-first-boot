@@ -1,8 +1,8 @@
 #!/bin/bash
 # First-boot configuration for installer-deployed Universal-Lite systems.
 # Reads /var/lib/universal-lite/install-config.json and performs operations
-# that require the running target system: swap file creation, service
-# enablement, and runtime zswap activation.
+# that require the running target system: swap unit reconciliation and
+# runtime zswap activation.
 #
 # Called by universal-lite-first-boot.service.
 # Guards: runs only when install-config.json exists and setup-done does not.
@@ -49,26 +49,20 @@ username=$(read_config username)
 
 # --- Memory management ---
 if [ "$strategy" = "zswap" ] && [ -n "$swap_gb" ] && [ "$swap_gb" != "None" ]; then
-    # Write swap size for the swap-init script
+    # Write swap size for the swap-init service. The installer already
+    # enables the swap units in the target sysroot so swap.target can own
+    # the lifecycle on the first installed boot; this start is idempotent
+    # and covers retries or older installs where the transaction has not
+    # already run.
     echo "$swap_gb" > "$STATE_DIR/swap-size"
 
-    # Create the swap file
-    /usr/libexec/universal-lite-swap-init
-
-    # Enable swap services for future boots
-    systemctl enable \
+    if ! systemctl start \
         universal-lite-swap-init.service \
-        universal-lite-encrypted-swap.service \
-        universal-lite-zswap.service
-
-    # Activate encrypted swap for this boot
-    /usr/libexec/universal-lite-encrypted-swap start
-
-    # Activate zswap for this boot (bootc --karg takes effect next boot)
-    modprobe zswap 2>/dev/null || true
-    echo 1 > /sys/module/zswap/parameters/enabled 2>/dev/null || true
-    echo zstd > /sys/module/zswap/parameters/compressor 2>/dev/null || true
-    echo 25 > /sys/module/zswap/parameters/max_pool_percent 2>/dev/null || true
+        universal-lite-zswap.service \
+        universal-lite-encrypted-swap.service; then
+        echo "universal-lite-first-boot: encrypted swap activation failed;" \
+             "continuing without disk swap." >&2
+    fi
 
     # Swappiness sysctl and zram-generator.conf are already written to the
     # sysroot by the wizard during _step_configure_memory — no need to

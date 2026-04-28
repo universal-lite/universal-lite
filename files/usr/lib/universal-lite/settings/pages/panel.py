@@ -296,8 +296,45 @@ class PanelPage(BasePage, Adw.PreferencesPage):
                 continue
             name = str(app.get("name", "")).strip() or command
             icon = str(app.get("icon", "")).strip() or "application-x-executable-symbolic"
-            pinned.append({"name": name, "command": command, "icon": icon})
+            pin = {"name": name, "command": command, "icon": icon}
+            for key in ("desktop_id", "app_id", "startup_wm_class"):
+                value = str(app.get(key, "")).strip()
+                if value:
+                    pin[key] = value
+            pinned.append(pin)
         return pinned
+
+    @staticmethod
+    def _identity_fields_from_app_info(app_info, command: str) -> dict[str, str]:
+        fields: dict[str, str] = {}
+        desktop_id = ""
+        get_id = getattr(app_info, "get_id", None)
+        if callable(get_id):
+            desktop_id = str(get_id() or "").strip()
+        if desktop_id:
+            fields["desktop_id"] = desktop_id
+            if desktop_id.endswith(".desktop"):
+                fields["app_id"] = desktop_id[:-8]
+
+        get_startup_wm_class = getattr(app_info, "get_startup_wm_class", None)
+        if callable(get_startup_wm_class):
+            startup_wm_class = str(get_startup_wm_class() or "").strip()
+            if startup_wm_class:
+                fields["startup_wm_class"] = startup_wm_class
+
+        try:
+            parts = shlex.split(command)
+        except ValueError:
+            parts = []
+        if "run" in parts:
+            run_idx = parts.index("run")
+            for part in parts[run_idx + 1:]:
+                if part == "--" or part.startswith("-"):
+                    continue
+                if "." in part:
+                    fields.setdefault("app_id", part)
+                    break
+        return fields
 
     def _refresh_module_lists(self):
         for section, group in self._section_groups.items():
@@ -633,6 +670,8 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         if not icon:
             icon = "application-x-executable-symbolic"
 
-        self._pinned_data.append({"name": name, "command": cmd, "icon": icon})
+        pin = {"name": name, "command": cmd, "icon": icon}
+        pin.update(self._identity_fields_from_app_info(app_info, cmd))
+        self._pinned_data.append(pin)
         self._refresh_pinned_list()
         self.store.save_and_apply("pinned", self._pinned_data)

@@ -54,6 +54,9 @@ def test_pinned_defaults_follow_selected_apps(monkeypatch):
         "name": "Bazaar",
         "command": "flatpak run io.github.kolunmi.Bazaar",
         "icon": "io.github.kolunmi.Bazaar",
+        "desktop_id": "io.github.kolunmi.Bazaar.desktop",
+        "app_id": "io.github.kolunmi.Bazaar",
+        "startup_wm_class": "io.github.kolunmi.Bazaar",
     }]
 
 

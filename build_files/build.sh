@@ -132,6 +132,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     vulkan-tools \
     waybar \
     wdisplays \
+    wlrctl \
     wlr-randr \
     wireplumber \
     xfce4-taskmanager \
@@ -266,6 +267,7 @@ chmod 0755 \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-launch \
     /usr/libexec/universal-lite-greeter-setup \
+    /usr/libexec/universal-lite-launch-pin \
     /usr/libexec/universal-lite-wizard-session \
     /usr/libexec/universal-lite-menu \
     /usr/bin/universal-lite-app-menu \

@@ -11,8 +11,22 @@
   },
   "wallpaper": "fedora-default",
   "pinned": [
-    {"name": "Chrome",  "command": "flatpak run com.google.Chrome", "icon": "com.google.Chrome"},
-    {"name": "Bazaar",  "command": "flatpak run io.github.kolunmi.Bazaar", "icon": "io.github.kolunmi.Bazaar"}
+    {
+      "name": "Chrome",
+      "command": "flatpak run com.google.Chrome",
+      "icon": "com.google.Chrome",
+      "desktop_id": "com.google.Chrome.desktop",
+      "app_id": "com.google.Chrome",
+      "startup_wm_class": "google-chrome"
+    },
+    {
+      "name": "Bazaar",
+      "command": "flatpak run io.github.kolunmi.Bazaar",
+      "icon": "io.github.kolunmi.Bazaar",
+      "desktop_id": "io.github.kolunmi.Bazaar.desktop",
+      "app_id": "io.github.kolunmi.Bazaar",
+      "startup_wm_class": "io.github.kolunmi.Bazaar"
+    }
   ],
   "touchpad_tap_to_click": true,
   "touchpad_natural_scroll": false,

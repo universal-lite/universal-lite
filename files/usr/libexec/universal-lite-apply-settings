@@ -37,6 +37,8 @@ MAKO_DIR = CONFIG_HOME / "mako"
 FOOT_DIR = CONFIG_HOME / "foot"
 LABWC_DIR = CONFIG_HOME / "labwc"
 SWAYLOCK_DIR = CONFIG_HOME / "swaylock"
+PIN_LAUNCH_HELPER = "/usr/libexec/universal-lite-launch-pin"
+PIN_LAUNCH_STATE_NAME = "waybar-pin-launching.json"
 
 FALLBACK_WALLPAPER_PATHS: dict[str, tuple[Path, ...]] = {
     "light": (
@@ -704,7 +706,12 @@ def ensure_settings() -> dict:
                 continue
             name = str(entry.get("name", "")).strip() or os.path.basename(cmd.split()[0])
             icon = str(entry.get("icon", "")).strip() or "application-x-executable"
-            pinned.append({"name": name, "command": cmd, "icon": icon})
+            pin = {"name": name, "command": cmd, "icon": icon}
+            for key in ("desktop_id", "app_id", "startup_wm_class"):
+                value = str(entry.get(key, "")).strip()
+                if value:
+                    pin[key] = value
+            pinned.append(pin)
 
     # Validate layout
     raw_layout = data.get("layout")
@@ -1009,6 +1016,149 @@ def _waybar_status_css(tokens: dict, *, vertical: bool) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _pin_launch_state_path() -> Path:
+    """Return the per-session Waybar pin launch-state path."""
+    runtime = os.environ.get("XDG_RUNTIME_DIR")
+    if runtime:
+        root = Path(runtime) / "universal-lite"
+    else:
+        root = Path("/tmp") / f"universal-lite-{os.getuid()}"
+    return root / PIN_LAUNCH_STATE_NAME
+
+
+def _launching_pin_indices(pin_count: int) -> set[int]:
+    """Return non-expired pending-launch pin indices for CSS generation."""
+    if pin_count <= 0:
+        return set()
+    try:
+        data = json.loads(_pin_launch_state_path().read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return set()
+    pins = data.get("pins")
+    if not isinstance(pins, dict):
+        return set()
+    now = time.time()
+    active: set[int] = set()
+    for raw_idx, raw_meta in pins.items():
+        try:
+            idx = int(raw_idx)
+        except (TypeError, ValueError):
+            continue
+        if idx < 0 or idx >= pin_count:
+            continue
+        if not isinstance(raw_meta, dict):
+            continue
+        try:
+            expires_at = float(raw_meta.get("expires_at", 0))
+        except (TypeError, ValueError):
+            continue
+        if expires_at > now:
+            active.add(idx)
+    return active
+
+
+def _strip_desktop_suffix(value: str) -> str:
+    return value[:-8] if value.endswith(".desktop") else value
+
+
+def _flatpak_app_id_from_command(command: str) -> str:
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        return ""
+    try:
+        run_idx = parts.index("run")
+    except ValueError:
+        return ""
+    for part in parts[run_idx + 1:]:
+        if part == "--":
+            continue
+        if part.startswith("-"):
+            continue
+        if "." in part:
+            return part
+    return ""
+
+
+def _pin_match_app_ids(app: dict) -> list[str]:
+    """Return likely wlroots app_id values for a pinned launcher."""
+    values: list[str] = []
+
+    def add(value: object) -> None:
+        text = str(value or "").strip()
+        if text and text not in values:
+            values.append(text)
+
+    add(app.get("app_id"))
+    desktop_id = str(app.get("desktop_id", "")).strip()
+    if desktop_id:
+        add(_strip_desktop_suffix(os.path.basename(desktop_id)))
+        add(desktop_id)
+    add(app.get("startup_wm_class"))
+    flatpak_id = _flatpak_app_id_from_command(str(app.get("command", "")))
+    if flatpak_id:
+        add(flatpak_id)
+    return values
+
+
+def _waybar_pin_launch_command(index: int, app: dict) -> str:
+    args = [
+        PIN_LAUNCH_HELPER,
+        "--pin", str(index),
+        "--command", str(app["command"]),
+    ]
+    for app_id in _pin_match_app_ids(app):
+        args.extend(["--app-id", app_id])
+    return shlex.join(args)
+
+
+def _waybar_pin_launch_css(tokens: dict, *, vertical: bool, pending: set[int]) -> str:
+    if not pending:
+        return ""
+    selectors = ", ".join(f"#image.pin-{idx}" for idx in sorted(pending))
+    bounce = 5 if tokens.get("density") == "compact" else 6
+    if tokens.get("reduce_motion", False):
+        return f"""
+@keyframes universal-lite-pin-launch-pulse {{
+    0%, 100% {{ opacity: 1.0; }}
+    50% {{ opacity: 0.62; }}
+}}
+{selectors} {{
+    background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_accent_border"]};
+    animation-name: universal-lite-pin-launch-pulse;
+    animation-duration: 900ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}}
+"""
+
+    if vertical:
+        if tokens["edge"] == "right":
+            halfway = f"margin-left: -{bounce}px; margin-right: {bounce}px;"
+        else:
+            halfway = f"margin-left: {bounce}px; margin-right: -{bounce}px;"
+    elif tokens["edge"] == "top":
+        halfway = f"margin-top: {bounce}px; margin-bottom: -{bounce}px;"
+    else:
+        halfway = f"margin-top: -{bounce}px; margin-bottom: {bounce}px;"
+
+    return f"""
+@keyframes universal-lite-pin-launch-bounce {{
+    0%, 100% {{ margin: 0; }}
+    50% {{ {halfway} }}
+}}
+{selectors} {{
+    background: {tokens["panel_control_hover"]};
+    border: 1px solid {tokens["panel_accent_border"]};
+    animation-name: universal-lite-pin-launch-bounce;
+    animation-duration: 700ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}}
+"""
+
+
 def _waybar_css_common(tokens: dict) -> str:
     pr, pg, pb = _hex_to_rgb_tuple(tokens["panel_surface"])
     m = tokens["panel_margin"]
@@ -1108,6 +1258,7 @@ def _waybar_css_horizontal(tokens: dict) -> str:
     background: {tokens["panel_control_hover"]};
     border: 1px solid {tokens["panel_control_border"]};
 }}
+{_waybar_pin_launch_css(tokens, vertical=False, pending=_launching_pin_indices(len(pinned)))}
 """
 
     return f"""
@@ -1178,6 +1329,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     background: {tokens["panel_control_hover"]};
     border: 1px solid {tokens["panel_control_border"]};
 }}
+{_waybar_pin_launch_css(tokens, vertical=True, pending=_launching_pin_indices(len(pinned)))}
 """
 
     return f"""
@@ -1398,7 +1550,7 @@ def write_waybar_config(tokens: dict) -> bool:
         config[f"image#pin-{i}"] = {
             "path": icon_path,
             "size": icon_size,
-            "on-click": app["command"],
+            "on-click": _waybar_pin_launch_command(i, app),
             "tooltip": True,
         }
 
@@ -2386,12 +2538,18 @@ def _sync_live_session(settings: dict, tokens: dict, changes: dict[str, bool]) -
 
 
 def _main_locked(mode: str = "full") -> int:
-    if mode not in {"config", "live", "full"}:
+    if mode not in {"config", "live", "full", "waybar"}:
         print(f"apply-settings: unknown mode {mode!r}", file=sys.stderr)
         return 2
 
     settings = ensure_settings()
     tokens = _build_tokens(settings)
+
+    if mode == "waybar":
+        if write_waybar_config(tokens):
+            reload_waybar()
+        return 0
+
     changes = _write_config_files(settings, tokens)
 
     if mode in {"live", "full"}:
@@ -2408,7 +2566,7 @@ def _parse_mode(argv: list[str]) -> str:
         if arg == "--mode":
             idx += 1
             if idx >= len(argv):
-                raise ValueError("--mode requires config, live, or full")
+                raise ValueError("--mode requires config, live, full, or waybar")
             mode = argv[idx]
         elif arg.startswith("--mode="):
             mode = arg.split("=", 1)[1]
@@ -2417,8 +2575,8 @@ def _parse_mode(argv: list[str]) -> str:
         else:
             raise ValueError(f"unknown argument: {arg}")
         idx += 1
-    if mode not in {"config", "live", "full"}:
-        raise ValueError("--mode must be config, live, or full")
+    if mode not in {"config", "live", "full", "waybar"}:
+        raise ValueError("--mode must be config, live, full, or waybar")
     return mode
 
 

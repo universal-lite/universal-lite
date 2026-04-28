@@ -19,12 +19,13 @@ ExecStop=/usr/libexec/universal-lite-encrypted-swap stop
 # --- Hardening ---
 # Needs block device + dm-crypt + swapon + /dev/mapper/control + /dev/loopN +
 # /dev/urandom. Keeps CAP_SYS_ADMIN (loop/dm-crypt/swapon) — everything else
-# can go. Writes only to /run/universal-lite-swap-loop on the host fs.
+# can go. Writes runtime loop state to /run and opens /var/swap read/write
+# as the loop backing file.
 ProtectSystem=strict
 ProtectHome=yes
 # PrivateTmp omitted: swap.target runs before /tmp is mountable, so
 # pulling in systemd-tmpfiles-setup would create an ordering cycle.
-ReadWritePaths=/run
+ReadWritePaths=/run /var/swap
 NoNewPrivileges=yes
 RestrictSUIDSGID=yes
 ProtectKernelTunables=yes

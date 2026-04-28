@@ -67,7 +67,14 @@ def test_panel_sanitize_pinned_skips_invalid_entries():
     pinned = panel.PanelPage._sanitize_pinned([
         "bad",
         {"name": "No command"},
-        {"name": "Files", "command": "Thunar", "icon": ""},
+        {
+            "name": "Files",
+            "command": "Thunar",
+            "icon": "",
+            "desktop_id": "thunar.desktop",
+            "app_id": "thunar",
+            "startup_wm_class": "Thunar",
+        },
         {"command": "foot"},
     ])
 
@@ -76,6 +83,9 @@ def test_panel_sanitize_pinned_skips_invalid_entries():
             "name": "Files",
             "command": "Thunar",
             "icon": "application-x-executable-symbolic",
+            "desktop_id": "thunar.desktop",
+            "app_id": "thunar",
+            "startup_wm_class": "Thunar",
         },
         {
             "name": "foot",
@@ -83,6 +93,26 @@ def test_panel_sanitize_pinned_skips_invalid_entries():
             "icon": "application-x-executable-symbolic",
         },
     ]
+
+
+def test_panel_identity_fields_from_flatpak_desktop_app_info():
+    class FakeAppInfo:
+        def get_id(self):
+            return "com.example.App.desktop"
+
+        def get_startup_wm_class(self):
+            return "example-app"
+
+    fields = panel.PanelPage._identity_fields_from_app_info(
+        FakeAppInfo(),
+        "flatpak run com.example.App",
+    )
+
+    assert fields == {
+        "desktop_id": "com.example.App.desktop",
+        "app_id": "com.example.App",
+        "startup_wm_class": "example-app",
+    }
 
 
 def test_panel_sanitize_layout_filters_unknowns_and_duplicates():

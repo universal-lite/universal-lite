@@ -3,9 +3,9 @@ Description=First-boot configuration for installer-deployed Universal-Lite
 # Before=swap.target was the cycle source: combined with the default
 # After=basic.target it forced sysinit→basic→first-boot→swap ordering,
 # which collided with swap.target's placement in the boot sequence.
-# First-boot writes swap-size and calls the swap scripts directly
-# (see /usr/libexec/universal-lite-first-boot), so blocking swap.target
-# from systemd's side is unnecessary.
+# First-boot writes swap-size and idempotently starts the swap units when
+# needed (see /usr/libexec/universal-lite-first-boot), so blocking
+# swap.target from systemd's side is unnecessary.
 After=local-fs.target
 Before=greetd.service
 ConditionPathExists=/var/lib/universal-lite/install-config.json
@@ -17,15 +17,14 @@ ExecStart=/usr/libexec/universal-lite-first-boot
 TimeoutStartSec=600
 
 # --- Hardening ---
-# Intentionally light: this script calls systemctl enable, modprobe zswap,
-# sysctl -w, writes to /sys/module/zswap/parameters, touches /var/lib/universal-lite,
-# creates /var/swap, and execs other libexec scripts. Too much to lock down
-# without breaking it. Apply only the directives that are safely compatible:
-#   - ProtectSystem=strict + ReadWritePaths covers /var writes.
+# Intentionally light: this script calls systemctl start, sysctl -w, and
+# writes /var/lib/universal-lite state. Too much to lock down without
+# breaking it. Apply only the directives that are safely compatible:
+#   - ProtectSystem=strict + ReadWritePaths covers /var and sysctl writes.
 #   - NoNewPrivileges=yes is fine (no setuid execs involved).
-#   - Skip ProtectKernelModules (modprobe), ProtectKernelTunables (sysctl/sysfs).
+#   - Skip ProtectKernelTunables (sysctl).
 ProtectSystem=strict
-ReadWritePaths=/var /run /sys/module/zswap/parameters /proc/sys/vm
+ReadWritePaths=/var /proc/sys/vm
 NoNewPrivileges=yes
 RestrictSUIDSGID=yes
 ProtectControlGroups=yes

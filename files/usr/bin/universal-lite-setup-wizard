@@ -538,11 +538,17 @@ PINNED_FLATPAK_DEFAULTS = {
         "name": "Chrome",
         "command": "flatpak run com.google.Chrome",
         "icon": "com.google.Chrome",
+        "desktop_id": "com.google.Chrome.desktop",
+        "app_id": "com.google.Chrome",
+        "startup_wm_class": "google-chrome",
     },
     "io.github.kolunmi.Bazaar": {
         "name": "Bazaar",
         "command": "flatpak run io.github.kolunmi.Bazaar",
         "icon": "io.github.kolunmi.Bazaar",
+        "desktop_id": "io.github.kolunmi.Bazaar.desktop",
+        "app_id": "io.github.kolunmi.Bazaar",
+        "startup_wm_class": "io.github.kolunmi.Bazaar",
     },
 }
 
@@ -3381,6 +3387,26 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             tmp.write_text(content)
         os.rename(tmp, path)
 
+    @staticmethod
+    def _sysroot_set_unit_wanted(deploy: str | Path, target: str,
+                                 unit: str, wanted: bool) -> None:
+        """Enable or disable a systemd unit in the deployed sysroot.
+
+        The installed system may not be running yet, so use the same
+        symlink layout that `systemctl enable` would create instead of
+        calling systemctl against the live USB environment.
+        """
+        wants_dir = (
+            Path(deploy) / "etc" / "systemd" / "system" / f"{target}.wants"
+        )
+        link = wants_dir / unit
+        if wanted:
+            wants_dir.mkdir(parents=True, exist_ok=True)
+            link.unlink(missing_ok=True)
+            link.symlink_to(f"/usr/lib/systemd/system/{unit}")
+        else:
+            link.unlink(missing_ok=True)
+
     def _step_configure_user(self) -> str | None:
         """Create user account, set root password, timezone, and locale on sysroot.
 
@@ -3782,9 +3808,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
 
         state_dir = Path(var_dir) / "lib" / "universal-lite"
         state_dir.mkdir(parents=True, exist_ok=True)
+        swap_units = (
+            "universal-lite-swap-init.service",
+            "universal-lite-zswap.service",
+            "universal-lite-encrypted-swap.service",
+        )
 
         if self._setup_use_zswap:
-            # Write swap size for the first-boot service
+            # Write swap size for the swap-init service.
             _atomic_write_text(
                 state_dir / "swap-size", str(self._setup_swap_gb))
 
@@ -3805,7 +3836,23 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 zram_dir / "zram-generator.conf",
                 "[zram0]\nzram-size = 0\n",
             )
+
+            # Enable the encrypted swap stack before the target's first
+            # boot, so swap.target owns creation and activation from the
+            # normal systemd boot transaction.
+            for unit in swap_units:
+                self._sysroot_set_unit_wanted(deploy, "swap.target", unit, True)
         else:
+            (state_dir / "swap-size").unlink(missing_ok=True)
+            (
+                Path(deploy)
+                / "etc"
+                / "sysctl.d"
+                / "91-universal-lite-zswap.conf"
+            ).unlink(missing_ok=True)
+            for unit in swap_units:
+                self._sysroot_set_unit_wanted(deploy, "swap.target", unit, False)
+
             # Explicitly write the zram-generator config to the sysroot
             # (ensures 125% even if the image default changes later)
             zram_dir = Path(deploy) / "etc" / "systemd"
