@@ -748,73 +748,6 @@ class TestPinnedValidation:
         }
 
 
-class TestPinnedLaunchIdentity:
-    def test_native_command_basename_is_app_id_candidate(self):
-        app = {
-            "name": "Text Editor",
-            "command": "/usr/bin/gnome-text-editor --new-window",
-            "icon": "org.gnome.TextEditor",
-        }
-
-        assert "gnome-text-editor" in apply_settings._pin_match_app_ids(app)
-
-    def test_command_basename_uses_flatpak_app_not_flatpak_binary(self):
-        app = {
-            "name": "Chrome",
-            "command": "flatpak run com.google.Chrome",
-            "icon": "com.google.Chrome",
-        }
-
-        assert apply_settings._pin_match_app_ids(app) == [
-            "com.google.Chrome",
-            "com.google.chrome",
-        ]
-
-    def test_flatpak_id_requires_flatpak_command(self):
-        app = {
-            "name": "Build Tool",
-            "command": "npm run com.example.App",
-            "icon": "build-tool",
-        }
-
-        assert apply_settings._pin_match_app_ids(app) == []
-
-    def test_generic_interpreter_command_does_not_add_alias(self):
-        app = {
-            "name": "Python App",
-            "command": "python3 /opt/example/app.py",
-            "icon": "python-app",
-        }
-
-        assert apply_settings._pin_match_app_ids(app) == []
-
-    def test_env_wrapper_uses_wrapped_command_basename(self):
-        app = {
-            "name": "Foo",
-            "command": "env FOO=bar /opt/apps/foo --new-window",
-            "icon": "foo",
-        }
-
-        assert apply_settings._pin_match_app_ids(app) == ["foo"]
-
-    def test_lowercase_aliases_are_deduplicated(self):
-        app = {
-            "name": "Example",
-            "command": "/usr/bin/ExampleApp",
-            "icon": "example",
-            "app_id": "ExampleApp",
-            "desktop_id": "ExampleApp.desktop",
-            "startup_wm_class": "exampleapp",
-        }
-
-        assert apply_settings._pin_match_app_ids(app) == [
-            "ExampleApp",
-            "exampleapp",
-            "ExampleApp.desktop",
-            "exampleapp.desktop",
-        ]
-
-
 # ---------------------------------------------------------------------------
 # L3: Config-change detection
 # ---------------------------------------------------------------------------
@@ -965,65 +898,29 @@ class TestHorizontalCss:
         assert "#image.pin-1" in css
         assert "border-radius: 999px" in css
 
-    def test_horizontal_launching_pin_gets_non_layout_pulse(self, tmp_path):
-        state_dir = tmp_path / "universal-lite"
-        state_dir.mkdir()
-        state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
-        state_path.write_text(
-            json.dumps({"pins": {"0": {"expires_at": 9999999999}}}),
-            encoding="utf-8",
-        )
+    def test_horizontal_pinned_apps_have_no_launch_feedback_css(self):
         tokens = _make_tokens(
             edge="bottom",
             pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
         )
-        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
-            css = apply_settings._waybar_css_horizontal(tokens)
+        css = apply_settings._waybar_css_horizontal(tokens)
         assert "#image.pin-0" in css
-        assert "animation-name: universal-lite-pin-launch-pulse" in css
-        assert "margin-top:" not in css
-        assert "margin-bottom:" not in css
-        assert "margin-left:" not in css
-        assert "margin-right:" not in css
+        assert "universal-lite-pin-launch" not in css
 
-    def test_launching_pin_css_is_accepted_by_gtk(self, tmp_path):
+    def test_pinned_app_css_is_accepted_by_gtk(self):
         gi = pytest.importorskip("gi")
         gi.require_version("Gtk", "3.0")
         from gi.repository import Gtk
 
-        state_dir = tmp_path / "universal-lite"
-        state_dir.mkdir()
-        state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
-        state_path.write_text(
-            json.dumps({"pins": {"0": {"expires_at": 9999999999}}}),
-            encoding="utf-8",
-        )
         tokens = _make_tokens(
             edge="bottom",
             pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
         )
-        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
-            css = apply_settings._waybar_css_common(tokens)
-            css += apply_settings._waybar_css_horizontal(tokens)
+        css = apply_settings._waybar_css_common(tokens)
+        css += apply_settings._waybar_css_horizontal(tokens)
 
         provider = Gtk.CssProvider()
         provider.load_from_data(css.encode("utf-8"))
-
-    def test_expired_launching_pin_state_is_ignored(self, tmp_path):
-        state_dir = tmp_path / "universal-lite"
-        state_dir.mkdir()
-        state_path = state_dir / apply_settings.PIN_LAUNCH_STATE_NAME
-        state_path.write_text(
-            json.dumps({"pins": {"0": {"expires_at": 1}}}),
-            encoding="utf-8",
-        )
-        tokens = _make_tokens(
-            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
-        )
-        with patch.dict(os.environ, {"XDG_RUNTIME_DIR": str(tmp_path)}):
-            css = apply_settings._waybar_css_horizontal(tokens)
-        assert "universal-lite-pin-launch-pulse" not in css
-
 
 # ---------------------------------------------------------------------------
 # Waybar module compatibility
@@ -1038,7 +935,7 @@ class TestWaybarModuleCompatibility:
         assert config["wlr/taskbar"]["on-click"] == "minimize-raise"
         assert config["wlr/taskbar"]["on-click-middle"] == "close"
 
-    def test_pinned_click_uses_launch_helper_with_identity(self, tmp_path):
+    def test_pinned_click_uses_direct_launch_command(self, tmp_path):
         tokens = _make_tokens(
             pinned=[{
                 "name": "Chrome",
@@ -1053,10 +950,7 @@ class TestWaybarModuleCompatibility:
             apply_settings.write_waybar_config(tokens)
         config = json.loads((tmp_path / "config.jsonc").read_text())
         on_click = config["image#pin-0"]["on-click"]
-        assert on_click.startswith("/usr/libexec/universal-lite-launch-pin --pin 0")
-        assert "--command 'flatpak run com.google.Chrome'" in on_click
-        assert "--app-id com.google.Chrome" in on_click
-        assert "--app-id google-chrome" in on_click
+        assert on_click == "flatpak run com.google.Chrome"
 
     def test_config_groups_contiguous_status_modules(self, tmp_path):
         tokens = _make_tokens()

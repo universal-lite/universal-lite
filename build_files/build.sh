@@ -267,7 +267,6 @@ chmod 0755 \
     /usr/libexec/universal-lite-swap-init \
     /usr/libexec/universal-lite-greeter-launch \
     /usr/libexec/universal-lite-greeter-setup \
-    /usr/libexec/universal-lite-launch-pin \
     /usr/libexec/universal-lite-wizard-session \
     /usr/libexec/universal-lite-menu \
     /usr/bin/universal-lite-app-menu \
