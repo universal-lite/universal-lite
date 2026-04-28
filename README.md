@@ -99,7 +99,7 @@ reflashing.
 **On Fedora 42+ / Universal Blue (bootc):**
 
 ```bash
-sudo bootc switch ghcr.io/universal-lite/universal-lite:latest
+sudo bootc switch quay.io/noitatsidem/universal-lite:latest
 sudo systemctl reboot
 ```
 
@@ -107,18 +107,18 @@ sudo systemctl reboot
 
 ```bash
 # Unsigned rebase (works everywhere)
-rpm-ostree rebase ostree-unverified-registry:ghcr.io/universal-lite/universal-lite:latest
+rpm-ostree rebase ostree-unverified-registry:quay.io/noitatsidem/universal-lite:latest
 systemctl reboot
 
 # Then, for signature verification on subsequent updates:
-rpm-ostree rebase ostree-image-signed:docker://ghcr.io/universal-lite/universal-lite:latest
+rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest
 systemctl reboot
 ```
 
 ### After install
 
 The system manages itself. Daily image builds publish to
-`ghcr.io/universal-lite/universal-lite:latest` and the unified updater
+`quay.io/noitatsidem/universal-lite:latest` and the unified updater
 (`uupd`) pulls them on a timer, handling both the bootc image and
 Flatpak apps. If an update ever causes a problem, the previous image is
 always available in the boot menu — select it to roll back.
@@ -347,7 +347,7 @@ python -m pytest tests
 
 Pull requests, non-README pushes to `main`, and the daily schedule build
 the OCI image. Default-branch builds publish
-`ghcr.io/universal-lite/universal-lite` and sign images with
+`quay.io/noitatsidem/universal-lite` and sign images with
 [cosign](https://github.com/sigstore/cosign).
 
 To set up signing on a fresh fork:

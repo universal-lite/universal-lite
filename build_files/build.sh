@@ -219,7 +219,7 @@ glib-compile-schemas /usr/share/glib-2.0/schemas/
 python3 -c "
 import json
 p = json.load(open('/etc/containers/policy.json'))
-p.setdefault('transports', {}).setdefault('docker', {})['ghcr.io/universal-lite'] = [{
+p.setdefault('transports', {}).setdefault('docker', {})['quay.io/noitatsidem'] = [{
     'type': 'sigstoreSigned',
     'keyPath': '/etc/pki/containers/universal-lite.pub',
     'signedIdentity': {'type': 'matchRepository'},

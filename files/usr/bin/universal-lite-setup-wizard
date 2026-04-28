@@ -3128,9 +3128,9 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         # Pre-flight DNS check — fail fast with a clear message instead of
         # letting bootc produce a cryptic "Temporary failure in name resolution".
         try:
-            socket.getaddrinfo("ghcr.io", 443, type=socket.SOCK_STREAM)
+            socket.getaddrinfo("quay.io", 443, type=socket.SOCK_STREAM)
         except socket.gaierror:
-            return _("Cannot resolve ghcr.io — check your network connection. "
+            return _("Cannot resolve quay.io — check your network connection. "
                      "The container registry must be reachable to install.")
 
         # Pre-flight disk-space check — bootc pulls ~5 GB; failing deep

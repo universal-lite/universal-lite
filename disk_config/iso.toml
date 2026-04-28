@@ -26,7 +26,7 @@ cat > /var/lib/universal-lite/install-config.json <<EOF
 }
 EOF
 
-bootc switch --mutate-in-place --transport registry ghcr.io/universal-lite/universal-lite:latest
+bootc switch --mutate-in-place --transport registry quay.io/noitatsidem/universal-lite:latest
 %end
 """
 
