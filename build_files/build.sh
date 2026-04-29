@@ -161,14 +161,26 @@ dnf5 install -y --setopt=install_weak_deps=False \
 # stack (not the stripped libavcodec-free shipped by default). Bluefin gets this
 # story "for free" via GNOME's Videos/Celluloid Flatpaks which bundle their own
 # codecs; we play through the host stack so the host stack has to be complete.
-dnf5 install -y --setopt=install_weak_deps=False \
-    --disablerepo=fedora-multimedia \
-    gstreamer1-plugins-ugly \
-    gstreamer1-plugins-bad-freeworld \
-    gstreamer1-plugin-openh264 \
-    ffmpeg-free \
-    mesa-va-drivers-freeworld \
+MULTIMEDIA_PACKAGES=(
+    gstreamer1-plugins-ugly
+    gstreamer1-plugins-bad-freeworld
+    gstreamer1-plugin-openh264
+    ffmpeg-free
+    mesa-va-drivers-freeworld
     mesa-vdpau-drivers-freeworld
+)
+
+if [[ "$FEDORA_MAJOR" -ge 44 ]]; then
+    dnf5 install -y --setopt=install_weak_deps=False \
+        --skip-unavailable \
+        --disablerepo=fedora-multimedia \
+        "${MULTIMEDIA_PACKAGES[@]}" \
+        || echo "rpmfusion multimedia packages are unavailable on Fedora ${FEDORA_MAJOR}; continuing beta canary build"
+else
+    dnf5 install -y --setopt=install_weak_deps=False \
+        --disablerepo=fedora-multimedia \
+        "${MULTIMEDIA_PACKAGES[@]}"
+fi
 
 # Build a GdkPixbuf loader for JPEG-XL so swaybg and the settings
 # picker can display vendor .jxl wallpapers directly. Fedora 43
