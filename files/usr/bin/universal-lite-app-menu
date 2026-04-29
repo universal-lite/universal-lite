@@ -55,6 +55,7 @@ if (os.environ.get("UL_APP_MENU_PRELOADED") != "1"
     os.environ["UL_APP_MENU_PRELOADED"] = "1"
     os.execv(sys.executable, [sys.executable, __file__] + sys.argv[1:])
 
+import gettext
 import json
 import signal
 import time
@@ -77,6 +78,13 @@ except (ValueError, ImportError) as _e:
     print(f"universal-lite-app-menu: Gtk4LayerShell unavailable ({_e}); "
           f"falling back to plain toplevel", file=sys.stderr)
 
+
+TEXTDOMAIN = "universal-lite-app-menu"
+LOCALEDIR = "/usr/share/locale"
+
+gettext.bindtextdomain(TEXTDOMAIN, LOCALEDIR)
+gettext.textdomain(TEXTDOMAIN)
+_ = gettext.gettext
 
 SETTINGS_PATH = Path.home() / ".config/universal-lite/settings.json"
 LAUNCHES_PATH = Path.home() / ".config/universal-lite/app-launches.json"
@@ -108,23 +116,25 @@ PID_LOCK_PATH = Path(_XDG_RUNTIME_DIR) / "universal-lite-app-menu.pid"
 # Order is alphabetical. Apps that don't match any freedesktop Main
 # Category land in "Other" so obscure apps are still reachable.
 CATEGORIES: list[tuple[str, frozenset[str]]] = [
-    ("Accessories", frozenset({"Utility", "Accessories", "Core"})),
-    ("Development", frozenset({"Development", "IDE", "Building"})),
-    ("Games",       frozenset({"Game"})),
-    ("Graphics",    frozenset({"Graphics", "2DGraphics", "3DGraphics", "Photography",
-                               "RasterGraphics", "VectorGraphics", "Viewer"})),
-    ("Internet",    frozenset({"Network", "WebBrowser", "Email", "InstantMessaging",
-                               "FileTransfer", "P2P", "Chat", "IRCClient"})),
-    ("Multimedia",  frozenset({"AudioVideo", "Audio", "Video", "Player", "Recorder",
-                               "Music", "TV"})),
-    ("Settings",    frozenset({"Settings", "DesktopSettings", "HardwareSettings",
-                               "ControlCenter"})),
-    ("System",      frozenset({"System", "PackageManager", "Security", "Monitor",
-                               "TerminalEmulator", "FileManager"})),
+    (_("Accessories"), frozenset({"Utility", "Accessories", "Core"})),
+    (_("Development"), frozenset({"Development", "IDE", "Building"})),
+    (_("Games"),       frozenset({"Game"})),
+    (_("Graphics"),    frozenset({"Graphics", "2DGraphics", "3DGraphics", "Photography",
+                                  "RasterGraphics", "VectorGraphics", "Viewer"})),
+    (_("Internet"),    frozenset({"Network", "WebBrowser", "Email", "InstantMessaging",
+                                  "FileTransfer", "P2P", "Chat", "IRCClient"})),
+    (_("Multimedia"),  frozenset({"AudioVideo", "Audio", "Video", "Player", "Recorder",
+                                  "Music", "TV"})),
+    (_("Settings"),    frozenset({"Settings", "DesktopSettings", "HardwareSettings",
+                                  "ControlCenter"})),
+    (_("System"),      frozenset({"System", "PackageManager", "Security", "Monitor",
+                                  "TerminalEmulator", "FileManager"})),
 ]
 
+ALL_APPS_LABEL = _("All Apps")
+OTHER_CATEGORY_LABEL = _("Other")
 CATEGORY_FILTER_LABELS: list[str] = (
-    ["All Apps"] + [c[0] for c in CATEGORIES] + ["Other"]
+    [ALL_APPS_LABEL] + [c[0] for c in CATEGORIES] + [OTHER_CATEGORY_LABEL]
 )
 
 # App grid sizing. The launcher keeps the ChromeOS-like six-column
@@ -153,10 +163,10 @@ SECTION_LABEL_HEIGHT = 24
 POWER_BAR_HEIGHT = 56
 
 POWER_ACTIONS = [
-    ("Lock",      "system-lock-screen", ["swaylock", "-f"]),
-    ("Log Out",   "system-log-out",     ["labwc", "--exit"]),
-    ("Restart",   "system-reboot",      ["systemctl", "reboot"]),
-    ("Shut Down", "system-shutdown",    ["systemctl", "poweroff"]),
+    ("lock",     _("Lock"),      "system-lock-screen", ["swaylock", "-f"]),
+    ("logout",   _("Log Out"),   "system-log-out",     ["labwc", "--exit"]),
+    ("restart",  _("Restart"),   "system-reboot",      ["systemctl", "reboot"]),
+    ("shutdown", _("Shut Down"), "system-shutdown",    ["systemctl", "poweroff"]),
 ]
 
 
@@ -904,7 +914,7 @@ def _category_for(app: Gio.AppInfo) -> str:
     for label, keys in CATEGORIES:
         if cats & keys:
             return label
-    return "Other"
+    return OTHER_CATEGORY_LABEL
 
 
 def _generic_name_for(app: Gio.AppInfo) -> str:
@@ -972,7 +982,7 @@ class AppItem(GObject.Object):
 def _app_item_matches(item: AppItem, category_filter: str, query: str) -> bool:
     if (
         category_filter
-        and category_filter != "All Apps"
+        and category_filter != ALL_APPS_LABEL
         and item.category != category_filter
     ):
         return False
@@ -1161,7 +1171,7 @@ class AppMenu(Gtk.Window):
         self._setup_surface(self._edge)
 
         self._launches = _load_launches()
-        self._category_filter = "All Apps"
+        self._category_filter = ALL_APPS_LABEL
         self._has_frequent = False
         self._apps: list[AppItem] = []
 
@@ -1224,10 +1234,10 @@ class AppMenu(Gtk.Window):
             spacing=8 if self._show_filter else 0,
         )
         self._search = Gtk.SearchEntry()
-        self._search.set_placeholder_text("Search apps\u2026")
+        self._search.set_placeholder_text(_("Search apps…"))
         self._search.add_css_class("app-menu-search")
         self._search.set_hexpand(True)
-        _set_accessible_label(self._search, "Search apps")
+        _set_accessible_label(self._search, _("Search apps"))
         self._search.connect("search-changed", self._on_search_changed)
         self._search.connect("activate", self._on_search_activate)
         top_row.append(self._search)
@@ -1236,8 +1246,8 @@ class AppMenu(Gtk.Window):
         if self._show_filter:
             self._filter = Gtk.DropDown.new_from_strings(CATEGORY_FILTER_LABELS)
             self._filter.add_css_class("app-menu-filter")
-            self._filter.set_tooltip_text("Filter by category")
-            _set_accessible_label(self._filter, "Filter by category")
+            self._filter.set_tooltip_text(_("Filter by category"))
+            _set_accessible_label(self._filter, _("Filter by category"))
             self._filter.connect("notify::selected", self._on_filter_changed)
             top_row.append(self._filter)
         root.append(top_row)
@@ -1246,7 +1256,7 @@ class AppMenu(Gtk.Window):
         self._frequent_section = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                                          spacing=0)
         if self._show_section_labels:
-            freq_label = Gtk.Label(label="Frequent", xalign=0)
+            freq_label = Gtk.Label(label=_("Frequent"), xalign=0)
             freq_label.add_css_class("app-menu-section-label")
             self._frequent_section.append(freq_label)
         self._frequent_flow = self._make_flowbox()
@@ -1255,7 +1265,7 @@ class AppMenu(Gtk.Window):
 
         # -- All apps grid --
         if self._show_section_labels:
-            all_label = Gtk.Label(label="All Apps", xalign=0)
+            all_label = Gtk.Label(label=ALL_APPS_LABEL, xalign=0)
             all_label.add_css_class("app-menu-section-label")
             root.append(all_label)
 
@@ -1553,7 +1563,7 @@ class AppMenu(Gtk.Window):
         self._configure_tile_surface(btn)
         btn.set_has_frame(False)
         btn.set_tooltip_text(item.tooltip)
-        _set_accessible_label(btn, f"Launch {item.accessible_name}")
+        _set_accessible_label(btn, _("Launch {app}").format(app=item.accessible_name))
 
         content = self._make_tile_content()
         self._bind_tile_content(content, item)
@@ -1583,9 +1593,9 @@ class AppMenu(Gtk.Window):
 
         self._bind_tile_content(tile, item)
         tile.set_tooltip_text(item.tooltip)
-        _set_accessible_label(tile, f"Launch {item.accessible_name}")
+        _set_accessible_label(tile, _("Launch {app}").format(app=item.accessible_name))
         if hasattr(list_item, "set_accessible_label"):
-            list_item.set_accessible_label(f"Launch {item.accessible_name}")
+            list_item.set_accessible_label(_("Launch {app}").format(app=item.accessible_name))
 
     def _on_grid_activate(self, grid: Gtk.GridView, position: int) -> None:
         model = grid.get_model()
@@ -1611,22 +1621,22 @@ class AppMenu(Gtk.Window):
 
         normal = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         normal.set_halign(Gtk.Align.END)
-        for label, icon_name, cmd in POWER_ACTIONS:
+        for action_id, label, icon_name, cmd in POWER_ACTIONS:
             btn = Gtk.Button()
             btn.set_tooltip_text(label)
             _set_accessible_label(btn, label)
             btn.add_css_class("app-menu-power-btn")
-            if label in ("Restart", "Shut Down"):
+            if action_id in {"restart", "shutdown"}:
                 btn.add_css_class("destructive")
             img = Gtk.Image.new_from_icon_name(icon_name)
             img.set_pixel_size(22)
             btn.set_child(img)
-            if label == "Lock":
+            if action_id == "lock":
                 btn.connect("clicked", lambda _b, c=cmd: self._run_command(c))
             else:
                 btn.connect(
                     "clicked",
-                    lambda _b, l=label, c=cmd: self._prompt_confirm(l, c),
+                    lambda _b, a=action_id, l=label, c=cmd: self._prompt_confirm(a, l, c),
                 )
             normal.append(btn)
         self._power_stack.add_named(normal, "normal")
@@ -1640,12 +1650,12 @@ class AppMenu(Gtk.Window):
         self._confirm_label.set_ellipsize(Pango.EllipsizeMode.END)
         confirm.append(self._confirm_label)
 
-        cancel = Gtk.Button(label="Cancel")
+        cancel = Gtk.Button(label=_("Cancel"))
         cancel.add_css_class("app-menu-confirm-btn")
         cancel.connect("clicked", lambda _b: self._cancel_confirm())
         confirm.append(cancel)
 
-        self._confirm_action = Gtk.Button(label="Confirm")
+        self._confirm_action = Gtk.Button(label=_("Confirm"))
         self._confirm_action.add_css_class("app-menu-confirm-btn")
         self._confirm_action.add_css_class("ok")
         self._confirm_action.connect("clicked", self._on_confirm_clicked)
@@ -1656,13 +1666,13 @@ class AppMenu(Gtk.Window):
         self._pending_cmd: list[str] | None = None
         return self._power_stack
 
-    def _prompt_confirm(self, label: str, cmd: list[str]) -> None:
+    def _prompt_confirm(self, action_id: str, label: str, cmd: list[str]) -> None:
         prompts = {
-            "Log Out":   ("Log out now?",           "Log Out"),
-            "Restart":   ("Restart the computer?",  "Restart"),
-            "Shut Down": ("Shut down the computer?", "Shut Down"),
+            "logout":   (_("Log out now?"),            _("Log Out")),
+            "restart":  (_("Restart the computer?"),   _("Restart")),
+            "shutdown": (_("Shut down the computer?"), _("Shut Down")),
         }
-        prompt, btn_label = prompts.get(label, (f"{label}?", label))
+        prompt, btn_label = prompts.get(action_id, (f"{label}?", label))
         self._confirm_label.set_label(prompt)
         self._confirm_action.set_label(btn_label)
         self._pending_cmd = cmd
@@ -1726,7 +1736,7 @@ class AppMenu(Gtk.Window):
         wastes vertical space and causes two tiles of the same app
         to appear on screen.
         """
-        is_default = (self._category_filter == "All Apps"
+        is_default = (self._category_filter == ALL_APPS_LABEL
                       and not self._search.get_text().strip())
         self._frequent_section.set_visible(
             self._show_frequent and self._has_frequent and is_default
@@ -1741,7 +1751,7 @@ class AppMenu(Gtk.Window):
         if 0 <= idx < len(CATEGORY_FILTER_LABELS):
             self._category_filter = CATEGORY_FILTER_LABELS[idx]
         else:
-            self._category_filter = "All Apps"
+            self._category_filter = ALL_APPS_LABEL
         self._update_frequent_visibility()
         self._refilter_grid()
 
