@@ -94,3 +94,15 @@ def test_sync_workflow_cascades_main_dx_testing_and_beta():
     assert 'PR_BRANCH="sync/${SOURCE_BRANCH}-to-${TARGET_BRANCH}"' in reusable
     assert 'git checkout -B "${PR_BRANCH}" "origin/${SOURCE_BRANCH}"' in reusable
     assert "gh pr create" in reusable
+
+
+def test_latest_stream_exposes_devmode_rebase_recipe():
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert "devmode:" in justfile
+    assert "toggle-devmode:" in justfile
+    assert "Developer mode is currently" in justfile
+    assert "Choose Enable Disable" in justfile
+    assert "quay.io/noitatsidem/universal-lite:dx" in justfile
+    assert "quay.io/noitatsidem/universal-lite:latest" in justfile
+    assert "ghcr.io/universal-lite/universal-lite" not in justfile
