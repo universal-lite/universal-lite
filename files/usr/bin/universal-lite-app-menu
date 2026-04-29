@@ -1672,7 +1672,7 @@ class AppMenu(Gtk.Window):
             "restart":  (_("Restart the computer?"),   _("Restart")),
             "shutdown": (_("Shut down the computer?"), _("Shut Down")),
         }
-        prompt, btn_label = prompts.get(action_id, (_("{action}?").format(action=label), label))
+        prompt, btn_label = prompts.get(action_id, (f"{label}?", label))
         self._confirm_label.set_label(prompt)
         self._confirm_action.set_label(btn_label)
         self._pending_cmd = cmd
