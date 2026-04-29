@@ -152,8 +152,10 @@ def test_dx_exposes_universal_blue_style_devmode_recipes():
     assert "devmode:" in justfile
     assert "toggle-devmode:" in justfile
     assert "dx-group:" in justfile
-    assert "Developer mode is currently" in justfile
-    assert "Choose Enable Disable" in justfile
+    assert "@ujust toggle-devmode" in justfile
+    assert "gum confirm \"Would you like to enable developer mode?\"" in justfile
+    assert "gum confirm \"Would you like to disable developer mode?\"" in justfile
+    assert "pkexec bootc switch --enforce-container-sigpolicy" in justfile
     assert "ujust dx-group" in justfile
 
 
@@ -172,5 +174,6 @@ def test_dx_devmode_uses_universal_lite_stream_tags_not_upstream_image_suffix():
     assert "quay.io/noitatsidem/universal-lite:latest" in justfile
     assert "ghcr.io/universal-lite/universal-lite" not in justfile
     assert "ostree-image-signed:docker://" in justfile
+    assert "rpm-ostree rebase" not in justfile
     assert 'sed "s/$IMAGE_BASE_NAME/$IMAGE_BASE_NAME-dx/"' not in justfile
     assert 'sed "s/\\-dx//"' not in justfile
