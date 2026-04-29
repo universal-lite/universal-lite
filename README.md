@@ -1,7 +1,7 @@
 # Universal-Lite
 
 A lightweight, auto-updating Linux desktop for old x86_64 Chromebooks and
-low-end laptops. Built on [Universal Blue](https://universal-blue.org/) —
+old or low-end computers. Built on [Universal Blue](https://universal-blue.org/) —
 the image updates itself daily and rolls back automatically if anything
 goes wrong. No package manager, no manual maintenance, no surprises.
 
@@ -9,6 +9,8 @@ Designed for the handful of real-world cases where this combination
 actually matters:
 
 - **2 GB Chromebooks** that ChromeOS has dropped from updates
+- **Performance-minded users** on newer hardware who want a lean desktop
+  that leaves more of the machine for their apps and games
 - **Vision-impaired or non-technical users** who need a simple, stable
   desktop that looks and feels like ChromeOS (bottom panel, rounded
   windows, big clear labels, familiar keyboard shortcuts)
@@ -18,8 +20,10 @@ actually matters:
 
 You're a good fit if you have:
 
-- An old Chromebook or low-end x86_64 laptop sitting around
+- An old Chromebook, low-end x86_64 computer, or a faster PC you want to
+  keep lean
 - At least 2 GB of RAM
+- At least 32 GB of target storage
 - Either UEFI firmware already, or a Chromebook you're willing to flash
   with [MrChromebox](https://mrchromebox.tech) UEFI Full ROM
 
@@ -33,6 +37,12 @@ Flathub via Bazaar.
 > device-specific instructions. x86_64 only — ARM Chromebooks are not
 > supported.
 
+> **Storage note:** Universal-Lite needs **32 GB minimum** target storage.
+> Many old Chromebooks shipped with 16 GB eMMC, and by now that storage is
+> often worn out. For those machines, use a high-endurance, application-rated
+> SD card instead of the internal eMMC; look for A2/U3/V30-class media from a
+> reputable vendor.
+
 ## Install
 
 ### .raw USB installer (recommended for Chromebooks under 4 GB of RAM)
@@ -41,7 +51,7 @@ You need:
 
 - A second Linux machine (or VM) to prepare the USB
 - A USB drive, **16 GB minimum** (holds the live installer environment)
-- A target drive in the machine, **16 GB minimum** (32+ GB recommended)
+- A target drive in the machine, **32 GB minimum**
 
 **Step 1 — Download the image.** Open
 [GitHub Actions → Build disk images](../../actions/workflows/build-disk.yml),
