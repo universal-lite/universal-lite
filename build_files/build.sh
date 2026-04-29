@@ -451,6 +451,9 @@ systemctl disable rpm-ostreed-automatic.timer
 systemctl disable flatpak-system-update.timer
 systemctl --global disable flatpak-user-update.timer
 
+# Developer stream payload, aligned with Bluefin DX where practical.
+/ctx/build_files/dx/00-dx.sh
+
 # Hide launchers for packages that show up in the start menu but
 # don't belong in this distro's UX.
 #
@@ -473,30 +476,6 @@ systemctl --global disable flatpak-user-update.timer
 dnf5 remove -y mousepad nvtop || true
 rm -f /usr/share/applications/xfce4-panel.desktop \
       /usr/share/applications/nvtop.desktop
-
-# distrobox ships on ublue-os/base-main and comes with a ujust recipe
-# file. We keep it off main for memory reasons on 2 GB targets;
-# container workflows belong on the forthcoming universal-lite-dx
-# variant (distrobox + brew). Remove both the binary and the recipes
-# so `ujust` doesn't list unreachable commands.
-dnf5 remove -y distrobox || true
-rm -f /usr/share/ublue-os/just/30-distrobox.just
-_ujust_tmp=$(mktemp)
-awk '
-    /^# Imports$/ {
-        print
-        exit
-    }
-    { print }
-' /usr/share/ublue-os/justfile > "$_ujust_tmp"
-find /usr/share/ublue-os/just -maxdepth 1 -type f -name '*.just' ! -name '60-custom.just' -printf '%f\n' \
-    | sort \
-    | while read -r _just_file; do
-        printf 'import "/usr/share/ublue-os/just/%s"\n' "$_just_file"
-    done >> "$_ujust_tmp"
-printf 'import? "/usr/share/ublue-os/just/60-custom.just"\n' >> "$_ujust_tmp"
-install -m 0644 "$_ujust_tmp" /usr/share/ublue-os/justfile
-rm -f "$_ujust_tmp"
 
 # Flatpak apps are installed by the first-boot service from Flathub —
 # not pre-installed in the image.  This keeps the raw image small for
@@ -529,6 +508,8 @@ if command -v dracut >/dev/null 2>&1; then
     KVER=$(rpm -q --qf '%{version}-%{release}.%{arch}' kernel-core | head -1)
     [ -n "$KVER" ] && dracut --force --kver "$KVER" || true
 fi
+
+/ctx/build_files/dx/01-tests-dx.sh
 
 dnf5 clean all
 rm -rf /var/lib/dnf /run/dnf /run/selinux-policy /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service

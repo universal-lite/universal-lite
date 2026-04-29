@@ -1,8 +1,12 @@
 # Base Image
 ARG BASE_IMAGE="ghcr.io/ublue-os/base-main:latest"
+ARG BREW_IMAGE="ghcr.io/ublue-os/brew:latest"
+
+FROM ${BREW_IMAGE} AS brew
 
 # Allow build scripts and file overlays to be referenced without being copied into the final image
 FROM scratch AS ctx
+COPY --from=brew /system_files /files
 COPY build_files /build_files
 COPY files /files
 
