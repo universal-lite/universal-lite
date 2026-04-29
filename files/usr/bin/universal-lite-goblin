@@ -1,0 +1,490 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import curses
+import random
+from collections import deque
+from dataclasses import dataclass, field
+
+
+WALL = "#"
+FLOOR = "."
+STAIRS = ">"
+PLAYER = "@"
+LOOT = "$"
+MAX_DEPTH = 5
+MIN_WIDTH = 50
+MIN_HEIGHT = 22
+MIN_MAP_WIDTH = 40
+MIN_MAP_HEIGHT = 19
+
+
+@dataclass(frozen=True, order=True)
+class Point:
+    x: int
+    y: int
+
+
+@dataclass(frozen=True)
+class Room:
+    x: int
+    y: int
+    width: int
+    height: int
+
+    @property
+    def center(self) -> Point:
+        return Point(self.x + self.width // 2, self.y + self.height // 2)
+
+    def intersects(self, other: "Room") -> bool:
+        return not (
+            self.x + self.width + 1 < other.x
+            or other.x + other.width + 1 < self.x
+            or self.y + self.height + 1 < other.y
+            or other.y + other.height + 1 < self.y
+        )
+
+    def tiles(self) -> set[Point]:
+        return {
+            Point(x, y)
+            for y in range(self.y, self.y + self.height)
+            for x in range(self.x, self.x + self.width)
+        }
+
+
+@dataclass
+class Enemy:
+    kind: str
+    pos: Point
+    hp: int
+    damage: int
+
+
+@dataclass
+class Floor:
+    tiles: list[list[str]]
+    rooms: list[Room]
+    start_room: Room
+    start: Point
+    stairs: Point
+    enemies: list[Enemy]
+    loot: set[Point]
+
+
+@dataclass
+class GameState:
+    width: int
+    height: int
+    seed: int
+    depth: int = 1
+    hp: int = 12
+    scraps: int = 0
+    won: bool = False
+    lost: bool = False
+    message: str = "Recover the golden image."
+    player: Point = field(default_factory=lambda: Point(0, 0))
+    floor: Floor | None = None
+
+
+MOVE_KEYS = {
+    ord("w"): (0, -1),
+    ord("a"): (-1, 0),
+    ord("s"): (0, 1),
+    ord("d"): (1, 0),
+    curses.KEY_UP: (0, -1),
+    curses.KEY_LEFT: (-1, 0),
+    curses.KEY_DOWN: (0, 1),
+    curses.KEY_RIGHT: (1, 0),
+}
+
+
+def manhattan(a: Point, b: Point) -> int:
+    return abs(a.x - b.x) + abs(a.y - b.y)
+
+
+def carve_room(tiles: list[list[str]], room: Room) -> None:
+    for point in room.tiles():
+        tiles[point.y][point.x] = FLOOR
+
+
+def carve_corridor(tiles: list[list[str]], start: Point, end: Point, rng: random.Random) -> None:
+    if rng.choice((True, False)):
+        corners = (Point(end.x, start.y),)
+    else:
+        corners = (Point(start.x, end.y),)
+    path = (start, *corners, end)
+    for current, target in zip(path, path[1:]):
+        x_step = 1 if target.x >= current.x else -1
+        for x in range(current.x, target.x + x_step, x_step):
+            tiles[current.y][x] = FLOOR
+        y_step = 1 if target.y >= current.y else -1
+        for y in range(current.y, target.y + y_step, y_step):
+            tiles[y][target.x] = FLOOR
+
+
+def reachable_tiles(tiles: list[list[str]], start: Point) -> set[Point]:
+    height = len(tiles)
+    width = len(tiles[0]) if tiles else 0
+    seen = {start}
+    queue = deque([start])
+    while queue:
+        point = queue.popleft()
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nxt = Point(point.x + dx, point.y + dy)
+            if nxt in seen:
+                continue
+            if not (0 <= nxt.x < width and 0 <= nxt.y < height):
+                continue
+            if tiles[nxt.y][nxt.x] == WALL:
+                continue
+            seen.add(nxt)
+            queue.append(nxt)
+    return seen
+
+
+def _fallback_rooms(width: int, height: int) -> list[Room]:
+    y1 = max(2, height // 4)
+    y2 = max(y1 + 5, height // 2)
+    return [
+        Room(2, y1, 8, 5),
+        Room(13, y1, 8, 5),
+        Room(24, y1, 8, 5),
+        Room(35, y1, min(10, width - 37), 5),
+        Room(13, y2, 8, 5),
+        Room(30, y2, min(12, width - 32), 5),
+    ]
+
+
+def _candidate_rooms(width: int, height: int, rng: random.Random) -> list[Room]:
+    rooms: list[Room] = []
+    target = rng.randint(6, 10)
+    for _ in range(180):
+        if len(rooms) >= target:
+            break
+        room_width = rng.randint(5, min(10, max(5, width // 4)))
+        room_height = rng.randint(4, min(7, max(4, height // 3)))
+        x = rng.randint(1, max(1, width - room_width - 2))
+        y = rng.randint(1, max(1, height - room_height - 2))
+        room = Room(x, y, room_width, room_height)
+        if not any(room.intersects(existing) for existing in rooms):
+            rooms.append(room)
+    if len(rooms) < 6:
+        return _fallback_rooms(width, height)
+    return rooms
+
+
+def _build_tiles(width: int, height: int, rooms: list[Room], rng: random.Random) -> list[list[str]]:
+    tiles = [[WALL for _ in range(width)] for _ in range(height)]
+    rooms.sort(key=lambda room: (room.center.x, room.center.y))
+    for room in rooms:
+        carve_room(tiles, room)
+    for left, right in zip(rooms, rooms[1:]):
+        carve_corridor(tiles, left.center, right.center, rng)
+    return tiles
+
+
+def _open_tiles(tiles: list[list[str]], reachable: set[Point], blocked: set[Point]) -> list[Point]:
+    return sorted(point for point in reachable if tiles[point.y][point.x] != WALL and point not in blocked)
+
+
+def _place_enemies(
+    open_points: list[Point], start: Point, depth: int, rng: random.Random
+) -> list[Enemy]:
+    count = min(2 + depth, max(1, len(open_points) // 30))
+    candidates = [point for point in open_points if manhattan(start, point) >= 8]
+    candidates.sort(key=lambda point: manhattan(start, point), reverse=True)
+    rng.shuffle(candidates)
+    enemies: list[Enemy] = []
+    for index, point in enumerate(candidates[:count]):
+        if index == 0 or rng.random() < 0.65:
+            enemies.append(Enemy("goblin", point, hp=2 + depth // 3, damage=1))
+        else:
+            enemies.append(Enemy("build imp", point, hp=1 + depth // 2, damage=2))
+    if not enemies and open_points:
+        enemies.append(Enemy("goblin", open_points[-1], hp=2, damage=1))
+    return enemies
+
+
+def _place_loot(
+    open_points: list[Point], start: Point, depth: int, rng: random.Random
+) -> set[Point]:
+    count = max(2, 6 - depth)
+    candidates = [point for point in open_points if manhattan(start, point) >= 6]
+    candidates.sort(key=lambda point: manhattan(start, point), reverse=True)
+    far_half = candidates[: max(count * 3, len(candidates) // 2)] or candidates
+    rng.shuffle(far_half)
+    return set(far_half[:count])
+
+
+def _validated_floor(width: int, height: int, depth: int, rng: random.Random) -> Floor | None:
+    rooms = _candidate_rooms(width, height, rng)
+    tiles = _build_tiles(width, height, rooms, rng)
+    start_room = rooms[0]
+    start = start_room.center
+    reachable = reachable_tiles(tiles, start)
+    if len(reachable) < 40:
+        return None
+
+    farthest = max(reachable, key=lambda point: (manhattan(start, point), point.x, point.y))
+    if manhattan(start, farthest) < 15:
+        return None
+    tiles[farthest.y][farthest.x] = STAIRS
+
+    blocked = start_room.tiles() | {start, farthest}
+    open_points = _open_tiles(tiles, reachable, blocked)
+    loot = _place_loot(open_points, start, depth, rng)
+    enemy_points = [point for point in open_points if point not in loot]
+    enemies = _place_enemies(enemy_points, start, depth, rng)
+
+    for point in loot:
+        if point not in reachable:
+            return None
+    for enemy in enemies:
+        if enemy.pos not in reachable:
+            return None
+
+    return Floor(tiles, rooms, start_room, start, farthest, enemies, loot)
+
+
+def generate_floor(width: int, height: int, depth: int, seed: int | None = None) -> Floor:
+    rng = random.Random(seed)
+    width = max(width, MIN_MAP_WIDTH)
+    height = max(height, MIN_MAP_HEIGHT)
+    for _ in range(25):
+        floor = _validated_floor(width, height, depth, rng)
+        if floor is not None:
+            return floor
+
+    rooms = _fallback_rooms(width, height)
+    tiles = _build_tiles(width, height, rooms, rng)
+    start_room = rooms[0]
+    start = start_room.center
+    reachable = reachable_tiles(tiles, start)
+    stairs = max(reachable, key=lambda point: (manhattan(start, point), point.x, point.y))
+    tiles[stairs.y][stairs.x] = STAIRS
+    blocked = start_room.tiles() | {start, stairs}
+    open_points = _open_tiles(tiles, reachable, blocked)
+    loot = _place_loot(open_points, start, depth, rng)
+    enemies = _place_enemies([point for point in open_points if point not in loot], start, depth, rng)
+    return Floor(tiles, rooms, start_room, start, stairs, enemies, loot)
+
+
+def new_game(width: int = MIN_WIDTH, height: int = MIN_HEIGHT, seed: int | None = None) -> GameState:
+    if seed is None:
+        seed = random.randrange(1_000_000)
+    state = GameState(width=max(width, MIN_MAP_WIDTH), height=max(height, MIN_MAP_HEIGHT), seed=seed)
+    state.floor = generate_floor(state.width, state.height, state.depth, seed=seed + state.depth)
+    state.player = state.floor.start
+    return state
+
+
+def enemy_at(state: GameState, pos: Point) -> Enemy | None:
+    if state.floor is None:
+        return None
+    for enemy in state.floor.enemies:
+        if enemy.pos == pos:
+            return enemy
+    return None
+
+
+def _advance_floor(state: GameState) -> str:
+    if state.depth >= MAX_DEPTH:
+        state.won = True
+        return "You recover the golden image. Ship it."
+    state.depth += 1
+    state.floor = generate_floor(state.width, state.height, state.depth, seed=state.seed + state.depth)
+    state.player = state.floor.start
+    return f"You descend to floor {state.depth}."
+
+
+def move_player(state: GameState, dx: int, dy: int) -> str:
+    if state.floor is None or state.won or state.lost:
+        return state.message
+    target = Point(state.player.x + dx, state.player.y + dy)
+    enemy = enemy_at(state, target)
+    if enemy is not None:
+        enemy.hp -= 1
+        if enemy.hp <= 0:
+            state.floor.enemies.remove(enemy)
+            message = f"You bonk the {enemy.kind}."
+        else:
+            message = f"You thump the {enemy.kind}."
+        state.message = message
+        return message
+    if state.floor.tiles[target.y][target.x] == WALL:
+        state.message = "A wall blocks your sprint review."
+        return state.message
+    state.player = target
+    if target in state.floor.loot:
+        state.floor.loot.remove(target)
+        state.scraps += 1
+        state.hp = min(12, state.hp + 1)
+        state.message = "You pocket a shiny build scrap."
+    elif target == state.floor.stairs:
+        state.message = _advance_floor(state)
+    else:
+        state.message = ""
+    return state.message
+
+
+def enemy_turn(state: GameState) -> str:
+    if state.floor is None or state.won or state.lost:
+        return state.message
+    occupied = {enemy.pos for enemy in state.floor.enemies}
+    occupied.add(state.player)
+    messages: list[str] = []
+    for enemy in list(state.floor.enemies):
+        if manhattan(enemy.pos, state.player) == 1:
+            state.hp -= enemy.damage
+            messages.append(f"The {enemy.kind} nips you.")
+            continue
+        choices = []
+        if enemy.kind == "goblin" and manhattan(enemy.pos, state.player) <= 8:
+            moves = sorted(
+                ((1, 0), (-1, 0), (0, 1), (0, -1)),
+                key=lambda delta: manhattan(Point(enemy.pos.x + delta[0], enemy.pos.y + delta[1]), state.player),
+            )
+        else:
+            moves = ((1, 0), (-1, 0), (0, 1), (0, -1), (0, 0))
+        for dx, dy in moves:
+            target = Point(enemy.pos.x + dx, enemy.pos.y + dy)
+            if target in occupied or state.floor.tiles[target.y][target.x] == WALL:
+                continue
+            choices.append(target)
+        if choices:
+            occupied.remove(enemy.pos)
+            enemy.pos = choices[0]
+            occupied.add(enemy.pos)
+    if state.hp <= 0:
+        state.lost = True
+        state.message = "The goblins merged over your branch."
+    elif messages:
+        state.message = " ".join(messages)
+    return state.message
+
+
+def draw(stdscr, state: GameState) -> None:
+    stdscr.erase()
+    if state.floor is None:
+        return
+    enemy_positions = {enemy.pos: enemy for enemy in state.floor.enemies}
+    for y, row in enumerate(state.floor.tiles):
+        for x, char in enumerate(row):
+            point = Point(x, y)
+            if point == state.player:
+                char = PLAYER
+            elif point in enemy_positions:
+                char = "g" if enemy_positions[point].kind == "goblin" else "i"
+            elif point in state.floor.loot:
+                char = LOOT
+            safe_addch(stdscr, y, x, char)
+    status = f"HP {state.hp}  scraps {state.scraps}  floor {state.depth}/{MAX_DEPTH}  ? help  q quit"
+    safe_addstr(stdscr, state.height, 0, status)
+    if state.message:
+        safe_addstr(stdscr, state.height + 1, 0, state.message)
+    if state.won or state.lost:
+        prompt = "Press r to restart or q to quit."
+        safe_addstr(stdscr, state.height + 2, 0, prompt)
+    stdscr.refresh()
+
+
+def safe_addch(stdscr, y: int, x: int, char: str) -> None:
+    height, width = stdscr.getmaxyx()
+    if y < 0 or y >= height or x < 0 or x >= width:
+        return
+    if y == height - 1 and x == width - 1:
+        return
+    try:
+        stdscr.addch(y, x, char)
+    except curses.error:
+        return
+
+
+def safe_addstr(stdscr, y: int, x: int, text: str) -> None:
+    height, width = stdscr.getmaxyx()
+    if y < 0 or y >= height or x < 0 or x >= width:
+        return
+    remaining = width - x
+    if y == height - 1:
+        remaining -= 1
+    if remaining <= 0:
+        return
+    try:
+        stdscr.addstr(y, x, text[:remaining])
+    except curses.error:
+        return
+
+
+def show_help(stdscr) -> None:
+    lines = [
+        "Goblin Mode",
+        "",
+        "Recover the golden image from five floors of goblin-infested build caves.",
+        "Move with WASD or arrow keys. Bump enemies to bonk them.",
+        "Grab $ scraps for score and a little HP. Use > stairs to descend.",
+        "g = goblin, i = build imp, . = floor, # = wall",
+        "",
+        "Keys: . wait, ? help, r restart after win/loss, q quit",
+        "",
+        "Press any key to return.",
+    ]
+    stdscr.erase()
+    for index, line in enumerate(lines):
+        safe_addstr(stdscr, index, 0, line)
+    stdscr.refresh()
+    stdscr.getch()
+
+
+def _too_small(stdscr) -> None:
+    stdscr.erase()
+    safe_addstr(stdscr, 0, 0, "Goblin Mode needs at least 50x22.")
+    safe_addstr(stdscr, 1, 0, "Press q or Escape to quit.")
+    stdscr.refresh()
+    while True:
+        key = stdscr.getch()
+        if key in (ord("q"), 27):
+            return
+
+
+def screen_too_small(width: int, height: int) -> bool:
+    return width < MIN_WIDTH or height < MIN_HEIGHT
+
+
+def run(stdscr) -> None:
+    curses.curs_set(0)
+    stdscr.keypad(True)
+    height, width = stdscr.getmaxyx()
+    if screen_too_small(width, height):
+        _too_small(stdscr)
+        return
+    game_width = min(width - 1, 80)
+    game_height = min(height - 3, 28)
+    state = new_game(game_width, game_height)
+    while True:
+        draw(stdscr, state)
+        key = stdscr.getch()
+        if key in (ord("q"), 27):
+            return
+        if key == ord("?"):
+            show_help(stdscr)
+            continue
+        if key == ord("r") and (state.won or state.lost):
+            state = new_game(game_width, game_height)
+            continue
+        if state.won or state.lost:
+            continue
+        if key == ord("."):
+            state.message = "You wait. The build stays green."
+            enemy_turn(state)
+            continue
+        if key in MOVE_KEYS:
+            move_player(state, *MOVE_KEYS[key])
+            enemy_turn(state)
+
+
+def main() -> None:
+    curses.wrapper(run)
+
+
+if __name__ == "__main__":
+    main()

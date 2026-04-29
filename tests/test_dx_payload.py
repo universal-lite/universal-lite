@@ -128,6 +128,7 @@ def test_dx_image_build_validates_key_packages_and_services():
 
 def test_dx_files_include_user_setup_and_workarounds():
     expected_files = (
+        "files/usr/bin/universal-lite-goblin",
         "files/usr/bin/universal-lite-dx-groups",
         "files/usr/lib/systemd/system/universal-lite-dx-groups.service",
         "files/usr/lib/systemd/system/libvirt-workaround.service",
@@ -165,3 +166,23 @@ def test_dx_regenerates_current_ublue_ujust_entrypoint():
     assert "find /usr/share/ublue-os/just" in build_script
     assert "! -name '60-custom.just'" in build_script
     assert "import \"/usr/share/ublue-os/just/%s\"" in build_script
+
+
+def test_dx_includes_goblin_mode_easter_egg():
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert (ROOT / "files/usr/bin/universal-lite-goblin").exists()
+    assert "goblin:" in justfile
+    assert "/usr/bin/universal-lite-goblin" in justfile
+
+
+def test_dx_devmode_uses_universal_lite_stream_tags_not_upstream_image_suffix():
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert "quay.io/noitatsidem/universal-lite:dx" in justfile
+    assert "quay.io/noitatsidem/universal-lite:latest" in justfile
+    assert "ghcr.io/universal-lite/universal-lite" not in justfile
+    assert "ostree-image-signed:docker://" in justfile
+    assert "rpm-ostree rebase" not in justfile
+    assert 'sed "s/$IMAGE_BASE_NAME/$IMAGE_BASE_NAME-dx/"' not in justfile
+    assert 'sed "s/\\-dx//"' not in justfile
