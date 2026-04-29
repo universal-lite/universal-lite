@@ -99,7 +99,7 @@ devmode:
 
         echo "Rebasing to a developer image"
         rpm-ostree rebase "$dx_ref"
-        echo -e '\nUse `ujust dx-group` to add your user to the correct groups and complete the installation'
+        echo -e '\nUse `ujust dx-group` after rebooting into DX to add your user to the correct groups and complete the installation'
     fi
 
     if [[ "${option,,}" =~ ^disable ]]; then
