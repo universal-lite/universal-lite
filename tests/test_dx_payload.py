@@ -143,3 +143,25 @@ def test_dx_files_include_user_setup_and_workarounds():
 
     for path in expected_files:
         assert (ROOT / path).exists(), path
+
+
+def test_dx_exposes_universal_blue_style_devmode_recipes():
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert "devmode:" in justfile
+    assert "toggle-devmode:" in justfile
+    assert "dx-group:" in justfile
+    assert "@ujust toggle-devmode" in justfile
+    assert "gum confirm \"Would you like to enable developer mode?\"" in justfile
+    assert "gum confirm \"Would you like to disable developer mode?\"" in justfile
+    assert "pkexec bootc switch --enforce-container-sigpolicy" in justfile
+    assert "ujust dx-group" in justfile
+
+
+def test_dx_regenerates_current_ublue_ujust_entrypoint():
+    build_script = _read("build_files/build.sh")
+
+    assert "/usr/share/ublue-os/just/00-entry.just" in build_script
+    assert "find /usr/share/ublue-os/just" in build_script
+    assert "! -name '60-custom.just'" in build_script
+    assert "import \"/usr/share/ublue-os/just/%s\"" in build_script

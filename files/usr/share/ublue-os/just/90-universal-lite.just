@@ -70,3 +70,50 @@ toggle-swap:
         [Yy]*) sudo systemctl reboot;;
         *) echo "Reboot later with: sudo systemctl reboot";;
     esac
+
+# Alias matching Universal Blue docs.
+devmode:
+    @ujust toggle-devmode
+
+# Toggle developer mode between the Universal-Lite :latest and :dx streams.
+toggle-devmode:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    latest_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest"
+    dx_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx"
+    current_tag=$(jq -r '."image-tag" // ""' /usr/share/ublue-os/image-info.json 2>/dev/null || true)
+
+    if [[ "$current_tag" == "dx" ]]; then
+        gum confirm "Would you like to disable developer mode?" || exit 0
+        echo "Rebasing to a non developer image"
+        pkexec bootc switch --enforce-container-sigpolicy "$latest_ref"
+        exit 0
+    fi
+
+    gum confirm "Would you like to enable developer mode?" || exit 0
+    echo "Rebasing to a developer image"
+    pkexec bootc switch --enforce-container-sigpolicy "$dx_ref"
+    echo "Use ujust dx-group to add your user to the correct groups and complete the installation after rebooting into the development image"
+
+# Configure docker, incus-admin, libvirt, and serial permissions for this user.
+dx-group:
+    #!/usr/bin/pkexec bash
+    set -euo pipefail
+
+    append_group() {
+        local group_name="$1"
+        if ! grep -q "^${group_name}:" /etc/group; then
+            echo "Appending ${group_name} to /etc/group"
+            grep "^${group_name}:" /usr/lib/group | tee -a /etc/group > /dev/null
+        fi
+    }
+
+    groups_add=(docker incus-admin libvirt dialout)
+
+    for group_add in "${groups_add[@]}"; do
+        append_group "$group_add"
+        usermod -aG "$group_add" {{ `id -un` }}
+    done
+
+    echo "Reboot system and log back in to use docker, libvirt, incus, and serial connections."
