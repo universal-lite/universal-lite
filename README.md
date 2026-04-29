@@ -132,6 +132,55 @@ sudo rpm-ostree rebase ostree-unverified-registry:quay.io/noitatsidem/universal-
 sudo systemctl reboot
 ```
 
+## Image streams
+
+Universal-Lite publishes one container image with multiple stream tags:
+
+| Stream | Branch | Base | Purpose |
+|--------|--------|------|---------|
+| `latest` | `main` | `ghcr.io/ublue-os/base-main:latest` | Stable, low-resource consumer image |
+| `dx` | `dx` | `ghcr.io/ublue-os/base-main:latest` | Stable developer-mode image with Homebrew, Distrobox, Docker, Podman, libvirt/QEMU, Incus, Cockpit, VS Code, and DX group/workaround services |
+| `testing` | `testing` | `ghcr.io/ublue-os/base-main:latest` | WIP stream; currently inherits `dx` and is where DX-adjacent experiments can bake |
+| `beta` | `beta` | `ghcr.io/ublue-os/base-main:beta` | Fedora-next compatibility canary based on `main`; intentionally does not inherit DX payload |
+
+Published tags use `quay.io/noitatsidem/universal-lite:<stream>`. Stream
+builds also publish date tags like `dx.YYYYMMDD`, `testing.YYYYMMDD`, and
+`beta.YYYYMMDD`; `latest` additionally publishes bare `YYYYMMDD` tags.
+
+### Switch streams
+
+To toggle developer mode like Universal Blue/Aurora/Bluefin, use:
+
+```bash
+ujust devmode         # choose Enable to move latest -> dx, Disable for dx -> latest
+ujust toggle-devmode  # alias for ujust devmode
+sudo systemctl reboot
+
+# After rebooting into dx:
+ujust dx-group        # add your user to docker/incus-admin/libvirt/dialout
+sudo systemctl reboot # or log out and back in so group membership applies
+```
+
+`ujust devmode` intentionally maps `latest` <-> `dx` directly because
+Universal-Lite publishes DX as a stream tag, not as a separate `-dx` image
+name. If you are on `testing`, `beta`, or a date-pinned tag, switch manually:
+
+```bash
+# Stable consumer image
+sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest
+
+# Stable developer image
+sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx
+
+# WIP developer/testing image
+sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:testing
+
+# Fedora-next compatibility canary
+sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:beta
+
+sudo systemctl reboot
+```
+
 ## Installer wizard
 
 The USB installer boots into a labwc session running the setup wizard
@@ -354,10 +403,12 @@ python -m pytest tests
 
 ### CI/CD
 
-Pull requests, non-README pushes to `main`, and the daily schedule build
-the OCI image. Default-branch builds publish
-`quay.io/noitatsidem/universal-lite` and sign images with
-[cosign](https://github.com/sigstore/cosign).
+Pull requests, non-README pushes to `main`, `dx`, `testing`, and `beta`,
+plus the daily schedule build the OCI image. Stream branches publish
+`quay.io/noitatsidem/universal-lite` tags and sign images with
+[cosign](https://github.com/sigstore/cosign): `main` publishes `latest`,
+`dx` publishes `dx`, `testing` publishes `testing`, and `beta` publishes
+`beta`. Pull requests validate builds but do not publish or sign images.
 
 The Quay repository is the primary public update source for Universal-Lite.
 
@@ -369,9 +420,16 @@ gh secret set SIGNING_SECRET < cosign.key
 ```
 
 Disk images (raw + anaconda-iso) build on manual dispatch and after
-successful scheduled container builds via the
-[disk image workflow](../../actions/workflows/build-disk.yml). Disk-config
-pull requests validate the image build without uploading artifacts.
+successful scheduled `main` container builds via the
+[disk image workflow](../../actions/workflows/build-disk.yml). Manual disk
+builds can choose `latest`, `dx`, `testing`, or `beta`; automatic disk builds
+stay on `latest`. Disk-config pull requests validate the image build without
+uploading artifacts.
+
+Stream sync is automated but conservative: successful scheduled `main` builds
+merge `main` into `dx` and `beta`; successful push-triggered `dx` builds merge
+`dx` into `testing`. Clean merges push directly. Conflicts open disposable
+`sync/<source>-to-<target>` pull requests for human or agent resolution.
 Dependencies are kept current by Dependabot and Renovate.
 
 ## Project layout
@@ -379,12 +437,15 @@ Dependencies are kept current by Dependabot and Renovate.
 ```
 Containerfile                              # Image build definition
 build_files/build.sh                       # Package install + configuration
+build_files/dx/                            # DX developer payload install + image checks
 disk_config/
   disk.toml                                # Raw disk image config (10 GiB root)
   iso.toml                                 # ISO config (Anaconda + kickstart bootc-switch)
 po/                                        # Translation sources
   settings/*.po                            # 22 locale codes for settings + greeter
 tests/                                     # Unit tests for wizard, settings, desktop defaults, helpers
+  test_branch_channels.py                  # Branch/tag/base workflow contracts
+  test_dx_payload.py                       # DX payload and devmode recipe contracts
 files/
   etc/
     gtk-3.0/, gtk-4.0/                     # Decoration-layout defaults (min/max/close)
@@ -447,8 +508,10 @@ files/
         defaults/                          # Default settings (JSON)
         palette.json                       # Single source of truth for theme colors
 .github/workflows/
-  build.yml                                # OCI image build + sign + push
+  build.yml                                # Branch-aware OCI image build + sign + push
   build-disk.yml                           # Raw + anaconda-iso artifact builds
+  sync-streams.yml                         # main -> dx/beta and dx -> testing trigger workflow
+  sync-one-stream.yml                      # Reusable stream merge-or-conflict-PR workflow
 ```
 
 ## License
