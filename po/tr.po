@@ -444,7 +444,7 @@ msgstr "Seçili sürücü çok küçük ({size} GB). Gereken minimum: 16 GB."
 #: ../files/usr/bin/universal-lite-setup-wizard:2634
 msgid "Custom swap size must be a positive whole number (in GB, up to 256)."
 msgstr ""
-"Özel takas boyutu pozitif bir tam sayı olmalıdır (GB cinsinden, en fazla"
+"Özel takas boyutu pozitif bir tam sayı olmalıdır (GB cinsinden, en fazla "
 "256)."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2642
@@ -453,7 +453,7 @@ msgid ""
 "Swap size ({swap} GB) is too large for this drive. Maximum recommended: "
 "{max} GB."
 msgstr ""
-"Takas boyutu ({swap} GB) bu sürücü için çok büyük. Önerilen maksimum: {max}"
+"Takas boyutu ({swap} GB) bu sürücü için çok büyük. Önerilen maksimum: {max} "
 "GB."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2672
@@ -526,7 +526,7 @@ msgid ""
 "Hostname must contain only letters, numbers, and hyphens, and cannot start "
 "or end with a hyphen."
 msgstr ""
-"Ana makine adı yalnızca harf, rakam ve tire içermeli; tire ile başlayamaz"
+"Ana makine adı yalnızca harf, rakam ve tire içermeli; tire ile başlayamaz "
 "veya bitemez."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2759
@@ -668,7 +668,7 @@ msgid ""
 "Cannot resolve ghcr.io — check your network connection. The container "
 "registry must be reachable to install."
 msgstr ""
-"ghcr.io çözümlenemiyor — ağ bağlantınızı denetleyin. Kurulum için konteyner"
+"ghcr.io çözümlenemiyor — ağ bağlantınızı denetleyin. Kurulum için konteyner "
 "kayıt defterine erişilebilmelidir."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3135
@@ -699,7 +699,7 @@ msgid ""
 "Could not determine the booted image reference. Is this system booted from a "
 "bootc image?"
 msgstr ""
-"Başlatılan imaj başvurusu belirlenemedi. Bu sistem bir bootc imajından mı"
+"Başlatılan imaj başvurusu belirlenemedi. Bu sistem bir bootc imajından mı "
 "başlatıldı?"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3178
