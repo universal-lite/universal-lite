@@ -18,103 +18,103 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-app-menu:119
 msgid "Accessories"
-msgstr ""
+msgstr "Vifaa"
 
 #: ../files/usr/bin/universal-lite-app-menu:120
 msgid "Development"
-msgstr ""
+msgstr "Uendelezaji"
 
 #: ../files/usr/bin/universal-lite-app-menu:121
 msgid "Games"
-msgstr ""
+msgstr "Michezo"
 
 #: ../files/usr/bin/universal-lite-app-menu:122
 msgid "Graphics"
-msgstr ""
+msgstr "Michoro"
 
 #: ../files/usr/bin/universal-lite-app-menu:124
 msgid "Internet"
-msgstr ""
+msgstr "Intaneti"
 
 #: ../files/usr/bin/universal-lite-app-menu:126
 msgid "Multimedia"
-msgstr ""
+msgstr "Midia"
 
 #: ../files/usr/bin/universal-lite-app-menu:128
 msgid "Settings"
-msgstr ""
+msgstr "Mipangilio"
 
 #: ../files/usr/bin/universal-lite-app-menu:130
 msgid "System"
-msgstr ""
+msgstr "Mfumo"
 
 #: ../files/usr/bin/universal-lite-app-menu:134
 msgid "All Apps"
-msgstr ""
+msgstr "Programu zote"
 
 #: ../files/usr/bin/universal-lite-app-menu:135
 msgid "Other"
-msgstr ""
+msgstr "Nyingine"
 
 #: ../files/usr/bin/universal-lite-app-menu:166
 msgid "Lock"
-msgstr ""
+msgstr "Funga"
 
 #: ../files/usr/bin/universal-lite-app-menu:167
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log Out"
-msgstr ""
+msgstr "Toka"
 
 #: ../files/usr/bin/universal-lite-app-menu:168
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart"
-msgstr ""
+msgstr "Anzisha upya"
 
 #: ../files/usr/bin/universal-lite-app-menu:169
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut Down"
-msgstr ""
+msgstr "Zima"
 
 #: ../files/usr/bin/universal-lite-app-menu:1237
 msgid "Search apps…"
-msgstr ""
+msgstr "Tafuta programu…"
 
 #: ../files/usr/bin/universal-lite-app-menu:1240
 msgid "Search apps"
-msgstr ""
+msgstr "Tafuta programu"
 
 #: ../files/usr/bin/universal-lite-app-menu:1249
 #: ../files/usr/bin/universal-lite-app-menu:1250
 msgid "Filter by category"
-msgstr ""
+msgstr "Chuja kwa kategoria"
 
 #: ../files/usr/bin/universal-lite-app-menu:1259
 msgid "Frequent"
-msgstr ""
+msgstr "Zinazotumika mara kwa mara"
 
 #: ../files/usr/bin/universal-lite-app-menu:1566
 #: ../files/usr/bin/universal-lite-app-menu:1596
 #: ../files/usr/bin/universal-lite-app-menu:1598
 #, python-brace-format
 msgid "Launch {app}"
-msgstr ""
+msgstr "Fungua {app}"
 
 #: ../files/usr/bin/universal-lite-app-menu:1653
 msgid "Cancel"
-msgstr ""
+msgstr "Ghairi"
 
 #: ../files/usr/bin/universal-lite-app-menu:1658
 msgid "Confirm"
-msgstr ""
+msgstr "Thibitisha"
 
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log out now?"
-msgstr ""
+msgstr "Utoke sasa?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart the computer?"
-msgstr ""
+msgstr "Uanzishe kompyuta upya?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut down the computer?"
-msgstr ""
+msgstr "Uzime kompyuta?"

@@ -19,103 +19,103 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-app-menu:119
 msgid "Accessories"
-msgstr ""
+msgstr "보조 프로그램"
 
 #: ../files/usr/bin/universal-lite-app-menu:120
 msgid "Development"
-msgstr ""
+msgstr "개발"
 
 #: ../files/usr/bin/universal-lite-app-menu:121
 msgid "Games"
-msgstr ""
+msgstr "게임"
 
 #: ../files/usr/bin/universal-lite-app-menu:122
 msgid "Graphics"
-msgstr ""
+msgstr "그래픽"
 
 #: ../files/usr/bin/universal-lite-app-menu:124
 msgid "Internet"
-msgstr ""
+msgstr "인터넷"
 
 #: ../files/usr/bin/universal-lite-app-menu:126
 msgid "Multimedia"
-msgstr ""
+msgstr "멀티미디어"
 
 #: ../files/usr/bin/universal-lite-app-menu:128
 msgid "Settings"
-msgstr ""
+msgstr "설정"
 
 #: ../files/usr/bin/universal-lite-app-menu:130
 msgid "System"
-msgstr ""
+msgstr "시스템"
 
 #: ../files/usr/bin/universal-lite-app-menu:134
 msgid "All Apps"
-msgstr ""
+msgstr "모든 앱"
 
 #: ../files/usr/bin/universal-lite-app-menu:135
 msgid "Other"
-msgstr ""
+msgstr "기타"
 
 #: ../files/usr/bin/universal-lite-app-menu:166
 msgid "Lock"
-msgstr ""
+msgstr "잠금"
 
 #: ../files/usr/bin/universal-lite-app-menu:167
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log Out"
-msgstr ""
+msgstr "로그아웃"
 
 #: ../files/usr/bin/universal-lite-app-menu:168
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart"
-msgstr ""
+msgstr "다시 시작"
 
 #: ../files/usr/bin/universal-lite-app-menu:169
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut Down"
-msgstr ""
+msgstr "전원 끄기"
 
 #: ../files/usr/bin/universal-lite-app-menu:1237
 msgid "Search apps…"
-msgstr ""
+msgstr "앱 검색…"
 
 #: ../files/usr/bin/universal-lite-app-menu:1240
 msgid "Search apps"
-msgstr ""
+msgstr "앱 검색"
 
 #: ../files/usr/bin/universal-lite-app-menu:1249
 #: ../files/usr/bin/universal-lite-app-menu:1250
 msgid "Filter by category"
-msgstr ""
+msgstr "범주별 필터"
 
 #: ../files/usr/bin/universal-lite-app-menu:1259
 msgid "Frequent"
-msgstr ""
+msgstr "자주 사용"
 
 #: ../files/usr/bin/universal-lite-app-menu:1566
 #: ../files/usr/bin/universal-lite-app-menu:1596
 #: ../files/usr/bin/universal-lite-app-menu:1598
 #, python-brace-format
 msgid "Launch {app}"
-msgstr ""
+msgstr "{app} 실행"
 
 #: ../files/usr/bin/universal-lite-app-menu:1653
 msgid "Cancel"
-msgstr ""
+msgstr "취소"
 
 #: ../files/usr/bin/universal-lite-app-menu:1658
 msgid "Confirm"
-msgstr ""
+msgstr "확인"
 
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log out now?"
-msgstr ""
+msgstr "지금 로그아웃할까요?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart the computer?"
-msgstr ""
+msgstr "컴퓨터를 다시 시작할까요?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut down the computer?"
-msgstr ""
+msgstr "컴퓨터 전원을 끌까요?"

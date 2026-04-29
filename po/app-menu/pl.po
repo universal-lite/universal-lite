@@ -20,103 +20,103 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-app-menu:119
 msgid "Accessories"
-msgstr ""
+msgstr "Akcesoria"
 
 #: ../files/usr/bin/universal-lite-app-menu:120
 msgid "Development"
-msgstr ""
+msgstr "Programowanie"
 
 #: ../files/usr/bin/universal-lite-app-menu:121
 msgid "Games"
-msgstr ""
+msgstr "Gry"
 
 #: ../files/usr/bin/universal-lite-app-menu:122
 msgid "Graphics"
-msgstr ""
+msgstr "Grafika"
 
 #: ../files/usr/bin/universal-lite-app-menu:124
 msgid "Internet"
-msgstr ""
+msgstr "Internet"
 
 #: ../files/usr/bin/universal-lite-app-menu:126
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimedia"
 
 #: ../files/usr/bin/universal-lite-app-menu:128
 msgid "Settings"
-msgstr ""
+msgstr "Ustawienia"
 
 #: ../files/usr/bin/universal-lite-app-menu:130
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: ../files/usr/bin/universal-lite-app-menu:134
 msgid "All Apps"
-msgstr ""
+msgstr "Wszystkie aplikacje"
 
 #: ../files/usr/bin/universal-lite-app-menu:135
 msgid "Other"
-msgstr ""
+msgstr "Inne"
 
 #: ../files/usr/bin/universal-lite-app-menu:166
 msgid "Lock"
-msgstr ""
+msgstr "Zablokuj"
 
 #: ../files/usr/bin/universal-lite-app-menu:167
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log Out"
-msgstr ""
+msgstr "Wyloguj"
 
 #: ../files/usr/bin/universal-lite-app-menu:168
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart"
-msgstr ""
+msgstr "Uruchom ponownie"
 
 #: ../files/usr/bin/universal-lite-app-menu:169
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut Down"
-msgstr ""
+msgstr "Wyłącz"
 
 #: ../files/usr/bin/universal-lite-app-menu:1237
 msgid "Search apps…"
-msgstr ""
+msgstr "Szukaj aplikacji…"
 
 #: ../files/usr/bin/universal-lite-app-menu:1240
 msgid "Search apps"
-msgstr ""
+msgstr "Szukaj aplikacji"
 
 #: ../files/usr/bin/universal-lite-app-menu:1249
 #: ../files/usr/bin/universal-lite-app-menu:1250
 msgid "Filter by category"
-msgstr ""
+msgstr "Filtruj według kategorii"
 
 #: ../files/usr/bin/universal-lite-app-menu:1259
 msgid "Frequent"
-msgstr ""
+msgstr "Częste"
 
 #: ../files/usr/bin/universal-lite-app-menu:1566
 #: ../files/usr/bin/universal-lite-app-menu:1596
 #: ../files/usr/bin/universal-lite-app-menu:1598
 #, python-brace-format
 msgid "Launch {app}"
-msgstr ""
+msgstr "Uruchom {app}"
 
 #: ../files/usr/bin/universal-lite-app-menu:1653
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #: ../files/usr/bin/universal-lite-app-menu:1658
 msgid "Confirm"
-msgstr ""
+msgstr "Potwierdź"
 
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log out now?"
-msgstr ""
+msgstr "Wylogować teraz?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart the computer?"
-msgstr ""
+msgstr "Uruchomić komputer ponownie?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut down the computer?"
-msgstr ""
+msgstr "Wyłączyć komputer?"

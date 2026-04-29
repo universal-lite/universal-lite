@@ -18,103 +18,103 @@ msgstr ""
 
 #: ../files/usr/bin/universal-lite-app-menu:119
 msgid "Accessories"
-msgstr ""
+msgstr "เครื่องมือเสริม"
 
 #: ../files/usr/bin/universal-lite-app-menu:120
 msgid "Development"
-msgstr ""
+msgstr "พัฒนา"
 
 #: ../files/usr/bin/universal-lite-app-menu:121
 msgid "Games"
-msgstr ""
+msgstr "เกม"
 
 #: ../files/usr/bin/universal-lite-app-menu:122
 msgid "Graphics"
-msgstr ""
+msgstr "กราฟิก"
 
 #: ../files/usr/bin/universal-lite-app-menu:124
 msgid "Internet"
-msgstr ""
+msgstr "อินเทอร์เน็ต"
 
 #: ../files/usr/bin/universal-lite-app-menu:126
 msgid "Multimedia"
-msgstr ""
+msgstr "มัลติมีเดีย"
 
 #: ../files/usr/bin/universal-lite-app-menu:128
 msgid "Settings"
-msgstr ""
+msgstr "การตั้งค่า"
 
 #: ../files/usr/bin/universal-lite-app-menu:130
 msgid "System"
-msgstr ""
+msgstr "ระบบ"
 
 #: ../files/usr/bin/universal-lite-app-menu:134
 msgid "All Apps"
-msgstr ""
+msgstr "แอปทั้งหมด"
 
 #: ../files/usr/bin/universal-lite-app-menu:135
 msgid "Other"
-msgstr ""
+msgstr "อื่นๆ"
 
 #: ../files/usr/bin/universal-lite-app-menu:166
 msgid "Lock"
-msgstr ""
+msgstr "ล็อก"
 
 #: ../files/usr/bin/universal-lite-app-menu:167
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log Out"
-msgstr ""
+msgstr "ออกจากระบบ"
 
 #: ../files/usr/bin/universal-lite-app-menu:168
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart"
-msgstr ""
+msgstr "รีสตาร์ท"
 
 #: ../files/usr/bin/universal-lite-app-menu:169
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut Down"
-msgstr ""
+msgstr "ปิดเครื่อง"
 
 #: ../files/usr/bin/universal-lite-app-menu:1237
 msgid "Search apps…"
-msgstr ""
+msgstr "ค้นหาแอป…"
 
 #: ../files/usr/bin/universal-lite-app-menu:1240
 msgid "Search apps"
-msgstr ""
+msgstr "ค้นหาแอป"
 
 #: ../files/usr/bin/universal-lite-app-menu:1249
 #: ../files/usr/bin/universal-lite-app-menu:1250
 msgid "Filter by category"
-msgstr ""
+msgstr "กรองตามหมวดหมู่"
 
 #: ../files/usr/bin/universal-lite-app-menu:1259
 msgid "Frequent"
-msgstr ""
+msgstr "ใช้บ่อย"
 
 #: ../files/usr/bin/universal-lite-app-menu:1566
 #: ../files/usr/bin/universal-lite-app-menu:1596
 #: ../files/usr/bin/universal-lite-app-menu:1598
 #, python-brace-format
 msgid "Launch {app}"
-msgstr ""
+msgstr "เปิด {app}"
 
 #: ../files/usr/bin/universal-lite-app-menu:1653
 msgid "Cancel"
-msgstr ""
+msgstr "ยกเลิก"
 
 #: ../files/usr/bin/universal-lite-app-menu:1658
 msgid "Confirm"
-msgstr ""
+msgstr "ยืนยัน"
 
 #: ../files/usr/bin/universal-lite-app-menu:1671
 msgid "Log out now?"
-msgstr ""
+msgstr "ออกจากระบบตอนนี้หรือไม่?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1672
 msgid "Restart the computer?"
-msgstr ""
+msgstr "รีสตาร์ทคอมพิวเตอร์หรือไม่?"
 
 #: ../files/usr/bin/universal-lite-app-menu:1673
 msgid "Shut down the computer?"
-msgstr ""
+msgstr "ปิดเครื่องคอมพิวเตอร์หรือไม่?"
