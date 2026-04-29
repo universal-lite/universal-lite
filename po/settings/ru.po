@@ -1427,7 +1427,7 @@ msgid ""
 "{key} is currently assigned to {name}. Reset this shortcut and also reset "
 "{name} to its default?"
 msgstr ""
-"{key} сейчас назначено для {name}. Сбросить это сочетание и также сбросить"
+"{key} сейчас назначено для {name}. Сбросить это сочетание и также сбросить "
 "{name} к значению по умолчанию?"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:856
@@ -1443,7 +1443,7 @@ msgid ""
 "This will restore every shortcut to its system default. This cannot be "
 "undone."
 msgstr ""
-"Это восстановит для каждого сочетания системное значение по умолчанию. Это"
+"Это восстановит для каждого сочетания системное значение по умолчанию. Это "
 "действие нельзя отменить."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:937
