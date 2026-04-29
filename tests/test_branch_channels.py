@@ -16,6 +16,16 @@ def test_containerfile_base_image_is_build_arg_with_latest_default():
     assert "FROM ghcr.io/ublue-os/base-main:latest" not in containerfile
 
 
+def test_containerfile_base_image_arg_is_global_for_buildah():
+    lines = _read("Containerfile").splitlines()
+    base_arg_index = lines.index('ARG BASE_IMAGE="ghcr.io/ublue-os/base-main:latest"')
+    first_from_index = next(
+        index for index, line in enumerate(lines) if line.startswith("FROM ")
+    )
+
+    assert base_arg_index < first_from_index
+
+
 def test_container_workflow_builds_all_stream_branches_and_pr_targets():
     workflow = _read(".github/workflows/build.yml")
 
