@@ -71,47 +71,49 @@ toggle-swap:
         *) echo "Reboot later with: sudo systemctl reboot";;
     esac
 
-# Toggle developer mode between the Universal-Lite :latest and :dx streams.
+# Alias matching Universal Blue docs.
 devmode:
+    @ujust toggle-devmode
+
+# Toggle developer mode between the Universal-Lite :latest and :dx streams.
+toggle-devmode:
     #!/usr/bin/env bash
     set -euo pipefail
-    source /usr/lib/ujust/ujust.sh
 
     latest_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest"
     dx_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx"
-    current_image=$(rpm-ostree status -b --json | jq -r '.deployments[0]."container-image-reference"')
+    current_tag=$(jq -r '."image-tag" // ""' /usr/share/ublue-os/image-info.json 2>/dev/null || true)
 
-    if grep -q ':dx$' <<< "$current_image"; then
-        current_state="enabled"
-    else
-        current_state="disabled"
-    fi
-
-    echo "Developer mode is currently ${current_state}"
-    echo "Enable or Disable developer mode"
-    option=$(Choose Enable Disable)
-
-    if [[ "${option,,}" =~ ^enable ]]; then
-        if [[ "$current_state" == "enabled" ]]; then
-            echo "You are already on a developer image"
-            exit 0
-        fi
-
-        echo "Rebasing to a developer image"
-        rpm-ostree rebase "$dx_ref"
-        echo -e '\nUse `ujust dx-group` after rebooting into DX to add your user to the correct groups and complete the installation'
-    fi
-
-    if [[ "${option,,}" =~ ^disable ]]; then
-        if [[ "$current_state" != "enabled" ]]; then
-            echo "You are not currently on a developer image"
-            exit 0
-        fi
-
+    if [[ "$current_tag" == "dx" ]]; then
+        gum confirm "Would you like to disable developer mode?" || exit 0
         echo "Rebasing to a non developer image"
-        rpm-ostree rebase "$latest_ref"
+        pkexec bootc switch --enforce-container-sigpolicy "$latest_ref"
+        exit 0
     fi
 
-# Alias matching Universal Blue docs.
-toggle-devmode:
-    ujust devmode
+    gum confirm "Would you like to enable developer mode?" || exit 0
+    echo "Rebasing to a developer image"
+    pkexec bootc switch --enforce-container-sigpolicy "$dx_ref"
+    echo "Use ujust dx-group to add your user to the correct groups and complete the installation after rebooting into the development image"
+
+# Configure docker, incus-admin, libvirt, and serial permissions for this user.
+dx-group:
+    #!/usr/bin/pkexec bash
+    set -euo pipefail
+
+    append_group() {
+        local group_name="$1"
+        if ! grep -q "^${group_name}:" /etc/group; then
+            echo "Appending ${group_name} to /etc/group"
+            grep "^${group_name}:" /usr/lib/group | tee -a /etc/group > /dev/null
+        fi
+    }
+
+    groups_add=(docker incus-admin libvirt dialout)
+
+    for group_add in "${groups_add[@]}"; do
+        append_group "$group_add"
+        usermod -aG "$group_add" {{ `id -un` }}
+    done
+
+    echo "Reboot system and log back in to use docker, libvirt, incus, and serial connections."

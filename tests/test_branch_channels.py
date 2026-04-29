@@ -101,8 +101,20 @@ def test_latest_stream_exposes_devmode_rebase_recipe():
 
     assert "devmode:" in justfile
     assert "toggle-devmode:" in justfile
-    assert "Developer mode is currently" in justfile
-    assert "Choose Enable Disable" in justfile
+    assert "@ujust toggle-devmode" in justfile
+    assert "gum confirm \"Would you like to enable developer mode?\"" in justfile
+    assert "gum confirm \"Would you like to disable developer mode?\"" in justfile
+    assert "pkexec bootc switch --enforce-container-sigpolicy" in justfile
     assert "quay.io/noitatsidem/universal-lite:dx" in justfile
     assert "quay.io/noitatsidem/universal-lite:latest" in justfile
+    assert "rpm-ostree rebase" not in justfile
     assert "ghcr.io/universal-lite/universal-lite" not in justfile
+
+
+def test_build_regenerates_current_ublue_ujust_entrypoint():
+    build_script = _read("build_files/build.sh")
+
+    assert "/usr/share/ublue-os/just/00-entry.just" in build_script
+    assert "find /usr/share/ublue-os/just" in build_script
+    assert "! -name '60-custom.just'" in build_script
+    assert "import \"/usr/share/ublue-os/just/%s\"" in build_script

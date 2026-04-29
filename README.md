@@ -162,7 +162,7 @@ builds also publish date tags like `dx.YYYYMMDD`, `testing.YYYYMMDD`, and
 To toggle developer mode like Universal Blue/Aurora/Bluefin, use:
 
 ```bash
-ujust devmode         # choose Enable to move latest -> dx, Disable for dx -> latest
+ujust devmode         # confirm to move latest -> dx, or dx -> latest
 ujust toggle-devmode  # alias for ujust devmode
 sudo systemctl reboot
 
@@ -177,16 +177,16 @@ name. If you are on `testing`, `beta`, or a date-pinned tag, switch manually:
 
 ```bash
 # Stable consumer image
-sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest
+pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest
 
 # Stable developer image
-sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx
+pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx
 
 # WIP developer/testing image
-sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:testing
+pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:testing
 
 # Fedora-next compatibility canary
-sudo rpm-ostree rebase ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:beta
+pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:beta
 
 sudo systemctl reboot
 ```
