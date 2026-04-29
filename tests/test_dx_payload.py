@@ -159,8 +159,9 @@ def test_dx_exposes_universal_blue_style_devmode_recipes():
 def test_dx_devmode_uses_universal_lite_stream_tags_not_upstream_image_suffix():
     justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
 
-    assert "ghcr.io/universal-lite/universal-lite:dx" in justfile
-    assert "ghcr.io/universal-lite/universal-lite:latest" in justfile
+    assert "quay.io/noitatsidem/universal-lite:dx" in justfile
+    assert "quay.io/noitatsidem/universal-lite:latest" in justfile
+    assert "ghcr.io/universal-lite/universal-lite" not in justfile
     assert "ostree-image-signed:docker://" in justfile
     assert 'sed "s/$IMAGE_BASE_NAME/$IMAGE_BASE_NAME-dx/"' not in justfile
     assert 'sed "s/\\-dx//"' not in justfile

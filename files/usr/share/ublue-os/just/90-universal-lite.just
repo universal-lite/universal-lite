@@ -77,8 +77,8 @@ devmode:
     set -euo pipefail
     source /usr/lib/ujust/ujust.sh
 
-    latest_ref="ostree-image-signed:docker://ghcr.io/universal-lite/universal-lite:latest"
-    dx_ref="ostree-image-signed:docker://ghcr.io/universal-lite/universal-lite:dx"
+    latest_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest"
+    dx_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx"
     current_image=$(rpm-ostree status -b --json | jq -r '.deployments[0]."container-image-reference"')
 
     if grep -q ':dx$' <<< "$current_image"; then
