@@ -42,6 +42,11 @@ Flathub via Bazaar.
 > often worn out. For those machines, use a high-endurance, application-rated
 > SD card instead of the internal eMMC; look for A2/U3/V30-class media from a
 > reputable vendor.
+>
+> **DX storage note:** DX developer mode needs **40 GB minimum** target storage
+> for update staging room; **64 GB or larger is recommended** if you plan to
+> keep containers, virtual machines, Homebrew packages, or development trees on
+> the system.
 
 ## Install
 
@@ -159,17 +164,28 @@ builds also publish date tags like `dx.YYYYMMDD`, `testing.YYYYMMDD`, and
 
 ### Switch streams
 
-To toggle developer mode like Universal Blue/Aurora/Bluefin, use:
+To enable developer mode like Universal Blue/Aurora/Bluefin, switch to the
+DX image first, reboot into it, then finish the user group setup from the DX
+image:
+
+Install `latest` first, then enable DX with `ujust devmode`. Direct DX
+installer artifacts are not the supported path; they may exist from branch
+builds, but Universal-Lite follows upstream by treating DX as a post-install
+transition.
 
 ```bash
-ujust devmode         # confirm to move latest -> dx, or dx -> latest
-ujust toggle-devmode  # alias for ujust devmode
+# From latest/main:
+ujust devmode         # confirm the switch from latest -> dx
 sudo systemctl reboot
 
-# After rebooting into dx:
+# After rebooting into dx, complete the DX user setup:
 ujust dx-group        # add your user to docker/incus-admin/libvirt/dialout
 sudo systemctl reboot # or log out and back in so group membership applies
 ```
+
+`ujust toggle-devmode` is an alias for `ujust devmode`. The `dx-group` recipe
+is provided by the DX image; if it does not exist yet, reboot into the pending
+DX deployment first.
 
 `ujust devmode` intentionally maps `latest` <-> `dx` directly because
 Universal-Lite publishes DX as a stream tag, not as a separate `-dx` image
