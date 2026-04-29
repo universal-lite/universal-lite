@@ -94,7 +94,7 @@ def test_makefile_has_app_menu_gettext_targets():
 
 def test_makefile_dry_runs_app_menu_targets():
     result = subprocess.run(
-        ["make", "-n", "pot-app-menu", "po-app-menu", "mo-app-menu"],
+        ["make", "-n", "-B", "pot-app-menu", "po-app-menu", "mo-app-menu"],
         cwd=ROOT / "po",
         text=True,
         stdout=subprocess.PIPE,
