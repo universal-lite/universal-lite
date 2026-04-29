@@ -128,6 +128,7 @@ def test_dx_image_build_validates_key_packages_and_services():
 
 def test_dx_files_include_user_setup_and_workarounds():
     expected_files = (
+        "files/usr/bin/universal-lite-goblin",
         "files/usr/bin/universal-lite-dx-groups",
         "files/usr/lib/systemd/system/universal-lite-dx-groups.service",
         "files/usr/lib/systemd/system/libvirt-workaround.service",
@@ -154,6 +155,14 @@ def test_dx_exposes_universal_blue_style_devmode_recipes():
     assert "Developer mode is currently" in justfile
     assert "Choose Enable Disable" in justfile
     assert "ujust dx-group" in justfile
+
+
+def test_dx_includes_goblin_mode_easter_egg():
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert (ROOT / "files/usr/bin/universal-lite-goblin").exists()
+    assert "goblin:" in justfile
+    assert "/usr/bin/universal-lite-goblin" in justfile
 
 
 def test_dx_devmode_uses_universal_lite_stream_tags_not_upstream_image_suffix():
