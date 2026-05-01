@@ -78,19 +78,59 @@ def test_disk_workflow_manual_runs_can_choose_stream_tag():
     assert "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" in workflow
 
 
-def test_sync_workflow_cascades_main_dx_testing_and_beta():
+def test_build_workflow_accepts_sync_promotion_dispatch_input():
+    workflow = _read(".github/workflows/build.yml")
+
+    assert "workflow_dispatch:" in workflow
+    assert "sync_promotion:" in workflow
+    assert 'description: "Internal stream sync promotion"' in workflow
+    assert "type: boolean" in workflow
+    assert "default: false" in workflow
+
+
+def test_build_workflow_continues_only_sync_triggered_dx_promotion():
+    workflow = _read(".github/workflows/build.yml")
+
+    assert "actions: write" in workflow
+    assert "Continue sync promotion" in workflow
+    assert "github.event_name == 'workflow_dispatch'" in workflow
+    assert "inputs.sync_promotion == true" in workflow
+    assert "steps.stream.outputs.tag == 'dx'" in workflow
+    assert "gh workflow run sync-streams.yml" in workflow
+    assert "--ref main" in workflow
+    assert "-f source=dx" in workflow
+    assert "-f target=testing" in workflow
+
+
+def test_sync_workflow_starts_from_scheduled_main_and_explicit_dispatch():
     workflow = _read(".github/workflows/sync-streams.yml")
-    reusable = _read(".github/workflows/sync-one-stream.yml")
 
     assert 'workflows: ["Build container image"]' in workflow
-    assert "branches: [main, dx]" in workflow
+    assert "branches: [main]" in workflow
+    assert "github.event.workflow_run.event == 'schedule'" in workflow
+    assert "actions: write" in workflow
     assert 'source: "main"' in workflow
     assert 'target: "dx"' in workflow
     assert 'target: "beta"' in workflow
-    assert 'source: "dx"' in workflow
-    assert 'target: "testing"' in workflow
-    assert "github.event.workflow_run.event == 'push'" in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "          - dx" in workflow
+    assert "          - testing" in workflow
+    assert "source: ${{ inputs.source }}" in workflow
+    assert "target: ${{ inputs.target }}" in workflow
+    assert "github.event.workflow_run.event == 'push'" not in workflow
+
+
+def test_sync_one_stream_dispatches_target_build_after_alignment():
+    reusable = _read(".github/workflows/sync-one-stream.yml")
+
+    assert "actions: write" in reusable
     assert "git merge --no-edit" in reusable
+    assert "Already aligned ${TARGET_BRANCH}" in reusable
+    assert "Pushed ${TARGET_BRANCH}" in reusable
+    assert "gh workflow run build.yml" in reusable
+    assert '--ref "${TARGET_BRANCH}"' in reusable
+    assert "-f sync_promotion=true" in reusable
+    assert "dispatch skipped" in reusable
     assert 'PR_BRANCH="sync/${SOURCE_BRANCH}-to-${TARGET_BRANCH}"' in reusable
     assert 'git checkout -B "${PR_BRANCH}" "origin/${SOURCE_BRANCH}"' in reusable
     assert "gh pr create" in reusable
