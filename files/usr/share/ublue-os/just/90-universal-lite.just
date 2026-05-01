@@ -117,7 +117,6 @@ dx-group:
     done
 
     echo "Reboot system and log back in to use docker, libvirt, incus, and serial connections."
-
 # Launch the DX-only Goblin Mode easter egg.
 goblin:
     /usr/bin/universal-lite-goblin
