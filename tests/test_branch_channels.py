@@ -86,14 +86,23 @@ def test_build_workflow_accepts_sync_promotion_dispatch_input():
 
     assert "workflow_dispatch:" in workflow
     dispatch_lines = dispatch_inputs.splitlines()
+    inputs_start = [
+        index for index, line in enumerate(dispatch_lines) if line.strip() == "inputs:"
+    ]
+    assert inputs_start
     sync_promotion_start = [
         index
         for index, line in enumerate(dispatch_lines)
         if line.strip() == "sync_promotion:"
     ]
     assert sync_promotion_start
+    assert inputs_start[0] < sync_promotion_start[0]
     start = sync_promotion_start[0]
+    inputs_indent = len(dispatch_lines[inputs_start[0]]) - len(
+        dispatch_lines[inputs_start[0]].lstrip()
+    )
     input_indent = len(dispatch_lines[start]) - len(dispatch_lines[start].lstrip())
+    assert input_indent > inputs_indent
     block_lines = [dispatch_lines[start]]
     for line in dispatch_lines[start + 1 :]:
         indent = len(line) - len(line.lstrip())
@@ -124,13 +133,11 @@ def test_build_workflow_continues_only_sync_triggered_dx_promotion():
     expected_condition = (
         "github.event_name == 'workflow_dispatch' && "
         "inputs.sync_promotion == true && "
-        "steps.stream.outputs.tag == 'dx'"
-    )
-    expected_condition_with_publish = (
-        f"{expected_condition} && steps.stream.outputs.publish == 'true'"
+        "steps.stream.outputs.tag == 'dx' && "
+        "steps.stream.outputs.publish == 'true'"
     )
 
-    assert condition in {expected_condition, expected_condition_with_publish}
+    assert condition == expected_condition
     assert "gh workflow run sync-streams.yml" in step
     assert "--ref main" in step
     assert "-f source=dx" in step
