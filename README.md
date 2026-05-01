@@ -453,9 +453,12 @@ stay on `latest`. Disk-config pull requests validate the image build without
 uploading artifacts.
 
 Stream sync is automated but conservative: successful scheduled `main` builds
-merge `main` into `dx` and `beta`; successful push-triggered `dx` builds merge
-`dx` into `testing`. Clean merges push directly. Conflicts open disposable
-`sync/<source>-to-<target>` pull requests for human or agent resolution.
+merge `main` into `dx` and `beta`, then dispatch those stream builds even when
+the branch is already aligned so base-image security updates still publish.
+Successful sync-triggered `dx` builds dispatch `dx` into `testing`, and the
+testing build is dispatched after that sync succeeds. Conflicts open disposable
+`sync/<source>-to-<target>` pull requests for human or agent resolution and skip
+the blocked target build.
 Dependencies are kept current by Dependabot and Renovate.
 
 ## Project layout
