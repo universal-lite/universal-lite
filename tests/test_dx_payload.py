@@ -159,6 +159,15 @@ def test_dx_exposes_universal_blue_style_devmode_recipes():
     assert "ujust dx-group" in justfile
 
 
+def test_dx_regenerates_current_ublue_ujust_entrypoint():
+    build_script = _read("build_files/build.sh")
+
+    assert "/usr/share/ublue-os/just/00-entry.just" in build_script
+    assert "find /usr/share/ublue-os/just" in build_script
+    assert "! -name '60-custom.just'" in build_script
+    assert "import \"/usr/share/ublue-os/just/%s\"" in build_script
+
+
 def test_dx_includes_goblin_mode_easter_egg():
     justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
 
