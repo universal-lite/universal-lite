@@ -11,11 +11,11 @@ actually matters:
 - **2 GB Chromebooks** that ChromeOS has dropped from updates
 - **Performance-minded users** on newer hardware who want a lean desktop
   that leaves more of the machine for their apps and games
-- **Vision-impaired or non-technical users** who need a simple, stable
+- **Non-technical users** who need a simple, stable
   desktop that looks and feels like ChromeOS (bottom panel, rounded
-  windows, big clear labels, familiar keyboard shortcuts)
+  windows, big clear labels, familiar keyboard shortcuts). We're also trying to work on accessibility concerns and are open to input on what to prioritize.
 - **Handing a laptop to a relative** without also signing up to maintain it
-
+  
 ## Is this for you?
 
 You're a good fit if you have:
