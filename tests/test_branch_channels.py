@@ -240,3 +240,9 @@ def test_build_regenerates_current_ublue_ujust_entrypoint():
     assert "find /usr/share/ublue-os/just" in build_script
     assert "! -name '60-custom.just'" in build_script
     assert "import \"/usr/share/ublue-os/just/%s\"" in build_script
+
+
+def test_image_package_install_list_excludes_removed_fedora_packages():
+    build_script = _read("build_files/build.sh")
+
+    assert "gnome-themes-extra" not in build_script
