@@ -5,7 +5,7 @@ on:
   workflow_run:
     workflows: ["Build container image"]
     types: [completed]
-    branches: [main, dx]
+    branches: [main]
   workflow_dispatch:
     inputs:
       source:
@@ -25,6 +25,7 @@ on:
           - beta
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -48,14 +49,6 @@ jobs:
     with:
       source: "main"
       target: "beta"
-
-  sync-dx-to-testing:
-    name: Sync dx to testing
-    if: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dx' && github.event.workflow_run.event == 'push' }}
-    uses: ./.github/workflows/sync-one-stream.yml
-    with:
-      source: "dx"
-      target: "testing"
 
   manual-sync:
     name: Manual sync
