@@ -85,8 +85,22 @@ def test_build_workflow_accepts_sync_promotion_dispatch_input():
     )[0]
 
     assert "workflow_dispatch:" in workflow
-    assert "sync_promotion:" in dispatch_inputs
-    sync_promotion = dispatch_inputs.split("sync_promotion:", maxsplit=1)[1]
+    dispatch_lines = dispatch_inputs.splitlines()
+    sync_promotion_start = [
+        index
+        for index, line in enumerate(dispatch_lines)
+        if line.strip() == "sync_promotion:"
+    ]
+    assert sync_promotion_start
+    start = sync_promotion_start[0]
+    input_indent = len(dispatch_lines[start]) - len(dispatch_lines[start].lstrip())
+    block_lines = [dispatch_lines[start]]
+    for line in dispatch_lines[start + 1 :]:
+        indent = len(line) - len(line.lstrip())
+        if line.strip() and indent <= input_indent:
+            break
+        block_lines.append(line)
+    sync_promotion = "\n".join(block_lines)
 
     assert 'description: "Internal stream sync promotion"' in sync_promotion
     assert "required: false" in sync_promotion
