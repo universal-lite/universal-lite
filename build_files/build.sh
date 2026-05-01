@@ -80,7 +80,6 @@ dnf5 install -y --setopt=install_weak_deps=False \
     glibc-langpack-yo \
     glibc-langpack-zh \
     gnome-backgrounds \
-    gnome-themes-extra \
     gnome-text-editor \
     fedora-workstation-backgrounds \
     libjxl \
