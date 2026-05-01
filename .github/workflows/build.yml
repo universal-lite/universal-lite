@@ -18,6 +18,12 @@ on:
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
+    inputs:
+      sync_promotion:
+        description: "Internal stream sync promotion"
+        required: false
+        type: boolean
+        default: false
 
 env:
   IMAGE_DESC: "Universal-Lite: a Chromebook-inspired Universal Blue image for old low-RAM laptops"
@@ -37,6 +43,7 @@ jobs:
     runs-on: ubicloud-premium-8-ubuntu-2404
 
     permissions:
+      actions: write
       contents: read
       packages: write
       id-token: write
@@ -227,3 +234,13 @@ jobs:
           TAGS: ${{ steps.push.outputs.digest }}
           COSIGN_EXPERIMENTAL: false
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+
+      - name: Continue sync promotion
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.sync_promotion == true && steps.stream.outputs.tag == 'dx' && steps.stream.outputs.publish == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run sync-streams.yml \
+            --ref main \
+            -f source=dx \
+            -f target=testing
