@@ -48,7 +48,7 @@ jobs:
           git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
 
           if git merge --no-edit "origin/${SOURCE_BRANCH}"; then
-            if git diff --quiet "origin/${TARGET_BRANCH}" HEAD; then
+            if [[ "$(git rev-parse HEAD)" == "$(git rev-parse "origin/${TARGET_BRANCH}")" ]]; then
               echo "Already aligned ${TARGET_BRANCH}; dispatching ${TARGET_BRANCH} build."
               dispatch_target_build
             else
