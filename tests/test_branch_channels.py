@@ -93,17 +93,29 @@ def test_build_workflow_continues_only_sync_triggered_dx_promotion():
 
     assert "actions: write" in workflow
     assert "Continue sync promotion" in workflow
-    assert "github.event_name == 'workflow_dispatch'" in workflow
-    assert "inputs.sync_promotion == true" in workflow
-    assert "steps.stream.outputs.tag == 'dx'" in workflow
-    assert "gh workflow run sync-streams.yml" in workflow
-    assert "--ref main" in workflow
-    assert "-f source=dx" in workflow
-    assert "-f target=testing" in workflow
+    step = workflow.split("- name: Continue sync promotion", maxsplit=1)[1].split(
+        "\n      - name:", maxsplit=1
+    )[0]
+    condition = step.split("if:", maxsplit=1)[1].split("\n", maxsplit=1)[0]
+
+    assert "github.event_name == 'workflow_dispatch'" in condition
+    assert "inputs.sync_promotion == true" in condition
+    assert "steps.stream.outputs.tag == 'dx'" in condition
+    assert "gh workflow run sync-streams.yml" in step
+    assert "--ref main" in step
+    assert "-f source=dx" in step
+    assert "-f target=testing" in step
 
 
 def test_sync_workflow_starts_from_scheduled_main_and_explicit_dispatch():
     workflow = _read(".github/workflows/sync-streams.yml")
+    dispatch_inputs = workflow.split("workflow_dispatch:", maxsplit=1)[1].split(
+        "\npermissions:", maxsplit=1
+    )[0]
+    source_input = dispatch_inputs.split("source:", maxsplit=1)[1].split(
+        "target:", maxsplit=1
+    )[0]
+    target_input = dispatch_inputs.split("target:", maxsplit=1)[1]
 
     assert 'workflows: ["Build container image"]' in workflow
     assert "branches: [main]" in workflow
@@ -113,8 +125,8 @@ def test_sync_workflow_starts_from_scheduled_main_and_explicit_dispatch():
     assert 'target: "dx"' in workflow
     assert 'target: "beta"' in workflow
     assert "workflow_dispatch:" in workflow
-    assert "          - dx" in workflow
-    assert "          - testing" in workflow
+    assert "- dx" in {line.strip() for line in source_input.splitlines()}
+    assert "- testing" in {line.strip() for line in target_input.splitlines()}
     assert "source: ${{ inputs.source }}" in workflow
     assert "target: ${{ inputs.target }}" in workflow
     assert "github.event.workflow_run.event == 'push'" not in workflow
@@ -125,8 +137,17 @@ def test_sync_one_stream_dispatches_target_build_after_alignment():
 
     assert "actions: write" in reusable
     assert "git merge --no-edit" in reusable
+    assert "dispatch_target_build()" in reusable
     assert "Already aligned ${TARGET_BRANCH}" in reusable
+    no_op_path = reusable.split("Already aligned ${TARGET_BRANCH}", maxsplit=1)[1].split(
+        "exit 0", maxsplit=1
+    )[0]
+    assert "dispatch_target_build" in no_op_path
     assert "Pushed ${TARGET_BRANCH}" in reusable
+    pushed_path = reusable.split("Pushed ${TARGET_BRANCH}", maxsplit=1)[1].split(
+        "exit 0", maxsplit=1
+    )[0]
+    assert "dispatch_target_build" in pushed_path
     assert "gh workflow run build.yml" in reusable
     assert '--ref "${TARGET_BRANCH}"' in reusable
     assert "-f sync_promotion=true" in reusable
