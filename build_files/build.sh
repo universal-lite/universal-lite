@@ -175,7 +175,7 @@ if [[ "$FEDORA_MAJOR" -ge 44 ]]; then
         --skip-unavailable \
         --disablerepo=fedora-multimedia \
         "${MULTIMEDIA_PACKAGES[@]}" \
-        || echo "rpmfusion multimedia packages are unavailable on Fedora ${FEDORA_MAJOR}; continuing beta canary build"
+        || echo "rpmfusion multimedia packages are unavailable on Fedora ${FEDORA_MAJOR}; continuing build"
 else
     dnf5 install -y --setopt=install_weak_deps=False \
         --disablerepo=fedora-multimedia \

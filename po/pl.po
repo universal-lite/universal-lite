@@ -70,7 +70,7 @@ msgstr "Instalacja w toku"
 msgid ""
 "An install is running. Wait for it to finish before closing this window."
 msgstr ""
-"Instalacja jest uruchomiona. Poczekaj na jej zakończenie przed zamknięciem"
+"Instalacja jest uruchomiona. Poczekaj na jej zakończenie przed zamknięciem "
 "tego okna."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1057
@@ -93,7 +93,7 @@ msgstr "Układ klawiatury: {layout}"
 msgid ""
 "Auto-selected from your language. Override if your physical keyboard differs."
 msgstr ""
-"Wybrano automatycznie na podstawie języka. Zmień, jeśli fizyczna klawiatura"
+"Wybrano automatycznie na podstawie języka. Zmień, jeśli fizyczna klawiatura "
 "ma inny układ."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1334
@@ -449,7 +449,7 @@ msgstr "Wybrany dysk jest za mały ({size} GB). Wymagane minimum: 16 GB."
 #: ../files/usr/bin/universal-lite-setup-wizard:2634
 msgid "Custom swap size must be a positive whole number (in GB, up to 256)."
 msgstr ""
-"Niestandardowy rozmiar swap musi być dodatnią liczbą całkowitą (w GB, do"
+"Niestandardowy rozmiar swap musi być dodatnią liczbą całkowitą (w GB, do "
 "256)."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2642
@@ -483,8 +483,8 @@ msgid ""
 "lowercase letters, numbers, underscores, and hyphens, and cannot end with a "
 "hyphen."
 msgstr ""
-"Nazwa użytkownika musi zaczynać się małą literą lub podkreśleniem, zawierać"
-"tylko małe litery, cyfry, podkreślenia i myślniki oraz nie może kończyć się"
+"Nazwa użytkownika musi zaczynać się małą literą lub podkreśleniem, zawierać "
+"tylko małe litery, cyfry, podkreślenia i myślniki oraz nie może kończyć się "
 "myślnikiem."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2699
@@ -532,7 +532,7 @@ msgid ""
 "Hostname must contain only letters, numbers, and hyphens, and cannot start "
 "or end with a hyphen."
 msgstr ""
-"Nazwa hosta może zawierać tylko litery, cyfry i myślniki oraz nie może"
+"Nazwa hosta może zawierać tylko litery, cyfry i myślniki oraz nie może "
 "zaczynać się ani kończyć myślnikiem."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:2759
@@ -674,13 +674,13 @@ msgid ""
 "Cannot resolve ghcr.io — check your network connection. The container "
 "registry must be reachable to install."
 msgstr ""
-"Nie można rozwiązać nazwy ghcr.io — sprawdź połączenie z siecią. Rejestr"
+"Nie można rozwiązać nazwy ghcr.io — sprawdź połączenie z siecią. Rejestr "
 "kontenerów musi być osiągalny, aby zainstalować system."
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3135
 msgid "Target disk too small (need 6 GB free after partitioning)"
 msgstr ""
-"Dysk docelowy jest za mały (potrzeba 6 GB wolnego miejsca po"
+"Dysk docelowy jest za mały (potrzeba 6 GB wolnego miejsca po "
 "partycjonowaniu)"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3137
@@ -707,7 +707,7 @@ msgid ""
 "Could not determine the booted image reference. Is this system booted from a "
 "bootc image?"
 msgstr ""
-"Nie można ustalić referencji uruchomionego obrazu. Czy ten system został"
+"Nie można ustalić referencji uruchomionego obrazu. Czy ten system został "
 "uruchomiony z obrazu bootc?"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:3178

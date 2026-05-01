@@ -1,7 +1,7 @@
 # Universal-Lite
 
 A lightweight, auto-updating Linux desktop for old x86_64 Chromebooks and
-low-end laptops. Built on [Universal Blue](https://universal-blue.org/) —
+old or low-end computers. Built on [Universal Blue](https://universal-blue.org/) —
 the image updates itself daily and rolls back automatically if anything
 goes wrong. No package manager, no manual maintenance, no surprises.
 
@@ -9,17 +9,21 @@ Designed for the handful of real-world cases where this combination
 actually matters:
 
 - **2 GB Chromebooks** that ChromeOS has dropped from updates
-- **Vision-impaired or non-technical users** who need a simple, stable
+- **Performance-minded users** on newer hardware who want a lean desktop
+  that leaves more of the machine for their apps and games
+- **Non-technical users** who need a simple, stable
   desktop that looks and feels like ChromeOS (bottom panel, rounded
-  windows, big clear labels, familiar keyboard shortcuts)
+  windows, big clear labels, familiar keyboard shortcuts). We're also trying to work on accessibility concerns and are open to input on what to prioritize.
 - **Handing a laptop to a relative** without also signing up to maintain it
-
+  
 ## Is this for you?
 
 You're a good fit if you have:
 
-- An old Chromebook or low-end x86_64 laptop sitting around
+- An old Chromebook, low-end x86_64 computer, or a faster PC you want to
+  keep lean
 - At least 2 GB of RAM
+- At least 32 GB of target storage
 - Either UEFI firmware already, or a Chromebook you're willing to flash
   with [MrChromebox](https://mrchromebox.tech) UEFI Full ROM
 
@@ -33,6 +37,17 @@ Flathub via Bazaar.
 > device-specific instructions. x86_64 only — ARM Chromebooks are not
 > supported.
 
+> **Storage note:** Universal-Lite needs **32 GB minimum** target storage.
+> Many old Chromebooks shipped with 16 GB eMMC, and by now that storage is
+> often worn out. For those machines, use a high-endurance, application-rated
+> SD card instead of the internal eMMC; look for A2/U3/V30-class media from a
+> reputable vendor.
+>
+> **DX storage note:** DX developer mode needs **40 GB minimum** target storage
+> for update staging room; **64 GB or larger is recommended** if you plan to
+> keep containers, virtual machines, Homebrew packages, or development trees on
+> the system.
+
 ## Install
 
 ### .raw USB installer (recommended for Chromebooks under 4 GB of RAM)
@@ -41,7 +56,7 @@ You need:
 
 - A second Linux machine (or VM) to prepare the USB
 - A USB drive, **16 GB minimum** (holds the live installer environment)
-- A target drive in the machine, **16 GB minimum** (32+ GB recommended)
+- A target drive in the machine, **32 GB minimum**
 
 **Step 1 — Download the image.** Open
 [GitHub Actions → Build disk images](../../actions/workflows/build-disk.yml),
@@ -149,17 +164,28 @@ builds also publish date tags like `dx.YYYYMMDD`, `testing.YYYYMMDD`, and
 
 ### Switch streams
 
-To toggle developer mode like Universal Blue/Aurora/Bluefin, use:
+To enable developer mode like Universal Blue/Aurora/Bluefin, switch to the
+DX image first, reboot into it, then finish the user group setup from the DX
+image:
+
+Install `latest` first, then enable DX with `ujust devmode`. Direct DX
+installer artifacts are not the supported path; they may exist from branch
+builds, but Universal-Lite follows upstream by treating DX as a post-install
+transition.
 
 ```bash
 ujust devmode         # confirm to move latest -> dx, or dx -> latest
 ujust toggle-devmode  # alias for ujust devmode
 sudo systemctl reboot
 
-# After rebooting into dx:
+# After rebooting into dx, complete the DX user setup:
 ujust dx-group        # add your user to docker/incus-admin/libvirt/dialout
 sudo systemctl reboot # or log out and back in so group membership applies
 ```
+
+`ujust toggle-devmode` is an alias for `ujust devmode`. The `dx-group` recipe
+is provided by the DX image; if it does not exist yet, reboot into the pending
+DX deployment first.
 
 `ujust devmode` intentionally maps `latest` <-> `dx` directly because
 Universal-Lite publishes DX as a stream tag, not as a separate `-dx` image
@@ -427,9 +453,12 @@ stay on `latest`. Disk-config pull requests validate the image build without
 uploading artifacts.
 
 Stream sync is automated but conservative: successful scheduled `main` builds
-merge `main` into `dx` and `beta`; successful push-triggered `dx` builds merge
-`dx` into `testing`. Clean merges push directly. Conflicts open disposable
-`sync/<source>-to-<target>` pull requests for human or agent resolution.
+merge `main` into `dx` and `beta`, then dispatch those stream builds even when
+the branch is already aligned so base-image security updates still publish.
+Successful sync-triggered `dx` builds dispatch `dx` into `testing`, and the
+testing build is dispatched after that sync succeeds. Conflicts open disposable
+`sync/<source>-to-<target>` pull requests for human or agent resolution and skip
+the blocked target build.
 Dependencies are kept current by Dependabot and Renovate.
 
 ## Project layout

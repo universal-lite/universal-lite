@@ -308,7 +308,7 @@ msgstr "ลองใหม่"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1967
 msgid "Reboot"
-msgstr "รีบูต"
+msgstr "รีสตาร์ท"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:1994
 msgid "NetworkManager unavailable — install requires internet."
@@ -812,7 +812,7 @@ msgstr "ติดตั้งเสร็จสมบูรณ์!"
 
 #: ../files/usr/bin/universal-lite-setup-wizard:4356
 msgid "Reboot failed — please restart manually."
-msgstr "รีบูตไม่สำเร็จ — กรุณารีสตาร์ทด้วยตนเอง"
+msgstr "รีสตาร์ทไม่สำเร็จ — กรุณารีสตาร์ทด้วยตนเอง"
 
 #~ msgid "Connect to Wi-Fi"
 #~ msgstr "เชื่อมต่อ Wi-Fi"

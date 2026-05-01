@@ -1427,7 +1427,7 @@ msgid ""
 "{key} is currently assigned to {name}. Reset this shortcut and also reset "
 "{name} to its default?"
 msgstr ""
-"{key} şu anda {name} için atanmış. Bu kısayol sıfırlansın ve {name} de"
+"{key} şu anda {name} için atanmış. Bu kısayol sıfırlansın ve {name} de "
 "varsayılanına sıfırlansın mı?"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:856

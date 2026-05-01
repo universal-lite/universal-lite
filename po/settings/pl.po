@@ -1381,7 +1381,7 @@ msgstr "Zarezerwowana kombinacja klawiszy"
 #, python-brace-format
 msgid "{key} is reserved by the system and can't be reassigned."
 msgstr ""
-"Kombinacja {key} jest zarezerwowana przez system i nie można jej przypisać"
+"Kombinacja {key} jest zarezerwowana przez system i nie można jej przypisać "
 "ponownie."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:706
@@ -1429,7 +1429,7 @@ msgid ""
 "{key} is currently assigned to {name}. Reset this shortcut and also reset "
 "{name} to its default?"
 msgstr ""
-"{key} jest obecnie przypisany do {name}. Zresetować ten skrót i również"
+"{key} jest obecnie przypisany do {name}. Zresetować ten skrót i również "
 "przywrócić {name} do ustawienia domyślnego?"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:856
@@ -1445,7 +1445,7 @@ msgid ""
 "This will restore every shortcut to its system default. This cannot be "
 "undone."
 msgstr ""
-"Spowoduje to przywrócenie każdego skrótu do domyślnej wartości systemowej."
+"Spowoduje to przywrócenie każdego skrótu do domyślnej wartości systemowej. "
 "Tej operacji nie można cofnąć."
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:937
