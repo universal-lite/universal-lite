@@ -80,12 +80,18 @@ def test_disk_workflow_manual_runs_can_choose_stream_tag():
 
 def test_build_workflow_accepts_sync_promotion_dispatch_input():
     workflow = _read(".github/workflows/build.yml")
+    dispatch_inputs = workflow.split("workflow_dispatch:", maxsplit=1)[1].split(
+        "\nenv:", maxsplit=1
+    )[0]
 
     assert "workflow_dispatch:" in workflow
-    assert "sync_promotion:" in workflow
-    assert 'description: "Internal stream sync promotion"' in workflow
-    assert "type: boolean" in workflow
-    assert "default: false" in workflow
+    assert "sync_promotion:" in dispatch_inputs
+    sync_promotion = dispatch_inputs.split("sync_promotion:", maxsplit=1)[1]
+
+    assert 'description: "Internal stream sync promotion"' in sync_promotion
+    assert "required: false" in sync_promotion
+    assert "type: boolean" in sync_promotion
+    assert "default: false" in sync_promotion
 
 
 def test_build_workflow_continues_only_sync_triggered_dx_promotion():
@@ -138,6 +144,13 @@ def test_sync_one_stream_dispatches_target_build_after_alignment():
     assert "actions: write" in reusable
     assert "git merge --no-edit" in reusable
     assert "dispatch_target_build()" in reusable
+    dispatch_helper = reusable.split("dispatch_target_build()", maxsplit=1)[1].split(
+        "Already aligned ${TARGET_BRANCH}", maxsplit=1
+    )[0]
+    assert "gh workflow run build.yml" in dispatch_helper
+    assert '--ref "${TARGET_BRANCH}"' in dispatch_helper
+    assert "-f sync_promotion=true" in dispatch_helper
+
     assert "Already aligned ${TARGET_BRANCH}" in reusable
     no_op_path = reusable.split("Already aligned ${TARGET_BRANCH}", maxsplit=1)[1].split(
         "exit 0", maxsplit=1
@@ -148,13 +161,17 @@ def test_sync_one_stream_dispatches_target_build_after_alignment():
         "exit 0", maxsplit=1
     )[0]
     assert "dispatch_target_build" in pushed_path
-    assert "gh workflow run build.yml" in reusable
-    assert '--ref "${TARGET_BRANCH}"' in reusable
-    assert "-f sync_promotion=true" in reusable
-    assert "dispatch skipped" in reusable
-    assert 'PR_BRANCH="sync/${SOURCE_BRANCH}-to-${TARGET_BRANCH}"' in reusable
-    assert 'git checkout -B "${PR_BRANCH}" "origin/${SOURCE_BRANCH}"' in reusable
-    assert "gh pr create" in reusable
+
+    assert "git merge --abort" in reusable
+    conflict_path = reusable.split("git merge --abort", maxsplit=1)[1]
+    assert "existing_pr_url=$(gh pr list" in conflict_path
+    assert "Sync PR already exists" in conflict_path
+    assert "dispatch skipped" in conflict_path
+    assert 'PR_BRANCH="sync/${SOURCE_BRANCH}-to-${TARGET_BRANCH}"' in conflict_path
+    assert 'git checkout -B "${PR_BRANCH}" "origin/${SOURCE_BRANCH}"' in conflict_path
+    assert "gh pr create" in conflict_path
+    pr_create = conflict_path.split("gh pr create", maxsplit=1)[1]
+    assert "target build dispatch skipped" in pr_create
 
 
 def test_latest_stream_exposes_devmode_rebase_recipe():
