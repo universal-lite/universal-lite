@@ -215,6 +215,7 @@ def test_sync_one_stream_dispatches_target_build_after_alignment():
     assert "gh pr create" in conflict_path
     pr_create = conflict_path.split("gh pr create", maxsplit=1)[1]
     assert "target build dispatch skipped" in pr_create
+    assert "Opened sync PR for ${SOURCE_BRANCH} -> ${TARGET_BRANCH}; dispatch skipped." in pr_create
 
 
 def test_latest_stream_exposes_devmode_rebase_recipe():
