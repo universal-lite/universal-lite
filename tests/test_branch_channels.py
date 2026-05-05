@@ -78,6 +78,14 @@ def test_disk_workflow_manual_runs_can_choose_stream_tag():
     assert "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}" in workflow
 
 
+def test_disk_workflow_runs_after_successful_main_push_or_schedule_container_build():
+    workflow = _read(".github/workflows/build-disk.yml")
+
+    assert "github.event.workflow_run.conclusion == 'success'" in workflow
+    assert "github.event.workflow_run.event == 'push'" in workflow
+    assert "github.event.workflow_run.event == 'schedule'" in workflow
+
+
 def test_build_workflow_accepts_sync_promotion_dispatch_input():
     workflow = _read(".github/workflows/build.yml")
     dispatch_inputs = workflow.split("workflow_dispatch:", maxsplit=1)[1].split(
@@ -240,4 +248,3 @@ def test_build_regenerates_current_ublue_ujust_entrypoint():
     assert "find /usr/share/ublue-os/just" in build_script
     assert "! -name '60-custom.just'" in build_script
     assert "import \"/usr/share/ublue-os/just/%s\"" in build_script
-
