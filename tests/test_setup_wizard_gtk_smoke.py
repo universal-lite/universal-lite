@@ -21,7 +21,10 @@ def _load_wizard_module():
 
 def test_setup_wizard_window_constructs_with_real_gtk(monkeypatch):
     gi = pytest.importorskip("gi")
-    gi.require_version("Gtk", "4.0")
+    try:
+        gi.require_version("Gtk", "4.0")
+    except (ValueError, ImportError, RuntimeError) as exc:
+        pytest.skip(f"GTK 4 runtime unavailable for smoke testing: {exc}")
     from gi.repository import Gtk
 
     try:
@@ -48,9 +51,13 @@ def test_setup_wizard_window_constructs_with_real_gtk(monkeypatch):
         return Result()
 
     app = Gtk.Application(application_id="org.universallite.SetupWizard.Test")
-    app.register(None)
+    try:
+        app.register(None)
+    except Exception as exc:
+        pytest.skip(f"GTK application could not register for smoke testing: {exc}")
 
     with patch.object(module.subprocess, "run", side_effect=fake_run), \
+         patch.object(module.atexit, "register", lambda *args, **kwargs: None), \
          patch.object(module.NM.Client, "new_async", lambda *args, **kwargs: None):
         window = module.SetupWizardWindow(app)
 
