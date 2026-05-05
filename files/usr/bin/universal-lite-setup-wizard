@@ -963,23 +963,21 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except (OSError, subprocess.SubprocessError):
             pass
 
+    def _show_install_in_progress_alert(self) -> None:
+        alert = Gtk.AlertDialog()
+        alert.set_modal(True)
+        alert.set_message(_("Install in progress"))
+        alert.set_detail(_(
+            "An install is running. Wait for it to finish "
+            "before closing this window."))
+        alert.show(self)
+
     def _on_close_request(self, _window) -> bool:
         # Block close during an active install so the user can't orphan
         # a half-written target disk with a stray Esc or window-manager
         # close keybinding.
         if getattr(self, "_installing", False) and self._current_page == PAGE_PROGRESS:
-            dialog = Gtk.MessageDialog(
-                transient_for=self,
-                modal=True,
-                message_type=Gtk.MessageType.WARNING,
-                buttons=Gtk.ButtonsType.OK,
-                text=_("Install in progress"),
-                secondary_text=_(
-                    "An install is running. Wait for it to finish "
-                    "before closing this window."),
-            )
-            dialog.connect("response", lambda d, _r: d.destroy())
-            dialog.present()
+            self._show_install_in_progress_alert()
             return True
         self._cleanup_mounts()
         return False
@@ -2170,6 +2168,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._rescan_timer_id = GLib.timeout_add_seconds(10, self._enable_rescan)
 
     def _enable_rescan(self) -> bool:
+        self._rescan_timer_id = 0
         self._rescan_button.set_sensitive(True)
         return GLib.SOURCE_REMOVE
 
@@ -2444,13 +2443,18 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         except (AttributeError, TypeError):
             pass
 
-    def _mark_live_assertive(self, widget) -> None:
-        """Mark a status label as a live region so Orca announces changes."""
+    def _mark_live_assertive(self, _widget) -> None:
+        """Compatibility shim; status announcements happen in _announce_status."""
+        return
+
+    def _announce_status(self, message: str) -> None:
+        """Ask assistive tech to announce visible status text when supported."""
+        if not message:
+            return
         try:
-            widget.update_property(
-                [Gtk.AccessibleProperty.LIVE],
-                [Gtk.AccessibleLive.ASSERTIVE])
-        except (AttributeError, TypeError):
+            priority = Gtk.AccessibleAnnouncementPriority.MEDIUM
+            self._status_label.announce(message, priority)
+        except (AttributeError, TypeError, RuntimeError):
             pass
 
     def _make_summary_row(self, parent: Gtk.Box, label_text: str) -> Gtk.Label:
@@ -2849,6 +2853,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         self._status_label.remove_css_class("status-success")
         if message:
             self._status_label.add_css_class("status-error" if error else "status-success")
+            self._announce_status(message)
 
     # ------------------------------------------------------------------
     # Field readers
@@ -4127,7 +4132,6 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
     def _on_setup_clicked(self) -> None:
         if getattr(self, "_installing", False):
             return
-        self._installing = True
         self._stop_requested = threading.Event()
         # Capture all form values for thread-safe access
         # Disk page
@@ -4158,12 +4162,14 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
                 self._setup_hashed_root_password = ""
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
             self._set_status(_("Failed to hash password: {err}").format(err=exc))
+            self._installing = False
             return
         finally:
             root_pw = ""
             del root_pw
         self._password_entry.set_text("")
         self._root_password_entry.set_text("")
+        self._installing = True
 
         # System page
         self._setup_is_admin = self._admin_check.get_active()

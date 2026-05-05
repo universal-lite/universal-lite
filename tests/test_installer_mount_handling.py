@@ -38,6 +38,33 @@ def _memory_window(tmp_path, use_zswap=True, swap_gb=4):
     return window
 
 
+class _FakeButton:
+    def __init__(self, active=True, text=""):
+        self.active = active
+        self.text = text
+        self.sensitive = None
+
+    def get_active(self):
+        return self.active
+
+    def get_text(self):
+        return self.text
+
+    def set_text(self, text):
+        self.text = text
+
+    def set_sensitive(self, sensitive):
+        self.sensitive = sensitive
+
+
+class _FakeDropdown:
+    def __init__(self, selected=0):
+        self.selected = selected
+
+    def get_selected(self):
+        return self.selected
+
+
 def test_device_tree_sources_include_child_partitions():
     def fake_run(cmd, **_kwargs):
         assert cmd == ["lsblk", "-lnpo", "NAME,TYPE", "/dev/nvme0n1"]
@@ -190,3 +217,47 @@ def test_configure_memory_zram_removes_zswap_units_from_sysroot(tmp_path):
     )
     for unit in _SWAP_UNITS:
         assert not (wants_dir / unit).exists()
+
+
+def test_enable_rescan_clears_completed_source_id():
+    window = setup_wizard.SetupWizardWindow.__new__(
+        setup_wizard.SetupWizardWindow
+    )
+    window._rescan_timer_id = 123
+    window._rescan_button = _FakeButton()
+
+    result = setup_wizard.SetupWizardWindow._enable_rescan(window)
+
+    assert result == setup_wizard.GLib.SOURCE_REMOVE
+    assert window._rescan_timer_id == 0
+    assert window._rescan_button.sensitive is True
+
+
+def test_setup_hash_failure_does_not_leave_installing_stuck(monkeypatch):
+    window = setup_wizard.SetupWizardWindow.__new__(
+        setup_wizard.SetupWizardWindow
+    )
+    window._installing = False
+    window._drive_dropdown = _FakeDropdown(0)
+    window._drives = [{"name": "/dev/vda"}]
+    window._fs_dropdown = _FakeDropdown(0)
+    window._swap_strategy_dropdown = _FakeDropdown(0)
+    window._password_entry = _FakeButton(text="secret")
+    window._root_password_entry = _FakeButton(text="")
+    window._fullname_entry = _FakeButton(text="Jane Doe")
+    window._username_entry = _FakeButton(text="jane")
+    window._hostname_entry = _FakeButton(text="universal-lite")
+    window._admin_check = _FakeButton(active=True)
+    statuses = []
+    window._set_status = lambda message, error=True: statuses.append((message, error))
+
+    def fail_hash(_password):
+        raise OSError("openssl missing")
+
+    monkeypatch.setattr(setup_wizard, "_hash_password", fail_hash)
+
+    setup_wizard.SetupWizardWindow._on_setup_clicked(window)
+
+    assert getattr(window, "_installing", False) is False
+    assert statuses
+    assert "Failed to hash password" in statuses[-1][0]

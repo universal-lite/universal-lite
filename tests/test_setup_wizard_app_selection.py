@@ -108,3 +108,18 @@ def test_password_entries_avoid_missing_activates_default_api():
         "Gtk.PasswordEntry in the installer image lacks set_activates_default; "
         f"use the activate signal instead. Lines: {bad_lines}"
     )
+
+
+def test_wizard_avoids_removed_accessibility_live_region_api():
+    source = WIZARD.read_text()
+
+    assert "Gtk.AccessibleProperty.LIVE" not in source
+    assert "Gtk.AccessibleLive" not in source
+    assert ".announce(" in source
+
+
+def test_wizard_uses_current_alert_dialog_api():
+    source = WIZARD.read_text()
+
+    assert "Gtk.MessageDialog" not in source
+    assert "Gtk.AlertDialog" in source
