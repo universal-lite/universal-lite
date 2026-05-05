@@ -15,19 +15,10 @@ if systemd-detect-virt -q; then
     export WLR_NO_HARDWARE_CURSORS=1
 fi
 
-# Match the regular session policy: keep Vulkan available on capable real
-# hardware, but force GL in VMs and when Vulkan probing fails quickly.
-if [ -z "${GSK_RENDERER:-}" ]; then
-    if systemd-detect-virt -q; then
-        export GSK_RENDERER=gl
-    elif command -v vulkaninfo >/dev/null 2>&1 && \
-         command -v timeout >/dev/null 2>&1 && \
-         timeout 3s vulkaninfo --summary >/dev/null 2>&1; then
-        :
-    else
-        export GSK_RENDERER=gl
-    fi
-fi
+# The wizard is the only visible app in this session. Force GTK's GL
+# renderer even when Vulkan probes successfully, because the GTK Vulkan
+# path has produced blank wizard/greeter windows on weak GPUs.
+export GSK_RENDERER=gl
 
 # Provide a debug terminal shortcut (Ctrl+Alt+T) in wizard mode
 mkdir -p /root/.config/labwc

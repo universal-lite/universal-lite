@@ -294,6 +294,16 @@ def test_session_renderer_policy_is_conditional_not_global_gl():
     assert "Keep Vulkan available on real hardware" in session
 
 
+def test_wizard_session_forces_gl_renderer_even_when_vulkan_probe_succeeds():
+    root = Path(__file__).resolve().parents[1]
+    wizard_session = (
+        root / "files/usr/libexec/universal-lite-wizard-session"
+    ).read_text(encoding="utf-8")
+
+    assert "timeout 3s vulkaninfo --summary" not in wizard_session
+    assert "export GSK_RENDERER=gl" in wizard_session
+
+
 def test_image_installs_vulkaninfo_for_conditional_renderer_probe():
     root = Path(__file__).resolve().parents[1]
     build = (root / "build_files/build.sh").read_text(encoding="utf-8")
