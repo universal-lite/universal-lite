@@ -19,7 +19,7 @@ def _load_wizard_module():
     return module
 
 
-def test_setup_wizard_window_constructs_with_real_gtk(monkeypatch):
+def test_setup_wizard_window_constructs_with_real_gtk(monkeypatch, tmp_path):
     gi = pytest.importorskip("gi")
     try:
         gi.require_version("Gtk", "4.0")
@@ -34,6 +34,14 @@ def test_setup_wizard_window_constructs_with_real_gtk(monkeypatch):
         pytest.skip(f"GTK display unavailable: {exc}")
 
     module = _load_wizard_module()
+    original_path = module.Path
+
+    def sandbox_path(value, *args, **kwargs):
+        if str(value) == "/tmp/universal-lite-installer.log":
+            return tmp_path / "universal-lite-installer.log"
+        return original_path(value, *args, **kwargs)
+
+    monkeypatch.setattr(module, "Path", sandbox_path)
     monkeypatch.setattr(module, "_load_timezones", lambda: ["America/New_York"])
     monkeypatch.setattr(module, "_load_keyboard_layouts", lambda: [("us", "English (US)")])
     monkeypatch.setattr(module, "_load_drives", lambda: [{
