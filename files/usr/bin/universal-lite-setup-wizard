@@ -167,6 +167,40 @@ checkbutton label {
     border: 1px solid #62a0ea;
 }
 
+dropdown button {
+    background-color: #36363a;
+    color: #ffffff;
+    border: 1px solid #3a3a3e;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+dropdown button:hover {
+    background-color: #404044;
+}
+
+dropdown button:focus,
+dropdown button:focus-visible {
+    border: 1px solid #62a0ea;
+}
+
+dropdown button label {
+    color: #ffffff;
+}
+
+dropdown button arrow {
+    color: #ffffff;
+}
+
+dropdown popover {
+    background-color: #1d1d20;
+    color: #ffffff;
+}
+
+dropdown popover label {
+    color: #ffffff;
+}
+
 button.create-button {
     font-family: "Roboto", sans-serif;
     font-size: 16px;

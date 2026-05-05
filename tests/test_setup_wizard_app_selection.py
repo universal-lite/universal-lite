@@ -1,4 +1,5 @@
 import ast
+import re
 import runpy
 import sys
 import types
@@ -152,3 +153,19 @@ def test_wizard_uses_current_alert_dialog_api():
             has_alert_dialog_guard = True
 
     assert has_alert_dialog_guard
+
+
+def test_wizard_dropdowns_force_dark_theme_foregrounds(monkeypatch):
+    css = _load_wizard_helpers(monkeypatch)["CSS"]
+
+    for selector in (
+        "dropdown button",
+        "dropdown button label",
+        "dropdown button arrow",
+        "dropdown popover label",
+    ):
+        assert re.search(
+            rf"(^|\n){re.escape(selector)}\s*\{{[^}}]*\bcolor\s*:",
+            css,
+            flags=re.DOTALL,
+        ), f"{selector} must set color for the wizard's dark custom theme"
