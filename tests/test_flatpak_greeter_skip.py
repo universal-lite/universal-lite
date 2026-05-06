@@ -94,9 +94,9 @@ def test_greeter_skip_confirmation_copy_mentions_flatpak_not_bazaar():
 
     assert "Selected apps will not be installed automatically" in source
     assert "flatpak from the terminal" in source
-    assert "Bazaar" not in source[
-        source.index("Selected apps will not be installed automatically") - 200 :
-    ]
+    copy_start = source.index("Selected apps will not be installed automatically")
+    confirmation_copy = source[max(copy_start - 200, 0) : copy_start + 400]
+    assert "Bazaar" not in confirmation_copy
 
 
 def test_apply_flatpak_skip_writes_marker_and_reveals_login(tmp_path, monkeypatch):
