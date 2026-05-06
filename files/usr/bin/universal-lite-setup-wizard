@@ -151,33 +151,33 @@ DARK_THEME_COLORS = {
 
 CSS = Template("""\
 window {
-    background-color: #222226;
-    color: #ffffff;
+    background-color: $window_bg;
+    color: $primary_fg;
 }
 
 checkbutton label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 .welcome-title {
     font-family: "Roboto", sans-serif;
     font-size: 32px;
     font-weight: bold;
-    color: #ffffff;
+    color: $primary_fg;
     margin-bottom: 8px;
 }
 
 .welcome-subtitle {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-bottom: 24px;
 }
 
 .form-label {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #dddddd;
+    color: $primary_fg;
     margin-top: 12px;
     margin-bottom: 4px;
 }
@@ -187,48 +187,48 @@ checkbutton label {
     font-size: 16px;
     padding: 10px 14px;
     border-radius: 8px;
-    background-color: #36363a;
-    color: #ffffff;
-    border: 1px solid #3a3a3e;
+    background-color: $control_bg;
+    color: $primary_fg;
+    border: 1px solid $border_subtle;
     min-height: 20px;
 }
 
 .form-entry:focus {
-    border: 1px solid #62a0ea;
+    border: 1px solid $accent_hover_bg;
 }
 
 dropdown button {
-    background-color: #36363a;
-    color: #ffffff;
-    border: 1px solid #3a3a3e;
+    background-color: $control_bg;
+    color: $primary_fg;
+    border: 1px solid $border_subtle;
     border-radius: 8px;
     box-shadow: none;
 }
 
 dropdown button:hover {
-    background-color: #404044;
+    background-color: $control_hover_bg;
 }
 
 dropdown button:focus,
 dropdown button:focus-visible {
-    border: 1px solid #62a0ea;
+    border: 1px solid $accent_hover_bg;
 }
 
 dropdown button label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 dropdown button arrow {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 dropdown popover {
-    background-color: #1d1d20;
-    color: #ffffff;
+    background-color: $card_bg;
+    color: $primary_fg;
 }
 
 dropdown popover label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 button.create-button {
@@ -237,8 +237,8 @@ button.create-button {
     font-weight: bold;
     padding: 12px 32px;
     border-radius: 10px;
-    background: #3584e4;
-    color: #ffffff;
+    background: $accent_bg;
+    color: $primary_fg;
     border: none;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     min-height: 36px;
@@ -246,26 +246,26 @@ button.create-button {
 }
 
 button.create-button label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 button.create-button:hover {
-    background: #62a0ea;
+    background: $accent_hover_bg;
 }
 
 button.create-button:active {
-    background: #1c71d8;
+    background: $accent_active_bg;
     box-shadow: none;
 }
 
 button.create-button:disabled {
     background: #3d3d3d;
-    color: #888888;
+    color: $disabled_fg;
     box-shadow: none;
 }
 
 button.create-button:disabled label {
-    color: #888888;
+    color: $disabled_fg;
 }
 
 button.destructive-button {
@@ -274,8 +274,8 @@ button.destructive-button {
     font-weight: bold;
     padding: 12px 32px;
     border-radius: 10px;
-    background: #c01c28;
-    color: #ffffff;
+    background: $destructive_bg;
+    color: $primary_fg;
     border: none;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     min-height: 36px;
@@ -283,26 +283,26 @@ button.destructive-button {
 }
 
 button.destructive-button label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 button.destructive-button:hover {
-    background: #e01b24;
+    background: $destructive_hover_bg;
 }
 
 button.destructive-button:active {
-    background: #a51d2d;
+    background: $destructive_active_bg;
     box-shadow: none;
 }
 
 button.destructive-button:disabled {
     background: #3d3d3d;
-    color: #888888;
+    color: $disabled_fg;
     box-shadow: none;
 }
 
 button.destructive-button:disabled label {
-    color: #888888;
+    color: $disabled_fg;
 }
 
 button.back-button {
@@ -313,25 +313,25 @@ button.back-button {
     background: transparent;
     border: none;
     box-shadow: none;
-    color: #aaaaaa;
+    color: $secondary_fg;
     min-height: 36px;
     transition: background 200ms ease, color 200ms ease;
 }
 
 button.back-button label {
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 button.back-button:hover {
-    background: rgba(255,255,255,0.08);
+    background: $selected_bg;
 }
 
 button.back-button:hover label {
-    color: #dddddd;
+    color: $primary_fg;
 }
 
 button.back-button:active {
-    background: rgba(255,255,255,0.04);
+    background: $subtle_bg;
 }
 
 button.back-button:active label {
@@ -344,29 +344,29 @@ button.back-button:active label {
     padding: 8px 16px;
     border-radius: 8px;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid $border_subtle;
     box-shadow: none;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-top: 12px;
 }
 
 .keyboard-toggle label {
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 .keyboard-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
 }
 
 .keyboard-toggle:hover label {
-    color: #dddddd;
+    color: $primary_fg;
 }
 
 .keyboard-panel {
     margin-top: 8px;
     padding: 12px 16px;
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
 }
 
 .status-label {
@@ -377,45 +377,45 @@ button.back-button:active label {
 }
 
 .status-error {
-    color: #ff6b6b;
+    color: $error_fg;
 }
 
 .status-success {
-    color: #57e389;
+    color: $success_fg;
 }
 
 .card {
-    background-color: #1d1d20;
+    background-color: $card_bg;
     border-radius: 16px;
     padding: 40px;
-    border: 1px solid #444444;
+    border: 1px solid $border;
 }
 
 .step-indicator {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-bottom: 16px;
 }
 
 .summary-row {
     font-family: "Roboto", sans-serif;
     font-size: 15px;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-top: 8px;
 }
 
 .summary-value {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #ffffff;
+    color: $primary_fg;
     margin-bottom: 4px;
 }
 
 .form-description {
     font-family: "Roboto", sans-serif;
     font-size: 12px;
-    color: #999999;
+    color: $secondary_fg;
     margin-bottom: 8px;
 }
 
@@ -436,43 +436,43 @@ button.back-button:active label {
 }
 
 .wifi-row:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
 }
 
 .wifi-ssid {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 .wifi-detail {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 .wifi-connected {
-    background-color: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: $selected_bg;
+    border: 1px solid $border_subtle;
 }
 
 .app-row {
     padding: 12px 16px;
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
     margin-bottom: 4px;
 }
 
 .app-name {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 .app-description {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 .progress-step {
@@ -482,29 +482,29 @@ button.back-button:active label {
 }
 
 .progress-pending {
-    color: #888888;
+    color: $disabled_fg;
 }
 
 .progress-active {
-    color: #62a0ea;
+    color: $accent_hover_bg;
 }
 
 .progress-done {
-    color: #57e389;
+    color: $success_fg;
 }
 
 .progress-failed {
-    color: #ff6b6b;
+    color: $error_fg;
 }
 
 .progress-skipped {
-    color: #888888;
+    color: $disabled_fg;
     font-style: italic;
 }
 
 .log-view {
-    background-color: #1a1a1a;
-    color: #cccccc;
+    background-color: $log_bg;
+    color: $log_fg;
     font-family: "Roboto Mono", monospace;
     font-size: 12px;
     padding: 12px;
@@ -514,7 +514,7 @@ button.back-button:active label {
 .details-toggle {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    color: #888888;
+    color: $disabled_fg;
     padding: 4px 12px;
     background: none;
     border: none;
@@ -527,7 +527,7 @@ button.back-button:active label {
 .warning-label {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
-    color: #ff6b6b;
+    color: $error_fg;
     font-weight: bold;
     margin-top: 16px;
 }
