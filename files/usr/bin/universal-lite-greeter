@@ -13,6 +13,7 @@ import json
 import os
 import socket
 import struct
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -48,6 +49,7 @@ FLATPAK_DONE_PATH = Path("/var/lib/universal-lite/flatpak-setup.done")
 FLATPAK_SKIP_PATH = Path("/var/lib/universal-lite/flatpak-setup.skip")
 FLATPAK_PROGRESS_PATH = Path("/run/universal-lite/flatpak-progress")
 FLATPAK_LOGIN_READY_PATH = Path("/run/universal-lite/flatpak-login-ready")
+FLATPAK_SKIP_HELPER = "/usr/libexec/universal-lite-flatpak-skip"
 # Safety valve: if the install service somehow never finishes AND
 # never fails, fall through to login after this many seconds so the
 # user can always reach their desktop.
@@ -729,9 +731,12 @@ class GreeterWindow(Gtk.ApplicationWindow):
 
     def _apply_flatpak_setup_skip(self) -> None:
         try:
-            FLATPAK_SKIP_PATH.parent.mkdir(parents=True, exist_ok=True)
-            FLATPAK_SKIP_PATH.touch(mode=0o644, exist_ok=True)
-        except OSError as exc:
+            subprocess.run(
+                ["sudo", "-n", FLATPAK_SKIP_HELPER],
+                check=True,
+                timeout=10,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
             self._setup_progress_label.set_text(
                 _("Could not skip app setup: {error}").format(error=exc)
             )

@@ -6,6 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GREETER = ROOT / "files/usr/bin/universal-lite-greeter"
 SKIP_MARKER = "/var/lib/universal-lite/flatpak-setup.skip"
+SKIP_HELPER = "/usr/libexec/universal-lite-flatpak-skip"
 
 
 def _load_greeter_module():
@@ -99,35 +100,51 @@ def test_greeter_skip_confirmation_copy_mentions_flatpak_not_bazaar():
     assert "Bazaar" not in confirmation_copy
 
 
-def test_apply_flatpak_skip_writes_marker_and_reveals_login(tmp_path, monkeypatch):
+def test_greeter_uses_privileged_skip_helper():
+    source = GREETER.read_text()
+
+    assert SKIP_HELPER in source
+    assert "sudo" in source
+    assert "subprocess.run" in source
+
+
+def test_apply_flatpak_skip_runs_helper_and_reveals_login(monkeypatch):
     module = _load_greeter_module()
-    marker = tmp_path / "var/lib/universal-lite/flatpak-setup.skip"
     window = module.GreeterWindow.__new__(module.GreeterWindow)
     window._setup_spinner = _FakeSpinner()
     window._stack = _FakeStack()
     window._setup_progress_label = _FakeLabel()
+    calls = []
 
-    monkeypatch.setattr(module, "FLATPAK_SKIP_PATH", marker, raising=False)
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
 
     module.GreeterWindow._apply_flatpak_setup_skip(window)
 
-    assert marker.exists()
+    assert calls == [
+        (
+            ["sudo", "-n", SKIP_HELPER],
+            {"check": True, "timeout": 10},
+        )
+    ]
     assert window._setup_spinner.stopped is True
     assert window._stack.visible_child == "login"
     assert window._setup_progress_label.text == ""
 
 
-def test_apply_flatpak_skip_failure_keeps_overlay_visible(tmp_path, monkeypatch):
+def test_apply_flatpak_skip_failure_keeps_overlay_visible(monkeypatch):
     module = _load_greeter_module()
-    marker_dir = tmp_path / "not-a-directory"
-    marker_dir.write_text("blocks mkdir")
-    marker = marker_dir / "flatpak-setup.skip"
     window = module.GreeterWindow.__new__(module.GreeterWindow)
     window._setup_spinner = _FakeSpinner()
     window._stack = _FakeStack()
     window._setup_progress_label = _FakeLabel()
 
-    monkeypatch.setattr(module, "FLATPAK_SKIP_PATH", marker, raising=False)
+    def fake_run(command, **kwargs):
+        raise module.subprocess.CalledProcessError(1, command)
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
 
     module.GreeterWindow._apply_flatpak_setup_skip(window)
     assert window._setup_spinner.stopped is False

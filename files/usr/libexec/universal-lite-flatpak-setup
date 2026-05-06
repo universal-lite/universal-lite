@@ -26,6 +26,13 @@ MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
 
+skip_requested() {
+    if [ -f "$SKIP_STAMP" ]; then
+        echo "Flatpak setup was skipped by the user; not running automatic setup."
+        exit 0
+    fi
+}
+
 wait_for_network() {
     local waited=0
     while [ "$waited" -lt "$MAX_NET_WAIT" ]; do
@@ -55,16 +62,14 @@ allow_login_this_boot() {
 }
 
 # -----------------------------------------------------------------
-if [ -f "$SKIP_STAMP" ]; then
-    echo "Flatpak setup was skipped by the user; not running automatic setup."
-    exit 0
-fi
+skip_requested "at startup"
 
 # -----------------------------------------------------------------
 # Mode 2: update existing Flatpaks on every boot after initial setup
 # -----------------------------------------------------------------
 if [ -f "$STAMP" ]; then
     echo "Checking for Flatpak updates..."
+    skip_requested "before waiting for network"
     if ! wait_for_network; then
         echo "No network after ${MAX_NET_WAIT}s - skipping update this boot."
         exit 0
@@ -118,6 +123,7 @@ echo ""
 
 write_progress "Waiting for network connection..."
 echo "Waiting for network connection..."
+skip_requested "before waiting for network"
 if ! wait_for_network; then
     echo "No network after ${MAX_NET_WAIT}s - allowing login and retrying next boot."
     write_progress "No network detected. You can log in now; selected apps will install automatically on a future boot."
@@ -125,10 +131,12 @@ if ! wait_for_network; then
     # No stamp: service reruns next boot until initial install succeeds.
     exit 0
 fi
+skip_requested "after waiting for network"
 echo "Network connected."
 
 write_progress "Configuring Flathub app store..."
 echo "Configuring Flathub app store..."
+skip_requested "before configuring Flathub"
 # Prefer the build-time-baked .flatpakrepo file shipped by ublue-os/main
 # at /etc/flatpak/remotes.d/flathub.flatpakrepo — it carries the same
 # signing key as the upstream URL but is baked into the image, removing
@@ -157,6 +165,7 @@ if ! "$remote_ok"; then
     # No stamp: retry; without Flathub, nothing in apps file can install.
     exit 0
 fi
+skip_requested "after configuring Flathub"
 
 # Snapshot what's already installed system-wide so repeat runs skip
 # anything that's already there — no network needed for the skip. The
@@ -178,6 +187,7 @@ while IFS= read -r app_id; do
     echo ""
     echo "[$current/$total_apps] Installing $app_id..."
     write_progress "Installing $current of $total_apps: $app_id"
+    skip_requested "before installing $app_id"
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
