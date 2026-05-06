@@ -144,6 +144,7 @@ DARK_THEME_COLORS = {
     "destructive_hover_bg": "#e01b24",
     "destructive_active_bg": "#a51d2d",
     "error_fg": "#ff6b6b",
+    "warning_fg": "#f6d32d",
     "success_fg": "#57e389",
     "selection_bg": "#3584e4",
     "selection_fg": "#ffffff",
@@ -159,7 +160,7 @@ window {
 
 * {
     color: $primary_fg;
-    -gtk-icon-palette: success $success_fg, warning #f6d32d, error $error_fg;
+    -gtk-icon-palette: success $success_fg, warning $warning_fg, error $error_fg;
 }
 
 selection {
