@@ -46,6 +46,7 @@ PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 SETUP_DONE_PATH = Path("/var/lib/universal-lite/setup-done")
 FLATPAK_DONE_PATH = Path("/var/lib/universal-lite/flatpak-setup.done")
 FLATPAK_PROGRESS_PATH = Path("/run/universal-lite/flatpak-progress")
+FLATPAK_LOGIN_READY_PATH = Path("/run/universal-lite/flatpak-login-ready")
 # Safety valve: if the install service somehow never finishes AND
 # never fails, fall through to login after this many seconds so the
 # user can always reach their desktop.
@@ -651,8 +652,12 @@ class GreeterWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _is_setup_in_progress(self) -> bool:
-        """True when the wizard is done but flatpak-install hasn't finished."""
-        return SETUP_DONE_PATH.exists() and not FLATPAK_DONE_PATH.exists()
+        """True while first-boot Flatpak setup is actively gating login."""
+        return (
+            SETUP_DONE_PATH.exists()
+            and not FLATPAK_DONE_PATH.exists()
+            and not FLATPAK_LOGIN_READY_PATH.exists()
+        )
 
     def _update_setup_progress(self) -> None:
         try:
@@ -664,8 +669,8 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._setup_progress_label.set_text(text)
 
     def _poll_setup_progress(self) -> bool:
-        # Install finished → reveal the login card.
-        if FLATPAK_DONE_PATH.exists():
+        # Install finished, or this boot deferred because network was absent.
+        if FLATPAK_DONE_PATH.exists() or FLATPAK_LOGIN_READY_PATH.exists():
             self._setup_spinner.stop()
             self._stack.set_visible_child_name("login")
             return GLib.SOURCE_REMOVE

@@ -20,6 +20,7 @@ APPS_FILE=/var/lib/universal-lite/flatpak-apps
 STAMP=/var/lib/universal-lite/flatpak-setup.done
 PROGRESS_DIR=/run/universal-lite
 PROGRESS_FILE=$PROGRESS_DIR/flatpak-progress
+LOGIN_READY_FILE=$PROGRESS_DIR/flatpak-login-ready
 MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
@@ -46,6 +47,12 @@ write_progress() {
     mv -f "$PROGRESS_FILE.tmp" "$PROGRESS_FILE"
 }
 
+allow_login_this_boot() {
+    mkdir -p "$PROGRESS_DIR"
+    : > "$LOGIN_READY_FILE"
+    chmod 0644 "$LOGIN_READY_FILE"
+}
+
 # -----------------------------------------------------------------
 # Mode 2: update existing Flatpaks on every boot after initial setup
 # -----------------------------------------------------------------
@@ -70,6 +77,7 @@ fi
 # -----------------------------------------------------------------
 # Mode 1: initial install (stamp absent)
 # -----------------------------------------------------------------
+rm -f "$LOGIN_READY_FILE"
 
 # If the wizard didn't write an apps list, fall back to the defaults
 # (one per line). The wizard always writes the file even when empty,
@@ -104,8 +112,9 @@ echo ""
 write_progress "Waiting for network connection..."
 echo "Waiting for network connection..."
 if ! wait_for_network; then
-    echo "No network after ${MAX_NET_WAIT}s - will retry on next boot."
-    write_progress "No network - will retry on next boot."
+    echo "No network after ${MAX_NET_WAIT}s - allowing login and retrying next boot."
+    write_progress "No network detected. You can log in now; selected apps will install automatically on a future boot."
+    allow_login_this_boot
     # No stamp: service reruns next boot until initial install succeeds.
     exit 0
 fi
