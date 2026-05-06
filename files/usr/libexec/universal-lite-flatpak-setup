@@ -152,8 +152,10 @@ if ! "$remote_ok"; then
 fi
 
 # Snapshot what's already installed system-wide so repeat runs skip
-# anything that's already there — no network needed for the skip.
-installed_ids=$(flatpak list --system --app --columns=application 2>/dev/null || true)
+# anything that's already there — no network needed for the skip. The
+# list intentionally includes runtimes/extensions because the default
+# selection includes GTK theme refs, not just apps.
+installed_ids=$(flatpak list --system --columns=application 2>/dev/null || true)
 
 current=0
 missing=0
