@@ -42,9 +42,19 @@ def _css_body_for_selector(css: str, selector: str) -> str:
     return "\n".join(bodies)
 
 
+def _css_properties(body: str) -> set[str]:
+    properties = set()
+    for declaration in body.split(";"):
+        if ":" not in declaration:
+            continue
+        name, _value = declaration.split(":", 1)
+        properties.add(name.strip())
+    return properties
+
+
 def _assert_selector_has_properties(css: str, selector: str, properties: set[str]) -> None:
-    body = _css_body_for_selector(css, selector)
-    missing = [prop for prop in sorted(properties) if not re.search(rf"\b{re.escape(prop)}\s*:", body)]
+    declared = _css_properties(_css_body_for_selector(css, selector))
+    missing = sorted(properties - declared)
     assert not missing, f"{selector} missing CSS properties: {missing}"
 
 
@@ -179,12 +189,72 @@ def test_wizard_uses_current_alert_dialog_api():
 def test_wizard_forces_dark_theme_without_libadwaita(monkeypatch):
     module = _load_wizard_helpers(monkeypatch)
     source = WIZARD.read_text()
+    tree = ast.parse(source)
+
+    def is_gtk_call(node, name):
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == name
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "Gtk"
+        )
+
+    app_class = next(
+        (node for node in ast.walk(tree) if isinstance(node, ast.ClassDef) and node.name == "SetupWizardApp"),
+        None,
+    )
+    assert app_class is not None
+
+    do_activate = next(
+        (
+            node for node in app_class.body
+            if isinstance(node, ast.FunctionDef) and node.name == "do_activate"
+        ),
+        None,
+    )
+    assert do_activate is not None
+
+    dark_call_index = None
+    provider_index = None
+    for index, statement in enumerate(do_activate.body):
+        if (
+            isinstance(statement, ast.Expr)
+            and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Name)
+            and statement.value.func.id == "_force_dark_theme"
+        ):
+            dark_call_index = index
+
+        nodes = ast.walk(statement)
+        if provider_index is not None:
+            continue
+
+        if any(is_gtk_call(node, "CssProvider") for node in nodes):
+            provider_index = index
+            continue
+
+        nodes = ast.walk(statement)
+        if any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "add_provider_for_display"
+            and isinstance(node.func.value, ast.Attribute)
+            and node.func.value.attr == "StyleContext"
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id == "Gtk"
+            for node in nodes
+        ):
+            provider_index = index
 
     assert "gi.require_version(\"Adw\"" not in source
     assert "from gi.repository import Adw" not in source
     assert "_force_dark_theme" in module
     assert "Gtk.Settings.get_default" in source
     assert "gtk-application-prefer-dark-theme" in source
+    assert dark_call_index is not None
+    assert provider_index is not None
+    assert dark_call_index < provider_index
 
 
 def test_wizard_css_declares_adwaita_dark_palette(monkeypatch):
