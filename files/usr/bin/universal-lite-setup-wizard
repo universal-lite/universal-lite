@@ -34,6 +34,7 @@ import tempfile
 import threading
 import traceback
 from pathlib import Path
+from string import Template
 
 import gi
 
@@ -119,7 +120,36 @@ def _atomic_write_text(path: Path, data: str, mode: int | None = None) -> None:
             pass
         raise
 
-CSS = """\
+DARK_THEME_COLORS = {
+    "window_bg": "#222226",
+    "card_bg": "#1d1d20",
+    "control_bg": "#36363a",
+    "control_hover_bg": "#404044",
+    "control_active_bg": "#2f2f33",
+    "subtle_bg": "rgba(255, 255, 255, 0.04)",
+    "selected_bg": "rgba(255, 255, 255, 0.08)",
+    "border": "#444444",
+    "border_subtle": "rgba(255, 255, 255, 0.12)",
+    "primary_fg": "#ffffff",
+    "secondary_fg": "#aaaaaa",
+    "tertiary_fg": "#888888",
+    "disabled_fg": "#888888",
+    "accent_bg": "#3584e4",
+    "accent_hover_bg": "#62a0ea",
+    "accent_active_bg": "#1c71d8",
+    "focus_border": "#62a0ea",
+    "destructive_bg": "#c01c28",
+    "destructive_hover_bg": "#e01b24",
+    "destructive_active_bg": "#a51d2d",
+    "error_fg": "#ff6b6b",
+    "success_fg": "#57e389",
+    "selection_bg": "#3584e4",
+    "selection_fg": "#ffffff",
+    "log_bg": "#1a1a1a",
+    "log_fg": "#cccccc",
+}
+
+CSS = Template("""\
 window {
     background-color: #222226;
     color: #ffffff;
@@ -501,7 +531,21 @@ button.back-button:active label {
     font-weight: bold;
     margin-top: 16px;
 }
-"""
+""").substitute(DARK_THEME_COLORS)
+
+
+def _force_dark_theme() -> None:
+    """Request a dark GTK preference without depending on libadwaita."""
+    try:
+        settings = Gtk.Settings.get_default()
+    except (AttributeError, RuntimeError, TypeError):
+        return
+    if settings is None:
+        return
+    try:
+        settings.set_property("gtk-application-prefer-dark-theme", True)
+    except (AttributeError, RuntimeError, TypeError):
+        return
 
 USERNAME_RE = re.compile(r"^[a-z_]([a-z0-9_-]*[a-z0-9_])?$")
 RESERVED_USERNAMES = {
@@ -4477,6 +4521,7 @@ class SetupWizardApp(Gtk.Application):
         super().__init__(application_id=APP_ID)
 
     def do_activate(self) -> None:
+        _force_dark_theme()
         provider = Gtk.CssProvider()
         provider.load_from_string(CSS)
         Gtk.StyleContext.add_provider_for_display(
