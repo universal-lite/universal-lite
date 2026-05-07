@@ -216,7 +216,7 @@ if [ "$missing" -eq 0 ]; then
     touch "$STAMP"
 else
     echo "$missing app(s) still missing. Service will retry on next boot."
-    echo "Missing apps can also be installed manually via Bazaar or flatpak CLI."
+    echo "Missing apps can also be installed manually via flatpak."
     # Deliberately no stamp: next boot re-runs and picks up where we
     # left off (already-installed apps are skipped cheaply via
     # `flatpak list`), and only stamps complete once every requested

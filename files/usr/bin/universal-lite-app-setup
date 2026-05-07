@@ -44,6 +44,13 @@ def _should_show_prompt(apps_file: Path = APPS_FILE,
         and not done_stamp.exists() and not skip_stamp.exists()
 
 
+def _should_complete_empty_selection(apps_file: Path = APPS_FILE,
+                                     done_stamp: Path = DONE_STAMP,
+                                     skip_stamp: Path = SKIP_STAMP) -> bool:
+    return apps_file.exists() and apps_file.stat().st_size == 0 \
+        and not done_stamp.exists() and not skip_stamp.exists()
+
+
 def _selected_app_ids(apps_file: Path = APPS_FILE) -> list[str]:
     try:
         return [line.strip() for line in apps_file.read_text().splitlines() if line.strip()]
@@ -145,6 +152,7 @@ class AppSetupWindow(Gtk.ApplicationWindow):
         self.set_default_size(520, 360)
         self.set_resizable(False)
         self._install_app_hold = None
+        self._install_running = False
 
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         outer.set_halign(Gtk.Align.CENTER)
@@ -194,7 +202,7 @@ class AppSetupWindow(Gtk.ApplicationWindow):
 
         self._dismiss_btn = Gtk.Button(label="Not now")
         self._dismiss_btn.add_css_class("secondary-button")
-        self._dismiss_btn.connect("clicked", lambda _btn: self.close())
+        self._dismiss_btn.connect("clicked", lambda _btn: self._dismiss())
         actions.append(self._dismiss_btn)
 
         self._skip_btn = Gtk.Button(label="Don't ask again")
@@ -218,6 +226,12 @@ class AppSetupWindow(Gtk.ApplicationWindow):
         else:
             self._spinner.stop()
 
+    def _dismiss(self) -> None:
+        if self._install_running:
+            self.hide()
+        else:
+            self.close()
+
     def _skip(self) -> None:
         try:
             subprocess.run(_helper_command("skip"), check=True, timeout=10)
@@ -228,6 +242,7 @@ class AppSetupWindow(Gtk.ApplicationWindow):
         self.close()
 
     def _install(self) -> None:
+        self._install_running = True
         self._set_busy(True)
         self._title.set_text("Installing apps")
         self._status.set_text("Starting app installation...")
@@ -258,6 +273,7 @@ class AppSetupWindow(Gtk.ApplicationWindow):
             self._install_app_hold = None
 
     def _show_install_exception(self, exc) -> bool:
+        self._install_running = False
         self._release_install_app_hold()
         self._set_busy(False)
         self._title.set_text("No network connection")
@@ -267,6 +283,7 @@ class AppSetupWindow(Gtk.ApplicationWindow):
         return GLib.SOURCE_REMOVE
 
     def _show_install_result(self, result) -> bool:
+        self._install_running = False
         self._release_install_app_hold()
         events = _parse_install_output(result.stdout)
         self._set_busy(False)
@@ -296,6 +313,11 @@ class AppSetup(Gtk.Application):
 
     def do_activate(self) -> None:
         if not _should_show_prompt():
+            if _should_complete_empty_selection():
+                try:
+                    subprocess.run(_helper_command("install"), check=False, timeout=10)
+                except (OSError, subprocess.SubprocessError):
+                    pass
             self.quit()
             return
         provider = Gtk.CssProvider()

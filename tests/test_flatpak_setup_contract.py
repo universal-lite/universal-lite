@@ -86,6 +86,12 @@ def test_flatpak_setup_rechecks_skip_marker_before_done_stamp():
         assert "skip_requested" in preceding_block
 
 
+def test_flatpak_setup_recovery_copy_uses_flatpak_only():
+    script = FLATPAK_SETUP.read_text()
+
+    assert "Bazaar or flatpak CLI" not in script
+
+
 APP_SETUP = ROOT / "files/usr/bin/universal-lite-app-setup"
 APP_SETUP_HELPER = ROOT / "files/usr/libexec/universal-lite-app-setup-helper"
 APP_SETUP_SUDOERS = ROOT / "files/etc/sudoers.d/universal-lite-app-setup"

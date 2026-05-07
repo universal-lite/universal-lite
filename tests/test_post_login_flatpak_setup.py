@@ -52,6 +52,27 @@ def test_should_show_prompt_requires_apps_without_done_or_skip(tmp_path):
     assert module._should_show_prompt(apps, done, skip) is False
 
 
+def test_should_complete_empty_selection_requires_empty_apps_without_done_or_skip(tmp_path):
+    module = _load_module()
+    apps = tmp_path / "flatpak-apps"
+    done = tmp_path / "done"
+    skip = tmp_path / "skip"
+
+    assert module._should_complete_empty_selection(apps, done, skip) is False
+
+    apps.write_text("")
+    assert module._should_complete_empty_selection(apps, done, skip) is True
+
+    done.touch()
+    assert module._should_complete_empty_selection(apps, done, skip) is False
+    done.unlink()
+    skip.touch()
+    assert module._should_complete_empty_selection(apps, done, skip) is False
+    skip.unlink()
+    apps.write_text("com.google.Chrome\n")
+    assert module._should_complete_empty_selection(apps, done, skip) is False
+
+
 def test_app_preview_limits_and_falls_back_to_ids(tmp_path):
     module = _load_module()
     apps = tmp_path / "flatpak-apps"
@@ -113,3 +134,12 @@ def test_app_setup_disconnects_install_handler_before_done_handler():
     assert "_install_clicked_handler_id" in source
     assert "self._install_btn.disconnect(self._install_clicked_handler_id)" in source
     assert "self._install_clicked_handler_id = self._install_btn.connect" in source
+
+
+def test_app_setup_hides_instead_of_closing_while_install_runs():
+    source = SCRIPT.read_text()
+
+    assert "def _dismiss(self)" in source
+    assert "_install_running" in source
+    assert "self.hide()" in source
+    assert 'self._dismiss_btn.connect("clicked", lambda _btn: self._dismiss())' in source
