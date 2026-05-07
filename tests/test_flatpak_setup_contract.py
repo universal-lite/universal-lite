@@ -94,6 +94,17 @@ APP_SETUP_PATH = "/usr/bin/universal-lite-app-setup"
 APP_SETUP_HELPER_PATH = "/usr/libexec/universal-lite-app-setup-helper"
 
 
+def build_chmod_0755_block(build):
+    lines = build.splitlines()
+    start = lines.index("chmod 0755 \\")
+    block = []
+    for line in lines[start:]:
+        block.append(line)
+        if not line.rstrip().endswith("\\"):
+            break
+    return "\n".join(block)
+
+
 def test_prelogin_flatpak_install_is_not_enabled_by_default():
     service = FLATPAK_INSTALL_SERVICE.read_text()
     build = BUILD_SCRIPT.read_text()
@@ -105,7 +116,7 @@ def test_prelogin_flatpak_install_is_not_enabled_by_default():
 def test_post_login_app_setup_is_autostarted_and_executable():
     autostart = LABWC_AUTOSTART.read_text()
     build = BUILD_SCRIPT.read_text()
-    chmod_0755_block = build[build.index("chmod 0755 \\") : build.index("# Disable Plymouth")]
+    chmod_0755_block = build_chmod_0755_block(build)
 
     assert APP_SETUP_PATH in autostart
     assert APP_SETUP_PATH in chmod_0755_block
