@@ -89,3 +89,11 @@ def test_success_output_parser_marks_complete():
 
     assert events.complete is True
     assert events.failed == []
+
+
+def test_app_setup_uses_background_thread_for_install():
+    source = SCRIPT.read_text()
+
+    assert "threading.Thread" in source
+    assert "GLib.idle_add" in source
+    assert "Run in background" in source

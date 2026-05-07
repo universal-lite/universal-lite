@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -229,9 +230,10 @@ class AppSetupWindow(Gtk.ApplicationWindow):
         self._set_busy(True)
         self._title.set_text("Installing apps")
         self._status.set_text("Starting app installation...")
-        GLib.idle_add(self._run_install)
+        self._dismiss_btn.set_label("Run in background")
+        threading.Thread(target=self._run_install_worker, daemon=True).start()
 
-    def _run_install(self) -> bool:
+    def _run_install_worker(self) -> None:
         try:
             result = subprocess.run(
                 _helper_command("install"),
@@ -241,13 +243,19 @@ class AppSetupWindow(Gtk.ApplicationWindow):
                 timeout=1800,
             )
         except (OSError, subprocess.SubprocessError) as exc:
-            self._set_busy(False)
-            self._title.set_text("No network connection")
-            self._status.set_text(f"Connect to Wi-Fi or Ethernet, then try again. ({exc})")
-            self._status.add_css_class("error")
-            self._install_btn.set_label("Try again")
-            return GLib.SOURCE_REMOVE
+            GLib.idle_add(self._show_install_exception, exc)
+            return
+        GLib.idle_add(self._show_install_result, result)
 
+    def _show_install_exception(self, exc) -> bool:
+        self._set_busy(False)
+        self._title.set_text("No network connection")
+        self._status.set_text(f"Connect to Wi-Fi or Ethernet, then try again. ({exc})")
+        self._status.add_css_class("error")
+        self._install_btn.set_label("Try again")
+        return GLib.SOURCE_REMOVE
+
+    def _show_install_result(self, result) -> bool:
         events = _parse_install_output(result.stdout)
         self._set_busy(False)
         if result.returncode == 0 and events.complete:
