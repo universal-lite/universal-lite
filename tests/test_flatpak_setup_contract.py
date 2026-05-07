@@ -90,6 +90,7 @@ APP_SETUP = ROOT / "files/usr/bin/universal-lite-app-setup"
 APP_SETUP_HELPER = ROOT / "files/usr/libexec/universal-lite-app-setup-helper"
 APP_SETUP_SUDOERS = ROOT / "files/etc/sudoers.d/universal-lite-app-setup"
 LABWC_AUTOSTART = ROOT / "files/etc/xdg/labwc/autostart"
+APP_SETUP_PATH = "/usr/bin/universal-lite-app-setup"
 APP_SETUP_HELPER_PATH = "/usr/libexec/universal-lite-app-setup-helper"
 
 
@@ -104,10 +105,13 @@ def test_prelogin_flatpak_install_is_not_enabled_by_default():
 def test_post_login_app_setup_is_autostarted_and_executable():
     autostart = LABWC_AUTOSTART.read_text()
     build = BUILD_SCRIPT.read_text()
+    chmod_0755_block = build[build.index("chmod 0755 \\") : build.index("# Disable Plymouth")]
 
-    assert "/usr/bin/universal-lite-app-setup" in autostart
-    assert "/usr/bin/universal-lite-app-setup" in build
+    assert APP_SETUP_PATH in autostart
+    assert APP_SETUP_PATH in chmod_0755_block
     assert APP_SETUP.exists()
+    if APP_SETUP.exists():
+        assert APP_SETUP.stat().st_mode & 0o111
 
 
 def test_post_login_app_setup_helper_and_sudoers_contract():
