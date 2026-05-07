@@ -18,11 +18,20 @@ set -uo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
 STAMP=/var/lib/universal-lite/flatpak-setup.done
+SKIP_STAMP=/var/lib/universal-lite/flatpak-setup.skip
 PROGRESS_DIR=/run/universal-lite
 PROGRESS_FILE=$PROGRESS_DIR/flatpak-progress
+LOGIN_READY_FILE=$PROGRESS_DIR/flatpak-login-ready
 MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
+
+skip_requested() {
+    if [ -f "$SKIP_STAMP" ]; then
+        echo "Flatpak setup was skipped by the user; not running automatic setup."
+        exit 0
+    fi
+}
 
 wait_for_network() {
     local waited=0
@@ -46,11 +55,21 @@ write_progress() {
     mv -f "$PROGRESS_FILE.tmp" "$PROGRESS_FILE"
 }
 
+allow_login_this_boot() {
+    mkdir -p "$PROGRESS_DIR"
+    : > "$LOGIN_READY_FILE"
+    chmod 0644 "$LOGIN_READY_FILE"
+}
+
+# -----------------------------------------------------------------
+skip_requested "at startup"
+
 # -----------------------------------------------------------------
 # Mode 2: update existing Flatpaks on every boot after initial setup
 # -----------------------------------------------------------------
 if [ -f "$STAMP" ]; then
     echo "Checking for Flatpak updates..."
+    skip_requested "before waiting for network"
     if ! wait_for_network; then
         echo "No network after ${MAX_NET_WAIT}s - skipping update this boot."
         exit 0
@@ -70,6 +89,7 @@ fi
 # -----------------------------------------------------------------
 # Mode 1: initial install (stamp absent)
 # -----------------------------------------------------------------
+rm -f "$LOGIN_READY_FILE"
 
 # If the wizard didn't write an apps list, fall back to the defaults
 # (one per line). The wizard always writes the file even when empty,
@@ -89,6 +109,7 @@ fi
 # but nothing to install today.
 if [ ! -s "$APPS_FILE" ]; then
     echo "No apps selected. Skipping app install."
+    skip_requested "before marking empty app setup complete"
     touch "$STAMP"
     exit 0
 fi
@@ -103,16 +124,20 @@ echo ""
 
 write_progress "Waiting for network connection..."
 echo "Waiting for network connection..."
+skip_requested "before waiting for network"
 if ! wait_for_network; then
-    echo "No network after ${MAX_NET_WAIT}s - will retry on next boot."
-    write_progress "No network - will retry on next boot."
+    echo "No network after ${MAX_NET_WAIT}s - allowing login and retrying next boot."
+    write_progress "No network detected. You can log in now; selected apps will install automatically on a future boot."
+    allow_login_this_boot
     # No stamp: service reruns next boot until initial install succeeds.
     exit 0
 fi
+skip_requested "after waiting for network"
 echo "Network connected."
 
 write_progress "Configuring Flathub app store..."
 echo "Configuring Flathub app store..."
+skip_requested "before configuring Flathub"
 # Prefer the build-time-baked .flatpakrepo file shipped by ublue-os/main
 # at /etc/flatpak/remotes.d/flathub.flatpakrepo — it carries the same
 # signing key as the upstream URL but is baked into the image, removing
@@ -141,10 +166,13 @@ if ! "$remote_ok"; then
     # No stamp: retry; without Flathub, nothing in apps file can install.
     exit 0
 fi
+skip_requested "after configuring Flathub"
 
 # Snapshot what's already installed system-wide so repeat runs skip
-# anything that's already there — no network needed for the skip.
-installed_ids=$(flatpak list --system --app --columns=application 2>/dev/null || true)
+# anything that's already there — no network needed for the skip. The
+# list intentionally includes runtimes/extensions because the default
+# selection includes GTK theme refs, not just apps.
+installed_ids=$(flatpak list --system --columns=application 2>/dev/null || true)
 
 current=0
 missing=0
@@ -160,6 +188,7 @@ while IFS= read -r app_id; do
     echo ""
     echo "[$current/$total_apps] Installing $app_id..."
     write_progress "Installing $current of $total_apps: $app_id"
+    skip_requested "before installing $app_id"
 
     ok=false
     for attempt in $(seq 1 "$RETRIES"); do
@@ -172,6 +201,7 @@ while IFS= read -r app_id; do
         echo "  Retry $attempt/$RETRIES in ${RETRY_DELAY}s..."
         sleep "$RETRY_DELAY"
     done
+    skip_requested "after installing $app_id"
 
     if ! "$ok"; then
         echo "[$current/$total_apps] WARNING: Failed to install $app_id."
@@ -181,6 +211,7 @@ done < "$APPS_FILE"
 
 echo ""
 if [ "$missing" -eq 0 ]; then
+    skip_requested "before marking setup complete"
     echo "All requested apps are installed. Marking setup complete."
     touch "$STAMP"
 else

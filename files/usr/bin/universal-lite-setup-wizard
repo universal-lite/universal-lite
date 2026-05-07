@@ -34,6 +34,7 @@ import tempfile
 import threading
 import traceback
 from pathlib import Path
+from string import Template
 
 import gi
 
@@ -119,35 +120,96 @@ def _atomic_write_text(path: Path, data: str, mode: int | None = None) -> None:
             pass
         raise
 
-CSS = """\
+DARK_THEME_COLORS = {
+    "window_bg": "#222226",
+    "card_bg": "#1d1d20",
+    "control_bg": "#36363a",
+    "control_hover_bg": "#404044",
+    "control_active_bg": "#2f2f33",
+    "subtle_bg": "rgba(255, 255, 255, 0.04)",
+    "selected_bg": "rgba(255, 255, 255, 0.08)",
+    "border": "#444444",
+    "border_subtle": "rgba(255, 255, 255, 0.12)",
+    "primary_fg": "#ffffff",
+    "secondary_fg": "#aaaaaa",
+    "tertiary_fg": "#888888",
+    "disabled_fg": "#888888",
+    "disabled_bg": "#3d3d3d",
+    "hover_fg": "#bbbbbb",
+    "accent_bg": "#3584e4",
+    "accent_hover_bg": "#62a0ea",
+    "accent_active_bg": "#1c71d8",
+    "focus_border": "#62a0ea",
+    "destructive_bg": "#c01c28",
+    "destructive_hover_bg": "#e01b24",
+    "destructive_active_bg": "#a51d2d",
+    "error_fg": "#ff6b6b",
+    "warning_fg": "#f6d32d",
+    "success_fg": "#57e389",
+    "selection_bg": "#3584e4",
+    "selection_fg": "#ffffff",
+    "log_bg": "#1a1a1a",
+    "log_fg": "#cccccc",
+}
+
+CSS = Template("""\
 window {
-    background-color: #222226;
-    color: #ffffff;
+    background-color: $window_bg;
+    color: $primary_fg;
+}
+
+* {
+    color: $primary_fg;
+    -gtk-icon-palette: success $success_fg, warning $warning_fg, error $error_fg;
+}
+
+selection {
+    background-color: $selection_bg;
+    color: $selection_fg;
+}
+
+label {
+    color: $primary_fg;
+}
+
+checkbutton {
+    color: $primary_fg;
 }
 
 checkbutton label {
-    color: #ffffff;
+    color: $primary_fg;
+}
+
+checkbutton check {
+    background-color: $control_bg;
+    border: 1px solid $border_subtle;
+    color: $primary_fg;
+}
+
+checkbutton check:checked {
+    background-color: $accent_bg;
+    border: 1px solid $accent_bg;
 }
 
 .welcome-title {
     font-family: "Roboto", sans-serif;
     font-size: 32px;
     font-weight: bold;
-    color: #ffffff;
+    color: $primary_fg;
     margin-bottom: 8px;
 }
 
 .welcome-subtitle {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-bottom: 24px;
 }
 
 .form-label {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #dddddd;
+    color: $primary_fg;
     margin-top: 12px;
     margin-bottom: 4px;
 }
@@ -157,48 +219,123 @@ checkbutton label {
     font-size: 16px;
     padding: 10px 14px;
     border-radius: 8px;
-    background-color: #36363a;
-    color: #ffffff;
-    border: 1px solid #3a3a3e;
+    background-color: $control_bg;
+    color: $primary_fg;
+    border: 1px solid $border_subtle;
     min-height: 20px;
 }
 
 .form-entry:focus {
-    border: 1px solid #62a0ea;
+    border: 1px solid $focus_border;
+}
+
+entry,
+entry.search,
+.form-entry {
+    background-color: $control_bg;
+    color: $primary_fg;
+    border: 1px solid $border_subtle;
+    border-radius: 8px;
+    caret-color: $primary_fg;
+    box-shadow: none;
+}
+
+entry:focus,
+entry.search:focus,
+.form-entry:focus {
+    border: 1px solid $focus_border;
+}
+
+entry text,
+entry.search text {
+    background-color: $control_bg;
+    color: $primary_fg;
+}
+
+entry image,
+entry.search image {
+    color: $secondary_fg;
+}
+
+entry:disabled,
+entry text:disabled {
+    color: $disabled_fg;
+}
+
+dropdown {
+    color: $primary_fg;
 }
 
 dropdown button {
-    background-color: #36363a;
-    color: #ffffff;
-    border: 1px solid #3a3a3e;
+    background-color: $control_bg;
+    color: $primary_fg;
+    border: 1px solid $border_subtle;
     border-radius: 8px;
     box-shadow: none;
 }
 
 dropdown button:hover {
-    background-color: #404044;
+    background-color: $control_hover_bg;
+}
+
+dropdown button:active {
+    background-color: $control_active_bg;
 }
 
 dropdown button:focus,
 dropdown button:focus-visible {
-    border: 1px solid #62a0ea;
+    border: 1px solid $focus_border;
 }
 
 dropdown button label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 dropdown button arrow {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 dropdown popover {
-    background-color: #1d1d20;
-    color: #ffffff;
+    background-color: $card_bg;
+    color: $primary_fg;
+}
+
+dropdown popover contents {
+    background-color: $card_bg;
+    color: $primary_fg;
+    border: 1px solid $border;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+dropdown popover entry.search {
+    background-color: $control_bg;
+    color: $primary_fg;
+    border: 1px solid $focus_border;
+}
+
+dropdown popover listview {
+    background-color: $card_bg;
+    color: $primary_fg;
+}
+
+dropdown popover row {
+    background-color: $card_bg;
+    color: $primary_fg;
+    border-radius: 6px;
+}
+
+dropdown popover row:hover {
+    background-color: $subtle_bg;
+}
+
+dropdown popover row:selected {
+    background-color: $selected_bg;
+    color: $primary_fg;
 }
 
 dropdown popover label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 button.create-button {
@@ -207,8 +344,8 @@ button.create-button {
     font-weight: bold;
     padding: 12px 32px;
     border-radius: 10px;
-    background: #3584e4;
-    color: #ffffff;
+    background: $accent_bg;
+    color: $primary_fg;
     border: none;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     min-height: 36px;
@@ -216,26 +353,26 @@ button.create-button {
 }
 
 button.create-button label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 button.create-button:hover {
-    background: #62a0ea;
+    background: $accent_hover_bg;
 }
 
 button.create-button:active {
-    background: #1c71d8;
+    background: $accent_active_bg;
     box-shadow: none;
 }
 
 button.create-button:disabled {
-    background: #3d3d3d;
-    color: #888888;
+    background: $disabled_bg;
+    color: $disabled_fg;
     box-shadow: none;
 }
 
 button.create-button:disabled label {
-    color: #888888;
+    color: $disabled_fg;
 }
 
 button.destructive-button {
@@ -244,8 +381,8 @@ button.destructive-button {
     font-weight: bold;
     padding: 12px 32px;
     border-radius: 10px;
-    background: #c01c28;
-    color: #ffffff;
+    background: $destructive_bg;
+    color: $primary_fg;
     border: none;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     min-height: 36px;
@@ -253,26 +390,26 @@ button.destructive-button {
 }
 
 button.destructive-button label {
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 button.destructive-button:hover {
-    background: #e01b24;
+    background: $destructive_hover_bg;
 }
 
 button.destructive-button:active {
-    background: #a51d2d;
+    background: $destructive_active_bg;
     box-shadow: none;
 }
 
 button.destructive-button:disabled {
-    background: #3d3d3d;
-    color: #888888;
+    background: $disabled_bg;
+    color: $disabled_fg;
     box-shadow: none;
 }
 
 button.destructive-button:disabled label {
-    color: #888888;
+    color: $disabled_fg;
 }
 
 button.back-button {
@@ -283,29 +420,29 @@ button.back-button {
     background: transparent;
     border: none;
     box-shadow: none;
-    color: #aaaaaa;
+    color: $secondary_fg;
     min-height: 36px;
     transition: background 200ms ease, color 200ms ease;
 }
 
 button.back-button label {
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 button.back-button:hover {
-    background: rgba(255,255,255,0.08);
+    background: $selected_bg;
 }
 
 button.back-button:hover label {
-    color: #dddddd;
+    color: $primary_fg;
 }
 
 button.back-button:active {
-    background: rgba(255,255,255,0.04);
+    background: $subtle_bg;
 }
 
 button.back-button:active label {
-    color: #bbbbbb;
+    color: $hover_fg;
 }
 
 .keyboard-toggle {
@@ -314,29 +451,29 @@ button.back-button:active label {
     padding: 8px 16px;
     border-radius: 8px;
     background: none;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid $border_subtle;
     box-shadow: none;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-top: 12px;
 }
 
 .keyboard-toggle label {
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 .keyboard-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
 }
 
 .keyboard-toggle:hover label {
-    color: #dddddd;
+    color: $primary_fg;
 }
 
 .keyboard-panel {
     margin-top: 8px;
     padding: 12px 16px;
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
 }
 
 .status-label {
@@ -347,46 +484,111 @@ button.back-button:active label {
 }
 
 .status-error {
-    color: #ff6b6b;
+    color: $error_fg;
 }
 
 .status-success {
-    color: #57e389;
+    color: $success_fg;
 }
 
 .card {
-    background-color: #1d1d20;
+    background-color: $card_bg;
+    color: $primary_fg;
     border-radius: 16px;
     padding: 40px;
-    border: 1px solid #444444;
+    border: 1px solid $border;
 }
 
 .step-indicator {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-bottom: 16px;
 }
 
 .summary-row {
     font-family: "Roboto", sans-serif;
     font-size: 15px;
-    color: #aaaaaa;
+    color: $secondary_fg;
     margin-top: 8px;
 }
 
 .summary-value {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #ffffff;
+    color: $primary_fg;
     margin-bottom: 4px;
 }
 
 .form-description {
     font-family: "Roboto", sans-serif;
     font-size: 12px;
-    color: #999999;
+    color: $secondary_fg;
     margin-bottom: 8px;
+}
+
+popover.background {
+    background-color: transparent;
+    color: $primary_fg;
+}
+
+popover contents {
+    background-color: $card_bg;
+    color: $primary_fg;
+    border: 1px solid $border;
+    border-radius: 12px;
+}
+
+popover arrow {
+    background-color: $card_bg;
+    border: 1px solid $border;
+}
+
+list,
+listbox {
+    background-color: transparent;
+    color: $primary_fg;
+}
+
+row {
+    background-color: transparent;
+    color: $primary_fg;
+}
+
+row:hover {
+    background-color: $subtle_bg;
+}
+
+row:selected {
+    background-color: $selected_bg;
+    color: $primary_fg;
+}
+
+scrolledwindow,
+viewport {
+    background-color: transparent;
+}
+
+scrollbar {
+    background-color: transparent;
+}
+
+scrollbar trough {
+    background-color: transparent;
+}
+
+scrollbar slider {
+    background-color: $control_hover_bg;
+    border-radius: 999px;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+textview,
+textview text {
+    background-color: $log_bg;
+    color: $log_fg;
+    caret-color: $primary_fg;
 }
 
 .dark-list {
@@ -406,43 +608,43 @@ button.back-button:active label {
 }
 
 .wifi-row:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
 }
 
 .wifi-ssid {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 .wifi-detail {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 .wifi-connected {
-    background-color: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background-color: $selected_bg;
+    border: 1px solid $border_subtle;
 }
 
 .app-row {
     padding: 12px 16px;
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $subtle_bg;
     margin-bottom: 4px;
 }
 
 .app-name {
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    color: #ffffff;
+    color: $primary_fg;
 }
 
 .app-description {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    color: #aaaaaa;
+    color: $secondary_fg;
 }
 
 .progress-step {
@@ -452,29 +654,29 @@ button.back-button:active label {
 }
 
 .progress-pending {
-    color: #888888;
+    color: $disabled_fg;
 }
 
 .progress-active {
-    color: #62a0ea;
+    color: $accent_hover_bg;
 }
 
 .progress-done {
-    color: #57e389;
+    color: $success_fg;
 }
 
 .progress-failed {
-    color: #ff6b6b;
+    color: $error_fg;
 }
 
 .progress-skipped {
-    color: #888888;
+    color: $disabled_fg;
     font-style: italic;
 }
 
 .log-view {
-    background-color: #1a1a1a;
-    color: #cccccc;
+    background-color: $log_bg;
+    color: $log_fg;
     font-family: "Roboto Mono", monospace;
     font-size: 12px;
     padding: 12px;
@@ -484,24 +686,38 @@ button.back-button:active label {
 .details-toggle {
     font-family: "Roboto", sans-serif;
     font-size: 13px;
-    color: #888888;
+    color: $disabled_fg;
     padding: 4px 12px;
     background: none;
     border: none;
 }
 
 .details-toggle:hover {
-    color: #bbbbbb;
+    color: $hover_fg;
 }
 
 .warning-label {
     font-family: "Roboto", sans-serif;
     font-size: 14px;
-    color: #ff6b6b;
+    color: $error_fg;
     font-weight: bold;
     margin-top: 16px;
 }
-"""
+""").substitute(DARK_THEME_COLORS)
+
+
+def _force_dark_theme() -> None:
+    """Request a dark GTK preference without depending on libadwaita."""
+    try:
+        settings = Gtk.Settings.get_default()
+    except (AttributeError, RuntimeError, TypeError):
+        return
+    if settings is None:
+        return
+    try:
+        settings.set_property("gtk-application-prefer-dark-theme", True)
+    except (AttributeError, RuntimeError, TypeError):
+        return
 
 USERNAME_RE = re.compile(r"^[a-z_]([a-z0-9_-]*[a-z0-9_])?$")
 RESERVED_USERNAMES = {
@@ -4477,6 +4693,7 @@ class SetupWizardApp(Gtk.Application):
         super().__init__(application_id=APP_ID)
 
     def do_activate(self) -> None:
+        _force_dark_theme()
         provider = Gtk.CssProvider()
         provider.load_from_string(CSS)
         Gtk.StyleContext.add_provider_for_display(

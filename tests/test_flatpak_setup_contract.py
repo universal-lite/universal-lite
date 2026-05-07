@@ -1,0 +1,86 @@
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+FLATPAK_SETUP = ROOT / "files/usr/libexec/universal-lite-flatpak-setup"
+FLATPAK_SKIP_HELPER = ROOT / "files/usr/libexec/universal-lite-flatpak-skip"
+FLATPAK_INSTALL_SERVICE = (
+    ROOT / "files/usr/lib/systemd/system/universal-lite-flatpak-install.service"
+)
+FLATPAK_SKIP_SUDOERS = ROOT / "files/etc/sudoers.d/universal-lite-flatpak-skip"
+BUILD_SCRIPT = ROOT / "build_files/build.sh"
+SKIP_MARKER = "/var/lib/universal-lite/flatpak-setup.skip"
+SKIP_HELPER = "/usr/libexec/universal-lite-flatpak-skip"
+
+
+def test_initial_install_completion_checks_apps_and_runtimes():
+    script = FLATPAK_SETUP.read_text()
+
+    assert "flatpak list --system --columns=application" in script
+    assert "flatpak list --system --app --columns=application" not in script
+
+
+def test_flatpak_install_service_is_gated_by_skip_marker():
+    service = FLATPAK_INSTALL_SERVICE.read_text()
+
+    assert f"ConditionPathExists=!{SKIP_MARKER}" in service
+
+
+def test_flatpak_setup_script_honors_skip_marker_before_network_work():
+    script = FLATPAK_SETUP.read_text()
+    skip_definition = f"SKIP_STAMP={SKIP_MARKER}"
+    skip_check = 'if [ -f "$SKIP_STAMP" ]; then'
+
+    assert skip_definition in script
+    assert skip_check in script
+    assert script.index(skip_check) < script.index("if [ -f \"$STAMP\" ]; then")
+
+
+def test_flatpak_skip_helper_and_sudoers_contract():
+    helper = FLATPAK_SKIP_HELPER.read_text()
+    sudoers = FLATPAK_SKIP_SUDOERS.read_text()
+    build = BUILD_SCRIPT.read_text()
+
+    assert helper.startswith("#!/bin/bash\n")
+    assert "set -euo pipefail" in helper
+    assert "mkdir -p /var/lib/universal-lite" in helper
+    assert f": > {SKIP_MARKER}" in helper
+    assert f"chmod 0644 {SKIP_MARKER}" in helper
+    assert "systemctl stop universal-lite-flatpak-install.service" in helper
+    assert f"greetd ALL=(root) NOPASSWD: {SKIP_HELPER}" in sudoers
+    assert SKIP_HELPER in build
+
+
+def test_flatpak_setup_rechecks_skip_marker_after_startup():
+    script = FLATPAK_SETUP.read_text()
+
+    assert "skip_requested()" in script
+    assert script.count("skip_requested") >= 5
+    assert script.index("skip_requested") < script.index("wait_for_network")
+    assert script.index("skip_requested \"before waiting for network\"") < script.index(
+        "if ! wait_for_network; then"
+    )
+    assert script.index("skip_requested \"after waiting for network\"") < script.index(
+        "echo \"Network connected.\""
+    )
+    assert script.index("skip_requested \"before configuring Flathub\"") < script.index(
+        "flatpak remote-add"
+    )
+    assert script.index("skip_requested \"before installing $app_id\"") < script.index(
+        "flatpak install --or-update"
+    )
+    assert script.index("skip_requested \"after installing $app_id\"") > script.index(
+        "flatpak install --or-update"
+    )
+
+
+def test_flatpak_setup_rechecks_skip_marker_before_done_stamp():
+    script = FLATPAK_SETUP.read_text()
+    stamp_positions = [
+        index for index in range(len(script)) if script.startswith('touch "$STAMP"', index)
+    ]
+
+    assert len(stamp_positions) == 2
+    for stamp_position in stamp_positions:
+        preceding_block = script[max(0, stamp_position - 200) : stamp_position]
+        assert "skip_requested" in preceding_block
