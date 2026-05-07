@@ -268,13 +268,11 @@ chmod 0755 \
     /usr/bin/universal-lite-settings \
     /usr/bin/universal-lite-setup-wizard \
     /usr/bin/universal-lite-greeter \
-    /usr/bin/universal-lite-app-setup \
     /usr/libexec/universal-lite-apply-settings \
     /usr/libexec/universal-lite-encrypted-swap \
     /usr/libexec/universal-lite-first-boot \
     /usr/libexec/universal-lite-flatpak-setup \
     /usr/libexec/universal-lite-flatpak-skip \
-    /usr/libexec/universal-lite-app-setup-helper \
     /usr/libexec/universal-lite-wallpaper-thumbnailer \
     /usr/libexec/universal-lite-nightlight \
     /usr/libexec/universal-lite-set-memory-strategy \
@@ -287,6 +285,8 @@ chmod 0755 \
     /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-volume \
     /usr/libexec/universal-lite-brightness
+[ -e /usr/bin/universal-lite-app-setup ] && chmod 0755 /usr/bin/universal-lite-app-setup
+[ -e /usr/libexec/universal-lite-app-setup-helper ] && chmod 0755 /usr/libexec/universal-lite-app-setup-helper
 
 # Disable Plymouth entirely by masking the unit that starts it.
 #

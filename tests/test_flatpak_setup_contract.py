@@ -105,6 +105,10 @@ def build_chmod_0755_block(build):
     return "\n".join(block)
 
 
+def guarded_chmod_line(path):
+    return f"[ -e {path} ] && chmod 0755 {path}"
+
+
 def test_prelogin_flatpak_install_is_not_enabled_by_default():
     service = FLATPAK_INSTALL_SERVICE.read_text()
     build = BUILD_SCRIPT.read_text()
@@ -116,19 +120,22 @@ def test_prelogin_flatpak_install_is_not_enabled_by_default():
 def test_post_login_app_setup_is_autostarted_and_executable():
     autostart = LABWC_AUTOSTART.read_text()
     build = BUILD_SCRIPT.read_text()
-    chmod_0755_block = build_chmod_0755_block(build)
 
     assert APP_SETUP_PATH in autostart
-    assert APP_SETUP_PATH in chmod_0755_block
+    assert f"[ -x {APP_SETUP_PATH} ] && {APP_SETUP_PATH}" in autostart
+    assert guarded_chmod_line(APP_SETUP_PATH) in build
     assert APP_SETUP.exists()
     if APP_SETUP.exists():
         assert APP_SETUP.stat().st_mode & 0o111
 
 
 def test_post_login_app_setup_helper_and_sudoers_contract():
+    build = BUILD_SCRIPT.read_text()
+
+    assert guarded_chmod_line(APP_SETUP_HELPER_PATH) in build
+
     helper = APP_SETUP_HELPER.read_text()
     sudoers = APP_SETUP_SUDOERS.read_text()
-    build = BUILD_SCRIPT.read_text()
 
     assert helper.startswith("#!/bin/bash\n")
     assert "set -euo pipefail" in helper
@@ -140,4 +147,3 @@ def test_post_login_app_setup_helper_and_sudoers_contract():
     assert "/var/lib/universal-lite/flatpak-setup.skip" in helper
     assert "flatpak install --or-update --system --noninteractive" in helper
     assert "ALL ALL=(root) NOPASSWD: /usr/libexec/universal-lite-app-setup-helper" in sudoers
-    assert APP_SETUP_HELPER_PATH in build

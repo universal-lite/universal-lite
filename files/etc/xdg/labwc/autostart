@@ -167,5 +167,5 @@ set -- "$@" before-sleep 'swaylock -f'
 
 # Offer post-login installation for apps selected during setup. This is
 # intentionally after the desktop is usable; Flatpak setup must never block login.
-/usr/bin/universal-lite-app-setup \
+[ -x /usr/bin/universal-lite-app-setup ] && /usr/bin/universal-lite-app-setup \
   >/dev/null 2>"$_logdir/app-setup.log" &
