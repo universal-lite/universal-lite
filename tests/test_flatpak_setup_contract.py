@@ -84,3 +84,45 @@ def test_flatpak_setup_rechecks_skip_marker_before_done_stamp():
     for stamp_position in stamp_positions:
         preceding_block = script[max(0, stamp_position - 200) : stamp_position]
         assert "skip_requested" in preceding_block
+
+
+APP_SETUP = ROOT / "files/usr/bin/universal-lite-app-setup"
+APP_SETUP_HELPER = ROOT / "files/usr/libexec/universal-lite-app-setup-helper"
+APP_SETUP_SUDOERS = ROOT / "files/etc/sudoers.d/universal-lite-app-setup"
+LABWC_AUTOSTART = ROOT / "files/etc/xdg/labwc/autostart"
+APP_SETUP_HELPER_PATH = "/usr/libexec/universal-lite-app-setup-helper"
+
+
+def test_prelogin_flatpak_install_is_not_enabled_by_default():
+    service = FLATPAK_INSTALL_SERVICE.read_text()
+    build = BUILD_SCRIPT.read_text()
+
+    assert "WantedBy=graphical.target" not in service
+    assert "systemctl enable universal-lite-flatpak-install.service" not in build
+
+
+def test_post_login_app_setup_is_autostarted_and_executable():
+    autostart = LABWC_AUTOSTART.read_text()
+    build = BUILD_SCRIPT.read_text()
+
+    assert "/usr/bin/universal-lite-app-setup" in autostart
+    assert "/usr/bin/universal-lite-app-setup" in build
+    assert APP_SETUP.exists()
+
+
+def test_post_login_app_setup_helper_and_sudoers_contract():
+    helper = APP_SETUP_HELPER.read_text()
+    sudoers = APP_SETUP_SUDOERS.read_text()
+    build = BUILD_SCRIPT.read_text()
+
+    assert helper.startswith("#!/bin/bash\n")
+    assert "set -euo pipefail" in helper
+    assert "install)" in helper
+    assert "skip)" in helper
+    assert "status)" in helper
+    assert "/var/lib/universal-lite/flatpak-apps" in helper
+    assert "/var/lib/universal-lite/flatpak-setup.done" in helper
+    assert "/var/lib/universal-lite/flatpak-setup.skip" in helper
+    assert "flatpak install --or-update --system --noninteractive" in helper
+    assert "ALL ALL=(root) NOPASSWD: /usr/libexec/universal-lite-app-setup-helper" in sudoers
+    assert APP_SETUP_HELPER_PATH in build
