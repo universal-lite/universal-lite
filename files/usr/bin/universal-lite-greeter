@@ -13,6 +13,7 @@ import json
 import os
 import socket
 import struct
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -45,7 +46,10 @@ PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 # we surface in a "Finishing setup" overlay.
 SETUP_DONE_PATH = Path("/var/lib/universal-lite/setup-done")
 FLATPAK_DONE_PATH = Path("/var/lib/universal-lite/flatpak-setup.done")
+FLATPAK_SKIP_PATH = Path("/var/lib/universal-lite/flatpak-setup.skip")
 FLATPAK_PROGRESS_PATH = Path("/run/universal-lite/flatpak-progress")
+FLATPAK_LOGIN_READY_PATH = Path("/run/universal-lite/flatpak-login-ready")
+FLATPAK_SKIP_HELPER = "/usr/libexec/universal-lite-flatpak-skip"
 # Safety valve: if the install service somehow never finishes AND
 # never fails, fall through to login after this many seconds so the
 # user can always reach their desktop.
@@ -612,6 +616,14 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._setup_progress_label.set_max_width_chars(40)
         setup_card.append(self._setup_progress_label)
 
+        self._setup_skip_btn = Gtk.Button(label=_("Skip app setup"))
+        self._setup_skip_btn.add_css_class("switch-user")
+        self._setup_skip_btn.set_halign(Gtk.Align.CENTER)
+        self._setup_skip_btn.set_margin_top(16)
+        self._setup_skip_btn.connect(
+            "clicked", lambda _: self._confirm_flatpak_setup_skip())
+        setup_card.append(self._setup_skip_btn)
+
         # --- Stack to swap between setup overlay and login card ---
         self._stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
@@ -651,8 +663,13 @@ class GreeterWindow(Gtk.ApplicationWindow):
     # ------------------------------------------------------------------
 
     def _is_setup_in_progress(self) -> bool:
-        """True when the wizard is done but flatpak-install hasn't finished."""
-        return SETUP_DONE_PATH.exists() and not FLATPAK_DONE_PATH.exists()
+        """True while first-boot Flatpak setup is actively gating login."""
+        return (
+            SETUP_DONE_PATH.exists()
+            and not FLATPAK_DONE_PATH.exists()
+            and not FLATPAK_SKIP_PATH.exists()
+            and not FLATPAK_LOGIN_READY_PATH.exists()
+        )
 
     def _update_setup_progress(self) -> None:
         try:
@@ -664,8 +681,12 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._setup_progress_label.set_text(text)
 
     def _poll_setup_progress(self) -> bool:
-        # Install finished → reveal the login card.
-        if FLATPAK_DONE_PATH.exists():
+        # Install finished, or this boot deferred because network was absent.
+        if (
+            FLATPAK_DONE_PATH.exists()
+            or FLATPAK_SKIP_PATH.exists()
+            or FLATPAK_LOGIN_READY_PATH.exists()
+        ):
             self._setup_spinner.stop()
             self._stack.set_visible_child_name("login")
             return GLib.SOURCE_REMOVE
@@ -681,6 +702,48 @@ class GreeterWindow(Gtk.ApplicationWindow):
 
         self._update_setup_progress()
         return GLib.SOURCE_CONTINUE
+
+    def _confirm_flatpak_setup_skip(self) -> None:
+        message = _("Skip app setup?")
+        detail = _(
+            "Selected apps will not be installed automatically. "
+            "You can install them later with flatpak from the terminal."
+        )
+        try:
+            alert = Gtk.AlertDialog()
+            alert.set_modal(True)
+            alert.set_message(message)
+            alert.set_detail(detail)
+            alert.set_buttons([_("Cancel"), _("Skip app setup")])
+            alert.set_cancel_button(0)
+            alert.set_default_button(0)
+            alert.choose(self, None, self._on_flatpak_skip_confirmed)
+        except (AttributeError, TypeError, RuntimeError):
+            self._setup_progress_label.set_text(detail)
+
+    def _on_flatpak_skip_confirmed(self, dialog, result) -> None:
+        try:
+            choice = dialog.choose_finish(result)
+        except (AttributeError, TypeError, RuntimeError):
+            return
+        if choice == 1:
+            self._apply_flatpak_setup_skip()
+
+    def _apply_flatpak_setup_skip(self) -> None:
+        try:
+            subprocess.run(
+                ["sudo", "-n", FLATPAK_SKIP_HELPER],
+                check=True,
+                timeout=10,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            self._setup_progress_label.set_text(
+                _("Could not skip app setup: {error}").format(error=exc)
+            )
+            return
+        self._setup_progress_label.set_text("")
+        self._setup_spinner.stop()
+        self._stack.set_visible_child_name("login")
 
     # ------------------------------------------------------------------
     # Clock

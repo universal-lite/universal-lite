@@ -27,6 +27,37 @@ def _load_wizard_helpers(monkeypatch):
     return runpy.run_path(str(WIZARD), run_name="wizard_for_test")
 
 
+def _css_blocks(css: str) -> list[tuple[list[str], str]]:
+    blocks = []
+    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", css, flags=re.DOTALL):
+        selectors = [s.strip() for s in match.group(1).split(",")]
+        body = match.group(2)
+        blocks.append((selectors, body))
+    return blocks
+
+
+def _css_body_for_selector(css: str, selector: str) -> str:
+    bodies = [body for selectors, body in _css_blocks(css) if selector in selectors]
+    assert bodies, f"Missing CSS selector: {selector}"
+    return "\n".join(bodies)
+
+
+def _css_properties(body: str) -> set[str]:
+    properties = set()
+    for declaration in body.split(";"):
+        if ":" not in declaration:
+            continue
+        name, _value = declaration.split(":", 1)
+        properties.add(name.strip())
+    return properties
+
+
+def _assert_selector_has_properties(css: str, selector: str, properties: set[str]) -> None:
+    declared = _css_properties(_css_body_for_selector(css, selector))
+    missing = sorted(properties - declared)
+    assert not missing, f"{selector} missing CSS properties: {missing}"
+
+
 def test_empty_app_selection_writes_zero_byte_flatpak_list(monkeypatch):
     module = _load_wizard_helpers(monkeypatch)
 
@@ -155,17 +186,158 @@ def test_wizard_uses_current_alert_dialog_api():
     assert has_alert_dialog_guard
 
 
-def test_wizard_dropdowns_force_dark_theme_foregrounds(monkeypatch):
+def test_wizard_forces_dark_theme_without_libadwaita(monkeypatch):
+    module = _load_wizard_helpers(monkeypatch)
+    source = WIZARD.read_text()
+    tree = ast.parse(source)
+
+    def is_gtk_call(node, name):
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == name
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "Gtk"
+        )
+
+    app_class = next(
+        (node for node in ast.walk(tree) if isinstance(node, ast.ClassDef) and node.name == "SetupWizardApp"),
+        None,
+    )
+    assert app_class is not None
+
+    do_activate = next(
+        (
+            node for node in app_class.body
+            if isinstance(node, ast.FunctionDef) and node.name == "do_activate"
+        ),
+        None,
+    )
+    assert do_activate is not None
+
+    dark_call_index = None
+    provider_index = None
+    for index, statement in enumerate(do_activate.body):
+        if (
+            isinstance(statement, ast.Expr)
+            and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Name)
+            and statement.value.func.id == "_force_dark_theme"
+        ):
+            dark_call_index = index
+
+        nodes = ast.walk(statement)
+        if provider_index is not None:
+            continue
+
+        if any(is_gtk_call(node, "CssProvider") for node in nodes):
+            provider_index = index
+            continue
+
+        nodes = ast.walk(statement)
+        if any(
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "add_provider_for_display"
+            and isinstance(node.func.value, ast.Attribute)
+            and node.func.value.attr == "StyleContext"
+            and isinstance(node.func.value.value, ast.Name)
+            and node.func.value.value.id == "Gtk"
+            for node in nodes
+        ):
+            provider_index = index
+
+    assert "gi.require_version(\"Adw\"" not in source
+    assert "from gi.repository import Adw" not in source
+    assert "_force_dark_theme" in module
+    assert "Gtk.Settings.get_default" in source
+    assert "gtk-application-prefer-dark-theme" in source
+    assert dark_call_index is not None
+    assert provider_index is not None
+    assert dark_call_index < provider_index
+
+
+def test_wizard_css_declares_adwaita_dark_palette(monkeypatch):
+    module = _load_wizard_helpers(monkeypatch)
+    colors = module["DARK_THEME_COLORS"]
+
+    required = {
+        "window_bg",
+        "card_bg",
+        "control_bg",
+        "control_hover_bg",
+        "subtle_bg",
+        "border",
+        "border_subtle",
+        "primary_fg",
+        "secondary_fg",
+        "disabled_fg",
+        "accent_bg",
+        "accent_hover_bg",
+        "accent_active_bg",
+        "focus_border",
+        "error_fg",
+        "success_fg",
+        "selection_bg",
+        "selection_fg",
+    }
+    assert required <= set(colors)
+
+    for name in required:
+        value = colors[name]
+        assert value.startswith(("#", "rgba(")), f"{name} has non-color token value {value!r}"
+
+
+def test_wizard_css_covers_dark_gtk_control_nodes(monkeypatch):
     css = _load_wizard_helpers(monkeypatch)["CSS"]
 
-    for selector in (
-        "dropdown button",
-        "dropdown button label",
-        "dropdown button arrow",
-        "dropdown popover label",
-    ):
-        assert re.search(
-            rf"(^|\n){re.escape(selector)}\s*\{{[^}}]*\bcolor\s*:",
-            css,
-            flags=re.DOTALL,
-        ), f"{selector} must set color for the wizard's dark custom theme"
+    required_selectors = {
+        "window": {"background-color", "color"},
+        "*": {"color", "-gtk-icon-palette"},
+        ".card": {"background-color", "color", "border"},
+        "entry": {"background-color", "color", "border", "caret-color"},
+        "entry text": {"background-color", "color"},
+        "entry image": {"color"},
+        "entry.search": {"background-color", "color", "border"},
+        "selection": {"background-color", "color"},
+        "dropdown": {"color"},
+        "dropdown button": {"background-color", "color", "border"},
+        "dropdown button label": {"color"},
+        "dropdown button arrow": {"color"},
+        "dropdown popover": {"background-color", "color"},
+        "dropdown popover contents": {"background-color", "color"},
+        "dropdown popover entry.search": {"background-color", "color", "border"},
+        "dropdown popover listview": {"background-color", "color"},
+        "dropdown popover row": {"background-color", "color"},
+        "dropdown popover row:selected": {"background-color", "color"},
+        "dropdown popover label": {"color"},
+        "popover.background": {"background-color", "color"},
+        "popover contents": {"background-color", "color", "border"},
+        "popover arrow": {"background-color", "border"},
+        "list": {"background-color", "color"},
+        "listbox": {"background-color", "color"},
+        "row": {"background-color", "color"},
+        "row:selected": {"background-color", "color"},
+        "checkbutton": {"color"},
+        "checkbutton label": {"color"},
+        "checkbutton check": {"background-color", "border"},
+        "scrolledwindow": {"background-color"},
+        "viewport": {"background-color"},
+        "scrollbar slider": {"background-color"},
+        "textview": {"background-color", "color"},
+        "textview text": {"background-color", "color"},
+        ".log-view": {"background-color", "color"},
+    }
+
+    for selector, properties in required_selectors.items():
+        _assert_selector_has_properties(css, selector, properties)
+
+
+def test_wizard_css_does_not_define_light_control_surfaces(monkeypatch):
+    css = _load_wizard_helpers(monkeypatch)["CSS"]
+    light_surface = re.compile(
+        r"background(?:-color)?\s*:\s*(?:white|#fff(?:fff)?|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))",
+        flags=re.IGNORECASE,
+    )
+
+    assert not light_surface.search(css)
