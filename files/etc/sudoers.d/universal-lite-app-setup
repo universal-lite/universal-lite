@@ -1,0 +1,1 @@
+ALL ALL=(root) NOPASSWD: /usr/libexec/universal-lite-app-setup-helper
