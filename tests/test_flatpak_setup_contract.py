@@ -145,5 +145,14 @@ def test_post_login_app_setup_helper_and_sudoers_contract():
     assert "/var/lib/universal-lite/flatpak-apps" in helper
     assert "/var/lib/universal-lite/flatpak-setup.done" in helper
     assert "/var/lib/universal-lite/flatpak-setup.skip" in helper
+    assert "if ! ensure_flathub" in helper
+    assert 'echo "ERROR flathub"' in helper
     assert "flatpak install --or-update --system --noninteractive" in helper
-    assert "ALL ALL=(root) NOPASSWD: /usr/libexec/universal-lite-app-setup-helper" in sudoers
+    assert (
+        "ALL ALL=(root) NOPASSWD: "
+        "/usr/libexec/universal-lite-app-setup-helper install, "
+        "/usr/libexec/universal-lite-app-setup-helper skip, "
+        "/usr/libexec/universal-lite-app-setup-helper status, "
+        "/usr/libexec/universal-lite-app-setup-helper count"
+    ) in sudoers
+    assert "/usr/libexec/universal-lite-app-setup-helper\n" not in sudoers

@@ -56,7 +56,10 @@ install_apps() {
         return 0
     fi
 
-    ensure_flathub
+    if ! ensure_flathub; then
+        echo "ERROR flathub"
+        return 1
+    fi
     local total current missing installed app_id
     total=$(app_count)
     current=0
