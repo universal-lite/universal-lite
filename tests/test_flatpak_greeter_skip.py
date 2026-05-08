@@ -39,9 +39,21 @@ class _FakeStack:
 class _FakeLabel:
     def __init__(self):
         self.text = ""
+        self.visible = False
 
     def set_text(self, text):
         self.text = text
+
+    def set_visible(self, visible):
+        self.visible = visible
+
+
+class _FakeWidget:
+    def __init__(self):
+        self.visible = True
+
+    def set_visible(self, visible):
+        self.visible = visible
 
 
 class _FakePath:
@@ -98,6 +110,38 @@ def test_greeter_skip_confirmation_copy_mentions_flatpak_not_bazaar():
     copy_start = source.index("Selected apps will not be installed automatically")
     confirmation_copy = source[max(copy_start - 200, 0) : copy_start + 400]
     assert "Bazaar" not in confirmation_copy
+
+
+def test_greeter_skip_confirmation_is_inline_and_actionable():
+    module = _load_greeter_module()
+    window = module.GreeterWindow.__new__(module.GreeterWindow)
+    window._setup_skip_confirm_label = _FakeLabel()
+    window._setup_skip_confirm_actions = _FakeWidget()
+    window._setup_skip_btn = _FakeWidget()
+
+    module.GreeterWindow._confirm_flatpak_setup_skip(window)
+
+    assert "Selected apps will not be installed automatically" in (
+        window._setup_skip_confirm_label.text
+    )
+    assert "flatpak from the terminal" in window._setup_skip_confirm_label.text
+    assert window._setup_skip_confirm_label.visible is True
+    assert window._setup_skip_confirm_actions.visible is True
+    assert window._setup_skip_btn.visible is False
+
+
+def test_greeter_skip_confirmation_can_be_cancelled():
+    module = _load_greeter_module()
+    window = module.GreeterWindow.__new__(module.GreeterWindow)
+    window._setup_skip_confirm_label = _FakeLabel()
+    window._setup_skip_confirm_actions = _FakeWidget()
+    window._setup_skip_btn = _FakeWidget()
+
+    module.GreeterWindow._cancel_flatpak_setup_skip(window)
+
+    assert window._setup_skip_confirm_label.visible is False
+    assert window._setup_skip_confirm_actions.visible is False
+    assert window._setup_skip_btn.visible is True
 
 
 def test_greeter_uses_privileged_skip_helper():

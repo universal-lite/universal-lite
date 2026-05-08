@@ -616,6 +616,15 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._setup_progress_label.set_max_width_chars(40)
         setup_card.append(self._setup_progress_label)
 
+        self._setup_skip_confirm_label = Gtk.Label()
+        self._setup_skip_confirm_label.add_css_class("setup-progress")
+        self._setup_skip_confirm_label.set_halign(Gtk.Align.CENTER)
+        self._setup_skip_confirm_label.set_wrap(True)
+        self._setup_skip_confirm_label.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        self._setup_skip_confirm_label.set_max_width_chars(40)
+        self._setup_skip_confirm_label.set_visible(False)
+        setup_card.append(self._setup_skip_confirm_label)
+
         self._setup_skip_btn = Gtk.Button(label=_("Skip app setup"))
         self._setup_skip_btn.add_css_class("switch-user")
         self._setup_skip_btn.set_halign(Gtk.Align.CENTER)
@@ -623,6 +632,23 @@ class GreeterWindow(Gtk.ApplicationWindow):
         self._setup_skip_btn.connect(
             "clicked", lambda _: self._confirm_flatpak_setup_skip())
         setup_card.append(self._setup_skip_btn)
+
+        self._setup_skip_confirm_actions = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        self._setup_skip_confirm_actions.set_halign(Gtk.Align.CENTER)
+        self._setup_skip_confirm_actions.set_margin_top(12)
+        self._setup_skip_confirm_actions.set_visible(False)
+        cancel_skip_btn = Gtk.Button(label=_("Cancel"))
+        cancel_skip_btn.add_css_class("switch-user")
+        cancel_skip_btn.connect(
+            "clicked", lambda _: self._cancel_flatpak_setup_skip())
+        self._setup_skip_confirm_actions.append(cancel_skip_btn)
+        confirm_skip_btn = Gtk.Button(label=_("Skip app setup"))
+        confirm_skip_btn.add_css_class("login-button")
+        confirm_skip_btn.connect(
+            "clicked", lambda _: self._apply_flatpak_setup_skip())
+        self._setup_skip_confirm_actions.append(confirm_skip_btn)
+        setup_card.append(self._setup_skip_confirm_actions)
 
         # --- Stack to swap between setup overlay and login card ---
         self._stack = Gtk.Stack()
@@ -704,30 +730,19 @@ class GreeterWindow(Gtk.ApplicationWindow):
         return GLib.SOURCE_CONTINUE
 
     def _confirm_flatpak_setup_skip(self) -> None:
-        message = _("Skip app setup?")
         detail = _(
             "Selected apps will not be installed automatically. "
             "You can install them later with flatpak from the terminal."
         )
-        try:
-            alert = Gtk.AlertDialog()
-            alert.set_modal(True)
-            alert.set_message(message)
-            alert.set_detail(detail)
-            alert.set_buttons([_("Cancel"), _("Skip app setup")])
-            alert.set_cancel_button(0)
-            alert.set_default_button(0)
-            alert.choose(self, None, self._on_flatpak_skip_confirmed)
-        except (AttributeError, TypeError, RuntimeError):
-            self._setup_progress_label.set_text(detail)
+        self._setup_skip_confirm_label.set_text(detail)
+        self._setup_skip_confirm_label.set_visible(True)
+        self._setup_skip_confirm_actions.set_visible(True)
+        self._setup_skip_btn.set_visible(False)
 
-    def _on_flatpak_skip_confirmed(self, dialog, result) -> None:
-        try:
-            choice = dialog.choose_finish(result)
-        except (AttributeError, TypeError, RuntimeError):
-            return
-        if choice == 1:
-            self._apply_flatpak_setup_skip()
+    def _cancel_flatpak_setup_skip(self) -> None:
+        self._setup_skip_confirm_label.set_visible(False)
+        self._setup_skip_confirm_actions.set_visible(False)
+        self._setup_skip_btn.set_visible(True)
 
     def _apply_flatpak_setup_skip(self) -> None:
         try:
