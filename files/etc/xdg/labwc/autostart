@@ -164,3 +164,8 @@ set -- "$@" before-sleep 'swaylock -f'
 # gsettings, powerprofilesctl, pkexec, Wayland reloads, or wallpaper swaps.
 /usr/libexec/universal-lite-apply-settings --mode=live \
   >/dev/null 2>"$_logdir/apply-settings.log" &
+
+# Offer post-login installation for apps selected during setup. This is
+# intentionally after the desktop is usable; Flatpak setup must never block login.
+[ -x /usr/bin/universal-lite-app-setup ] && /usr/bin/universal-lite-app-setup \
+  >/dev/null 2>"$_logdir/app-setup.log" &

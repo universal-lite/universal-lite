@@ -285,6 +285,8 @@ chmod 0755 \
     /usr/libexec/universal-lite-session \
     /usr/libexec/universal-lite-volume \
     /usr/libexec/universal-lite-brightness
+[ -e /usr/bin/universal-lite-app-setup ] && chmod 0755 /usr/bin/universal-lite-app-setup
+[ -e /usr/libexec/universal-lite-app-setup-helper ] && chmod 0755 /usr/libexec/universal-lite-app-setup-helper
 
 # Disable Plymouth entirely by masking the unit that starts it.
 #
@@ -445,7 +447,7 @@ systemctl enable avahi-daemon.socket 2>/dev/null || true
 # nothing on the common case and keeps us aligned with the base image.
 systemctl enable NetworkManager.service
 systemctl enable universal-lite-first-boot.service
-systemctl enable universal-lite-flatpak-install.service
+systemctl disable universal-lite-flatpak-install.service 2>/dev/null || true
 systemctl enable universal-lite-flatpak-update.service
 # OOM protection on 2 GB hardware — oomd kills the heaviest cgroup under
 # memory/swap pressure before the kernel OOM killer engages and freezes

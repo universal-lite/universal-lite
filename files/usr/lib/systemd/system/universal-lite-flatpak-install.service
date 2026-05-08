@@ -50,6 +50,3 @@ RestrictRealtime=yes
 SystemCallArchitectures=native
 # flatpak uses TCP (HTTPS to flathub), AF_UNIX (dbus, journal), AF_NETLINK.
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
-
-[Install]
-WantedBy=graphical.target
