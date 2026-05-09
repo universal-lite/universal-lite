@@ -75,6 +75,15 @@ def test_app_selection_writes_deterministic_flatpak_list(monkeypatch):
     assert content == "com.google.Chrome\nio.github.kolunmi.Bazaar\n"
 
 
+def test_app_selection_file_is_readable_by_post_login_prompt():
+    source = WIZARD.read_text()
+    write_start = source.index('state_dir / "flatpak-apps"')
+    write_call = source[write_start: write_start + 160]
+
+    assert "_flatpak_app_list_contents(selected_ids)" in write_call
+    assert "mode=0o644" in write_call
+
+
 def test_pinned_defaults_follow_selected_apps(monkeypatch):
     module = _load_wizard_helpers(monkeypatch)
 

@@ -33,6 +33,20 @@ def test_app_setup_copy_and_visual_contract():
     assert ".low-emphasis-button" in source
 
 
+def test_app_setup_uses_undecorated_card_window():
+    source = SCRIPT.read_text()
+
+    assert "self.set_decorated(False)" in source
+    assert "background-color: transparent" in source
+
+
+def test_app_setup_does_not_render_empty_preview_label():
+    source = SCRIPT.read_text()
+
+    assert "if preview:" in source
+    assert "card.append(self._preview)" in source
+
+
 def test_should_show_prompt_requires_apps_without_done_or_skip(tmp_path):
     module = _load_module()
     apps = tmp_path / "flatpak-apps"
