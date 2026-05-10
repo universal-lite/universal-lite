@@ -121,6 +121,18 @@ def test_prelogin_flatpak_install_is_not_enabled_by_default():
 
     assert "WantedBy=graphical.target" not in service
     assert "systemctl enable universal-lite-flatpak-install.service" not in build
+    assert "systemctl mask universal-lite-flatpak-install.service" in build
+
+
+def test_legacy_flatpak_installer_has_no_greeter_coordination():
+    service = FLATPAK_INSTALL_SERVICE.read_text()
+    script = FLATPAK_SETUP.read_text()
+    combined = service + script
+
+    assert "greeter" not in combined.lower()
+    assert "flatpak-login-ready" not in combined
+    assert "Finishing setup" not in combined
+    assert "write_progress" not in combined
 
 
 def test_post_login_app_setup_is_autostarted_and_executable():

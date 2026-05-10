@@ -1,12 +1,8 @@
 [Unit]
 Description=First-boot Flatpak install
-# Runs in parallel with greetd. The greeter watches the progress
-# file (/run/universal-lite/flatpak-progress) and shows a "Finishing
-# setup" overlay in place of the login form until either the durable
-# completion stamp appears or /run/universal-lite/flatpak-login-ready
-# marks this boot as safe to continue after offline deferral. The greeter
-# itself can come up instantly with actual progress feedback instead of a
-# silent Plymouth splash.
+# Legacy installer kept for manual recovery only. The image build masks this
+# unit because first-login app installation is handled by the post-login app
+# setup prompt and must never gate login.
 After=universal-lite-first-boot.service NetworkManager.service
 # Wizard must have completed AND we must not already be past the
 # install phase. Once the stamp exists, the -update.service unit
@@ -16,12 +12,8 @@ ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.done
 ConditionPathExists=!/var/lib/universal-lite/flatpak-setup.skip
 
 [Service]
-# Type=exec so graphical.target reaches active as soon as bash is
-# exec'd, not when every app is installed. The greeter overlay is
-# driven by the stamp file + progress file (not by systemd state),
-# so the UX is unchanged - the greeter dismisses the "Finishing
-# setup" page the moment the script writes the stamp, regardless of
-# whether systemd is still tracking the unit as running.
+# Type=exec is retained for compatibility with older deployments that may have
+# referenced this unit directly. Fresh images mask it during build.
 Type=exec
 ExecStart=/usr/libexec/universal-lite-flatpak-setup
 StandardOutput=journal+console

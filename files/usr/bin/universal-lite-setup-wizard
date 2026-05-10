@@ -4021,7 +4021,10 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
         state_dir = Path(var_dir) / "lib" / "universal-lite"
         state_dir.mkdir(parents=True, exist_ok=True)
         _atomic_write_text(
-            state_dir / "flatpak-apps", _flatpak_app_list_contents(selected_ids))
+            state_dir / "flatpak-apps",
+            _flatpak_app_list_contents(selected_ids),
+            mode=0o644,
+        )
 
         default_settings = {}
         defaults_path = (

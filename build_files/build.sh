@@ -447,7 +447,10 @@ systemctl enable avahi-daemon.socket 2>/dev/null || true
 # nothing on the common case and keeps us aligned with the base image.
 systemctl enable NetworkManager.service
 systemctl enable universal-lite-first-boot.service
-systemctl disable universal-lite-flatpak-install.service 2>/dev/null || true
+# App installation is a post-login user choice. Mask the old pre-login
+# installer so presets, stale enablement, or manual dependencies cannot
+# resurrect login-blocking Flatpak setup.
+systemctl mask universal-lite-flatpak-install.service 2>/dev/null || true
 systemctl enable universal-lite-flatpak-update.service
 # OOM protection on 2 GB hardware — oomd kills the heaviest cgroup under
 # memory/swap pressure before the kernel OOM killer engages and freezes

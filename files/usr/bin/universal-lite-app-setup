@@ -150,6 +150,7 @@ class AppSetupWindow(Gtk.ApplicationWindow):
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app, title="Set up your apps")
         self.set_default_size(520, 360)
+        self.set_decorated(False)
         self.set_resizable(False)
         self._install_app_hold = None
         self._install_running = False
@@ -180,11 +181,13 @@ class AppSetupWindow(Gtk.ApplicationWindow):
         card.append(self._subtitle)
 
         preview = ", ".join(_app_preview())
-        self._preview = Gtk.Label(label=preview)
-        self._preview.add_css_class("app-preview")
-        self._preview.set_wrap(True)
-        self._preview.set_halign(Gtk.Align.START)
-        card.append(self._preview)
+        self._preview = None
+        if preview:
+            self._preview = Gtk.Label(label=preview)
+            self._preview.add_css_class("app-preview")
+            self._preview.set_wrap(True)
+            self._preview.set_halign(Gtk.Align.START)
+            card.append(self._preview)
 
         self._status = Gtk.Label(label="Ready")
         self._status.add_css_class("status")

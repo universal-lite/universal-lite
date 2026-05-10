@@ -11,17 +11,15 @@
 #      `flatpak update` so the user always has current software. Ends
 #      quietly on offline boots and retries on the next boot.
 #
-# Called by universal-lite-flatpak-setup.service. Runs alongside greetd —
-# login comes up immediately; progress goes to the journal.
+# Called by the masked legacy install service and by the update service after
+# setup is complete. New first-login app installation is handled by the
+# post-login app setup prompt.
 
 set -uo pipefail
 
 APPS_FILE=/var/lib/universal-lite/flatpak-apps
 STAMP=/var/lib/universal-lite/flatpak-setup.done
 SKIP_STAMP=/var/lib/universal-lite/flatpak-setup.skip
-PROGRESS_DIR=/run/universal-lite
-PROGRESS_FILE=$PROGRESS_DIR/flatpak-progress
-LOGIN_READY_FILE=$PROGRESS_DIR/flatpak-login-ready
 MAX_NET_WAIT=120
 RETRIES=3
 RETRY_DELAY=15
@@ -43,22 +41,6 @@ wait_for_network() {
         waited=$((waited + 5))
     done
     return 1
-}
-
-# Atomic progress write — the greeter polls $PROGRESS_FILE and shows
-# the contents as a "Finishing setup" overlay until the stamp file
-# appears. World-readable because the greetd user reads it.
-write_progress() {
-    mkdir -p "$PROGRESS_DIR"
-    printf '%s\n' "$1" > "$PROGRESS_FILE.tmp"
-    chmod 0644 "$PROGRESS_FILE.tmp"
-    mv -f "$PROGRESS_FILE.tmp" "$PROGRESS_FILE"
-}
-
-allow_login_this_boot() {
-    mkdir -p "$PROGRESS_DIR"
-    : > "$LOGIN_READY_FILE"
-    chmod 0644 "$LOGIN_READY_FILE"
 }
 
 # -----------------------------------------------------------------
@@ -87,10 +69,8 @@ if [ -f "$STAMP" ]; then
 fi
 
 # -----------------------------------------------------------------
-# Mode 1: initial install (stamp absent)
+# Mode 1: legacy initial install (stamp absent)
 # -----------------------------------------------------------------
-rm -f "$LOGIN_READY_FILE"
-
 # If the wizard didn't write an apps list, fall back to the defaults
 # (one per line). The wizard always writes the file even when empty,
 # so we only hit this branch on edge cases (e.g. hand-rolled images).
@@ -122,20 +102,16 @@ echo "  Universal-Lite - First Boot Setup"
 echo "========================================"
 echo ""
 
-write_progress "Waiting for network connection..."
 echo "Waiting for network connection..."
 skip_requested "before waiting for network"
 if ! wait_for_network; then
-    echo "No network after ${MAX_NET_WAIT}s - allowing login and retrying next boot."
-    write_progress "No network detected. You can log in now; selected apps will install automatically on a future boot."
-    allow_login_this_boot
+    echo "No network after ${MAX_NET_WAIT}s - retrying next boot."
     # No stamp: service reruns next boot until initial install succeeds.
     exit 0
 fi
 skip_requested "after waiting for network"
 echo "Network connected."
 
-write_progress "Configuring Flathub app store..."
 echo "Configuring Flathub app store..."
 skip_requested "before configuring Flathub"
 # Prefer the build-time-baked .flatpakrepo file shipped by ublue-os/main
@@ -162,7 +138,6 @@ done
 
 if ! "$remote_ok"; then
     echo "ERROR: Could not configure Flathub. Will retry on next boot."
-    write_progress "Could not reach Flathub - will retry on next boot."
     # No stamp: retry; without Flathub, nothing in apps file can install.
     exit 0
 fi
@@ -187,7 +162,6 @@ while IFS= read -r app_id; do
 
     echo ""
     echo "[$current/$total_apps] Installing $app_id..."
-    write_progress "Installing $current of $total_apps: $app_id"
     skip_requested "before installing $app_id"
 
     ok=false
