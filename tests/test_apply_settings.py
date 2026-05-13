@@ -494,12 +494,16 @@ class TestVerticalCss:
             apply_settings._waybar_css_common(tokens)
             + apply_settings._waybar_css_vertical(tokens)
         )
-        active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
-        assert active is not None
-        assert "background: rgba(255, 255, 255, 0.10)" in active.group("body")
-        assert "border: 3px solid transparent" in css
-        assert "border-left-color: #3584e4" in css
-        assert "rgba(53, 132, 228, 0.26)" not in active.group("body")
+        active = re.findall(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
+        active_image = re.search(
+            r"#taskbar button\.active image \{(?P<body>.*?)\n\}", css, re.S
+        )
+        assert active
+        assert active_image is not None
+        assert "background: transparent" in active[-1]
+        assert "background: rgba(255, 255, 255, 0.10)" in active_image.group("body")
+        assert "border-left-color: #3584e4" in active_image.group("body")
+        assert "rgba(53, 132, 228, 0.26)" not in active[-1]
 
     def test_vertical_window_has_min_width(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
@@ -541,8 +545,14 @@ class TestVerticalCss:
         css = apply_settings._waybar_css_vertical(tokens)
 
         button = re.search(r"#taskbar button \{(?P<body>.*?)\n\}", css, re.S)
+        image = re.search(r"#taskbar button image \{(?P<body>.*?)\n\}", css, re.S)
         assert button is not None
+        assert image is not None
         assert "padding: 0" in button.group("body")
+        assert "background: transparent" in button.group("body")
+        expected_pad = (tokens["panel_width"] - 2 * tokens["panel_bar_inset"] - tokens["panel_icon_size"] - 6) // 2
+        assert f"padding: {expected_pad}px" in image.group("body")
+        assert "border: 3px solid transparent" in image.group("body")
 
     def test_vertical_css_avoids_gtk3_unsafe_auto_margins(self):
         tokens = _make_tokens(
