@@ -1182,9 +1182,6 @@ def _waybar_css_vertical(tokens: dict) -> str:
     border: 1px solid transparent;
     transition: {tokens["panel_transition"]};
 }}
-{selectors} image {{
-    margin: auto;
-}}
 {hover_selectors} {{
     background: {tokens["panel_control_hover"]};
     border: 1px solid {tokens["panel_control_border"]};
@@ -1204,23 +1201,20 @@ window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 #taskbar button {{
     padding: 0;
     border-radius: 999px;
-    border: 1px solid transparent;
+    border: 3px solid transparent;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
     transition: {tokens["panel_transition"]};
 }}
-#taskbar button image {{
-    margin: auto;
-}}
 #taskbar button.active {{
-    {indicator_border}: 3px solid {tokens["accent_hex"]};
+    {indicator_border}-color: {tokens["accent_hex"]};
 }}
 #taskbar button:hover {{
     background: {tokens["panel_control_hover"]};
-    border: 1px solid {tokens["panel_control_border"]};
+    border-color: {tokens["panel_control_border"]};
 }}
 #taskbar button.active:hover {{
-    {indicator_border}: 3px solid {tokens["accent_hex"]};
+    {indicator_border}-color: {tokens["accent_hex"]};
 }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{

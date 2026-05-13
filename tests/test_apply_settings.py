@@ -497,7 +497,8 @@ class TestVerticalCss:
         active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
         assert active is not None
         assert "background: rgba(255, 255, 255, 0.10)" in active.group("body")
-        assert "border-left: 3px solid #3584e4" in css
+        assert "border: 3px solid transparent" in css
+        assert "border-left-color: #3584e4" in css
         assert "rgba(53, 132, 228, 0.26)" not in active.group("body")
 
     def test_vertical_window_has_min_width(self):
@@ -540,11 +541,30 @@ class TestVerticalCss:
         css = apply_settings._waybar_css_vertical(tokens)
 
         button = re.search(r"#taskbar button \{(?P<body>.*?)\n\}", css, re.S)
-        image = re.search(r"#taskbar button image \{(?P<body>.*?)\n\}", css, re.S)
         assert button is not None
-        assert image is not None
         assert "padding: 0" in button.group("body")
-        assert "margin: auto" in image.group("body")
+
+    def test_vertical_css_avoids_gtk3_unsafe_auto_margins(self):
+        tokens = _make_tokens(
+            edge="right",
+            is_vertical=True,
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_common(tokens)
+        css += apply_settings._waybar_css_vertical(tokens)
+
+        assert "margin: auto" not in css
+
+    def test_vertical_pinned_app_css_is_accepted_by_gtk3(self):
+        tokens = _make_tokens(
+            edge="right",
+            is_vertical=True,
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_common(tokens)
+        css += apply_settings._waybar_css_vertical(tokens)
+
+        _assert_css_accepted_by_gtk3(css)
 
 
 # ---------------------------------------------------------------------------
