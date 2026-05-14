@@ -494,11 +494,16 @@ class TestVerticalCss:
             apply_settings._waybar_css_common(tokens)
             + apply_settings._waybar_css_vertical(tokens)
         )
-        active = re.search(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
-        assert active is not None
-        assert "background: rgba(255, 255, 255, 0.10)" in active.group("body")
-        assert "border-left: 3px solid #3584e4" in css
-        assert "rgba(53, 132, 228, 0.26)" not in active.group("body")
+        active = re.findall(r"#taskbar button\.active \{(?P<body>.*?)\n\}", css, re.S)
+        active_image = re.search(
+            r"#taskbar button\.active image \{(?P<body>.*?)\n\}", css, re.S
+        )
+        assert active
+        assert active_image is not None
+        assert "background: transparent" in active[-1]
+        assert "background: rgba(255, 255, 255, 0.10)" in active_image.group("body")
+        assert "border-left-color: #3584e4" in active_image.group("body")
+        assert "rgba(53, 132, 228, 0.26)" not in active[-1]
 
     def test_vertical_window_has_min_width(self):
         tokens = _make_tokens(edge="left", is_vertical=True)
@@ -522,7 +527,7 @@ class TestVerticalCss:
         assert "#image.pin-0" in css
         assert "border-radius: 999px" in css
 
-    def test_vertical_controls_do_not_add_horizontal_padding(self):
+    def test_vertical_icon_controls_use_square_hit_targets(self):
         tokens = _make_tokens(
             edge="left",
             is_vertical=True,
@@ -533,7 +538,43 @@ class TestVerticalCss:
         for selector in ("#custom-launcher", "#taskbar button", "#image.pin-0"):
             match = re.search(rf"{re.escape(selector)} \{{(?P<body>.*?)\n\}}", css, re.S)
             assert match is not None
-            assert f"padding: {tokens['panel_pad_module']}px 0" in match.group("body")
+            assert "padding: 0" in match.group("body")
+
+    def test_vertical_taskbar_icon_is_centered_inside_active_pill(self):
+        tokens = _make_tokens(edge="right", is_vertical=True)
+        css = apply_settings._waybar_css_vertical(tokens)
+
+        button = re.search(r"#taskbar button \{(?P<body>.*?)\n\}", css, re.S)
+        image = re.search(r"#taskbar button image \{(?P<body>.*?)\n\}", css, re.S)
+        assert button is not None
+        assert image is not None
+        assert "padding: 0" in button.group("body")
+        assert "background: transparent" in button.group("body")
+        expected_pad = (tokens["panel_width"] - 2 * tokens["panel_bar_inset"] - tokens["panel_icon_size"] - 6) // 2
+        assert f"padding: {expected_pad}px" in image.group("body")
+        assert "border: 3px solid transparent" in image.group("body")
+
+    def test_vertical_css_avoids_gtk3_unsafe_auto_margins(self):
+        tokens = _make_tokens(
+            edge="right",
+            is_vertical=True,
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_common(tokens)
+        css += apply_settings._waybar_css_vertical(tokens)
+
+        assert "margin: auto" not in css
+
+    def test_vertical_pinned_app_css_is_accepted_by_gtk3(self):
+        tokens = _make_tokens(
+            edge="right",
+            is_vertical=True,
+            pinned=[{"name": "Chrome", "command": "chrome", "icon": "chrome"}],
+        )
+        css = apply_settings._waybar_css_common(tokens)
+        css += apply_settings._waybar_css_vertical(tokens)
+
+        _assert_css_accepted_by_gtk3(css)
 
 
 # ---------------------------------------------------------------------------
