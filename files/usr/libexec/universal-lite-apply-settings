@@ -1167,6 +1167,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
     spacing = tokens["panel_spacing"]
     pinned = tokens.get("pinned", [])
     btn_w = max(w - 2 * inset, 16)
+    task_icon_pad = max((btn_w - tokens["panel_icon_size"] - 6) // 2, 0)
     indicator_border = "border-right" if tokens["edge"] == "right" else "border-left"
 
     pin_css = ""
@@ -1175,7 +1176,7 @@ def _waybar_css_vertical(tokens: dict) -> str:
         hover_selectors = ", ".join(f"#image.pin-{i}:hover" for i in range(len(pinned)))
         pin_css = f"""
 {selectors} {{
-    padding: {pm}px 0;
+    padding: 0;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
     border-radius: 999px;
@@ -1192,29 +1193,49 @@ def _waybar_css_vertical(tokens: dict) -> str:
 window#waybar {{ min-width: {w}px; padding: {inset}px {inset // 2}px; }}
 
 #custom-launcher {{
-    padding: {pm}px 0;
+    padding: 0;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
 }}
 
 #taskbar {{ padding: 0; }}
 #taskbar button {{
-    padding: {pm}px 0;
+    padding: 0;
     border-radius: 999px;
-    border: 1px solid transparent;
+    border: none;
+    background: transparent;
     min-width: {btn_w}px;
     min-height: {btn_w}px;
     transition: {tokens["panel_transition"]};
 }}
+#taskbar button image {{
+    padding: {task_icon_pad}px;
+    border-radius: 999px;
+    border: 3px solid transparent;
+    transition: {tokens["panel_transition"]};
+}}
 #taskbar button.active {{
-    {indicator_border}: 3px solid {tokens["accent_hex"]};
+    background: transparent;
+    border: none;
+}}
+#taskbar button.active image {{
+    background: {tokens["panel_control_bg"]};
+    {indicator_border}-color: {tokens["accent_hex"]};
 }}
 #taskbar button:hover {{
+    background: transparent;
+    border: none;
+}}
+#taskbar button:hover image {{
     background: {tokens["panel_control_hover"]};
-    border: 1px solid {tokens["panel_control_border"]};
+    border-color: {tokens["panel_control_border"]};
 }}
 #taskbar button.active:hover {{
-    {indicator_border}: 3px solid {tokens["accent_hex"]};
+    background: transparent;
+    border: none;
+}}
+#taskbar button.active:hover image {{
+    {indicator_border}-color: {tokens["accent_hex"]};
 }}
 {pin_css}
 #clock, #battery, #backlight, #pulseaudio, #tray {{
