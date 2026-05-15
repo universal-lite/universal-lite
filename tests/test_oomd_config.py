@@ -10,6 +10,10 @@ USER_SERVICE_OOMD = (
     REPO
     / "files/usr/lib/systemd/system/user@.service.d/10-universal-lite-oomd.conf"
 )
+CHROME_FLATPAK_SCOPE_OOMD = (
+    REPO
+    / "files/usr/lib/systemd/user/app-flatpak-com.google.Chrome-.scope.d/10-universal-lite-oomd.conf"
+)
 
 
 def test_oomd_global_thresholds_fire_before_zram_is_exhausted():
@@ -33,3 +37,10 @@ def test_oomd_monitors_user_sessions_for_memory_pressure():
     assert "[Service]" in conf
     assert "ManagedOOMMemoryPressure=kill" in conf
     assert "ManagedOOMMemoryPressureLimit=50%" in conf
+
+
+def test_chrome_flatpak_scope_is_killed_as_one_oom_group():
+    conf = CHROME_FLATPAK_SCOPE_OOMD.read_text(encoding="utf-8")
+
+    assert "[Scope]" in conf
+    assert "OOMPolicy=kill" in conf
