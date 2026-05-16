@@ -150,3 +150,40 @@ def test_kill_chrome_scopes_targets_user_manager_units():
         "--kill-who=all",
         "app-flatpak-com.google.Chrome-222.scope",
     ] in runner.calls
+
+
+def test_run_once_triggers_kill_when_pressure_state_trips():
+    early_oom = load_module()
+    state = early_oom.PressureState(required_samples=1, cooldown_seconds=60)
+    killed_calls = []
+
+    def fake_read_meminfo():
+        return {"mem_available_mib": 150, "swap_free_mib": 250}
+
+    def fake_kill_chrome_scopes():
+        killed_calls.append(True)
+        return ["1000:app-flatpak-com.google.Chrome-222.scope"]
+
+    early_oom.run_once(
+        state=state,
+        read_meminfo_func=fake_read_meminfo,
+        kill_chrome_scopes_func=fake_kill_chrome_scopes,
+        now=100,
+    )
+
+    assert killed_calls == [True]
+
+
+def test_run_once_does_not_trigger_without_swap_pressure():
+    early_oom = load_module()
+    state = early_oom.PressureState(required_samples=1, cooldown_seconds=60)
+    killed_calls = []
+
+    early_oom.run_once(
+        state=state,
+        read_meminfo_func=lambda: {"mem_available_mib": 150, "swap_free_mib": 500},
+        kill_chrome_scopes_func=lambda: killed_calls.append(True),
+        now=100,
+    )
+
+    assert killed_calls == []

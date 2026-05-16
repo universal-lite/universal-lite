@@ -149,3 +149,62 @@ def kill_chrome_scopes(runner=run_command) -> list[str]:
                     result.stderr.strip(),
                 )
     return killed
+
+
+def run_once(
+    state: PressureState,
+    read_meminfo_func=read_meminfo,
+    kill_chrome_scopes_func=kill_chrome_scopes,
+    now: float | None = None,
+) -> bool:
+    now = time.monotonic() if now is None else now
+    meminfo = read_meminfo_func()
+    mem_available_mib = meminfo.get("mem_available_mib")
+    swap_free_mib = meminfo.get("swap_free_mib")
+
+    if state.record_sample(mem_available_mib, swap_free_mib, now=now):
+        logging.warning(
+            "critical memory pressure: MemAvailable=%s MiB SwapFree=%s MiB; closing Chrome",
+            mem_available_mib,
+            swap_free_mib,
+        )
+        killed = kill_chrome_scopes_func()
+        if killed:
+            state.mark_triggered(now=now)
+            return True
+        logging.warning("critical memory pressure but no active Chrome Flatpak scopes were found")
+    return False
+
+
+def run_loop() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    state = PressureState()
+    while True:
+        try:
+            run_once(state)
+        except Exception:
+            logging.exception("Chrome early-OOM monitor iteration failed")
+        time.sleep(SAMPLE_INTERVAL_SECONDS)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Close Chrome Flatpak scopes before extreme memory pressure wedges the desktop."
+    )
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Run one sample and exit; intended for diagnostics.",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    if args.once:
+        run_once(PressureState(required_samples=1))
+        return 0
+    run_loop()
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
