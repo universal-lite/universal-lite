@@ -47,7 +47,7 @@ def test_oomd_monitors_user_sessions_for_memory_pressure():
 
     assert "[Service]" in conf
     assert "ManagedOOMMemoryPressure=kill" in conf
-    assert "ManagedOOMMemoryPressureLimit=50%" in conf
+    assert "ManagedOOMMemoryPressureLimit=55%" in conf
 
 
 def test_chrome_flatpak_scope_is_killed_as_one_oom_group():

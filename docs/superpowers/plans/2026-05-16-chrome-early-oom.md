@@ -21,8 +21,10 @@
   - Enable `universal-lite-chrome-early-oom.service` near existing `systemd-oomd.service` enablement.
 - Modify: `files/usr/lib/systemd/oomd.conf.d/10-universal-lite.conf`
   - Keep `SwapUsedLimit=80%` and relax fallback pressure from `50%/20s` to `55%/25s`.
+- Modify: `files/usr/lib/systemd/system/user@.service.d/10-universal-lite-oomd.conf`
+  - Keep the user-session `ManagedOOMMemoryPressure=kill` opt-in and align its explicit pressure limit to `55%`.
 - Modify: `tests/test_oomd_config.py`
-  - Add config tests for service installation, build enablement, and relaxed OOMD fallback thresholds.
+  - Add config tests for service installation, build enablement, and relaxed OOMD fallback thresholds, including the explicit user-session limit.
 - Create: `tests/test_chrome_early_oom.py`
   - Unit tests for parsing, trigger/cooldown behavior, command generation, and Chrome scope cleanup behavior.
 - Keep: `files/usr/lib/systemd/user/app-flatpak-com.google.Chrome-.scope.d/10-universal-lite-oomd.conf`
@@ -741,9 +743,10 @@ Use these commands to confirm the relaxed OOMD fallback thresholds on the VM:
 
 ```bash
 grep -R 'SwapUsedLimit\|DefaultMemoryPressure' /usr/lib/systemd/oomd.conf.d /etc/systemd/oomd.conf.d 2>/dev/null
+grep -R 'ManagedOOMMemoryPressureLimit' /usr/lib/systemd/system/user@.service.d /etc/systemd/system/user@.service.d 2>/dev/null
 ```
 
-Expected: `SwapUsedLimit=80%`, `DefaultMemoryPressureLimit=55%`, and `DefaultMemoryPressureDurationSec=25s` are present from Universal-Lite's config.
+Expected: `SwapUsedLimit=80%`, `DefaultMemoryPressureLimit=55%`, `ManagedOOMMemoryPressureLimit=55%`, and `DefaultMemoryPressureDurationSec=25s` are present from Universal-Lite's config.
 
 - [ ] **Step 4: Commit any verification-only documentation correction if needed**
 

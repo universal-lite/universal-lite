@@ -68,7 +68,7 @@ Because Chrome gets a targeted earlier safety valve, relax OOMD memory-pressure 
 - Keep `SwapUsedLimit=80%`.
 - Change `DefaultMemoryPressureLimit` from `50%` to `55%`.
 - Change `DefaultMemoryPressureDurationSec` from `20s` to `25s`.
-- Keep the existing `ManagedOOM` opt-ins unchanged.
+- Keep the existing `ManagedOOM` opt-ins enabled and align the explicit user-session `ManagedOOMMemoryPressureLimit` to `55%` so the runtime fallback matches the global policy.
 
 This keeps OOMD earlier than Fedora's upstream defaults but reduces unnecessary non-Chrome app kills now that Chrome is handled before the broad fallback.
 
@@ -96,7 +96,7 @@ This keeps OOMD earlier than Fedora's upstream defaults but reduces unnecessary 
 - Unit test consecutive-sample behavior and cooldown behavior.
 - Unit test scope enumeration and kill command generation with fake `systemctl` output.
 - Config test that the monitor service is installed and enabled by the image build.
-- Config test that OOMD keeps `SwapUsedLimit=80%` and uses the relaxed `DefaultMemoryPressureLimit=55%` and `DefaultMemoryPressureDurationSec=25s` fallback thresholds.
+- Config test that OOMD keeps `SwapUsedLimit=80%` and uses the relaxed `DefaultMemoryPressureLimit=55%`, `ManagedOOMMemoryPressureLimit=55%`, and `DefaultMemoryPressureDurationSec=25s` fallback thresholds.
 - Keep existing OOMD tests for `OOMPolicy=kill` and the `OnFailure=` fallback cleanup.
 
 ## Trade-Offs
