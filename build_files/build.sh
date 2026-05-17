@@ -92,6 +92,7 @@ dnf5 install -y --setopt=install_weak_deps=False \
     liberation-sans-fonts \
     greetd \
     grubby \
+    gum \
     grim \
     gtk4-layer-shell \
     libadwaita \

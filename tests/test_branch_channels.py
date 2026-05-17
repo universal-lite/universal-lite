@@ -241,6 +241,14 @@ def test_latest_stream_exposes_devmode_rebase_recipe():
     assert "ghcr.io/universal-lite/universal-lite" not in justfile
 
 
+def test_devmode_installs_upstream_dialog_dependency():
+    build_script = _read("build_files/build.sh")
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert "gum confirm" in justfile
+    assert "    gum \\" in build_script
+
+
 def test_build_regenerates_current_ublue_ujust_entrypoint():
     build_script = _read("build_files/build.sh")
 
