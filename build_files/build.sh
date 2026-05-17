@@ -454,8 +454,10 @@ systemctl mask universal-lite-flatpak-install.service 2>/dev/null || true
 systemctl enable universal-lite-flatpak-update.service
 # OOM protection on 2 GB hardware — oomd kills the heaviest cgroup under
 # memory/swap pressure before the kernel OOM killer engages and freezes
-# the whole machine.
+# the whole machine. Chrome gets an earlier safety valve because Flatpak
+# Chrome can keep a sibling app scope alive after oomd kills one scope.
 systemctl enable systemd-oomd.service
+systemctl enable universal-lite-chrome-early-oom.service
 
 # Add ublue-os COPR for uupd (unified updater with hardware safety checks).
 dnf5 copr enable -y ublue-os/packages fedora-"${FEDORA_MAJOR}"-x86_64

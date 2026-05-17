@@ -21,14 +21,18 @@ CHROME_OOM_CLEANUP_SERVICE = (
     REPO / "files/usr/lib/systemd/user/universal-lite-chrome-oom-cleanup.service"
 )
 CHROME_OOM_CLEANUP = REPO / "files/usr/libexec/universal-lite-chrome-oom-cleanup"
+CHROME_EARLY_OOM_SERVICE = (
+    REPO / "files/usr/lib/systemd/system/universal-lite-chrome-early-oom.service"
+)
+BUILD_SCRIPT = REPO / "build_files/build.sh"
 
 
 def test_oomd_global_thresholds_fire_before_zram_is_exhausted():
     conf = OOMD_CONF.read_text(encoding="utf-8")
 
     assert "SwapUsedLimit=80%" in conf
-    assert "DefaultMemoryPressureLimit=50%" in conf
-    assert "DefaultMemoryPressureDurationSec=20s" in conf
+    assert "DefaultMemoryPressureLimit=55%" in conf
+    assert "DefaultMemoryPressureDurationSec=25s" in conf
 
 
 def test_oomd_monitors_root_slice_for_swap_exhaustion():
@@ -43,7 +47,7 @@ def test_oomd_monitors_user_sessions_for_memory_pressure():
 
     assert "[Service]" in conf
     assert "ManagedOOMMemoryPressure=kill" in conf
-    assert "ManagedOOMMemoryPressureLimit=50%" in conf
+    assert "ManagedOOMMemoryPressureLimit=55%" in conf
 
 
 def test_chrome_flatpak_scope_is_killed_as_one_oom_group():
@@ -90,3 +94,21 @@ printf '%s\\n' "$*" >> {log}
     assert log.read_text(encoding="utf-8") == (
         "--user kill --kill-who=all app-flatpak-com.google.Chrome-222.scope\n"
     )
+
+
+def test_chrome_early_oom_service_runs_monitor():
+    conf = CHROME_EARLY_OOM_SERVICE.read_text(encoding="utf-8")
+
+    assert "[Unit]" in conf
+    assert "After=multi-user.target" in conf
+    assert "[Service]" in conf
+    assert "ExecStart=/usr/libexec/universal-lite-chrome-early-oom" in conf
+    assert "Restart=always" in conf
+    assert "[Install]" in conf
+    assert "WantedBy=multi-user.target" in conf
+
+
+def test_build_enables_chrome_early_oom_service():
+    build = BUILD_SCRIPT.read_text(encoding="utf-8")
+
+    assert "systemctl enable universal-lite-chrome-early-oom.service" in build
