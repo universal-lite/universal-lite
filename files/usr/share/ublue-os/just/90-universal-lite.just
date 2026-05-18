@@ -80,8 +80,8 @@ toggle-devmode:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    latest_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest"
-    dx_ref="ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx"
+    latest_ref="quay.io/noitatsidem/universal-lite:latest"
+    dx_ref="quay.io/noitatsidem/universal-lite:dx"
     current_tag=$(jq -r '."image-tag" // ""' /usr/share/ublue-os/image-info.json 2>/dev/null || true)
 
     if [[ "$current_tag" == "dx" ]]; then
@@ -105,7 +105,7 @@ dx-group:
         local group_name="$1"
         if ! grep -q "^${group_name}:" /etc/group; then
             echo "Appending ${group_name} to /etc/group"
-            grep "^${group_name}:" /usr/lib/group | tee -a /etc/group > /dev/null
+            grep "^${group_name}:" /usr/lib/group >> /etc/group
         fi
     }
 

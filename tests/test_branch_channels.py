@@ -237,8 +237,40 @@ def test_latest_stream_exposes_devmode_rebase_recipe():
     assert "pkexec bootc switch --enforce-container-sigpolicy" in justfile
     assert "quay.io/noitatsidem/universal-lite:dx" in justfile
     assert "quay.io/noitatsidem/universal-lite:latest" in justfile
+    assert "ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx" not in justfile
+    assert "ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest" not in justfile
     assert "rpm-ostree rebase" not in justfile
     assert "ghcr.io/universal-lite/universal-lite" not in justfile
+
+
+def test_devmode_installs_upstream_dialog_dependency():
+    build_script = _read("build_files/build.sh")
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert "gum confirm" in justfile
+    assert "    gum \\" in build_script
+
+
+def test_dx_group_uses_image_managed_group_entries():
+    build_script = _read("build_files/build.sh")
+    justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
+
+    assert "dx-group:" in justfile
+    assert "groupadd --system" not in justfile
+    assert "grep \"^${group_name}:\" /usr/lib/group >> /etc/group" in justfile
+    assert "dx_groups=(docker incus-admin libvirt dialout)" in build_script
+    assert "groupadd --system \"$group_name\"" in build_script
+    assert "grep \"^${group_name}:\" /etc/group >> /usr/lib/group" in build_script
+
+
+def test_readme_stream_switches_use_bootc_registry_refs():
+    readme = _read("README.md")
+    stream_switch_docs = readme.split("### Switch streams", maxsplit=1)[1].split(
+        "## Installer wizard", maxsplit=1
+    )[0]
+
+    assert "pkexec bootc switch --enforce-container-sigpolicy quay.io/noitatsidem/universal-lite:dx" in stream_switch_docs
+    assert "bootc switch --enforce-container-sigpolicy ostree-image-signed" not in stream_switch_docs
 
 
 def test_build_regenerates_current_ublue_ujust_entrypoint():
