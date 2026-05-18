@@ -213,6 +213,28 @@ gdk-pixbuf-query-loaders-64 --update-cache
 rm -rf "$_jxl_src"
 dnf5 remove -y gcc libjxl-devel gdk-pixbuf2-devel git-core
 
+# Keep DX user-group setup aligned with upstream's image-managed group model.
+# Existing installs keep /etc/group as mutable state, so `ujust dx-group`
+# copies entries from /usr/lib/group into /etc/group before adding users.
+ensure_usr_lib_group() {
+    local group_name="$1"
+
+    if grep -q "^${group_name}:" /usr/lib/group; then
+        return
+    fi
+
+    if ! grep -q "^${group_name}:" /etc/group; then
+        groupadd --system "$group_name"
+    fi
+
+    grep "^${group_name}:" /etc/group >> /usr/lib/group
+}
+
+dx_groups=(docker incus-admin libvirt dialout)
+for group_name in "${dx_groups[@]}"; do
+    ensure_usr_lib_group "$group_name"
+done
+
 cp -a /ctx/files/. /
 
 # Language name matrix and all MO files (wizard + settings) are

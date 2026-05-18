@@ -251,12 +251,16 @@ def test_devmode_installs_upstream_dialog_dependency():
     assert "    gum \\" in build_script
 
 
-def test_dx_group_creates_missing_group_entries():
+def test_dx_group_uses_image_managed_group_entries():
+    build_script = _read("build_files/build.sh")
     justfile = _read("files/usr/share/ublue-os/just/90-universal-lite.just")
 
     assert "dx-group:" in justfile
-    assert "groupadd --system \"$group_name\"" in justfile
-    assert "grep \"^${group_name}:\" /usr/lib/group | tee -a /etc/group" not in justfile
+    assert "groupadd --system" not in justfile
+    assert "grep \"^${group_name}:\" /usr/lib/group >> /etc/group" in justfile
+    assert "dx_groups=(docker incus-admin libvirt dialout)" in build_script
+    assert "groupadd --system \"$group_name\"" in build_script
+    assert "grep \"^${group_name}:\" /etc/group >> /usr/lib/group" in build_script
 
 
 def test_readme_stream_switches_use_bootc_registry_refs():
