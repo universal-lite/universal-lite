@@ -193,16 +193,16 @@ name. If you are on `testing`, `beta`, or a date-pinned tag, switch manually:
 
 ```bash
 # Stable consumer image
-pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:latest
+pkexec bootc switch --enforce-container-sigpolicy quay.io/noitatsidem/universal-lite:latest
 
 # Stable developer image
-pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:dx
+pkexec bootc switch --enforce-container-sigpolicy quay.io/noitatsidem/universal-lite:dx
 
 # WIP developer/testing image
-pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:testing
+pkexec bootc switch --enforce-container-sigpolicy quay.io/noitatsidem/universal-lite:testing
 
 # Fedora-next compatibility canary
-pkexec bootc switch --enforce-container-sigpolicy ostree-image-signed:docker://quay.io/noitatsidem/universal-lite:beta
+pkexec bootc switch --enforce-container-sigpolicy quay.io/noitatsidem/universal-lite:beta
 
 sudo systemctl reboot
 ```
