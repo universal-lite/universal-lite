@@ -662,7 +662,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         if self.store.get("wallpaper", "") == wp_id:
             defaults = self.store.get_defaults()
             self.store.save_and_apply("wallpaper", defaults.get("wallpaper", ""))
-        self._safe_populate_wallpapers(page)
+        self._queue_wallpaper_refresh()
 
     @staticmethod
     def _get_window(widget):

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "files/usr/lib/universal-lite"))
 
-from settings.pages import about, default_apps, keyboard, panel, power_lock  # noqa: E402
+from settings.pages import about, appearance, default_apps, keyboard, panel, power_lock  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -163,6 +163,350 @@ def test_panel_edge_change_saves_and_relabels_sections():
     assert [page._section_groups[s].title for s in panel.SECTION_ORDER] == [
         "Top", "Center", "Bottom",
     ]
+
+
+def test_panel_move_module_queues_refresh_after_click_handler():
+    class Store:
+        def __init__(self):
+            self.saved = []
+
+        def save_and_apply(self, key, value):
+            self.saved.append((key, value))
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page.store = Store()
+    page._updating = False
+    page._layout_data = {
+        "start": ["custom/launcher"],
+        "center": ["wlr/taskbar"],
+        "end": [],
+    }
+    queued = []
+    page._queue_module_refresh = lambda: queued.append("refresh")
+
+    def _fail_sync_refresh():
+        raise AssertionError("module rows refreshed synchronously")
+
+    page._refresh_module_lists = _fail_sync_refresh
+
+    page._move_module("custom/launcher", "start", "center")
+
+    assert page._layout_data == {
+        "start": [],
+        "center": ["wlr/taskbar", "custom/launcher"],
+        "end": [],
+    }
+    assert queued == ["refresh"]
+    assert page.store.saved == [("layout", page._layout_data)]
+    assert page._updating is False
+
+
+def test_panel_move_module_ignores_stale_source_section():
+    class Store:
+        def __init__(self):
+            self.saved = []
+
+        def save_and_apply(self, key, value):
+            self.saved.append((key, value))
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page.store = Store()
+    page._updating = False
+    page._layout_data = {
+        "start": [],
+        "center": ["wlr/taskbar", "custom/launcher"],
+        "end": [],
+    }
+    page._queue_module_refresh = lambda: (_ for _ in ()).throw(
+        AssertionError("stale move queued a refresh")
+    )
+
+    page._move_module("custom/launcher", "start", "center")
+
+    assert page._layout_data == {
+        "start": [],
+        "center": ["wlr/taskbar", "custom/launcher"],
+        "end": [],
+    }
+    assert page.store.saved == []
+    assert page._updating is False
+
+
+def test_panel_module_refresh_queue_coalesces_until_idle(monkeypatch):
+    callbacks = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "idle_add",
+        lambda callback: callbacks.append(callback) or 42,
+    )
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page._module_refresh_source = None
+    refreshed = []
+    page._refresh_module_lists = lambda: refreshed.append(True)
+
+    page._queue_module_refresh()
+    page._queue_module_refresh()
+
+    assert page._module_refresh_source == 42
+    assert len(callbacks) == 1
+    assert refreshed == []
+
+    assert callbacks[0]() == panel.GLib.SOURCE_REMOVE
+    assert refreshed == [True]
+    assert page._module_refresh_source is None
+
+
+def test_panel_cancel_module_refresh_removes_pending_idle(monkeypatch):
+    removed = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "source_remove",
+        lambda source_id: removed.append(source_id),
+    )
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page._module_refresh_source = 42
+
+    page._cancel_module_refresh()
+
+    assert removed == [42]
+    assert page._module_refresh_source is None
+
+
+def test_panel_reorder_module_queues_refresh_after_click_handler():
+    class Store:
+        def __init__(self):
+            self.saved = []
+
+        def save_and_apply(self, key, value):
+            self.saved.append((key, value))
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page.store = Store()
+    page._updating = False
+    page._layout_data = {
+        "start": ["custom/launcher", "clock"],
+        "center": [],
+        "end": [],
+    }
+    queued = []
+    page._queue_module_refresh = lambda: queued.append("refresh")
+
+    def _fail_sync_refresh():
+        raise AssertionError("module rows refreshed synchronously")
+
+    page._refresh_module_lists = _fail_sync_refresh
+
+    page._reorder_module("custom/launcher", "start", 1)
+
+    assert page._layout_data == {
+        "start": ["clock", "custom/launcher"],
+        "center": [],
+        "end": [],
+    }
+    assert queued == ["refresh"]
+    assert page.store.saved == [("layout", page._layout_data)]
+    assert page._updating is False
+
+
+def test_panel_remove_pinned_queues_refresh_after_click_handler():
+    class Store:
+        def __init__(self):
+            self.saved = []
+
+        def save_and_apply(self, key, value):
+            self.saved.append((key, value))
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page.store = Store()
+    page._pinned_data = [
+        {"name": "Files", "command": "Thunar", "icon": "folder"},
+        {"name": "Terminal", "command": "foot", "icon": "terminal"},
+    ]
+    queued = []
+    page._queue_pinned_refresh = lambda: queued.append("refresh")
+
+    def _fail_sync_refresh():
+        raise AssertionError("pinned rows refreshed synchronously")
+
+    page._refresh_pinned_list = _fail_sync_refresh
+
+    page._remove_pinned(0)
+
+    assert page._pinned_data == [
+        {"name": "Terminal", "command": "foot", "icon": "terminal"},
+    ]
+    assert queued == ["refresh"]
+    assert page.store.saved == [("pinned", page._pinned_data)]
+
+
+def test_panel_pinned_refresh_queue_coalesces_until_idle(monkeypatch):
+    callbacks = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "idle_add",
+        lambda callback: callbacks.append(callback) or 42,
+    )
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page._pinned_refresh_source = None
+    refreshed = []
+    page._refresh_pinned_list = lambda: refreshed.append(True)
+
+    page._queue_pinned_refresh()
+    page._queue_pinned_refresh()
+
+    assert page._pinned_refresh_source == 42
+    assert len(callbacks) == 1
+    assert refreshed == []
+
+    assert callbacks[0]() == panel.GLib.SOURCE_REMOVE
+    assert refreshed == [True]
+    assert page._pinned_refresh_source is None
+
+
+def test_panel_cancel_pending_refreshes_removes_module_and_pinned_idle(monkeypatch):
+    removed = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "source_remove",
+        lambda source_id: removed.append(source_id),
+    )
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page._module_refresh_source = 10
+    page._pinned_refresh_source = 11
+
+    page._cancel_pending_refreshes()
+
+    assert removed == [10, 11]
+    assert page._module_refresh_source is None
+    assert page._pinned_refresh_source is None
+
+
+def test_appearance_remove_custom_queues_wallpaper_refresh(monkeypatch):
+    class Store:
+        def __init__(self):
+            self.saved = []
+
+        def get(self, key, default=None):
+            return "custom-wallpaper" if key == "wallpaper" else default
+
+        def get_defaults(self):
+            return {"wallpaper": "fedora-default"}
+
+        def save_and_apply(self, key, value):
+            self.saved.append((key, value))
+
+    monkeypatch.setattr(appearance, "remove_custom", lambda wp_id: True)
+    page = appearance.AppearancePage.__new__(appearance.AppearancePage)
+    page.store = Store()
+    queued = []
+    page._queue_wallpaper_refresh = lambda: queued.append("refresh")
+
+    def _fail_sync_refresh(_page):
+        raise AssertionError("wallpapers refreshed synchronously")
+
+    page._safe_populate_wallpapers = _fail_sync_refresh
+
+    page._on_remove_custom(None, "custom-wallpaper", object())
+
+    assert page.store.saved == [("wallpaper", "fedora-default")]
+    assert queued == ["refresh"]
+
+
+def test_keyboard_shortcut_row_update_queue_coalesces_until_idle(monkeypatch):
+    callbacks = []
+    monkeypatch.setattr(
+        keyboard.GLib,
+        "idle_add",
+        lambda callback: callbacks.append(callback) or 42,
+    )
+
+    page = keyboard.KeyboardPage.__new__(keyboard.KeyboardPage)
+    page._shortcut_update_source = None
+    page._shortcut_update_indexes = set()
+    updated = []
+    page._update_shortcut_row = lambda index: updated.append(index)
+
+    page._queue_shortcut_row_update(2)
+    page._queue_shortcut_row_update(1)
+    page._queue_shortcut_row_update(2)
+
+    assert page._shortcut_update_source == 42
+    assert len(callbacks) == 1
+    assert updated == []
+
+    assert callbacks[0]() == keyboard.GLib.SOURCE_REMOVE
+    assert updated == [1, 2]
+    assert page._shortcut_update_source is None
+    assert page._shortcut_update_indexes == set()
+
+
+def test_keyboard_cancel_shortcut_updates_removes_pending_idle(monkeypatch):
+    removed = []
+    monkeypatch.setattr(
+        keyboard.GLib,
+        "source_remove",
+        lambda source_id: removed.append(source_id),
+    )
+
+    page = keyboard.KeyboardPage.__new__(keyboard.KeyboardPage)
+    page._shortcut_update_source = 42
+    page._shortcut_update_indexes = {1, 2}
+
+    page._cancel_shortcut_updates()
+
+    assert removed == [42]
+    assert page._shortcut_update_source is None
+    assert page._shortcut_update_indexes == set()
+
+
+def test_keyboard_reset_shortcut_queues_row_update_after_click_handler():
+    class Store:
+        def __init__(self):
+            self.applied = False
+
+        def show_toast(self, *_args):
+            pass
+
+        def apply(self):
+            self.applied = True
+
+    page = keyboard.KeyboardPage.__new__(keyboard.KeyboardPage)
+    page.store = Store()
+    page._bindings = [{
+        "key": "C-A-X",
+        "action": "Execute",
+        "command": "foot",
+        "direction": "",
+        "menu": "",
+        "display_name": "Open Terminal",
+    }]
+    page._default_bindings = [{
+        "key": "C-A-T",
+        "action": "Execute",
+        "command": "foot",
+        "direction": "",
+        "menu": "",
+        "display_name": "Open Terminal",
+    }]
+    queued = []
+    page._queue_shortcut_row_update = lambda index: queued.append(index)
+
+    def _fail_sync_update(_index):
+        raise AssertionError("shortcut row updated synchronously")
+
+    page._update_shortcut_row = _fail_sync_update
+    page._find_conflict = lambda _key, _index: None
+    page._save_and_reconfigure = lambda: setattr(page.store, "applied", True)
+
+    page._reset_shortcut(0)
+
+    assert page._bindings[0]["key"] == "C-A-T"
+    assert queued == [0]
+    assert page.store.applied is True
 
 
 def test_terminal_desktop_write_is_atomic_and_reports_success(monkeypatch, tmp_path):

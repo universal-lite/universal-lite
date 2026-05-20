@@ -9,7 +9,7 @@ import gi
 
 gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Adw, Gdk, Gtk
+from gi.repository import Adw, Gdk, GLib, Gtk
 
 from ..base import BasePage
 
@@ -301,6 +301,8 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         # binding drifts from / returns to its default without walking
         # AdwActionRow's private child list.
         self._shortcut_reset_buttons: list[Gtk.Button | None] = []
+        self._shortcut_update_source: int | None = None
+        self._shortcut_update_indexes: set[int] = set()
         # Capture-state refs so we don't double-attach controllers on
         # rapid taps and can identify the right binding on key-press.
         self._capture_page: Adw.NavigationPage | None = None
@@ -345,6 +347,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         # capture sub-page push (the PreferencesPage unmaps during
         # nav-view navigation) and permanently silence the page.
         self.setup_cleanup(self._nav)
+        self._nav.connect("unrealize", lambda _widget: self._cancel_shortcut_updates())
         return self._nav
 
     # -- group builders -------------------------------------------------
@@ -611,6 +614,28 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
             row.remove(existing)
             self._shortcut_reset_buttons[index] = None
 
+    def _cancel_shortcut_updates(self) -> None:
+        if self._shortcut_update_source is not None:
+            GLib.source_remove(self._shortcut_update_source)
+            self._shortcut_update_source = None
+        self._shortcut_update_indexes.clear()
+
+    def _queue_shortcut_row_update(self, index: int) -> None:
+        """Update shortcut-row suffix widgets after signal handlers unwind."""
+        self._shortcut_update_indexes.add(index)
+        if self._shortcut_update_source is not None:
+            return
+
+        def _update() -> int:
+            indexes = sorted(self._shortcut_update_indexes)
+            self._shortcut_update_indexes.clear()
+            self._shortcut_update_source = None
+            for row_index in indexes:
+                self._update_shortcut_row(row_index)
+            return GLib.SOURCE_REMOVE
+
+        self._shortcut_update_source = GLib.idle_add(_update)
+
     def _get_default_key(self, index: int) -> str | None:
         """Get the default key for a binding by matching its action signature."""
         if index >= len(self._bindings):
@@ -876,9 +901,9 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
                 other_default = self._get_default_key(conflict_idx)
                 if other_default:
                     self._bindings[conflict_idx]["key"] = other_default
-                    self._update_shortcut_row(conflict_idx)
+                    self._queue_shortcut_row_update(conflict_idx)
                 self._bindings[index]["key"] = default_key
-                self._update_shortcut_row(index)
+                self._queue_shortcut_row_update(index)
                 self._save_and_reconfigure()
 
             dialog.connect("response", _on_response)
@@ -886,7 +911,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
             return
 
         self._bindings[index]["key"] = default_key
-        self._update_shortcut_row(index)
+        self._queue_shortcut_row_update(index)
         self._save_and_reconfigure()
 
     def _reset_all_shortcuts(self) -> None:
@@ -918,7 +943,7 @@ class KeyboardPage(BasePage, Adw.PreferencesPage):
         self._bindings = _clone_bindings(self._default_bindings)
         # Update every row in place.
         for i in range(len(self._bindings)):
-            self._update_shortcut_row(i)
+            self._queue_shortcut_row_update(i)
         # Delete user overrides and reconfigure.
         try:
             if USER_KEYBINDINGS.exists():
