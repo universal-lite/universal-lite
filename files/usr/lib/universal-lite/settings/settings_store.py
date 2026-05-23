@@ -13,6 +13,7 @@ class SettingsStore:
     """JSON settings persistence with atomic writes, debounce, and apply feedback."""
 
     APPLY_TIMEOUT_SEC = 30
+    APPLY_MODES = {"config", "live", "full", "waybar"}
 
     def __init__(self, settings_path=None, defaults_path=None, apply_script=None):
         self._path = Path(
@@ -32,6 +33,7 @@ class SettingsStore:
         self._data = self._load()
         self._apply_running = False
         self._apply_pending = False
+        self._apply_pending_mode: str | None = None
         self._apply_wait_source: int | None = None
         self._last_apply_spawn_failed: bool = False
 
@@ -183,11 +185,11 @@ class SettingsStore:
         for key in [k for k in self._data if predicate(k)]:
             self._data.pop(key, None)
 
-    def save_and_apply(self, key: str, value) -> None:
+    def save_and_apply(self, key: str, value, *, mode: str = "full") -> None:
         self._data[key] = value
         if not self._write():
             return  # disk error; _write toasted the reason
-        self._run_apply()
+        self._run_apply(mode)
 
     def save_dict_and_apply(self, updates: dict) -> None:
         self._data.update(updates)
@@ -251,8 +253,12 @@ class SettingsStore:
                 flushed_debounces = True
                 if self._apply_running:
                     self._apply_pending = True
+                    self._apply_pending_mode = self._merge_apply_modes(
+                        self._apply_pending_mode, "full"
+                    )
                 else:
                     self._apply_pending = False
+                    self._apply_pending_mode = None
                     self._run_apply()
 
         if self._apply_wait_source is not None:
@@ -304,15 +310,23 @@ class SettingsStore:
         """Persist self._data atomically. Returns True on success."""
         return self._write_data(self._data)
 
-    def _run_apply(self) -> None:
+    def _run_apply(self, mode: str = "full") -> None:
+        if mode not in self.APPLY_MODES:
+            raise ValueError(f"unknown apply mode: {mode}")
         if self._apply_running:
             self._apply_pending = True
+            self._apply_pending_mode = self._merge_apply_modes(
+                self._apply_pending_mode, mode
+            )
             return
         self._apply_running = True
+        command = [self._apply_script]
+        if mode != "full":
+            command.extend(["--mode", mode])
 
         try:
             proc = subprocess.Popen(
-                [self._apply_script],
+                command,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.PIPE,
             )
@@ -327,6 +341,7 @@ class SettingsStore:
             # attempt to re-enter this same broken state immediately.
             self._apply_running = False
             self._apply_pending = False
+            self._apply_pending_mode = None
             # Record the spawn failure so wait_for_apply's restart
             # callback can choose to skip rather than os.execv against
             # a system whose on-disk configs don't reflect the new
@@ -357,6 +372,12 @@ class SettingsStore:
 
         threading.Thread(target=_wait, daemon=True).start()
 
+    @staticmethod
+    def _merge_apply_modes(current: str | None, incoming: str) -> str:
+        if current is None or current == incoming:
+            return incoming
+        return "full"
+
     def _on_apply_done(self, returncode: int, stderr_bytes: bytes) -> bool:
         self._apply_running = False
         if self._toast_callback is not None:
@@ -373,8 +394,10 @@ class SettingsStore:
                     msg = _("Failed to apply settings")
                 self._toast_callback(msg, True)
         if self._apply_pending:
+            mode = self._apply_pending_mode or "full"
             self._apply_pending = False
-            self._run_apply()
+            self._apply_pending_mode = None
+            self._run_apply(mode)
         return GLib.SOURCE_REMOVE
 
     def wait_for_apply(self, callback) -> None:

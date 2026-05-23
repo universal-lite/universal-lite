@@ -48,6 +48,55 @@ def test_save_and_apply_writes_json(tmp_path):
     assert written["theme"] == "dark"
 
 
+def test_save_and_apply_can_request_waybar_only_apply(monkeypatch, tmp_path):
+    calls = []
+
+    class Proc:
+        returncode = 0
+
+        def communicate(self, timeout=None):
+            return b"", b""
+
+    monkeypatch.setattr(
+        "settings.settings_store.subprocess.Popen",
+        lambda cmd, **kwargs: calls.append((cmd, kwargs)) or Proc(),
+    )
+    monkeypatch.setattr(
+        "settings.settings_store.GLib.idle_add",
+        lambda callback, *args: callback(*args),
+    )
+
+    store = _make_store(tmp_path)
+    store.save_and_apply("layout", {"start": [], "center": [], "end": []}, mode="waybar")
+
+    assert calls[0][0] == ["/bin/true", "--mode", "waybar"]
+
+
+def test_pending_apply_uses_strongest_requested_mode(monkeypatch, tmp_path):
+    commands = []
+
+    class Proc:
+        returncode = 0
+
+        def communicate(self, timeout=None):
+            return b"", b""
+
+    store = _make_store(tmp_path)
+    store._apply_running = True
+
+    store._run_apply("waybar")
+    store._run_apply("full")
+
+    monkeypatch.setattr(
+        "settings.settings_store.subprocess.Popen",
+        lambda cmd, **kwargs: commands.append(cmd) or Proc(),
+    )
+
+    store._on_apply_done(0, b"")
+
+    assert commands == [["/bin/true"]]
+
+
 def test_save_dict_and_apply(tmp_path):
     store = _make_store(tmp_path)
     store.save_dict_and_apply({"theme": "dark", "accent": "red"})
