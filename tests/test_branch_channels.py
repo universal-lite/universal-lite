@@ -152,7 +152,7 @@ def test_build_workflow_continues_only_sync_triggered_dx_promotion():
     assert "-f target=testing" in step
 
 
-def test_sync_workflow_starts_from_scheduled_main_and_explicit_dispatch():
+def test_sync_workflow_starts_from_main_push_or_schedule_and_explicit_dispatch():
     workflow = _read(".github/workflows/sync-streams.yml")
     dispatch_inputs = workflow.split("workflow_dispatch:", maxsplit=1)[1].split(
         "\npermissions:", maxsplit=1
@@ -161,10 +161,21 @@ def test_sync_workflow_starts_from_scheduled_main_and_explicit_dispatch():
         "target:", maxsplit=1
     )[0]
     target_input = dispatch_inputs.split("target:", maxsplit=1)[1]
+    automatic_conditions = [
+        line.strip()
+        for line in workflow.splitlines()
+        if line.strip().startswith("if: ${{ github.event_name == 'workflow_run'")
+    ]
 
     assert 'workflows: ["Build container image"]' in workflow
     assert "branches: [main]" in workflow
-    assert "github.event.workflow_run.event == 'schedule'" in workflow
+    assert len(automatic_conditions) == 2
+    for condition in automatic_conditions:
+        assert "github.event.workflow_run.conclusion == 'success'" in condition
+        assert "github.event.workflow_run.head_branch == 'main'" in condition
+        assert "github.event.workflow_run.event == 'push'" in condition
+        assert "github.event.workflow_run.event == 'schedule'" in condition
+        assert "github.event.workflow_run.event == 'workflow_dispatch'" not in condition
     permissions = workflow.split("permissions:", maxsplit=1)[1].split("\n\n", maxsplit=1)[0]
     assert "actions: write" in permissions
     assert 'source: "main"' in workflow
@@ -175,7 +186,6 @@ def test_sync_workflow_starts_from_scheduled_main_and_explicit_dispatch():
     assert "- testing" in {line.strip() for line in target_input.splitlines()}
     assert "source: ${{ inputs.source }}" in workflow
     assert "target: ${{ inputs.target }}" in workflow
-    assert "github.event.workflow_run.event == 'push'" not in workflow
 
 
 def test_sync_one_stream_dispatches_target_build_after_alignment():
