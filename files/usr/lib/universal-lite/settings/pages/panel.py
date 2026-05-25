@@ -167,13 +167,9 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         def _on_selected(r: Adw.ComboRow, _pspec) -> None:
             if self._updating or not self._built:
                 return
-            self._updating = True
-            try:
-                idx = r.get_selected()
-                if 0 <= idx < len(values):
-                    self.store.save_and_apply("density", values[idx])
-            finally:
-                self._updating = False
+            idx = r.get_selected()
+            if 0 <= idx < len(values):
+                self._on_density_changed(values[idx])
 
         row.connect("notify::selected", _on_selected)
         group.add(row)
@@ -246,6 +242,15 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             self.store.save_and_apply("edge", edge)
             self._update_section_labels()
             self._refresh_module_lists()
+        finally:
+            self._updating = False
+
+    def _on_density_changed(self, density):
+        if self._updating:
+            return
+        self._updating = True
+        try:
+            self.store.save_and_apply("density", density, mode="waybar")
         finally:
             self._updating = False
 
