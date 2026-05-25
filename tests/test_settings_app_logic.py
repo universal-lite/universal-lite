@@ -165,7 +165,7 @@ def test_panel_edge_change_saves_and_relabels_sections():
     ]
 
 
-def test_panel_move_module_applies_layout_with_waybar_mode():
+def test_panel_move_module_defers_refresh_and_applies_layout_with_waybar_mode(monkeypatch):
     class Store:
         def __init__(self):
             self.saved = []
@@ -173,16 +173,30 @@ def test_panel_move_module_applies_layout_with_waybar_mode():
         def save_and_apply(self, key, value, mode="full"):
             self.saved.append((key, value, mode))
 
+    callbacks = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "idle_add",
+        lambda callback: callbacks.append(callback) or 42,
+    )
+
     page = panel.PanelPage.__new__(panel.PanelPage)
     page.store = Store()
     page._updating = False
+    page._module_refresh_source = None
     page._layout_data = {
         "start": ["custom/launcher"],
         "center": ["wlr/taskbar"],
         "end": [],
     }
     refreshed = []
-    page._refresh_module_lists = lambda: refreshed.append(True)
+
+    def _refresh_module_lists():
+        if not callbacks:
+            raise AssertionError("module rows refreshed synchronously")
+        refreshed.append(True)
+
+    page._refresh_module_lists = _refresh_module_lists
 
     page._move_module("custom/launcher", "start", "center")
 
@@ -191,6 +205,8 @@ def test_panel_move_module_applies_layout_with_waybar_mode():
         "center": ["wlr/taskbar", "custom/launcher"],
         "end": [],
     }
+    assert refreshed == []
+    assert callbacks[0]() == panel.GLib.SOURCE_REMOVE
     assert refreshed == [True]
     assert page.store.saved == [("layout", page._layout_data, "waybar")]
     assert page._updating is False
@@ -227,7 +243,7 @@ def test_panel_move_module_ignores_stale_source_section():
     assert page._updating is False
 
 
-def test_panel_reorder_module_applies_layout_with_waybar_mode():
+def test_panel_reorder_module_defers_refresh_and_applies_layout_with_waybar_mode(monkeypatch):
     class Store:
         def __init__(self):
             self.saved = []
@@ -235,16 +251,30 @@ def test_panel_reorder_module_applies_layout_with_waybar_mode():
         def save_and_apply(self, key, value, mode="full"):
             self.saved.append((key, value, mode))
 
+    callbacks = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "idle_add",
+        lambda callback: callbacks.append(callback) or 42,
+    )
+
     page = panel.PanelPage.__new__(panel.PanelPage)
     page.store = Store()
     page._updating = False
+    page._module_refresh_source = None
     page._layout_data = {
         "start": ["custom/launcher", "clock"],
         "center": [],
         "end": [],
     }
     refreshed = []
-    page._refresh_module_lists = lambda: refreshed.append(True)
+
+    def _refresh_module_lists():
+        if not callbacks:
+            raise AssertionError("module rows refreshed synchronously")
+        refreshed.append(True)
+
+    page._refresh_module_lists = _refresh_module_lists
 
     page._reorder_module("custom/launcher", "start", 1)
 
@@ -253,12 +283,14 @@ def test_panel_reorder_module_applies_layout_with_waybar_mode():
         "center": [],
         "end": [],
     }
+    assert refreshed == []
+    assert callbacks[0]() == panel.GLib.SOURCE_REMOVE
     assert refreshed == [True]
     assert page.store.saved == [("layout", page._layout_data, "waybar")]
     assert page._updating is False
 
 
-def test_panel_remove_pinned_applies_with_waybar_mode():
+def test_panel_remove_pinned_defers_refresh_and_applies_with_waybar_mode(monkeypatch):
     class Store:
         def __init__(self):
             self.saved = []
@@ -266,22 +298,57 @@ def test_panel_remove_pinned_applies_with_waybar_mode():
         def save_and_apply(self, key, value, mode="full"):
             self.saved.append((key, value, mode))
 
+    callbacks = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "idle_add",
+        lambda callback: callbacks.append(callback) or 42,
+    )
+
     page = panel.PanelPage.__new__(panel.PanelPage)
     page.store = Store()
+    page._pinned_refresh_source = None
     page._pinned_data = [
         {"name": "Files", "command": "Thunar", "icon": "folder"},
         {"name": "Terminal", "command": "foot", "icon": "terminal"},
     ]
     refreshed = []
-    page._refresh_pinned_list = lambda: refreshed.append(True)
+
+    def _refresh_pinned_list():
+        if not callbacks:
+            raise AssertionError("pinned rows refreshed synchronously")
+        refreshed.append(True)
+
+    page._refresh_pinned_list = _refresh_pinned_list
 
     page._remove_pinned(0)
 
     assert page._pinned_data == [
         {"name": "Terminal", "command": "foot", "icon": "terminal"},
     ]
+    assert refreshed == []
+    assert callbacks[0]() == panel.GLib.SOURCE_REMOVE
     assert refreshed == [True]
     assert page.store.saved == [("pinned", page._pinned_data, "waybar")]
+
+
+def test_panel_cancel_pending_refreshes_removes_module_and_pinned_idle(monkeypatch):
+    removed = []
+    monkeypatch.setattr(
+        panel.GLib,
+        "source_remove",
+        lambda source_id: removed.append(source_id),
+    )
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page._module_refresh_source = 10
+    page._pinned_refresh_source = 11
+
+    page._cancel_pending_refreshes()
+
+    assert removed == [10, 11]
+    assert page._module_refresh_source is None
+    assert page._pinned_refresh_source is None
 
 
 def test_panel_add_pinned_app_applies_with_waybar_mode():

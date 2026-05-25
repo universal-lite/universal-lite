@@ -9,7 +9,7 @@ import gi
 
 gi.require_version("Adw", "1")
 gi.require_version("Gtk", "4.0")
-from gi.repository import Adw, Gio, Gtk
+from gi.repository import Adw, Gio, GLib, Gtk
 
 from ..base import BasePage
 
@@ -81,6 +81,8 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         self._pinned_group: Adw.PreferencesGroup | None = None
         self._pinned_rows: list[Adw.ActionRow] = []
         self._nav: Adw.NavigationView | None = None
+        self._module_refresh_source: int | None = None
+        self._pinned_refresh_source: int | None = None
         self._updating: bool = False
         self._built: bool = False
 
@@ -117,6 +119,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         # sub-page push (the PreferencesPage unmaps during nav-view
         # navigation) and permanently silence the page's subscriptions.
         self.setup_cleanup(self._nav)
+        self._nav.connect("unrealize", lambda _widget: self._cancel_pending_refreshes())
         self._built = True
         return self._nav
 
@@ -349,6 +352,27 @@ class PanelPage(BasePage, Adw.PreferencesPage):
                 group.add(row)
                 self._section_rows[section].append(row)
 
+    def _cancel_module_refresh(self) -> None:
+        if self._module_refresh_source is not None:
+            GLib.source_remove(self._module_refresh_source)
+            self._module_refresh_source = None
+
+    def _cancel_pending_refreshes(self) -> None:
+        self._cancel_module_refresh()
+        self._cancel_pinned_refresh()
+
+    def _queue_module_refresh(self) -> None:
+        """Rebuild module rows after the current GTK signal unwinds."""
+        if self._module_refresh_source is not None:
+            return
+
+        def _refresh() -> int:
+            self._module_refresh_source = None
+            self._refresh_module_lists()
+            return GLib.SOURCE_REMOVE
+
+        self._module_refresh_source = GLib.idle_add(_refresh)
+
     def _build_module_row(self, mod_key, section, idx, total):
         row = Adw.ActionRow()
         row.set_title(MODULE_NAMES.get(mod_key, mod_key))
@@ -456,7 +480,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             new_idx = idx + direction
             if 0 <= new_idx < len(modules):
                 modules[idx], modules[new_idx] = modules[new_idx], modules[idx]
-                self._refresh_module_lists()
+                self._queue_module_refresh()
                 self.store.save_and_apply("layout", self._layout_data, mode="waybar")
         finally:
             self._updating = False
@@ -471,7 +495,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
                 return
             modules.remove(mod_key)
             self._layout_data.setdefault(to_section, []).append(mod_key)
-            self._refresh_module_lists()
+            self._queue_module_refresh()
             self.store.save_and_apply("layout", self._layout_data, mode="waybar")
         finally:
             self._updating = False
@@ -482,7 +506,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         self._updating = True
         try:
             self._layout_data = copy.deepcopy(DEFAULT_LAYOUT)
-            self._refresh_module_lists()
+            self._queue_module_refresh()
             self.store.save_and_apply("layout", self._layout_data, mode="waybar")
         finally:
             self._updating = False
@@ -534,6 +558,23 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             group.add(row)
             self._pinned_rows.append(row)
 
+    def _cancel_pinned_refresh(self) -> None:
+        if self._pinned_refresh_source is not None:
+            GLib.source_remove(self._pinned_refresh_source)
+            self._pinned_refresh_source = None
+
+    def _queue_pinned_refresh(self) -> None:
+        """Rebuild pinned rows after the current GTK signal unwinds."""
+        if self._pinned_refresh_source is not None:
+            return
+
+        def _refresh() -> int:
+            self._pinned_refresh_source = None
+            self._refresh_pinned_list()
+            return GLib.SOURCE_REMOVE
+
+        self._pinned_refresh_source = GLib.idle_add(_refresh)
+
     def _build_pinned_row(self, app, idx):
         row = Adw.ActionRow()
         row.set_use_markup(False)
@@ -554,7 +595,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
     def _remove_pinned(self, idx):
         if 0 <= idx < len(self._pinned_data):
             self._pinned_data.pop(idx)
-            self._refresh_pinned_list()
+            self._queue_pinned_refresh()
             self.store.save_and_apply("pinned", self._pinned_data, mode="waybar")
 
     # -- Add-pinned sub-page -------------------------------------------
