@@ -165,6 +165,26 @@ def test_panel_edge_change_saves_and_relabels_sections():
     ]
 
 
+def test_panel_density_change_applies_with_waybar_mode():
+    class Store:
+        def __init__(self):
+            self.data = {"density": "normal"}
+            self.saved = []
+
+        def save_and_apply(self, key, value, mode="full"):
+            self.data[key] = value
+            self.saved.append((key, value, mode))
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page.store = Store()
+    page._updating = False
+
+    page._on_density_changed("compact")
+
+    assert page.store.saved == [("density", "compact", "waybar")]
+    assert page._updating is False
+
+
 def test_panel_move_module_defers_refresh_and_applies_layout_with_waybar_mode(monkeypatch):
     class Store:
         def __init__(self):
