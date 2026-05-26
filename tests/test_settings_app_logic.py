@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "files/usr/lib/universal-lite"))
 
-from settings.pages import about, default_apps, keyboard, panel, power_lock  # noqa: E402
+from settings.pages import about, appearance, default_apps, keyboard, panel, power_lock  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -140,9 +140,9 @@ def test_panel_edge_change_saves_and_relabels_sections():
         def get(self, key, default=None):
             return self.data.get(key, default)
 
-        def save_and_apply(self, key, value):
+        def save_and_apply(self, key, value, mode="full"):
             self.data[key] = value
-            self.saved.append((key, value))
+            self.saved.append((key, value, mode))
 
     class Group:
         def __init__(self):
@@ -159,10 +159,30 @@ def test_panel_edge_change_saves_and_relabels_sections():
 
     page._on_edge_changed("left")
 
-    assert page.store.saved == [("edge", "left")]
+    assert page.store.saved == [("edge", "left", "waybar")]
     assert [page._section_groups[s].title for s in panel.SECTION_ORDER] == [
         "Top", "Center", "Bottom",
     ]
+
+
+def test_panel_twilight_change_applies_with_waybar_mode():
+    class Store:
+        def __init__(self):
+            self.data = {"panel_twilight": False}
+            self.saved = []
+
+        def save_and_apply(self, key, value, mode="full"):
+            self.data[key] = value
+            self.saved.append((key, value, mode))
+
+    page = panel.PanelPage.__new__(panel.PanelPage)
+    page.store = Store()
+    page._updating = False
+
+    page._on_twilight_changed(True)
+
+    assert page.store.saved == [("panel_twilight", True, "waybar")]
+    assert page._updating is False
 
 
 def test_panel_density_change_applies_with_waybar_mode():
@@ -183,6 +203,12 @@ def test_panel_density_change_applies_with_waybar_mode():
 
     assert page.store.saved == [("density", "compact", "waybar")]
     assert page._updating is False
+
+
+def test_accent_change_applies_with_waybar_mode():
+    source = Path(appearance.__file__).read_text(encoding="utf-8")
+
+    assert 'save_and_apply("accent", name, mode="waybar")' in source
 
 
 def test_panel_move_module_defers_refresh_and_applies_layout_with_waybar_mode(monkeypatch):

@@ -187,11 +187,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
         def _on_active(r: Adw.SwitchRow, _pspec) -> None:
             if self._updating or not self._built:
                 return
-            self._updating = True
-            try:
-                self.store.save_and_apply("panel_twilight", r.get_active())
-            finally:
-                self._updating = False
+            self._on_twilight_changed(r.get_active())
 
         row.connect("notify::active", _on_active)
         group.add(row)
@@ -239,9 +235,18 @@ class PanelPage(BasePage, Adw.PreferencesPage):
             return
         self._updating = True
         try:
-            self.store.save_and_apply("edge", edge)
+            self.store.save_and_apply("edge", edge, mode="waybar")
             self._update_section_labels()
             self._refresh_module_lists()
+        finally:
+            self._updating = False
+
+    def _on_twilight_changed(self, active):
+        if self._updating:
+            return
+        self._updating = True
+        try:
+            self.store.save_and_apply("panel_twilight", active, mode="waybar")
         finally:
             self._updating = False
 
