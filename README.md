@@ -153,10 +153,10 @@ Universal-Lite publishes one container image with multiple stream tags:
 
 | Stream | Branch | Base | Purpose |
 |--------|--------|------|---------|
-| `latest` | `main` | `ghcr.io/ublue-os/base-main:latest` | Stable, low-resource consumer image |
-| `dx` | `dx` | `ghcr.io/ublue-os/base-main:latest` | Stable developer-mode image with Homebrew, Distrobox, Docker, Podman, libvirt/QEMU, Incus, Cockpit, VS Code, and DX group/workaround services |
-| `testing` | `testing` | `ghcr.io/ublue-os/base-main:latest` | WIP stream; currently inherits `dx` and is where DX-adjacent experiments can bake |
-| `beta` | `beta` | `ghcr.io/ublue-os/base-main:beta` | Fedora-next compatibility canary based on `main`; intentionally does not inherit DX payload |
+| `latest` | `main` | Daily refresh from `ghcr.io/ublue-os/base-main:latest`; routine main builds from Quay `latest` | Stable, low-resource consumer image |
+| `dx` | `dx` | Quay `latest` | Stable developer-mode image with Homebrew, Distrobox, Docker, Podman, libvirt/QEMU, Incus, Cockpit, VS Code, and DX group/workaround services |
+| `testing` | `testing` | Quay `dx` | WIP stream; currently inherits `dx` and is where DX-adjacent experiments can bake |
+| `beta` | `beta` | Daily refresh from `ghcr.io/ublue-os/base-main:beta`; routine beta builds from Quay `beta` | Fedora-next compatibility canary based on `main`; intentionally does not inherit DX payload |
 
 Published tags use `quay.io/noitatsidem/universal-lite:<stream>`. Stream
 builds also publish date tags like `dx.YYYYMMDD`, `testing.YYYYMMDD`, and

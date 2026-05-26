@@ -73,6 +73,7 @@ def test_container_workflow_builds_all_stream_branches_and_pr_targets():
 def test_container_workflow_schedules_main_and_beta_upstream_refreshes():
     workflow = _read(".github/workflows/build.yml")
 
+    assert "name: Build and push image (${{ matrix.stream }})" in workflow
     assert "strategy:" in workflow
     strategy = workflow.split("strategy:", maxsplit=1)[1].split("\n    steps:", maxsplit=1)[0]
 
@@ -296,15 +297,24 @@ def test_sync_workflow_starts_from_main_push_or_schedule_and_explicit_dispatch()
         for line in workflow.splitlines()
         if line.strip().startswith("if: ${{ github.event_name == 'workflow_run'")
     ]
+    scheduled_check = workflow.split("check-scheduled-main-build:", maxsplit=1)[1].split(
+        "\n  sync-main-to-dx:", maxsplit=1
+    )[0]
 
     assert 'workflows: ["Build container image"]' in workflow
     assert "branches: [main]" in workflow
+    assert "name: Check scheduled main build" in scheduled_check
+    assert "github.event.workflow_run.event == 'schedule'" in scheduled_check
+    assert "main_success:" in scheduled_check
+    assert "gh api" in scheduled_check
+    assert 'repos/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}/jobs' in scheduled_check
+    assert 'Build and push image (main)' in scheduled_check
     assert len(automatic_conditions) == 2
     for condition in automatic_conditions:
-        assert "github.event.workflow_run.conclusion == 'success'" in condition
+        assert "always()" in condition
         assert "github.event.workflow_run.head_branch == 'main'" in condition
-        assert "github.event.workflow_run.event == 'push'" in condition
-        assert "github.event.workflow_run.event == 'schedule'" in condition
+        assert "github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success'" in condition
+        assert "github.event.workflow_run.event == 'schedule' && needs.check-scheduled-main-build.outputs.main_success == 'true'" in condition
         assert "github.event.workflow_run.event == 'workflow_dispatch'" not in condition
     permissions = workflow.split("permissions:", maxsplit=1)[1].split("\n\n", maxsplit=1)[0]
     assert "actions: write" in permissions
