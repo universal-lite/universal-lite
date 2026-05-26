@@ -77,6 +77,13 @@ def test_container_workflow_uses_inline_space_cleanup_to_avoid_action_downloads(
     assert "sudo apt-get autoremove -y" in workflow
 
 
+def test_container_workflow_uses_github_hosted_runner_for_action_downloads():
+    workflow = _read(".github/workflows/build.yml")
+
+    assert "runs-on: ubuntu-24.04" in workflow
+    assert "runs-on: ubicloud-premium-8-ubuntu-2404" not in workflow
+
+
 def test_disk_workflow_manual_runs_can_choose_stream_tag():
     workflow = _read(".github/workflows/build-disk.yml")
 
