@@ -67,10 +67,14 @@ def test_container_workflow_publishes_only_stream_branches():
     assert "github.event.repository.default_branch" not in workflow
 
 
-def test_container_workflow_uses_tagged_space_cleanup_action():
+def test_container_workflow_uses_inline_space_cleanup_to_avoid_action_downloads():
     workflow = _read(".github/workflows/build.yml")
 
-    assert "ublue-os/remove-unwanted-software@cc0becac701cf642c8f0a6613bbdaf5dc36b259e # v9" in workflow
+    assert "ublue-os/remove-unwanted-software" not in workflow
+    assert "Removing unwanted software" in workflow
+    assert "sudo rm -rf ${verbose} /usr/share/dotnet" in workflow
+    assert "sudo docker image prune --all --force" in workflow
+    assert "sudo apt-get autoremove -y" in workflow
 
 
 def test_disk_workflow_manual_runs_can_choose_stream_tag():
