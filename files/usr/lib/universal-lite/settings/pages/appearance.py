@@ -295,7 +295,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
                 for other in accent_buttons:
                     if other is not btn and other.get_active():
                         other.set_active(False)
-                self.store.save_and_apply("accent", name)
+                self.store.save_and_apply("accent", name, mode="waybar")
                 self.event_bus.publish("accent-changed", name)
             finally:
                 self._group_updating = False
