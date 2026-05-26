@@ -67,6 +67,12 @@ def test_container_workflow_publishes_only_stream_branches():
     assert "github.event.repository.default_branch" not in workflow
 
 
+def test_container_workflow_uses_tagged_space_cleanup_action():
+    workflow = _read(".github/workflows/build.yml")
+
+    assert "ublue-os/remove-unwanted-software@cc0becac701cf642c8f0a6613bbdaf5dc36b259e # v9" in workflow
+
+
 def test_disk_workflow_manual_runs_can_choose_stream_tag():
     workflow = _read(".github/workflows/build-disk.yml")
 
