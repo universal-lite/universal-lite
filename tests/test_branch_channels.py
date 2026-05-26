@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -6,6 +7,31 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
+
+
+def _resolve_stream_script(workflow: str) -> str:
+    assert "- name: Resolve stream configuration" in workflow
+    return workflow.split("- name: Resolve stream configuration", maxsplit=1)[1].split(
+        "\n      - name:", maxsplit=1
+    )[0]
+
+
+def _shell_case_block(script: str, label: str) -> str:
+    match = re.search(rf"^\s*{re.escape(label)}\)\n(?P<block>.*?)^\s*;;", script, re.M | re.S)
+    assert match is not None, f"missing {label}) case block"
+    return match.group("block")
+
+
+def _schedule_event_block(script: str) -> str:
+    marker = 'if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then'
+    assert marker in script
+    return script.split(marker, maxsplit=1)[1].split("\n          fi", maxsplit=1)[0]
+
+
+def _workflow_step_block(workflow: str, name: str) -> str:
+    marker = f"- name: {name}"
+    assert marker in workflow
+    return workflow.split(marker, maxsplit=1)[1].split("\n      - name:", maxsplit=1)[0]
 
 
 def test_containerfile_base_image_is_build_arg_with_latest_default():
@@ -37,18 +63,71 @@ def test_container_workflow_builds_all_stream_branches_and_pr_targets():
     assert "workflow_dispatch:" in workflow
 
 
-def test_container_workflow_resolves_branch_tags_and_base_images():
+def test_container_workflow_schedules_main_and_beta_upstream_refreshes():
     workflow = _read(".github/workflows/build.yml")
 
-    assert "id: stream" in workflow
-    assert 'tag="latest"' in workflow
-    assert 'tag="dx"' in workflow
-    assert 'tag="testing"' in workflow
-    assert 'tag="beta"' in workflow
-    assert 'base_image="ghcr.io/ublue-os/base-main:latest"' in workflow
-    assert 'base_image="ghcr.io/ublue-os/base-main:beta"' in workflow
-    assert 'ref_name="${GITHUB_BASE_REF}"' in workflow
+    assert "strategy:" in workflow
+    strategy = workflow.split("strategy:", maxsplit=1)[1].split("\n    steps:", maxsplit=1)[0]
+
+    assert "max-parallel: 1" in strategy
+    assert "matrix:" in strategy
+    assert "stream: ${{ github.event_name == 'schedule' && fromJSON('[\"main\",\"beta\"]') || fromJSON('[\"main\"]') }}" in strategy
+
+
+def test_container_workflow_scheduled_builds_checkout_matrix_stream():
+    workflow = _read(".github/workflows/build.yml")
+
+    regular_checkout = _workflow_step_block(workflow, "Checkout")
+    scheduled_checkout = _workflow_step_block(workflow, "Checkout scheduled stream")
+
+    assert "if: github.event_name != 'schedule'" in regular_checkout
+    assert "if: github.event_name == 'schedule'" in scheduled_checkout
+    assert "ref: ${{ matrix.stream }}" in scheduled_checkout
+
+
+def test_container_workflow_resolves_branch_tags_and_base_images():
+    workflow = _read(".github/workflows/build.yml")
+    stream_script = _resolve_stream_script(workflow)
+
+    main_block = _shell_case_block(stream_script, "main")
+    dx_block = _shell_case_block(stream_script, "dx")
+    testing_block = _shell_case_block(stream_script, "testing")
+    beta_block = _shell_case_block(stream_script, "beta")
+
+    assert "id: stream" in stream_script
+    assert 'ref_name="${GITHUB_BASE_REF}"' in stream_script
     assert "BASE_IMAGE=${{ steps.stream.outputs.base_image }}" in workflow
+    assert 'tag="latest"' in main_block
+    assert 'base_image="${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"' in main_block
+    assert 'tag="dx"' in dx_block
+    assert 'base_image="${IMAGE_REGISTRY}/${IMAGE_NAME}:latest"' in dx_block
+    assert 'tag="testing"' in testing_block
+    assert 'base_image="${IMAGE_REGISTRY}/${IMAGE_NAME}:dx"' in testing_block
+    assert 'tag="beta"' in beta_block
+    assert 'base_image="${IMAGE_REGISTRY}/${IMAGE_NAME}:beta"' in beta_block
+
+
+def test_container_workflow_uses_upstream_only_for_scheduled_refreshes():
+    workflow = _read(".github/workflows/build.yml")
+    stream_script = _resolve_stream_script(workflow)
+    upstream_marker = 'if [[ "${upstream_refresh}" == "true" ]]; then'
+    schedule_block = _schedule_event_block(stream_script)
+
+    assert 'upstream_refresh="false"' in stream_script
+    assert 'if [[ "${GITHUB_EVENT_NAME}" == "schedule" ]]; then' in stream_script
+    assert 'upstream_refresh="true"' in stream_script
+    assert 'ref_name="${{ matrix.stream }}"' in schedule_block
+    assert upstream_marker in stream_script
+
+    upstream_block = stream_script.split(upstream_marker, maxsplit=1)[1].split(
+        "\n          fi", maxsplit=1
+    )[0]
+    case_routing_without_upstream = stream_script.replace(upstream_block, "")
+
+    assert 'case "${tag}" in' in upstream_block
+    assert 'latest) base_image="ghcr.io/ublue-os/base-main:latest" ;;' in upstream_block
+    assert 'beta) base_image="ghcr.io/ublue-os/base-main:beta" ;;' in upstream_block
+    assert "ghcr.io/ublue-os/base-main" not in case_routing_without_upstream
 
 
 def test_container_workflow_tags_are_branch_aware():
