@@ -52,6 +52,13 @@ def test_containerfile_base_image_arg_is_global_for_buildah():
     assert base_arg_index < first_from_index
 
 
+def test_containerfile_normalizes_opt_for_symlink_or_directory_bases():
+    containerfile = _read("Containerfile")
+
+    assert "RUN rm -rf /opt && mkdir /opt" in containerfile
+    assert "RUN rm /opt && mkdir /opt" not in containerfile
+
+
 def test_container_workflow_builds_all_stream_branches_and_pr_targets():
     workflow = _read(".github/workflows/build.yml")
 
@@ -83,6 +90,33 @@ def test_container_workflow_scheduled_builds_checkout_matrix_stream():
     assert "if: github.event_name != 'schedule'" in regular_checkout
     assert "if: github.event_name == 'schedule'" in scheduled_checkout
     assert "ref: ${{ matrix.stream }}" in scheduled_checkout
+
+
+def test_container_workflow_metadata_uses_checked_out_source_revision():
+    workflow = _read(".github/workflows/build.yml")
+
+    checkout_index = workflow.index("- name: Checkout")
+    source_index = workflow.index("- name: Resolve source revision")
+    metadata_index = workflow.index("- name: Image Metadata")
+    source_step = _workflow_step_block(workflow, "Resolve source revision")
+    metadata_step = _workflow_step_block(workflow, "Image Metadata")
+
+    assert checkout_index < source_index < metadata_index
+    assert "id: source" in source_step
+    assert "git rev-parse HEAD" in source_step
+    assert 'echo "revision=$(git rev-parse HEAD)" >> "${GITHUB_OUTPUT}"' in source_step
+    assert "steps.source.outputs.revision" in metadata_step
+    for label in (
+        "io.artifacthub.package.readme-url",
+        "org.opencontainers.image.documentation",
+        "org.opencontainers.image.source",
+        "org.opencontainers.image.url",
+    ):
+        line = next(
+            line for line in metadata_step.splitlines() if line.strip().startswith(f"{label}=")
+        )
+        assert "${{ steps.source.outputs.revision }}" in line
+        assert "${{ github.sha }}" not in line
 
 
 def test_container_workflow_resolves_branch_tags_and_base_images():
