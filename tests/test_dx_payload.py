@@ -92,6 +92,14 @@ def test_dx_installs_bluefin_dx_package_contract():
         assert package in dx_script
 
 
+def test_dx_docker_repo_setup_is_idempotent_for_quay_rebuilds():
+    dx_script = _read("build_files/dx/00-dx.sh")
+
+    assert "if [[ ! -f /etc/yum.repos.d/docker-ce.repo ]]; then" in dx_script
+    assert "dnf5 config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo" in dx_script
+    assert "File \"/etc/yum.repos.d/docker-ce.repo\" already exists" not in dx_script
+
+
 def test_dx_enables_bluefin_dx_services():
     dx_script = _read("build_files/dx/00-dx.sh")
 
@@ -182,7 +190,8 @@ def test_dx_devmode_uses_universal_lite_stream_tags_not_upstream_image_suffix():
     assert "quay.io/noitatsidem/universal-lite:dx" in justfile
     assert "quay.io/noitatsidem/universal-lite:latest" in justfile
     assert "ghcr.io/universal-lite/universal-lite" not in justfile
-    assert "ostree-image-signed:docker://" in justfile
+    assert "pkexec bootc switch --enforce-container-sigpolicy" in justfile
+    assert "ostree-image-signed:docker://" not in justfile
     assert "rpm-ostree rebase" not in justfile
     assert 'sed "s/$IMAGE_BASE_NAME/$IMAGE_BASE_NAME-dx/"' not in justfile
     assert 'sed "s/\\-dx//"' not in justfile
