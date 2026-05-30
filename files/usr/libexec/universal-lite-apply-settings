@@ -1508,27 +1508,16 @@ def apply_waybar_transaction(tokens: dict) -> bool:
 
 def write_waybar_config(tokens: dict) -> bool:
     """Write waybar config and CSS. Returns True if either file changed."""
-    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
-    old_config = _read_if_exists(WAYBAR_DIR / "config.jsonc")
-    old_css = _read_if_exists(WAYBAR_DIR / "style.css")
-
     new_config, css = _render_waybar_files(tokens)
-
     try:
-        _atomic_write_text(WAYBAR_DIR / "config.jsonc", new_config)
-    except OSError as exc:
-        print(f"apply-settings: failed to write {WAYBAR_DIR / 'config.jsonc'}: {exc}",
-              file=sys.stderr)
+        _validate_waybar_files(new_config, css)
+        return _write_waybar_files_transactionally(new_config, css)
+    except ValueError as exc:
+        print(f"apply-settings: invalid generated waybar files: {exc}", file=sys.stderr)
         sys.exit(1)
-
-    try:
-        _atomic_write_text(WAYBAR_DIR / "style.css", css)
     except OSError as exc:
-        print(f"apply-settings: failed to write {WAYBAR_DIR / 'style.css'}: {exc}",
-              file=sys.stderr)
+        print(f"apply-settings: failed to write waybar files: {exc}", file=sys.stderr)
         sys.exit(1)
-
-    return new_config != old_config or css != old_css
 
 
 def write_gtk_settings(tokens: dict, sync_live: bool = True) -> None:

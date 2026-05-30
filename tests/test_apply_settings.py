@@ -311,6 +311,23 @@ def test_write_waybar_config_uses_rendered_files(monkeypatch, tmp_path):
     assert reload_calls == []
 
 
+def test_write_waybar_config_uses_transactional_writer(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        apply_settings,
+        "_render_waybar_files",
+        lambda tokens: ('{"layer": "top"}\n', "window#waybar {}\n"),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_write_waybar_files_transactionally",
+        lambda config_text, css_text: calls.append((config_text, css_text)) or True,
+    )
+
+    assert apply_settings.write_waybar_config(_make_tokens()) is True
+    assert calls == [('{"layer": "top"}\n', "window#waybar {}\n")]
+
+
 def test_validate_waybar_files_rejects_invalid_json():
     with pytest.raises(ValueError, match="generated waybar config is invalid JSON"):
         apply_settings._validate_waybar_files("{invalid", "window#waybar {}\n")
