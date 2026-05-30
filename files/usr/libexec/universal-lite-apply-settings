@@ -37,6 +37,8 @@ MAKO_DIR = CONFIG_HOME / "mako"
 FOOT_DIR = CONFIG_HOME / "foot"
 LABWC_DIR = CONFIG_HOME / "labwc"
 SWAYLOCK_DIR = CONFIG_HOME / "swaylock"
+CACHE_HOME = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache")
+APPLY_LOG_PATH = CACHE_HOME / "universal-lite/apply-settings.log"
 FALLBACK_WALLPAPER_PATHS: dict[str, tuple[Path, ...]] = {
     "light": (
         SHARE_ROOT / "backgrounds/universal-lite/chrome-dawn.svg",
@@ -268,6 +270,17 @@ def _close_apply_lock(lock_handle) -> None:
         pass
     try:
         lock_handle.close()
+    except OSError:
+        pass
+
+
+def _log_apply_event(mode: str, phase: str, message: str) -> None:
+    try:
+        APPLY_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+        timestamp = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+        line = f"{timestamp} mode={mode} phase={phase} {message}\n"
+        with APPLY_LOG_PATH.open("a", encoding="utf-8") as handle:
+            handle.write(line)
     except OSError:
         pass
 

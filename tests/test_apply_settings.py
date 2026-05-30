@@ -250,6 +250,27 @@ def test_waybar_mode_only_writes_and_reloads_waybar(monkeypatch):
     assert calls == [("waybar", tokens), ("reload", None)]
 
 
+def test_apply_logger_writes_timestamped_user_cache_entry(monkeypatch, tmp_path):
+    log_path = tmp_path / "apply-settings.log"
+    monkeypatch.setattr(apply_settings, "APPLY_LOG_PATH", log_path)
+
+    apply_settings._log_apply_event("waybar", "reload", "pkill returned 1")
+
+    content = log_path.read_text(encoding="utf-8")
+    assert "mode=waybar" in content
+    assert "phase=reload" in content
+    assert "pkill returned 1" in content
+    assert content.endswith("\n")
+
+
+def test_apply_logger_does_not_raise_when_cache_unwritable(monkeypatch, tmp_path):
+    blocked_parent = tmp_path / "not-a-directory"
+    blocked_parent.write_text("blocks mkdir", encoding="utf-8")
+    monkeypatch.setattr(apply_settings, "APPLY_LOG_PATH", blocked_parent / "apply-settings.log")
+
+    apply_settings._log_apply_event("waybar", "render", "failed safely")
+
+
 def test_write_gtk_settings_can_skip_gsettings_for_pre_compositor_mode(
     monkeypatch, tmp_path
 ):
