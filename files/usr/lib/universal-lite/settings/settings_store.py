@@ -310,9 +310,35 @@ class SettingsStore:
         """Persist self._data atomically. Returns True on success."""
         return self._write_data(self._data)
 
+    def _run_waybar_apply_detached(self) -> None:
+        command = [self._apply_script, "--mode", "waybar"]
+        try:
+            subprocess.Popen(
+                command,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except (FileNotFoundError, PermissionError, OSError) as exc:
+            self._last_apply_spawn_failed = True
+            if self._toast_callback:
+                detail = str(exc) or exc.__class__.__name__
+                self._toast_callback(
+                    _("Saved, but failed to apply panel changes: {detail}").format(
+                        detail=detail
+                    ),
+                    True,
+                )
+            return
+        self._last_apply_spawn_failed = False
+
     def _run_apply(self, mode: str = "full") -> None:
         if mode not in self.APPLY_MODES:
             raise ValueError(f"unknown apply mode: {mode}")
+        if mode == "waybar":
+            self._run_waybar_apply_detached()
+            return
         if self._apply_running:
             self._apply_pending = True
             self._apply_pending_mode = self._merge_apply_modes(

@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -48,8 +49,47 @@ def test_save_and_apply_writes_json(tmp_path):
     assert written["theme"] == "dark"
 
 
-def test_save_and_apply_can_request_waybar_only_apply(monkeypatch, tmp_path):
+def test_save_and_apply_waybar_dispatches_detached_without_tracking(monkeypatch, tmp_path):
     calls = []
+    idle_calls = []
+
+    class Proc:
+        returncode = 0
+
+        def communicate(self, timeout=None):
+            raise AssertionError("detached waybar apply must not be waited on")
+
+    monkeypatch.setattr(
+        "settings.settings_store.subprocess.Popen",
+        lambda cmd, **kwargs: calls.append((cmd, kwargs)) or Proc(),
+    )
+    monkeypatch.setattr(
+        "settings.settings_store.GLib.idle_add",
+        lambda callback, *args: idle_calls.append((callback, args)) or 1,
+    )
+
+    store = _make_store(tmp_path)
+    store.save_and_apply("layout", {"start": [], "center": [], "end": []}, mode="waybar")
+
+    assert calls == [(
+        ["/bin/true", "--mode", "waybar"],
+        {
+            "stdin": subprocess.DEVNULL,
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+            "start_new_session": True,
+        },
+    )]
+    assert idle_calls == []
+    assert store.has_apply_work() is False
+    assert store._apply_running is False
+    assert store._apply_pending is False
+    assert store._apply_pending_mode is None
+
+
+def test_full_apply_still_uses_tracked_wait_path(monkeypatch, tmp_path):
+    calls = []
+    idle_calls = []
 
     class Proc:
         returncode = 0
@@ -63,13 +103,25 @@ def test_save_and_apply_can_request_waybar_only_apply(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(
         "settings.settings_store.GLib.idle_add",
-        lambda callback, *args: callback(*args),
+        lambda callback, *args: idle_calls.append((callback, args)) or 1,
+    )
+    monkeypatch.setattr(
+        "settings.settings_store.threading.Thread",
+        lambda target, daemon=True: type(
+            "ThreadStub",
+            (),
+            {"start": lambda self: target()},
+        )(),
     )
 
     store = _make_store(tmp_path)
-    store.save_and_apply("layout", {"start": [], "center": [], "end": []}, mode="waybar")
+    store.save_and_apply("theme", "dark")
 
-    assert calls[0][0] == ["/bin/true", "--mode", "waybar"]
+    assert calls == [(
+        ["/bin/true"],
+        {"stdout": subprocess.DEVNULL, "stderr": subprocess.PIPE},
+    )]
+    assert len(idle_calls) == 1
 
 
 def test_pending_apply_uses_strongest_requested_mode(monkeypatch, tmp_path):
