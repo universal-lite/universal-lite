@@ -223,7 +223,7 @@ def test_live_mode_writes_config_then_syncs_live(monkeypatch):
     assert calls == [("config", settings, tokens), ("live", settings, tokens, changes)]
 
 
-def test_waybar_mode_only_writes_and_reloads_waybar(monkeypatch):
+def test_waybar_mode_uses_transactional_apply(monkeypatch):
     settings = _make_settings()
     tokens = _make_tokens()
     calls = []
@@ -232,22 +232,38 @@ def test_waybar_mode_only_writes_and_reloads_waybar(monkeypatch):
     monkeypatch.setattr(apply_settings, "_build_tokens", lambda s: tokens)
     monkeypatch.setattr(
         apply_settings,
+        "apply_waybar_transaction",
+        lambda t: calls.append(("transaction", t)) or True,
+    )
+    monkeypatch.setattr(
+        apply_settings,
         "write_waybar_config",
-        lambda t: calls.append(("waybar", t)) or True,
-    )
-    monkeypatch.setattr(
-        apply_settings,
-        "reload_waybar",
-        lambda: calls.append(("reload", None)),
-    )
-    monkeypatch.setattr(
-        apply_settings,
-        "_write_config_files",
-        lambda s, t: calls.append(("config", s, t)) or {},
+        lambda t: calls.append(("legacy", t)) or True,
     )
 
     assert apply_settings._main_locked("waybar") == 0
-    assert calls == [("waybar", tokens), ("reload", None)]
+    assert calls == [("transaction", tokens)]
+
+
+def test_waybar_mode_logs_transaction_failure(monkeypatch, tmp_path):
+    settings = _make_settings()
+    tokens = _make_tokens()
+    log_path = tmp_path / "apply-settings.log"
+
+    monkeypatch.setattr(apply_settings, "APPLY_LOG_PATH", log_path)
+    monkeypatch.setattr(apply_settings, "ensure_settings", lambda: settings)
+    monkeypatch.setattr(apply_settings, "_build_tokens", lambda s: tokens)
+
+    def fail_transaction(_tokens):
+        raise ValueError("broken generated config")
+
+    monkeypatch.setattr(apply_settings, "apply_waybar_transaction", fail_transaction)
+
+    assert apply_settings._main_locked("waybar") == 1
+    content = log_path.read_text(encoding="utf-8")
+    assert "mode=waybar" in content
+    assert "phase=transaction" in content
+    assert "broken generated config" in content
 
 
 def test_apply_logger_writes_timestamped_user_cache_entry(monkeypatch, tmp_path):
@@ -293,6 +309,48 @@ def test_write_waybar_config_uses_rendered_files(monkeypatch, tmp_path):
     assert json.loads((tmp_path / "config.jsonc").read_text(encoding="utf-8")) == {"layer": "top"}
     assert (tmp_path / "style.css").read_text(encoding="utf-8") == "window#waybar {}\n"
     assert reload_calls == []
+
+
+def test_validate_waybar_files_rejects_invalid_json():
+    with pytest.raises(ValueError, match="generated waybar config is invalid JSON"):
+        apply_settings._validate_waybar_files("{invalid", "window#waybar {}\n")
+
+
+def test_waybar_transaction_validates_before_replacing_live_files(monkeypatch, tmp_path):
+    monkeypatch.setattr(apply_settings, "WAYBAR_DIR", tmp_path)
+    monkeypatch.setattr(
+        apply_settings,
+        "_render_waybar_files",
+        lambda tokens: ("{invalid", "window#waybar {}\n"),
+    )
+    reload_calls = []
+    monkeypatch.setattr(apply_settings, "reload_waybar", lambda: reload_calls.append(True))
+
+    (tmp_path / "config.jsonc").write_text('{"old": true}\n', encoding="utf-8")
+    (tmp_path / "style.css").write_text("old-css\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="generated waybar config is invalid JSON"):
+        apply_settings.apply_waybar_transaction(_make_tokens())
+
+    assert (tmp_path / "config.jsonc").read_text(encoding="utf-8") == '{"old": true}\n'
+    assert (tmp_path / "style.css").read_text(encoding="utf-8") == "old-css\n"
+    assert reload_calls == []
+
+
+def test_waybar_transaction_commits_then_reloads(monkeypatch, tmp_path):
+    monkeypatch.setattr(apply_settings, "WAYBAR_DIR", tmp_path)
+    monkeypatch.setattr(
+        apply_settings,
+        "_render_waybar_files",
+        lambda tokens: ('{"layer": "top"}\n', "window#waybar {}\n"),
+    )
+    reload_calls = []
+    monkeypatch.setattr(apply_settings, "reload_waybar", lambda: reload_calls.append(True))
+
+    assert apply_settings.apply_waybar_transaction(_make_tokens()) is True
+    assert json.loads((tmp_path / "config.jsonc").read_text(encoding="utf-8")) == {"layer": "top"}
+    assert (tmp_path / "style.css").read_text(encoding="utf-8") == "window#waybar {}\n"
+    assert reload_calls == [True]
 
 
 def test_write_gtk_settings_can_skip_gsettings_for_pre_compositor_mode(

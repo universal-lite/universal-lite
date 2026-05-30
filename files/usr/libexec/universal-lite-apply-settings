@@ -1448,6 +1448,64 @@ def _render_waybar_files(tokens: dict) -> tuple[str, str]:
     return json.dumps(config, indent=2) + "\n", css
 
 
+def _validate_waybar_files(config_text: str, css_text: str) -> None:
+    try:
+        config = json.loads(config_text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"generated waybar config is invalid JSON: {exc}") from exc
+    if not isinstance(config, dict):
+        raise ValueError("generated waybar config must be a JSON object")
+    if "window#waybar" not in css_text:
+        raise ValueError("generated waybar CSS is missing window#waybar selector")
+
+
+def _restore_text(path: Path, existed: bool, content: str) -> None:
+    try:
+        if existed:
+            _atomic_write_text(path, content)
+        else:
+            path.unlink(missing_ok=True)
+    except OSError as exc:
+        _log_apply_event("waybar", "rollback", f"failed to restore {path}: {exc}")
+
+
+def _write_waybar_files_transactionally(config_text: str, css_text: str) -> bool:
+    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
+    config_path = WAYBAR_DIR / "config.jsonc"
+    css_path = WAYBAR_DIR / "style.css"
+    old_config_exists = config_path.exists()
+    old_css_exists = css_path.exists()
+    old_config = _read_if_exists(config_path)
+    old_css = _read_if_exists(css_path)
+
+    if config_text == old_config and css_text == old_css:
+        return False
+
+    config_replaced = False
+    css_replaced = False
+    try:
+        _atomic_write_text(config_path, config_text)
+        config_replaced = True
+        _atomic_write_text(css_path, css_text)
+        css_replaced = True
+    except OSError:
+        if config_replaced:
+            _restore_text(config_path, old_config_exists, old_config)
+        if css_replaced:
+            _restore_text(css_path, old_css_exists, old_css)
+        raise
+    return True
+
+
+def apply_waybar_transaction(tokens: dict) -> bool:
+    config_text, css_text = _render_waybar_files(tokens)
+    _validate_waybar_files(config_text, css_text)
+    changed = _write_waybar_files_transactionally(config_text, css_text)
+    if changed:
+        reload_waybar()
+    return changed
+
+
 def write_waybar_config(tokens: dict) -> bool:
     """Write waybar config and CSS. Returns True if either file changed."""
     WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
@@ -2451,8 +2509,12 @@ def _main_locked(mode: str = "full") -> int:
     tokens = _build_tokens(settings)
 
     if mode == "waybar":
-        if write_waybar_config(tokens):
-            reload_waybar()
+        try:
+            apply_waybar_transaction(tokens)
+        except Exception as exc:
+            _log_apply_event("waybar", "transaction", str(exc))
+            print(f"apply-settings: waybar transaction failed: {exc}", file=sys.stderr)
+            return 1
         return 0
 
     changes = _write_config_files(settings, tokens)
