@@ -1277,12 +1277,7 @@ def _read_if_exists(path: Path) -> str:
         return ""
 
 
-def write_waybar_config(tokens: dict) -> bool:
-    """Write waybar config and CSS. Returns True if either file changed."""
-    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
-    old_config = _read_if_exists(WAYBAR_DIR / "config.jsonc")
-    old_css = _read_if_exists(WAYBAR_DIR / "style.css")
-
+def _render_waybar_files(tokens: dict) -> tuple[str, str]:
     layout = tokens["layout"]
     pinned = tokens.get("pinned", [])
     is_vertical = tokens["is_vertical"]
@@ -1444,19 +1439,29 @@ def write_waybar_config(tokens: dict) -> bool:
             "tooltip": True,
         }
 
-    new_config = json.dumps(config, indent=2) + "\n"
+    css = _waybar_css_common(tokens)
+    if is_vertical:
+        css += _waybar_css_vertical(tokens)
+    else:
+        css += _waybar_css_horizontal(tokens)
+
+    return json.dumps(config, indent=2) + "\n", css
+
+
+def write_waybar_config(tokens: dict) -> bool:
+    """Write waybar config and CSS. Returns True if either file changed."""
+    WAYBAR_DIR.mkdir(parents=True, exist_ok=True)
+    old_config = _read_if_exists(WAYBAR_DIR / "config.jsonc")
+    old_css = _read_if_exists(WAYBAR_DIR / "style.css")
+
+    new_config, css = _render_waybar_files(tokens)
+
     try:
         _atomic_write_text(WAYBAR_DIR / "config.jsonc", new_config)
     except OSError as exc:
         print(f"apply-settings: failed to write {WAYBAR_DIR / 'config.jsonc'}: {exc}",
               file=sys.stderr)
         sys.exit(1)
-
-    css = _waybar_css_common(tokens)
-    if is_vertical:
-        css += _waybar_css_vertical(tokens)
-    else:
-        css += _waybar_css_horizontal(tokens)
 
     try:
         _atomic_write_text(WAYBAR_DIR / "style.css", css)

@@ -271,6 +271,30 @@ def test_apply_logger_does_not_raise_when_cache_unwritable(monkeypatch, tmp_path
     apply_settings._log_apply_event("waybar", "render", "failed safely")
 
 
+def test_render_waybar_files_returns_valid_config_and_css():
+    config_text, css_text = apply_settings._render_waybar_files(_make_tokens())
+
+    config = json.loads(config_text)
+    assert config["position"] == "bottom"
+    assert "modules-left" in config
+    assert "window#waybar" in css_text
+
+
+def test_write_waybar_config_uses_rendered_files(monkeypatch, tmp_path):
+    reload_calls = []
+    monkeypatch.setattr(apply_settings, "WAYBAR_DIR", tmp_path)
+    monkeypatch.setattr(
+        apply_settings,
+        "_render_waybar_files",
+        lambda tokens: ('{"layer": "top"}\n', "window#waybar {}\n"),
+    )
+
+    assert apply_settings.write_waybar_config(_make_tokens()) is True
+    assert json.loads((tmp_path / "config.jsonc").read_text(encoding="utf-8")) == {"layer": "top"}
+    assert (tmp_path / "style.css").read_text(encoding="utf-8") == "window#waybar {}\n"
+    assert reload_calls == []
+
+
 def test_write_gtk_settings_can_skip_gsettings_for_pre_compositor_mode(
     monkeypatch, tmp_path
 ):
