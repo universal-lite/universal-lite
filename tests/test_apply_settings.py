@@ -354,20 +354,96 @@ def test_waybar_transaction_validates_before_replacing_live_files(monkeypatch, t
     assert reload_calls == []
 
 
-def test_waybar_transaction_commits_then_reloads(monkeypatch, tmp_path):
+def test_waybar_transaction_commits_without_reloading(monkeypatch, tmp_path):
     monkeypatch.setattr(apply_settings, "WAYBAR_DIR", tmp_path)
     monkeypatch.setattr(
         apply_settings,
         "_render_waybar_files",
         lambda tokens: ('{"layer": "top"}\n', "window#waybar {}\n"),
     )
-    reload_calls = []
-    monkeypatch.setattr(apply_settings, "reload_waybar", lambda: reload_calls.append(True))
+    monkeypatch.setattr(
+        apply_settings,
+        "reload_waybar",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("Settings must not reload Waybar")
+        ),
+    )
 
     assert apply_settings.apply_waybar_transaction(_make_tokens()) is True
-    assert json.loads((tmp_path / "config.jsonc").read_text(encoding="utf-8")) == {"layer": "top"}
+    assert json.loads((tmp_path / "config.jsonc").read_text(encoding="utf-8")) == {
+        "layer": "top"
+    }
     assert (tmp_path / "style.css").read_text(encoding="utf-8") == "window#waybar {}\n"
-    assert reload_calls == [True]
+
+
+def test_live_sync_skips_waybar_reload_when_waybar_files_changed(monkeypatch):
+    calls = []
+    settings = _make_settings(suspend_timeout=0)
+    tokens = _make_tokens(wallpaper="/same-wallpaper.svg")
+
+    monkeypatch.setenv("WAYLAND_DISPLAY", "wayland-1")
+    monkeypatch.setattr(
+        apply_settings,
+        "write_gtk_settings",
+        lambda tokens_arg, sync_live=True: calls.append(("gtk", sync_live)),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_sync_power_profile",
+        lambda settings_arg: calls.append(("power", settings_arg)),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_sync_lid_action",
+        lambda settings_arg: calls.append(("lid", settings_arg)),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_current_swaybg_wallpaper",
+        lambda: "/same-wallpaper.svg",
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_swap_swaybg_wallpaper",
+        lambda wallpaper, theme="light": calls.append(("wallpaper", wallpaper, theme)),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "reload_waybar",
+        lambda: (_ for _ in ()).throw(
+            AssertionError("Settings must not reload Waybar")
+        ),
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "_run_best_effort",
+        lambda cmd, **kwargs: calls.append(("run", tuple(cmd), kwargs)) or True,
+    )
+    monkeypatch.setattr(
+        apply_settings,
+        "restart_program",
+        lambda name, cmd: calls.append(("restart", name, tuple(cmd))),
+    )
+
+    apply_settings._sync_live_session(
+        settings,
+        tokens,
+        {"waybar_changed": True, "mako_changed": False, "labwc_changed": False},
+    )
+
+    assert ("gtk", True) in calls
+    assert all(call[0] != "wallpaper" for call in calls)
+
+
+def test_apply_settings_has_no_waybar_reload_call_sites():
+    source = _SCRIPT.read_text(encoding="utf-8")
+    call_sites = [
+        line.strip()
+        for line in source.splitlines()
+        if line.strip() == "reload_waybar()"
+    ]
+
+    assert call_sites == []
 
 
 def test_write_gtk_settings_can_skip_gsettings_for_pre_compositor_mode(

@@ -1500,10 +1500,7 @@ def _write_waybar_files_transactionally(config_text: str, css_text: str) -> bool
 def apply_waybar_transaction(tokens: dict) -> bool:
     config_text, css_text = _render_waybar_files(tokens)
     _validate_waybar_files(config_text, css_text)
-    changed = _write_waybar_files_transactionally(config_text, css_text)
-    if changed:
-        reload_waybar()
-    return changed
+    return _write_waybar_files_transactionally(config_text, css_text)
 
 
 def write_waybar_config(tokens: dict) -> bool:
@@ -2460,8 +2457,6 @@ def _sync_live_session(settings: dict, tokens: dict, changes: dict[str, bool]) -
         # leave the compositor with a blank wallpaper.
         if _current_swaybg_wallpaper() != tokens["wallpaper"]:
             _swap_swaybg_wallpaper(tokens["wallpaper"], tokens["theme"])
-        if changes.get("waybar_changed"):
-            reload_waybar()
         if changes.get("mako_changed"):
             _run_best_effort(["makoctl", "reload"], timeout=5)
         if changes.get("labwc_changed"):
