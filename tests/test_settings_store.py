@@ -87,6 +87,51 @@ def test_save_and_apply_waybar_dispatches_detached_without_tracking(monkeypatch,
     assert store._apply_pending_mode is None
 
 
+def test_waybar_apply_reports_restart_session_message(monkeypatch, tmp_path):
+    calls = []
+    toasts = []
+
+    class Proc:
+        returncode = 0
+
+        def communicate(self, timeout=None):
+            raise AssertionError("detached waybar apply must not be waited on")
+
+    monkeypatch.setattr(
+        "settings.settings_store.subprocess.Popen",
+        lambda cmd, **kwargs: calls.append((cmd, kwargs)) or Proc(),
+    )
+
+    store = _make_store(tmp_path)
+    store.set_toast_callback(lambda message, is_error: toasts.append((message, is_error)))
+    store.save_and_apply("layout", {"start": [], "center": [], "end": []}, mode="waybar")
+
+    assert calls[0][0] == ["/bin/true", "--mode", "waybar"]
+    assert toasts == [(
+        "Panel changes saved. Restart your session to apply them.",
+        False,
+    )]
+
+
+def test_waybar_apply_spawn_failure_reports_file_update_error(monkeypatch, tmp_path):
+    toasts = []
+
+    def fail_popen(_cmd, **_kwargs):
+        raise OSError("boom")
+
+    monkeypatch.setattr("settings.settings_store.subprocess.Popen", fail_popen)
+
+    store = _make_store(tmp_path)
+    store.set_toast_callback(lambda message, is_error: toasts.append((message, is_error)))
+    store.save_and_apply("layout", {"start": [], "center": [], "end": []}, mode="waybar")
+
+    assert toasts == [(
+        "Panel changes saved, but panel files could not be updated: boom",
+        True,
+    )]
+    assert store._last_apply_spawn_failed is True
+
+
 def test_full_apply_still_uses_tracked_wait_path(monkeypatch, tmp_path):
     calls = []
     idle_calls = []

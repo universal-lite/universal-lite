@@ -131,6 +131,16 @@ def test_panel_sanitize_layout_filters_unknowns_and_duplicates():
     }
 
 
+def test_panel_page_shows_restart_session_notice():
+    source = Path(panel.__file__).read_text(encoding="utf-8")
+    position_body = source.split("def _build_position_group", 1)[1].split(
+        "def _build_density_group", 1
+    )[0]
+
+    assert 'PANEL_RESTART_NOTICE = _("Panel changes apply after you restart your session.")' in source
+    assert "group.set_description(PANEL_RESTART_NOTICE)" in position_body
+
+
 def test_panel_edge_change_saves_and_relabels_sections():
     class Store:
         def __init__(self):
@@ -209,6 +219,16 @@ def test_accent_change_applies_with_waybar_mode():
     source = Path(appearance.__file__).read_text(encoding="utf-8")
 
     assert 'save_and_apply("accent", name, mode="waybar")' in source
+
+
+def test_appearance_accent_shows_panel_restart_session_notice():
+    source = Path(appearance.__file__).read_text(encoding="utf-8")
+    accent_body = source.split("# -- Group 2: Accent color --", 1)[1].split(
+        "# -- Group 3: Font size --", 1
+    )[0]
+
+    assert 'PANEL_RESTART_NOTICE = _("Panel changes apply after you restart your session.")' in source
+    assert "accent_group.set_description(PANEL_RESTART_NOTICE)" in accent_body
 
 
 def test_panel_move_module_defers_refresh_and_applies_layout_with_waybar_mode(monkeypatch):
