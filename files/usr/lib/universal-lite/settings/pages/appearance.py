@@ -201,6 +201,9 @@ def _load_thumbnail(path: str) -> Gtk.Widget | None:
     return pic
 
 
+PANEL_RESTART_NOTICE = _("Panel changes apply after you restart your session.")
+
+
 class AppearancePage(BasePage, Adw.PreferencesPage):
     def __init__(self, store, event_bus):
         BasePage.__init__(self, store, event_bus)
@@ -262,6 +265,7 @@ class AppearancePage(BasePage, Adw.PreferencesPage):
         # -- Group 2: Accent color --
         accent_group = Adw.PreferencesGroup()
         accent_group.set_title(_("Accent color"))
+        accent_group.set_description(PANEL_RESTART_NOTICE)
 
         accent_flow = Gtk.FlowBox()
         accent_flow.set_selection_mode(Gtk.SelectionMode.NONE)

@@ -59,6 +59,8 @@ DENSITY_OPTIONS: list[tuple[str, str]] = [
     ("compact", _("Compact")),
 ]
 
+PANEL_RESTART_NOTICE = _("Panel changes apply after you restart your session.")
+
 
 class PanelPage(BasePage, Adw.PreferencesPage):
     """Panel position, density, twilight, module layout, and pinned apps.
@@ -128,6 +130,7 @@ class PanelPage(BasePage, Adw.PreferencesPage):
     def _build_position_group(self) -> Adw.PreferencesGroup:
         group = Adw.PreferencesGroup()
         group.set_title(_("Position"))
+        group.set_description(PANEL_RESTART_NOTICE)
 
         row = Adw.ComboRow()
         row.set_title(_("Panel position"))
