@@ -325,13 +325,18 @@ class SettingsStore:
             if self._toast_callback:
                 detail = str(exc) or exc.__class__.__name__
                 self._toast_callback(
-                    _("Saved, but failed to apply panel changes: {detail}").format(
-                        detail=detail
-                    ),
+                    _(
+                        "Panel changes saved, but panel files could not be updated: {detail}"
+                    ).format(detail=detail),
                     True,
                 )
             return
         self._last_apply_spawn_failed = False
+        if self._toast_callback:
+            self._toast_callback(
+                _("Panel changes saved. Restart your session to apply them."),
+                False,
+            )
 
     def _run_apply(self, mode: str = "full") -> None:
         if mode not in self.APPLY_MODES:
