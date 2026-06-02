@@ -36,7 +36,7 @@ fi
 
 # Snapshot the session-start settings for runtime consumers that must
 # not observe deferred Settings changes until the next login.
-_settings_file="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
+_settings_file="$HOME/.config/universal-lite/settings.json"
 _session_settings="${XDG_RUNTIME_DIR:-/run/user/$UID}/universal-lite/session-settings.json"
 _session_settings_dir="$(dirname "$_session_settings")"
 if rm -f "$_session_settings" && mkdir -p "$_session_settings_dir" && [ -f "$_settings_file" ]; then

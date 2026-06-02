@@ -516,7 +516,7 @@ def test_session_exports_app_menu_settings_snapshot_after_config_apply():
     exec_idx = session.index("exec labwc")
 
     assert config_idx < snapshot_path_idx < copy_idx < export_idx < exec_idx
-    assert '_settings_file="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"' in session
+    assert '_settings_file="$HOME/.config/universal-lite/settings.json"' in session
     assert 'mkdir -p "$_session_settings_dir"' in session
     assert 'UNIVERSAL_LITE_SESSION_SETTINGS="$_session_settings"' in session
 
