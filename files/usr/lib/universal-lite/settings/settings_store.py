@@ -255,12 +255,10 @@ class SettingsStore:
         return Path(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}")
 
     def _session_settings_candidates(self) -> tuple[Path, ...]:
-        candidates: list[Path] = []
         session_settings = os.environ.get(SESSION_SETTINGS_ENV)
         if session_settings:
-            candidates.append(Path(session_settings))
-        candidates.append(self._runtime_dir() / "universal-lite" / SESSION_SETTINGS_NAME)
-        return tuple(candidates)
+            return (Path(session_settings),)
+        return (self._runtime_dir() / "universal-lite" / SESSION_SETTINGS_NAME,)
 
     def _load_session_settings_snapshot(self) -> dict | None:
         for path in self._session_settings_candidates():

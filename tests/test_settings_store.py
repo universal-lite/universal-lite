@@ -179,6 +179,23 @@ def test_deferred_session_changes_ignore_missing_or_invalid_snapshot(monkeypatch
 
     assert store.has_deferred_session_changes() is False
 
+    snapshot.unlink()
+    assert store.has_deferred_session_changes() is False
+
+
+def test_deferred_session_changes_env_snapshot_does_not_fallback_to_runtime(monkeypatch, tmp_path):
+    runtime_snapshot = _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom"})
+    env_snapshot = runtime_snapshot.parent / "bad-session-settings.json"
+    env_snapshot.write_text("{invalid", encoding="utf-8")
+    monkeypatch.setenv("UNIVERSAL_LITE_SESSION_SETTINGS", str(env_snapshot))
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom"},
+        existing={"edge": "top"},
+    )
+
+    assert store.has_deferred_session_changes() is False
+
 
 def test_deferred_session_callback_runs_after_save_and_apply(monkeypatch, tmp_path):
     _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom"})
@@ -195,6 +212,22 @@ def test_deferred_session_callback_runs_after_save_and_apply(monkeypatch, tmp_pa
         store.save_and_apply("edge", "bottom", mode="waybar")
 
     assert states == [True, False]
+
+
+def test_deferred_session_callback_runs_after_save_dict_and_apply(monkeypatch, tmp_path):
+    _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom", "accent": "blue"})
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom", "accent": "blue"},
+        existing={"edge": "bottom", "accent": "blue"},
+    )
+    states = []
+    store.set_deferred_changes_callback(states.append)
+
+    with patch.object(store, "_run_apply"):
+        store.save_dict_and_apply({"accent": "red"})
+
+    assert states == [True]
 
 
 def test_deferred_session_callback_runs_after_restore_keys_and_flush(monkeypatch, tmp_path):
