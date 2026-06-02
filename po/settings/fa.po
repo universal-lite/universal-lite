@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 13:28-0400\n"
+"POT-Creation-Date: 2026-06-02 12:03-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -143,58 +143,89 @@ msgstr "رمز عبور اشتباه است."
 msgid "Could not connect to network"
 msgstr "نمی‌توان به شبکه وصل شد"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:299
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:355
 #, python-brace-format
 msgid "Could not save settings: {reason}"
 msgstr "نمی‌توان تنظیمات را ذخیره کرد: {reason}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:329
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
 #, python-brace-format
 msgid "Panel changes saved, but panel files could not be updated: {detail}"
 msgstr "تغییرات پنل ذخیره شد، اما پرونده‌های پنل به‌روزرسانی نشدند: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:337
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:393
 msgid "Panel changes saved. Restart your session to apply them."
-msgstr "تغییرات پنل ذخیره شد. برای اعمال آن‌ها نشست خود را دوباره راه‌اندازی کنید."
+msgstr ""
+"تغییرات پنل ذخیره شد. برای اعمال آن‌ها نشست خود را دوباره راه‌اندازی کنید."
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:441
 #, python-brace-format
 msgid "Failed to apply settings: {detail}"
 msgstr "اعمال تنظیمات ناموفق بود: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:416
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:472
 msgid "Settings applied"
 msgstr "تنظیمات اعمال شد"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:418
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:474
 #, python-brace-format
 msgid "Apply timed out after {n}s"
 msgstr "زمان اعمال پس از {n}s به پایان رسید"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:423
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:479
 #, python-brace-format
 msgid "Failed to apply: {err}"
 msgstr "اعمال ناموفق بود: {err}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:425
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:481
 msgid "Failed to apply settings"
 msgstr "اعمال تنظیمات ناموفق بود"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:49
-#: ../files/usr/lib/universal-lite/settings/window.py:80
-#: ../files/usr/lib/universal-lite/settings/window.py:116
+#: ../files/usr/lib/universal-lite/settings/window.py:50
+#: ../files/usr/lib/universal-lite/settings/window.py:81
+#: ../files/usr/lib/universal-lite/settings/window.py:127
 msgid "Settings"
 msgstr "تنظیمات"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:92
+#: ../files/usr/lib/universal-lite/settings/window.py:93
 msgid "Search settings"
 msgstr "جستجوی تنظیمات"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:96
+#: ../files/usr/lib/universal-lite/settings/window.py:97
 msgid "Search settings…"
 msgstr "جستجوی تنظیمات…"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:248
+#: ../files/usr/lib/universal-lite/settings/window.py:113
+msgid "Restart your session to apply panel and start menu changes."
+msgstr "برای اعمال تغییرات پنل و منوی شروع، نشست خود را دوباره شروع کنید."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:115
+#: ../files/usr/lib/universal-lite/settings/window.py:229
+msgid "Restart Session"
+msgstr "شروع دوباره نشست"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:225
+msgid "Restart Session?"
+msgstr "نشست دوباره شروع شود؟"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:226
+msgid "This will close your apps and return you to the sign-in screen."
+msgstr "این کار برنامه‌های شما را می‌بندد و شما را به صفحه ورود برمی‌گرداند."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:228
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
+msgid "Cancel"
+msgstr "لغو"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:251
+#, python-brace-format
+msgid "Could not restart session: {detail}"
+msgstr "شروع دوباره نشست ممکن نشد: {detail}"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:298
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "بارگذاری {label} ناموفق بود"
@@ -1413,13 +1444,6 @@ msgstr ""
 "\"{key}\" از قبل به \"{conflict}\" اختصاص دارد.\n"
 "\n"
 "به \"{target}\" تغییر داده شود؟"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
-msgid "Cancel"
-msgstr "لغو"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:798
 msgid "Reassign"

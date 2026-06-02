@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 13:28-0400\n"
+"POT-Creation-Date: 2026-06-02 12:03-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -143,58 +143,91 @@ msgstr "Nenosiri si sahihi."
 msgid "Could not connect to network"
 msgstr "Haikuweza kuunganishwa na mtandao"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:299
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:355
 #, python-brace-format
 msgid "Could not save settings: {reason}"
 msgstr "Imeshindwa kuhifadhi mipangilio: {reason}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:329
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
 #, python-brace-format
 msgid "Panel changes saved, but panel files could not be updated: {detail}"
-msgstr "Mabadiliko ya paneli yamehifadhiwa, lakini faili za paneli hazikuweza kusasishwa: {detail}"
+msgstr ""
+"Mabadiliko ya paneli yamehifadhiwa, lakini faili za paneli hazikuweza "
+"kusasishwa: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:337
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:393
 msgid "Panel changes saved. Restart your session to apply them."
-msgstr "Mabadiliko ya paneli yamehifadhiwa. Anzisha upya kipindi chako ili kuyatumia."
+msgstr ""
+"Mabadiliko ya paneli yamehifadhiwa. Anzisha upya kipindi chako ili kuyatumia."
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:441
 #, python-brace-format
 msgid "Failed to apply settings: {detail}"
 msgstr "Imeshindwa kutumia mipangilio: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:416
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:472
 msgid "Settings applied"
 msgstr "Mipangilio imetumika"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:418
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:474
 #, python-brace-format
 msgid "Apply timed out after {n}s"
 msgstr "Muda wa kutumia umekwisha baada ya {n}s"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:423
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:479
 #, python-brace-format
 msgid "Failed to apply: {err}"
 msgstr "Imeshindwa kutumia: {err}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:425
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:481
 msgid "Failed to apply settings"
 msgstr "Imeshindwa kutumia mipangilio"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:49
-#: ../files/usr/lib/universal-lite/settings/window.py:80
-#: ../files/usr/lib/universal-lite/settings/window.py:116
+#: ../files/usr/lib/universal-lite/settings/window.py:50
+#: ../files/usr/lib/universal-lite/settings/window.py:81
+#: ../files/usr/lib/universal-lite/settings/window.py:127
 msgid "Settings"
 msgstr "Mipangilio"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:92
+#: ../files/usr/lib/universal-lite/settings/window.py:93
 msgid "Search settings"
 msgstr "Tafuta mipangilio"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:96
+#: ../files/usr/lib/universal-lite/settings/window.py:97
 msgid "Search settings…"
 msgstr "Tafuta mipangilio…"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:248
+#: ../files/usr/lib/universal-lite/settings/window.py:113
+msgid "Restart your session to apply panel and start menu changes."
+msgstr "Anzisha upya kikao chako ili kutumia mabadiliko ya paneli na menyu ya kuanza."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:115
+#: ../files/usr/lib/universal-lite/settings/window.py:229
+msgid "Restart Session"
+msgstr "Anzisha Upya Kikao"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:225
+msgid "Restart Session?"
+msgstr "Uanzishe upya kikao?"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:226
+msgid "This will close your apps and return you to the sign-in screen."
+msgstr "Hii itafunga programu zako na kukurudisha kwenye skrini ya kuingia."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:228
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
+msgid "Cancel"
+msgstr "Ghairi"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:251
+#, python-brace-format
+msgid "Could not restart session: {detail}"
+msgstr "Imeshindwa kuanzisha upya kikao: {detail}"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:298
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "Imeshindwa kupakia {label}"
@@ -1413,13 +1446,6 @@ msgstr ""
 "\"{key}\" tayari imepewa \"{conflict}\".\n"
 "\n"
 "Ipe upya kwa \"{target}\"?"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
-msgid "Cancel"
-msgstr "Ghairi"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:798
 msgid "Reassign"

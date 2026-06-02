@@ -1,3 +1,4 @@
+import subprocess
 import sys
 from gettext import gettext as _
 
@@ -107,6 +108,16 @@ class SettingsWindow(Adw.ApplicationWindow):
         content_toolbar = Adw.ToolbarView()
         content_toolbar.add_top_bar(content_header)
         content_toolbar.add_top_bar(self._search_bar)
+        self._deferred_restart_banner = Adw.Banner()
+        self._deferred_restart_banner.set_title(
+            _("Restart your session to apply panel and start menu changes.")
+        )
+        self._deferred_restart_banner.set_button_label(_("Restart Session"))
+        self._deferred_restart_banner.connect("button-clicked", self._on_restart_session_clicked)
+        self._deferred_restart_banner.set_revealed(
+            store.has_deferred_session_changes()
+        )
+        content_toolbar.add_top_bar(self._deferred_restart_banner)
         content_toolbar.set_content(self._stack)
 
         # Content page's title is updated in _on_row_selected so it
@@ -132,6 +143,7 @@ class SettingsWindow(Adw.ApplicationWindow):
         self._toast_overlay.set_child(split)
         self.set_content(self._toast_overlay)
         store.set_toast_callback(self._show_toast)
+        store.set_deferred_changes_callback(self._set_deferred_restart_banner_revealed)
 
         # -- Breakpoint: collapse below _COLLAPSE_WIDTH --------------
         # When collapsed, NavigationSplitView uses push/pop between
@@ -166,6 +178,7 @@ class SettingsWindow(Adw.ApplicationWindow):
         self.connect("close-request", self._on_close_request)
 
     def _on_close_request(self, _window) -> bool:
+        self._store.set_deferred_changes_callback(None)
         self._store.flush_and_detach()
         if self._store.has_apply_work():
             app = self.get_application()
@@ -201,6 +214,43 @@ class SettingsWindow(Adw.ApplicationWindow):
             toast.set_title(message)
         toast.set_timeout(max(1, int(timeout)))
         self._toast_overlay.add_toast(toast)
+
+    # -- Deferred Restart --------------------------------------------
+
+    def _set_deferred_restart_banner_revealed(self, revealed: bool) -> None:
+        self._deferred_restart_banner.set_revealed(revealed)
+
+    def _on_restart_session_clicked(self, _banner: Adw.Banner) -> None:
+        dialog = Adw.AlertDialog.new(
+            _("Restart Session?"),
+            _("This will close your apps and return you to the sign-in screen."),
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("restart", _("Restart Session"))
+        dialog.set_response_appearance("restart", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("cancel")
+        dialog.set_close_response("cancel")
+        dialog.connect("response", self._on_restart_session_response)
+        dialog.present(self)
+
+    def _on_restart_session_response(
+        self, _dialog: Adw.AlertDialog, response: str
+    ) -> None:
+        if response != "restart":
+            return
+        try:
+            subprocess.Popen(
+                ["labwc", "--exit"],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
+        except (FileNotFoundError, PermissionError, OSError) as exc:
+            self._show_toast(
+                _("Could not restart session: {detail}").format(detail=exc),
+                is_error=True,
+            )
 
     # -- Page building -----------------------------------------------
 

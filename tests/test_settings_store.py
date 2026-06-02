@@ -132,6 +132,125 @@ def test_waybar_apply_spawn_failure_reports_file_update_error(monkeypatch, tmp_p
     assert store._last_apply_spawn_failed is True
 
 
+def _write_session_snapshot(monkeypatch, tmp_path, data):
+    runtime_dir = tmp_path / "runtime"
+    snapshot = runtime_dir / "universal-lite/session-settings.json"
+    snapshot.parent.mkdir(parents=True)
+    snapshot.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.delenv("UNIVERSAL_LITE_SESSION_SETTINGS", raising=False)
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime_dir))
+    return snapshot
+
+
+def test_deferred_session_changes_detect_session_snapshot_difference(monkeypatch, tmp_path):
+    _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom", "accent": "blue"})
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom", "accent": "blue"},
+        existing={"edge": "top", "accent": "blue"},
+    )
+
+    assert store.has_deferred_session_changes() is True
+
+
+def test_deferred_session_changes_hide_when_values_match_snapshot(monkeypatch, tmp_path):
+    _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom", "accent": "blue"})
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom", "accent": "blue"},
+        existing={"edge": "bottom", "accent": "blue"},
+    )
+
+    assert store.has_deferred_session_changes() is False
+
+
+def test_deferred_session_changes_ignore_missing_or_invalid_snapshot(monkeypatch, tmp_path):
+    runtime_dir = tmp_path / "runtime"
+    snapshot = runtime_dir / "universal-lite/session-settings.json"
+    snapshot.parent.mkdir(parents=True)
+    snapshot.write_text("{invalid", encoding="utf-8")
+    monkeypatch.delenv("UNIVERSAL_LITE_SESSION_SETTINGS", raising=False)
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime_dir))
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom"},
+        existing={"edge": "top"},
+    )
+
+    assert store.has_deferred_session_changes() is False
+
+    snapshot.unlink()
+    assert store.has_deferred_session_changes() is False
+
+
+def test_deferred_session_changes_env_snapshot_does_not_fallback_to_runtime(monkeypatch, tmp_path):
+    runtime_snapshot = _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom"})
+    env_snapshot = runtime_snapshot.parent / "bad-session-settings.json"
+    env_snapshot.write_text("{invalid", encoding="utf-8")
+    monkeypatch.setenv("UNIVERSAL_LITE_SESSION_SETTINGS", str(env_snapshot))
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom"},
+        existing={"edge": "top"},
+    )
+
+    assert store.has_deferred_session_changes() is False
+
+
+def test_deferred_session_callback_runs_after_save_and_apply(monkeypatch, tmp_path):
+    _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom"})
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom"},
+        existing={"edge": "bottom"},
+    )
+    states = []
+    store.set_deferred_changes_callback(states.append)
+
+    with patch.object(store, "_run_apply"):
+        store.save_and_apply("edge", "top", mode="waybar")
+        store.save_and_apply("edge", "bottom", mode="waybar")
+
+    assert states == [True, False]
+
+
+def test_deferred_session_callback_runs_after_save_dict_and_apply(monkeypatch, tmp_path):
+    _write_session_snapshot(monkeypatch, tmp_path, {"edge": "bottom", "accent": "blue"})
+    store = _make_store(
+        tmp_path,
+        defaults={"edge": "bottom", "accent": "blue"},
+        existing={"edge": "bottom", "accent": "blue"},
+    )
+    states = []
+    store.set_deferred_changes_callback(states.append)
+
+    with patch.object(store, "_run_apply"):
+        store.save_dict_and_apply({"accent": "red"})
+
+    assert states == [True]
+
+
+def test_deferred_session_callback_runs_after_restore_keys_and_flush(monkeypatch, tmp_path):
+    _write_session_snapshot(monkeypatch, tmp_path, {"accent": "blue"})
+    store = _make_store(
+        tmp_path,
+        defaults={"accent": "blue"},
+        existing={"accent": "red"},
+    )
+    states = []
+    store.set_deferred_changes_callback(states.append)
+
+    with patch.object(store, "_run_apply"):
+        assert store.restore_keys(["accent"], {"accent": "blue"}) is True
+    with patch("settings.settings_store.GLib.timeout_add", return_value=123), \
+         patch("settings.settings_store.GLib.source_remove"), \
+         patch.object(store, "_run_apply"):
+        store.save_debounced("accent", "red")
+        store.flush_and_detach()
+
+    assert states == [False, True]
+
+
 def test_full_apply_still_uses_tracked_wait_path(monkeypatch, tmp_path):
     calls = []
     idle_calls = []

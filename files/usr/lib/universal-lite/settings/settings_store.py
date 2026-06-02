@@ -9,6 +9,22 @@ from pathlib import Path
 from gi.repository import GLib
 
 
+SESSION_SETTINGS_ENV = "UNIVERSAL_LITE_SESSION_SETTINGS"
+SESSION_SETTINGS_NAME = "session-settings.json"
+DEFERRED_SESSION_KEYS = frozenset({
+    "edge",
+    "layout",
+    "density",
+    "pinned",
+    "panel_twilight",
+    "accent",
+    "theme",
+    "high_contrast",
+    "font_size",
+    "scale",
+})
+
+
 class SettingsStore:
     """JSON settings persistence with atomic writes, debounce, and apply feedback."""
 
@@ -30,6 +46,7 @@ class SettingsStore:
         self._debounce_timers: dict[str, int] = {}
         self._debounce_pending: dict[str, object] = {}
         self._toast_callback = None
+        self._deferred_changes_callback = None
         self._data = self._load()
         self._apply_running = False
         self._apply_pending = False
@@ -171,6 +188,7 @@ class SettingsStore:
         if not self._write_data(next_data):
             return False  # disk error; _write_data toasted the reason
         self._data = next_data
+        self._notify_deferred_changes_changed()
         if apply_now:
             self._run_apply()
         return True
@@ -189,12 +207,14 @@ class SettingsStore:
         self._data[key] = value
         if not self._write():
             return  # disk error; _write toasted the reason
+        self._notify_deferred_changes_changed()
         self._run_apply(mode)
 
     def save_dict_and_apply(self, updates: dict) -> None:
         self._data.update(updates)
         if not self._write():
             return
+        self._notify_deferred_changes_changed()
         self._run_apply()
 
     def apply(self) -> None:
@@ -228,6 +248,41 @@ class SettingsStore:
         if self._toast_callback is not None:
             self._toast_callback(message, is_error)
 
+    def set_deferred_changes_callback(self, callback) -> None:
+        self._deferred_changes_callback = callback
+
+    def _runtime_dir(self) -> Path:
+        return Path(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}")
+
+    def _session_settings_candidates(self) -> tuple[Path, ...]:
+        session_settings = os.environ.get(SESSION_SETTINGS_ENV)
+        if session_settings:
+            return (Path(session_settings),)
+        return (self._runtime_dir() / "universal-lite" / SESSION_SETTINGS_NAME,)
+
+    def _load_session_settings_snapshot(self) -> dict | None:
+        for path in self._session_settings_candidates():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            if isinstance(data, dict):
+                return data
+        return None
+
+    def has_deferred_session_changes(self) -> bool:
+        snapshot = self._load_session_settings_snapshot()
+        if snapshot is None:
+            return False
+        for key in DEFERRED_SESSION_KEYS:
+            if self._data.get(key) != snapshot.get(key):
+                return True
+        return False
+
+    def _notify_deferred_changes_changed(self) -> None:
+        if self._deferred_changes_callback is not None:
+            self._deferred_changes_callback(self.has_deferred_session_changes())
+
     def flush_and_detach(self) -> None:
         """Cancel pending debounces and detach the toast callback.
 
@@ -251,6 +306,7 @@ class SettingsStore:
             self._data.update(pending_debounces)
             if self._write():
                 flushed_debounces = True
+                self._notify_deferred_changes_changed()
                 if self._apply_running:
                     self._apply_pending = True
                     self._apply_pending_mode = self._merge_apply_modes(
