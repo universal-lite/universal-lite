@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 13:28-0400\n"
+"POT-Creation-Date: 2026-06-02 12:03-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -144,58 +144,90 @@ msgstr "Contraseña incorrecta."
 msgid "Could not connect to network"
 msgstr "No se pudo conectar a la red"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:299
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:355
 #, python-brace-format
 msgid "Could not save settings: {reason}"
 msgstr "No se pudo guardar la configuración: {reason}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:329
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
 #, python-brace-format
 msgid "Panel changes saved, but panel files could not be updated: {detail}"
-msgstr "Cambios del panel guardados, pero no se pudieron actualizar los archivos del panel: {detail}"
+msgstr ""
+"Cambios del panel guardados, pero no se pudieron actualizar los archivos del "
+"panel: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:337
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:393
 msgid "Panel changes saved. Restart your session to apply them."
 msgstr "Cambios del panel guardados. Reinicia tu sesión para aplicarlos."
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:441
 #, python-brace-format
 msgid "Failed to apply settings: {detail}"
 msgstr "No se pudo aplicar la configuración: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:416
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:472
 msgid "Settings applied"
 msgstr "Configuración aplicada"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:418
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:474
 #, python-brace-format
 msgid "Apply timed out after {n}s"
 msgstr "Tiempo agotado al aplicar tras {n}s"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:423
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:479
 #, python-brace-format
 msgid "Failed to apply: {err}"
 msgstr "No se pudo aplicar: {err}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:425
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:481
 msgid "Failed to apply settings"
 msgstr "No se pudo aplicar la configuración"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:49
-#: ../files/usr/lib/universal-lite/settings/window.py:80
-#: ../files/usr/lib/universal-lite/settings/window.py:116
+#: ../files/usr/lib/universal-lite/settings/window.py:50
+#: ../files/usr/lib/universal-lite/settings/window.py:81
+#: ../files/usr/lib/universal-lite/settings/window.py:127
 msgid "Settings"
 msgstr "Configuración"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:92
+#: ../files/usr/lib/universal-lite/settings/window.py:93
 msgid "Search settings"
 msgstr "Buscar en la configuración"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:96
+#: ../files/usr/lib/universal-lite/settings/window.py:97
 msgid "Search settings…"
 msgstr "Buscar en la configuración…"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:248
+#: ../files/usr/lib/universal-lite/settings/window.py:113
+msgid "Restart your session to apply panel and start menu changes."
+msgstr "Reinicia la sesión para aplicar los cambios del panel y del menú de inicio."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:115
+#: ../files/usr/lib/universal-lite/settings/window.py:229
+msgid "Restart Session"
+msgstr "Reiniciar sesión"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:225
+msgid "Restart Session?"
+msgstr "¿Reiniciar sesión?"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:226
+msgid "This will close your apps and return you to the sign-in screen."
+msgstr "Esto cerrará tus aplicaciones y te devolverá a la pantalla de inicio de sesión."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:228
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:251
+#, python-brace-format
+msgid "Could not restart session: {detail}"
+msgstr "No se pudo reiniciar la sesión: {detail}"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:298
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "No se pudo cargar {label}"
@@ -1414,13 +1446,6 @@ msgstr ""
 "«{key}» ya está asignado a «{conflict}».\n"
 "\n"
 "¿Reasignar a «{target}»?"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
-msgid "Cancel"
-msgstr "Cancelar"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:798
 msgid "Reassign"

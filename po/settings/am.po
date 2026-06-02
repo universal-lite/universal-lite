@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 13:28-0400\n"
+"POT-Creation-Date: 2026-06-02 12:03-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -143,58 +143,88 @@ msgstr "የተሳሳተ የይለፍ ቃል።"
 msgid "Could not connect to network"
 msgstr "ከአውታረ መረብ ጋር መገናኘት አልተቻለም"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:299
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:355
 #, python-brace-format
 msgid "Could not save settings: {reason}"
 msgstr "ቅንብሮችን ማስቀመጥ አልተቻለም: {reason}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:329
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
 #, python-brace-format
 msgid "Panel changes saved, but panel files could not be updated: {detail}"
 msgstr "የፓነል ለውጦች ተቀምጠዋል፣ ግን የፓነል ፋይሎች ሊዘመኑ አልቻሉም፦ {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:337
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:393
 msgid "Panel changes saved. Restart your session to apply them."
 msgstr "የፓነል ለውጦች ተቀምጠዋል። እነሱን ለመተግበር ክፍለ-ጊዜዎን እንደገና ያስጀምሩ።"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:441
 #, python-brace-format
 msgid "Failed to apply settings: {detail}"
 msgstr "ቅንብሮችን መተግበር አልተሳካም: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:416
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:472
 msgid "Settings applied"
 msgstr "ቅንብሮች ተተግብረዋል"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:418
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:474
 #, python-brace-format
 msgid "Apply timed out after {n}s"
 msgstr "ማመልከቻ ከ{n}s በኋላ ጊዜው አልፏል"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:423
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:479
 #, python-brace-format
 msgid "Failed to apply: {err}"
 msgstr "መተግበር አልተሳካም: {err}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:425
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:481
 msgid "Failed to apply settings"
 msgstr "ቅንብሮችን መተግበር አልተሳካም"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:49
-#: ../files/usr/lib/universal-lite/settings/window.py:80
-#: ../files/usr/lib/universal-lite/settings/window.py:116
+#: ../files/usr/lib/universal-lite/settings/window.py:50
+#: ../files/usr/lib/universal-lite/settings/window.py:81
+#: ../files/usr/lib/universal-lite/settings/window.py:127
 msgid "Settings"
 msgstr "ቅንብሮች"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:92
+#: ../files/usr/lib/universal-lite/settings/window.py:93
 msgid "Search settings"
 msgstr "ቅንብሮችን ይፈልጉ"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:96
+#: ../files/usr/lib/universal-lite/settings/window.py:97
 msgid "Search settings…"
 msgstr "ቅንብሮችን ይፈልጉ…"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:248
+#: ../files/usr/lib/universal-lite/settings/window.py:113
+msgid "Restart your session to apply panel and start menu changes."
+msgstr "የፓነል እና የጀምር ምናሌ ለውጦችን ለመተግበር ክፍለ ጊዜዎን እንደገና ያስጀምሩ።"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:115
+#: ../files/usr/lib/universal-lite/settings/window.py:229
+msgid "Restart Session"
+msgstr "ክፍለ ጊዜ ዳግም አስጀምር"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:225
+msgid "Restart Session?"
+msgstr "ክፍለ ጊዜ ዳግም ይጀመር?"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:226
+msgid "This will close your apps and return you to the sign-in screen."
+msgstr "ይህ መተግበሪያዎችዎን ይዘጋል እና ወደ መግቢያ ማያ ገጽ ይመልስዎታል።"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:228
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
+msgid "Cancel"
+msgstr "ሰርዝ"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:251
+#, python-brace-format
+msgid "Could not restart session: {detail}"
+msgstr "ክፍለ ጊዜ መጀመር አልተቻለም፦ {detail}"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:298
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "{label} ለመጫን አልተሳካም"
@@ -1413,13 +1443,6 @@ msgstr ""
 "\"{key}\" ቀድሞ ለ\"{conflict}\" ተመድቧል።\n"
 "\n"
 "ለ\"{target}\" ዳግም ይመደብ?"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
-msgid "Cancel"
-msgstr "ሰርዝ"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:798
 msgid "Reassign"
