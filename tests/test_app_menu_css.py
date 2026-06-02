@@ -89,6 +89,33 @@ def test_start_menu_defines_user_accent_tokens_from_settings():
     assert "@define-color accent_color #3584e4;" not in css
 
 
+def test_load_settings_prefers_exported_session_snapshot(monkeypatch, tmp_path):
+    live_settings = tmp_path / "settings.json"
+    live_settings.write_text(json.dumps({"edge": "bottom"}), encoding="utf-8")
+    session_settings = tmp_path / "session-settings.json"
+    session_settings.write_text(json.dumps({"edge": "top"}), encoding="utf-8")
+
+    monkeypatch.setattr(app_menu, "SETTINGS_PATH", live_settings)
+    monkeypatch.setenv("UNIVERSAL_LITE_SESSION_SETTINGS", str(session_settings))
+
+    assert app_menu._load_settings()["edge"] == "top"
+
+
+def test_load_settings_uses_runtime_session_snapshot_before_live_file(monkeypatch, tmp_path):
+    live_settings = tmp_path / "settings.json"
+    live_settings.write_text(json.dumps({"edge": "bottom"}), encoding="utf-8")
+    runtime_dir = tmp_path / "runtime"
+    session_settings = runtime_dir / "universal-lite/session-settings.json"
+    session_settings.parent.mkdir(parents=True)
+    session_settings.write_text(json.dumps({"edge": "left"}), encoding="utf-8")
+
+    monkeypatch.setattr(app_menu, "SETTINGS_PATH", live_settings)
+    monkeypatch.delenv("UNIVERSAL_LITE_SESSION_SETTINGS", raising=False)
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(runtime_dir))
+
+    assert app_menu._load_settings()["edge"] == "left"
+
+
 def test_start_menu_high_contrast_defines_strong_surface_tokens():
     css = _css({"theme": "light", "accent": "purple", "high_contrast": True})
 
