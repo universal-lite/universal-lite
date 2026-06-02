@@ -566,6 +566,40 @@ def test_window_close_holds_application_until_apply_work_drains():
     assert "self._store.wait_for_apply(_release_app)" in source
 
 
+def test_settings_window_uses_adw_banner_for_deferred_restart_prompt():
+    source = (
+        ROOT / "files/usr/lib/universal-lite/settings/window.py"
+    ).read_text(encoding="utf-8")
+
+    assert "self._deferred_restart_banner = Adw.Banner()" in source
+    assert '_("Restart your session to apply panel and start menu changes.")' in source
+    assert '_("Restart Session")' in source
+    assert 'connect("button-clicked", self._on_restart_session_clicked)' in source
+    assert "content_toolbar.add_top_bar(self._deferred_restart_banner)" in source
+    assert "store.set_deferred_changes_callback(self._set_deferred_restart_banner_revealed)" in source
+    assert "self._store.set_deferred_changes_callback(None)" in source
+    assert "store.has_deferred_session_changes()" in source
+
+
+def test_settings_window_confirms_and_runs_session_restart():
+    source = (
+        ROOT / "files/usr/lib/universal-lite/settings/window.py"
+    ).read_text(encoding="utf-8")
+
+    assert "def _on_restart_session_clicked" in source
+    assert "Adw.AlertDialog.new" in source
+    assert '_("Restart Session?")' in source
+    assert '_("This will close your apps and return you to the sign-in screen.")' in source
+    assert 'dialog.add_response("cancel", _("Cancel"))' in source
+    assert 'dialog.add_response("restart", _("Restart Session"))' in source
+    assert 'dialog.set_response_appearance("restart", Adw.ResponseAppearance.DESTRUCTIVE)' in source
+    assert '["labwc", "--exit"]' in source
+    assert "stdin=subprocess.DEVNULL" in source
+    assert "stdout=subprocess.DEVNULL" in source
+    assert "stderr=subprocess.DEVNULL" in source
+    assert '_("Could not restart session: {detail}")' in source
+
+
 def test_failed_page_build_unsubscribes_partial_subscriptions():
     source = (
         ROOT / "files/usr/lib/universal-lite/settings/window.py"
