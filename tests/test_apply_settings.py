@@ -521,6 +521,22 @@ def test_session_exports_app_menu_settings_snapshot_after_config_apply():
     assert 'UNIVERSAL_LITE_SESSION_SETTINGS="$_session_settings"' in session
 
 
+def test_session_invalidates_stale_app_menu_settings_snapshot_before_refresh():
+    root = Path(__file__).resolve().parents[1]
+    session = (root / "files/usr/libexec/universal-lite-session").read_text(
+        encoding="utf-8"
+    )
+
+    snapshot_path_idx = session.index(
+        '_session_settings="${XDG_RUNTIME_DIR:-/run/user/$UID}/universal-lite/session-settings.json"'
+    )
+    invalidate_idx = session.index('rm -f "$_session_settings"')
+    exists_idx = session.index('[ -f "$_settings_file" ]')
+    copy_idx = session.index('cp "$_settings_file" "$_session_settings"')
+
+    assert snapshot_path_idx < invalidate_idx < exists_idx < copy_idx
+
+
 def test_session_renderer_policy_is_conditional_not_global_gl():
     root = Path(__file__).resolve().parents[1]
     session = (root / "files/usr/libexec/universal-lite-session").read_text(

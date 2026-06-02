@@ -39,7 +39,7 @@ fi
 _settings_file="${XDG_CONFIG_HOME:-$HOME/.config}/universal-lite/settings.json"
 _session_settings="${XDG_RUNTIME_DIR:-/run/user/$UID}/universal-lite/session-settings.json"
 _session_settings_dir="$(dirname "$_session_settings")"
-if mkdir -p "$_session_settings_dir" && [ -f "$_settings_file" ]; then
+if rm -f "$_session_settings" && mkdir -p "$_session_settings_dir" && [ -f "$_settings_file" ]; then
     cp "$_settings_file" "$_session_settings" || \
         echo "universal-lite-session: failed to snapshot settings; continuing to labwc" >&2
 else
