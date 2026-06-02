@@ -87,6 +87,8 @@ gettext.textdomain(TEXTDOMAIN)
 _ = gettext.gettext
 
 SETTINGS_PATH = Path.home() / ".config/universal-lite/settings.json"
+SESSION_SETTINGS_ENV = "UNIVERSAL_LITE_SESSION_SETTINGS"
+SESSION_SETTINGS_NAME = "session-settings.json"
 LAUNCHES_PATH = Path.home() / ".config/universal-lite/app-launches.json"
 PALETTE_PATH = Path("/usr/share/universal-lite/palette.json")
 _SCRIPT_PATH = Path(
@@ -105,11 +107,16 @@ _LIB_ROOT = (
 sys.path.insert(0, str(_LIB_ROOT / "universal-lite"))
 from theme import gtk_color_defines  # noqa: E402
 
+
+def _runtime_dir() -> Path:
+    return Path(os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}")
+
+
 # PID lock: second invocation (e.g. launcher click while the menu is
 # open) signals the live instance to close and itself exits without
 # showing a second menu - giving click-to-toggle behaviour on the
 # launcher without needing a fullscreen catcher surface.
-_XDG_RUNTIME_DIR = os.environ.get("XDG_RUNTIME_DIR") or f"/run/user/{os.getuid()}"
+_XDG_RUNTIME_DIR = str(_runtime_dir())
 PID_LOCK_PATH = Path(_XDG_RUNTIME_DIR) / "universal-lite-app-menu.pid"
 
 # App categories, matched to what `labwc-menu-generator -b` emits.
@@ -337,11 +344,23 @@ window.app-menu.app-menu-shell-{name} .app-menu-confirm-btn.ok:hover {{
     return "\n".join(chunks)
 
 
+def _settings_candidates() -> tuple[Path, ...]:
+    candidates: list[Path] = []
+    session_settings = os.environ.get(SESSION_SETTINGS_ENV)
+    if session_settings:
+        candidates.append(Path(session_settings))
+    candidates.append(_runtime_dir() / "universal-lite" / SESSION_SETTINGS_NAME)
+    candidates.append(SETTINGS_PATH)
+    return tuple(candidates)
+
+
 def _load_settings() -> dict:
-    try:
-        return json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
+    for path in _settings_candidates():
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+    return {}
 
 
 # CSS - no libadwaita. The menu owns its shell tokens directly from

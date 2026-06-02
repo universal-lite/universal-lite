@@ -34,5 +34,18 @@ fi
 /usr/libexec/universal-lite-apply-settings --mode=config || \
     echo "universal-lite-session: apply-settings failed; continuing to labwc" >&2
 
+# Snapshot the session-start settings for runtime consumers that must
+# not observe deferred Settings changes until the next login.
+_settings_file="$HOME/.config/universal-lite/settings.json"
+_session_settings="${XDG_RUNTIME_DIR:-/run/user/$UID}/universal-lite/session-settings.json"
+_session_settings_dir="$(dirname "$_session_settings")"
+if rm -f "$_session_settings" && mkdir -p "$_session_settings_dir" && [ -f "$_settings_file" ]; then
+    cp "$_settings_file" "$_session_settings" || \
+        echo "universal-lite-session: failed to snapshot settings; continuing to labwc" >&2
+else
+    echo "universal-lite-session: settings snapshot unavailable; continuing to labwc" >&2
+fi
+export UNIVERSAL_LITE_SESSION_SETTINGS="$_session_settings"
+
 # Capture labwc stderr so crash details survive the session exit.
 exec labwc 2>/tmp/labwc-crash.log
