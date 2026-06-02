@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: universal-lite-settings\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 13:28-0400\n"
+"POT-Creation-Date: 2026-06-02 12:03-0400\n"
 "PO-Revision-Date: 2026-04-05 13:06-0400\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -143,58 +143,90 @@ msgstr "Kalmar sirri ba daidai ba."
 msgid "Could not connect to network"
 msgstr "Ba a iya haɗa zuwa hanyar sadarwa ba"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:299
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:355
 #, python-brace-format
 msgid "Could not save settings: {reason}"
 msgstr "Ba a iya adana saituna ba: {reason}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:329
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
 #, python-brace-format
 msgid "Panel changes saved, but panel files could not be updated: {detail}"
-msgstr "An ajiye canje-canjen fanel, amma ba a iya sabunta fayilolin fanel ba: {detail}"
+msgstr ""
+"An ajiye canje-canjen fanel, amma ba a iya sabunta fayilolin fanel ba: "
+"{detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:337
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:393
 msgid "Panel changes saved. Restart your session to apply them."
 msgstr "An ajiye canje-canjen fanel. Sake fara zaman ka don aiwatar da su."
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:385
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:441
 #, python-brace-format
 msgid "Failed to apply settings: {detail}"
 msgstr "Aiwatar da saituna ya gaza: {detail}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:416
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:472
 msgid "Settings applied"
 msgstr "An aiwatar da saituna"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:418
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:474
 #, python-brace-format
 msgid "Apply timed out after {n}s"
 msgstr "Lokacin aiwatarwa ya ƙare bayan {n}s"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:423
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:479
 #, python-brace-format
 msgid "Failed to apply: {err}"
 msgstr "Aiwatarwa ta gaza: {err}"
 
-#: ../files/usr/lib/universal-lite/settings/settings_store.py:425
+#: ../files/usr/lib/universal-lite/settings/settings_store.py:481
 msgid "Failed to apply settings"
 msgstr "Aiwatar da saituna ya gaza"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:49
-#: ../files/usr/lib/universal-lite/settings/window.py:80
-#: ../files/usr/lib/universal-lite/settings/window.py:116
+#: ../files/usr/lib/universal-lite/settings/window.py:50
+#: ../files/usr/lib/universal-lite/settings/window.py:81
+#: ../files/usr/lib/universal-lite/settings/window.py:127
 msgid "Settings"
 msgstr "Saituna"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:92
+#: ../files/usr/lib/universal-lite/settings/window.py:93
 msgid "Search settings"
 msgstr "Nemi saituna"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:96
+#: ../files/usr/lib/universal-lite/settings/window.py:97
 msgid "Search settings…"
 msgstr "Nemi saituna…"
 
-#: ../files/usr/lib/universal-lite/settings/window.py:248
+#: ../files/usr/lib/universal-lite/settings/window.py:113
+msgid "Restart your session to apply panel and start menu changes."
+msgstr "Sake farawa da zaman ku don amfani da canje-canjen panel da menu na farawa."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:115
+#: ../files/usr/lib/universal-lite/settings/window.py:229
+msgid "Restart Session"
+msgstr "Sake Fara Zama"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:225
+msgid "Restart Session?"
+msgstr "A sake fara zaman?"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:226
+msgid "This will close your apps and return you to the sign-in screen."
+msgstr "Wannan zai rufe manhajojinku kuma ya mayar da ku zuwa allon shiga."
+
+#: ../files/usr/lib/universal-lite/settings/window.py:228
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
+#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
+#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
+msgid "Cancel"
+msgstr "Soke"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:251
+#, python-brace-format
+msgid "Could not restart session: {detail}"
+msgstr "Ba a iya sake fara zama ba: {detail}"
+
+#: ../files/usr/lib/universal-lite/settings/window.py:298
 #, python-brace-format
 msgid "Failed to load {label}"
 msgstr "Loda {label} ya gaza"
@@ -1413,13 +1445,6 @@ msgstr ""
 "An riga an sanya \"{key}\" ga \"{conflict}\".\n"
 "\n"
 "A sake sanya shi ga \"{target}\"?"
-
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:797
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:867
-#: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:905
-#: ../files/usr/lib/universal-lite/settings/pages/network.py:407
-msgid "Cancel"
-msgstr "Soke"
 
 #: ../files/usr/lib/universal-lite/settings/pages/keyboard.py:798
 msgid "Reassign"
