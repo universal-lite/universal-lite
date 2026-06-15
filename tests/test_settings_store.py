@@ -164,6 +164,42 @@ def test_deferred_session_changes_hide_when_values_match_snapshot(monkeypatch, t
     assert store.has_deferred_session_changes() is False
 
 
+def test_deferred_session_changes_ignore_live_apply_settings(monkeypatch, tmp_path):
+    _write_session_snapshot(
+        monkeypatch,
+        tmp_path,
+        {
+            "edge": "bottom",
+            "accent": "blue",
+            "theme": "light",
+            "font_size": 11,
+            "high_contrast": False,
+            "scale": 1.0,
+        },
+    )
+    store = _make_store(
+        tmp_path,
+        defaults={
+            "edge": "bottom",
+            "accent": "blue",
+            "theme": "light",
+            "font_size": 11,
+            "high_contrast": False,
+            "scale": 1.0,
+        },
+        existing={
+            "edge": "bottom",
+            "accent": "blue",
+            "theme": "dark",
+            "font_size": 15,
+            "high_contrast": True,
+            "scale": 1.25,
+        },
+    )
+
+    assert store.has_deferred_session_changes() is False
+
+
 def test_deferred_session_changes_ignore_missing_or_invalid_snapshot(monkeypatch, tmp_path):
     runtime_dir = tmp_path / "runtime"
     snapshot = runtime_dir / "universal-lite/session-settings.json"
