@@ -12,16 +12,14 @@ from gi.repository import GLib
 SESSION_SETTINGS_ENV = "UNIVERSAL_LITE_SESSION_SETTINGS"
 SESSION_SETTINGS_NAME = "session-settings.json"
 DEFERRED_SESSION_KEYS = frozenset({
+    # Keep this scoped to settings saved through mode="waybar". Other live-apply
+    # settings may influence generated files, but should not reveal the restart banner.
     "edge",
     "layout",
     "density",
     "pinned",
     "panel_twilight",
     "accent",
-    "theme",
-    "high_contrast",
-    "font_size",
-    "scale",
 })
 
 
