@@ -2279,7 +2279,73 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             return
 
         # Check existing connectivity (force fresh check)
+        self._connect_nm_signals()
+        self._enable_wireless_radio()
         self._nm_client.check_connectivity_async(None, self._on_connectivity_checked)
+
+    def _connect_nm_signals(self) -> None:
+        if self._nm_client is None:
+            return
+        try:
+            self._nm_client.connect("device-added", self._on_nm_device_added)
+            self._nm_client.connect("device-removed", self._on_nm_device_removed)
+            self._nm_client.connect(
+                "notify::wireless-enabled", self._on_nm_wireless_changed)
+        except Exception:
+            pass
+
+    def _enable_wireless_radio(self) -> None:
+        if self._nm_client is None:
+            return
+        try:
+            if not self._nm_client.wireless_get_enabled():
+                self._nm_client.wireless_set_enabled(True)
+        except Exception:
+            pass
+
+    def _show_wifi_section(self) -> None:
+        for widget in (self._wifi_header, self._wifi_list,
+                       self._wifi_empty_label, self._rescan_button,
+                       self._hidden_link):
+            widget.set_visible(True)
+
+    def _show_wifi_waiting(self) -> None:
+        self._show_wifi_section()
+        self._wifi_empty_label.set_text(_("Scanning for networks..."))
+        self._wifi_empty_label.set_visible(True)
+        self._rescan_button.set_sensitive(False)
+
+    def _refresh_wifi_device(self, request_scan: bool) -> bool:
+        if self._nm_client is None:
+            return False
+
+        for dev in self._nm_client.get_devices():
+            if isinstance(dev, NM.DeviceWifi):
+                self._wifi_device = dev
+                self._show_wifi_section()
+                if request_scan:
+                    self._request_wifi_scan()
+                return True
+
+        self._wifi_device = None
+        self._show_wifi_waiting()
+        return False
+
+    def _on_nm_device_added(self, _client: NM.Client, device: object) -> None:
+        if isinstance(device, NM.DeviceWifi):
+            self._wifi_device = device
+            self._show_wifi_section()
+            self._enable_wireless_radio()
+            self._request_wifi_scan()
+
+    def _on_nm_device_removed(self, _client: NM.Client, device: object) -> None:
+        if device is self._wifi_device:
+            self._refresh_wifi_device(request_scan=False)
+
+    def _on_nm_wireless_changed(self, *_args: object) -> None:
+        self._enable_wireless_radio()
+        if self._wifi_device is not None:
+            self._request_wifi_scan()
 
     def _on_connectivity_checked(self, client: NM.Client, result: Gio.AsyncResult) -> None:
         try:
@@ -2292,11 +2358,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._connected_ssid = self._detect_current_ssid()
             return
 
-        # Find WiFi device
-        for dev in self._nm_client.get_devices():
-            if isinstance(dev, NM.DeviceWifi):
-                self._wifi_device = dev
-                break
+        self._refresh_wifi_device(request_scan=False)
 
         # Check if a wired device is still connecting — retry after a delay
         # to handle the common case where NM hasn't obtained an IP yet.
@@ -2324,15 +2386,7 @@ class SetupWizardWindow(Gtk.ApplicationWindow):
             self._wired_poll_id = GLib.timeout_add(3000, self._poll_wired_status)
         if self._current_page < PAGE_NETWORK:
             self._update_navigation()
-        if self._wifi_device is not None:
-            self._request_wifi_scan()
-        else:
-            # No Wi-Fi adapter — collapse the entire Wi-Fi section so the
-            # user isn't left staring at a permanent "Scanning..." label.
-            for widget in (self._wifi_header, self._wifi_list,
-                           self._wifi_empty_label, self._rescan_button,
-                           self._hidden_link):
-                widget.set_visible(False)
+        self._refresh_wifi_device(request_scan=True)
 
     def _retry_connectivity_check(self) -> bool:
         """Re-check connectivity after wired device had time to connect."""
